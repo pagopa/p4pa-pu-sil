@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
-  title: Fake API
-  description: "Sample API"
+  title: p4pa-pu-sil
+  description: Api and Models
   version: "1.0.0"
 paths:
   /api/v1/greet:
