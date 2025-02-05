@@ -32,6 +32,20 @@ paths:
 security:
   - BearerAuth: []
 components:
+  schemas:
+    PuSilErrorDTO:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - PU_SIL_BAD_REQUEST
+            - PU_SIL_GENERIC_ERROR
+        message:
+          type: string
   securitySchemes:
     BearerAuth:
       type: http
