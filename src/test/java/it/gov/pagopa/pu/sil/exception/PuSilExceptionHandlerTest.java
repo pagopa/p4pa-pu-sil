@@ -103,7 +103,7 @@ class PuSilExceptionHandlerTest {
 
         performRequest(null, MediaType.APPLICATION_JSON)
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Required request parameter 'data' for method parameter type String is not present"));
 
     }
@@ -114,7 +114,7 @@ class PuSilExceptionHandlerTest {
 
         performRequest(DATA, MediaType.APPLICATION_JSON)
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_GENERIC_ERROR"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }
 
@@ -125,7 +125,7 @@ class PuSilExceptionHandlerTest {
 
         performRequest(DATA, MediaType.APPLICATION_JSON)
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_GENERIC_ERROR"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }
 
@@ -133,15 +133,23 @@ class PuSilExceptionHandlerTest {
     void handle4xxHttpServletException() throws Exception {
         performRequest(DATA, MediaType.parseMediaType("application/hal+json"))
                 .andExpect(MockMvcResultMatchers.status().isNotAcceptable())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("No acceptable representation"));
     }
+
+  @Test
+  void handleUrlNotFound() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.post("/NOTEXISTENTURL"))
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("No static resource NOTEXISTENTURL."));
+  }
 
     @Test
     void handleNoBodyException() throws Exception {
         performRequest(DATA, MediaType.APPLICATION_JSON, null)
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Required request body is missing"));
     }
 
@@ -150,7 +158,7 @@ class PuSilExceptionHandlerTest {
         performRequest(DATA, MediaType.APPLICATION_JSON,
                 "{\"notRequiredField\":\"notRequired\",\"lowerCaseAlphabeticField\":\"ABC\"}")
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Invalid request content: lowerCaseAlphabeticField: must match \"[a-z]+\"; requiredField: must not be null"));
     }
 
@@ -159,7 +167,7 @@ class PuSilExceptionHandlerTest {
         performRequest(DATA, MediaType.APPLICATION_JSON,
                 "{\"notRequiredField\":\"notRequired\",\"dateTimeField\":\"2025-02-05\"}")
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Cannot parse body: dateTimeField: Text '2025-02-05' could not be parsed at index 10"));
     }
 
@@ -170,7 +178,7 @@ class PuSilExceptionHandlerTest {
 
         performRequest(DATA, MediaType.APPLICATION_JSON)
                 .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_GENERIC_ERROR"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("500 INTERNAL_SERVER_ERROR \"Error\""));
     }
 
@@ -180,7 +188,7 @@ class PuSilExceptionHandlerTest {
 
         performRequest(DATA, MediaType.APPLICATION_JSON)
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }
 }

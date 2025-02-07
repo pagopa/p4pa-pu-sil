@@ -42,8 +42,9 @@ components:
         code:
           type: string
           enum:
-            - PU_SIL_BAD_REQUEST
-            - PU_SIL_GENERIC_ERROR
+            - NOT_FOUND
+            - BAD_REQUEST
+            - GENERIC_ERROR
         message:
           type: string
   securitySchemes:
