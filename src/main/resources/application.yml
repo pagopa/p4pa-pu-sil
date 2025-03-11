@@ -63,3 +63,11 @@ rest:
     max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${AUTH_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${AUTH_PRINT_BODY_WHEN_ERROR:true}"
+  send-notification:
+    base-url: "\${SEND_NOTIFICATION_BASE_URL:}"
+    max-attempts: "\${SEND_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${SEND_NOTIFICATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+
+springdoc:
+  writer-with-default-pretty-printer: true

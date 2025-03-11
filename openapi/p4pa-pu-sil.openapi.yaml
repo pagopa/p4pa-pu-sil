@@ -4,31 +4,38 @@ info:
   description: Api and Models
   version: "1.0.0"
 paths:
-  /api/v1/greet:
-    get:
-      summary: "Hello World"
-      description: "Sample endpoint that return greetings"
+  /organization/{organizationId}/notification:
+    post:
+      tags:
+        - Notification
+      summary: Create notification
+      description: Create initial notification
+      operationId: createSendNotification
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: 'CreateNotificationRequest'
       responses:
         '200':
-          description: "Success"
+          description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Hello, World!"
+                type: 'CreateNotificationResponse'
+        '400':
+          description: Invalid request
+        '403':
+          description: Forbidden
         '500':
-          description: "Internal Server Error"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
+          description: Internal server error
 security:
   - BearerAuth: []
 components:
