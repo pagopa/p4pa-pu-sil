@@ -1,0 +1,278 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "p4pa-pu-sil",
+    "description" : "Api and Models",
+    "version" : "0.0.1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "BearerAuth" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "SendNotification",
+    "description" : "the SendNotification API"
+  } ],
+  "paths" : {
+    "/organization/{organizationId}/send-notification" : {
+      "post" : {
+        "tags" : [ "SendNotification" ],
+        "summary" : "Create notification",
+        "description" : "Create initial notification",
+        "operationId" : "createSendNotification",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateNotificationRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "CreateNotificationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "sendNotificationId" : {
+            "type" : "string"
+          },
+          "preloadRef" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/PreloadNotificationDTO"
+            }
+          },
+          "status" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PreloadNotificationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "preloadId" : {
+            "type" : "string"
+          },
+          "preloadUrl" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Address" : {
+        "type" : "object",
+        "properties" : {
+          "address" : {
+            "type" : "string"
+          },
+          "zip" : {
+            "type" : "string"
+          },
+          "municipality" : {
+            "type" : "string"
+          },
+          "province" : {
+            "type" : "string"
+          }
+        }
+      },
+      "Attachment" : {
+        "type" : "object",
+        "properties" : {
+          "digest" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "fileName" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreateNotificationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "paProtocolNumber" : {
+            "type" : "string"
+          },
+          "recipient" : {
+            "$ref" : "#/components/schemas/Recipient"
+          },
+          "documents" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Document"
+            }
+          },
+          "notificationFeePolicy" : {
+            "type" : "string",
+            "enum" : [ "FLAT_RATE", "DELIVERY_MODE" ]
+          },
+          "physicalCommunicationType" : {
+            "type" : "string",
+            "enum" : [ "AR_REGISTERED_LETTER", "REGISTERED_LETTER_890" ]
+          },
+          "senderDenomination" : {
+            "type" : "string"
+          },
+          "senderTaxId" : {
+            "type" : "string"
+          },
+          "amount" : {
+            "type" : "number"
+          },
+          "paymentExpirationDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "taxonomyCode" : {
+            "type" : "string"
+          },
+          "paFee" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "vat" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "pagoPaIntMode" : {
+            "type" : "string",
+            "enum" : [ "SYNC", "ASYNC", "NONE" ]
+          }
+        }
+      },
+      "Document" : {
+        "type" : "object",
+        "properties" : {
+          "digest" : {
+            "type" : "string"
+          },
+          "contentType" : {
+            "type" : "string"
+          },
+          "fileName" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PagoPa" : {
+        "type" : "object",
+        "properties" : {
+          "noticeCode" : {
+            "type" : "string"
+          },
+          "creditorTaxId" : {
+            "type" : "string"
+          },
+          "applyCost" : {
+            "type" : "boolean"
+          },
+          "attachment" : {
+            "$ref" : "#/components/schemas/Attachment"
+          }
+        }
+      },
+      "Payment" : {
+        "type" : "object",
+        "properties" : {
+          "pagoPa" : {
+            "$ref" : "#/components/schemas/PagoPa"
+          }
+        }
+      },
+      "Recipient" : {
+        "type" : "object",
+        "properties" : {
+          "recipientType" : {
+            "type" : "string",
+            "enum" : [ "PF", "PG" ]
+          },
+          "taxId" : {
+            "type" : "string"
+          },
+          "denomination" : {
+            "type" : "string"
+          },
+          "physicalAddress" : {
+            "$ref" : "#/components/schemas/Address"
+          },
+          "payments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Payment"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes" : {
+      "BearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

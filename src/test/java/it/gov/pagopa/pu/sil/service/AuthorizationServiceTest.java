@@ -4,17 +4,15 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-
-import java.util.List;
-
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthorizationServiceTest {
@@ -105,7 +103,7 @@ class AuthorizationServiceTest {
   }
 
   @Test
-  void givenUserEnabledToOrganizationIdWhenIsUserEnabledThenTrue() {
+  void givenUserEnabledToOrganizationIdWhenValidateUserForOrganizationIdThenOk() {
     UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
     userOrgRole.setRoles(List.of("TEST"));
     userOrgRole.setOrganizationId(1L);
@@ -113,13 +111,11 @@ class AuthorizationServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userOrgRole));
 
-    boolean isEnabled = AuthorizationService.isUserEnabledToOrganizationId(1L, userInfo);
-
-    Assertions.assertTrue(isEnabled);
+    Assertions.assertDoesNotThrow(() -> AuthorizationService.validateUserForOrganizationId(1L, userInfo));
   }
 
   @Test
-  void givenUserNotEnabledToOrganizationIdWhenIsUserEnabledThenFalse() {
+  void givenUserNotEnabledToOrganizationIdWhenValidateUserForOrganizationIdThenUnauthorized() {
     UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
     userOrgRole.setRoles(List.of("TEST"));
     userOrgRole.setOrganizationId(1L);
@@ -127,13 +123,11 @@ class AuthorizationServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userOrgRole));
 
-    boolean isEnabled = AuthorizationService.isUserEnabledToOrganizationId(2L, userInfo);
-
-    Assertions.assertFalse(isEnabled);
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> AuthorizationService.validateUserForOrganizationId(2L, userInfo));
   }
 
   @Test
-  void givenUserWithEmptyRolesWhenIsUserEnabledThenFalse() {
+  void givenUserWithEmptyRolesWhenValidateUserForOrganizationIdThenUnauthorized() {
     UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
     userOrgRole.setRoles(List.of());
     userOrgRole.setOrganizationId(1L);
@@ -141,13 +135,11 @@ class AuthorizationServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userOrgRole));
 
-    boolean isEnabled = AuthorizationService.isUserEnabledToOrganizationId(1L, userInfo);
-
-    Assertions.assertFalse(isEnabled);
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> AuthorizationService.validateUserForOrganizationId(1L, userInfo));
   }
 
   @Test
-  void givenUserWithNullRolesWhenIsUserEnabledThenFalse() {
+  void givenUserWithNullRolesWhenValidateUserForOrganizationIdThenUnauthorized() {
     UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
     userOrgRole.setRoles(null);
     userOrgRole.setOrganizationId(1L);
@@ -155,9 +147,7 @@ class AuthorizationServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userOrgRole));
 
-    boolean isEnabled = AuthorizationService.isUserEnabledToOrganizationId(1L, userInfo);
-
-    Assertions.assertFalse(isEnabled);
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> AuthorizationService.validateUserForOrganizationId(1L, userInfo));
   }
 
 }

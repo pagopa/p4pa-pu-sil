@@ -36,6 +36,7 @@ public class WebSecurityConfig {
           "/actuator",
           "/actuator/**"
         ).permitAll()
+        .anyRequest().authenticated()
       )
       .sessionManagement(session -> session
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
