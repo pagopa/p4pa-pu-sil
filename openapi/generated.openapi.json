@@ -13,13 +13,13 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
-    "name" : "Notification",
-    "description" : "the Notification API"
+    "name" : "SendNotification",
+    "description" : "the SendNotification API"
   } ],
   "paths" : {
-    "/organization/{organizationId}/notification" : {
+    "/organization/{organizationId}/send-notification" : {
       "post" : {
-        "tags" : [ "Notification" ],
+        "tags" : [ "SendNotification" ],
         "summary" : "Create notification",
         "description" : "Create initial notification",
         "operationId" : "createSendNotification",

@@ -16,14 +16,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationRetrieverServiceImplTest {
+class SendNotificationRetrieverServiceImplTest {
   @Mock
   private NotificationService notificationServiceMock;
-  private NotificationRetrieverService notificationRetrieverService;
+  private SendNotificationRetrieverService sendNotificationRetrieverService;
 
   @BeforeEach
   void setUp() {
-    notificationRetrieverService = new NotificationRetrieverServiceImpl(notificationServiceMock);
+    sendNotificationRetrieverService = new SendNotificationRetrieverServiceImpl(notificationServiceMock);
   }
 
   @Test
@@ -37,7 +37,7 @@ class NotificationRetrieverServiceImplTest {
       authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
       Mockito.when(notificationServiceMock.createSendNotification(organizationId, request,accessToken)).thenReturn(expectedResponse);
 
-      CreateNotificationResponse result = notificationRetrieverService.createSendNotification(
+      CreateNotificationResponse result = sendNotificationRetrieverService.createSendNotification(
         organizationId, request, loggedUser, accessToken);
 
       Assertions.assertSame(expectedResponse,result);
@@ -56,7 +56,7 @@ class NotificationRetrieverServiceImplTest {
         .thenThrow(new AuthorizationDeniedException("Access denied"));
 
       Assertions.assertThrows(AuthorizationDeniedException.class, () ->
-        notificationRetrieverService.createSendNotification(organizationId, request, loggedUser, accessToken));
+        sendNotificationRetrieverService.createSendNotification(organizationId, request, loggedUser, accessToken));
 
       authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser));
       Mockito.verifyNoInteractions(notificationServiceMock);

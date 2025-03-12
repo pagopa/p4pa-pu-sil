@@ -1,13 +1,13 @@
 {
   "info": {
-    "_postman_id": "8e883a0a-6fb5-466c-a0c6-4069ac63691d",
+    "_postman_id": "c03757a3-b165-463a-91da-d5a13c9e6657",
     "name": "p4pa-pu-sil",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "17966353"
   },
   "item": [
     {
-      "name": "00_login Copy",
+      "name": "00_login",
       "item": [
         {
           "name": "00_authtoken jwt",
@@ -90,10 +90,10 @@
       ]
     },
     {
-      "name": "notification",
+      "name": "01_SEND_notification",
       "item": [
         {
-          "name": "createSendNotification",
+          "name": "01_createSendNotification",
           "event": [
             {
               "listen": "test",
@@ -153,14 +153,14 @@
               }
             },
             "url": {
-              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/notification",
+              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification",
               "host": [
                 "{{puSilBaseUrl}}"
               ],
               "path": [
                 "organization",
                 "{{organizationId}}",
-                "notification"
+                "send-notification"
               ]
             }
           },

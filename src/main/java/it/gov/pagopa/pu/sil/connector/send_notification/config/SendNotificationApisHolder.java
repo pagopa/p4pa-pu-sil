@@ -27,7 +27,7 @@ public class SendNotificationApisHolder {
         apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
         apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
         if (clientConfig.isPrintBodyWhenError()) {
-          restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("AUTH"));
+          restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("SEND_NOTIFICATION"));
         }
 
         this.notificationApi = new NotificationApi(apiClient);

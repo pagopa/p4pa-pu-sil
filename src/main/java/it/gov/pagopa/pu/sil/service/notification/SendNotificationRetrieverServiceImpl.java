@@ -8,10 +8,10 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class NotificationRetrieverServiceImpl implements NotificationRetrieverService{
+public class SendNotificationRetrieverServiceImpl implements SendNotificationRetrieverService {
   private final NotificationService notificationService;
 
-  public NotificationRetrieverServiceImpl(
+  public SendNotificationRetrieverServiceImpl(
     NotificationService notificationService) {
     this.notificationService = notificationService;
   }
