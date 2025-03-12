@@ -28,8 +28,7 @@ public class AuthorizationService {
   public void validateAdminRole(Long organizationId, UserInfo loggedUser) {
     boolean roleAdmin = isAdminRole(organizationId, loggedUser);
     if (!roleAdmin) {
-      log.debug("Unauthorized user. [organizationId:{}]", organizationId);
-      throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
+      handleUnauthorizedUser(organizationId, loggedUser);
     }
   }
 
