@@ -1,0 +1,214 @@
+{
+  "info": {
+    "_postman_id": "8e883a0a-6fb5-466c-a0c6-4069ac63691d",
+    "name": "p4pa-pu-sil",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "17966353"
+  },
+  "item": [
+    {
+      "name": "00_login Copy",
+      "item": [
+        {
+          "name": "00_authtoken jwt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Fixed ReferenceError by removing the undefined function call\r",
+                  "pm.test(\"MyPay - 01_authtoken - Responses with 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"MyPay - 01_authtoken jwt - Verify response body\", function () {\r",
+                  "    let jsonResponse = pm.response.json();\r",
+                  "\r",
+                  "    pm.expect(jsonResponse).to.have.property(\"access_token\");\r",
+                  "    pm.expect(jsonResponse).to.have.property(\"token_type\");\r",
+                  "    pm.expect(jsonResponse).to.have.property(\"expires_in\");\r",
+                  "});\r",
+                  "\r",
+                  "let jsonResponse = pm.response.json();\r",
+                  "pm.collectionVariables.set(\"accessToken\", jsonResponse.access_token);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{p4paAuthBaseUrl}}/auth/token?client_id=piattaforma-unitaria&grant_type=urn:ietf:params:oauth:grant-type:token-exchange&subject_token={{tokenExchange_subjectToken}}&subject_issuer={{tokenExchange_issuer}}&scope=openid&subject_token_type=urn:ietf:params:oauth:token-type:jwt",
+              "host": [
+                "{{p4paAuthBaseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "token"
+              ],
+              "query": [
+                {
+                  "key": "client_id",
+                  "value": "piattaforma-unitaria"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:token-exchange"
+                },
+                {
+                  "key": "subject_token",
+                  "value": "{{tokenExchange_subjectToken}}"
+                },
+                {
+                  "key": "subject_issuer",
+                  "value": "{{tokenExchange_issuer}}"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid"
+                },
+                {
+                  "key": "subject_token_type",
+                  "value": "urn:ietf:params:oauth:token-type:jwt"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "notification",
+      "item": [
+        {
+          "name": "createSendNotification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"P4PA PU Sil create notification - Responses with 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"PU Sil - create send notification - Verify response body\", function () {\r",
+                  "    let jsonResponse = pm.response.json();\r",
+                  "    pm.expect(jsonResponse).have.property(\"sendNotificationId\");\r",
+                  "    //pm.expect(jsonResponse).have.property(\"preloadRef\"); will be implemented with P4ADEV-2080\r",
+                  "    pm.expect(jsonResponse).have.property(\"status\").to.eq(\"WAITING_FILE\");\r",
+                  "\r",
+                  "    pm.collectionVariables.set(\"sendNotificationId\", jsonResponse.sendNotificationId)\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const lodash = require('lodash');\r",
+                  "const randomNumber = lodash.random(1000000000,9999999999)\r",
+                  "const noticeCode = \"30000000\".concat(randomNumber)\r",
+                  "pm.collectionVariables.set(\"noticeCode\", noticeCode)"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"paProtocolNumber\":\"Prot_001\",\r\n    \"recipient\": {\r\n        \"recipientType\": \"PF\", \r\n        \"taxId\": \"BNRMHL75C06G702B\",\r\n        \"denomination\": \"Michelangelo Buonarroti\",\r\n        \"physicalAddress\": { \r\n        \"address\": \"Via Larga 10\", \r\n        \"zip\": \"00186\", \r\n        \"municipality\": \"Roma\", \r\n        \"province\": \"RM\" \r\n        },\r\n        \"payments\": [ \r\n        {\r\n            \"pagoPa\": { \r\n                \"noticeCode\": {{noticeCode}}, \r\n                \"creditorTaxId\": \"77777777777\", \r\n                \"applyCost\": true, \r\n                \"attachment\": { \r\n                    \"fileName\":\"Pagamento.pdf\",\r\n                    \"contentType\": \"application/pdf\",\r\n                    \"digest\": \"45Iba3tn9Dfm7TX+AbtWDR1csMuHgEbrHi/zZr6DjHU=\"\r\n                }\r\n            }\r\n        }]\r\n    },\r\n    \"documents\":[{\r\n        \"fileName\":\"Notifica.pdf\",\r\n        \"contentType\": \"application/pdf\",\r\n        \"digest\": \"YSxsCpvZHvwL8IIosWJBUDjgUwa01sBHu6Cj4laQRLA=\"\r\n    }]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/notification",
+              "host": [
+                "{{puSilBaseUrl}}"
+              ],
+              "path": [
+                "organization",
+                "{{organizationId}}",
+                "notification"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": "eyJraWQiOiIzNTMxNTA2Ny05YmVjLTMxY2MtYmIwMi0zMzBhZTZlOGY0NjIiLCJ0eXAiOiJhdCtKV1QiLCJhbGciOiJSUzUxMiJ9.eyJ0eXAiOiJiZWFyZXIiLCJpc3MiOiJkZXYucGlhdHRhZm9ybWF1bml0YXJpYS5wYWdvcGEuaXQiLCJqdGkiOiJkMjcyYjQ2OC03ZDZkLTRhMjEtYTQ0NS04MTNiNTlkMWRiMDkiLCJzdWIiOiJFVXFLaUQxcHNMckdOdUx4Q0d6cml5LXJveVBsQnZ1eWVKTWMwZHhheE5zPSIsImlhdCI6MTc0MTM0OTIzMSwiZXhwIjoxNzQxMzYzNjMxLCJvcmdhbml6YXRpb25JcGFDb2RlIjoiREVNTyJ9.qfJb7XJNeluai5JyX7fDECTqVMkBStN82pex9bl6mAAycxuI9JxfXKxs83JE8JTbBMHohqlgpiUixSkaKQx-z--CV3QLJQjAB5796tkIFG88i0VoCX5I1_eGoAypAf41LvaLkFgLYHJZseqqHYWpkRlmXXSFw9qgI5rtmCmXxlk7zpXbhVY_bkJdCKQ7jVe71Dnmc5kmCeR1DiPSnnCW7j-qW5ydNcZ6dD04dYjLpUHfjSyjtnr7zyK11Y6f3dNY0SK4Zfcasgbb-JvBgseE292JzAr7F6ALyRPfdIhS-o1AtYcLC90ztaK7inH0m148fGW8BTTPms7YNBDNbhFQXw",
+      "type": "string"
+    },
+    {
+      "key": "organizationId",
+      "value": "3",
+      "type": "string"
+    },
+    {
+      "key": "noticeCode",
+      "value": ""
+    },
+    {
+      "key": "sendNotificationId",
+      "value": ""
+    }
+  ]
+}
