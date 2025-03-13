@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-class SecurityUtilsTest {
+public class SecurityUtilsTest {
 
   private static void configureSecurityContext(UserInfo expectedUserInfo) {
     SecurityContextHolder.setContext(new SecurityContextImpl(new UsernamePasswordAuthenticationToken(expectedUserInfo, "token")));
@@ -46,9 +46,7 @@ class SecurityUtilsTest {
     UserInfo expectedUserInfo = new UserInfo();
     expectedUserInfo.setMappedExternalUserId(SecurityUtils.SYSTEM_USERID_PREFIX + "ORGIPACODE");
     configureSecurityContext(expectedUserInfo);
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader(SecurityUtils.HEADER_USER_ID, expectedMappedExternalUserId);
-    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+    configureXUserIdHeader(expectedMappedExternalUserId);
 
     // When
     UserInfo result = SecurityUtils.getLoggedUser();
@@ -56,6 +54,12 @@ class SecurityUtilsTest {
     // Then
     Assertions.assertSame(expectedUserInfo, result);
     Assertions.assertEquals(expectedMappedExternalUserId, expectedUserInfo.getMappedExternalUserId());
+  }
+
+  public static void configureXUserIdHeader(String expectedMappedExternalUserId) {
+    MockHttpServletRequest request = new MockHttpServletRequest();
+    request.addHeader(SecurityUtils.HEADER_USER_ID, expectedMappedExternalUserId);
+    RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
   }
 
   @Test
