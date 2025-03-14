@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.security;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +21,12 @@ public class SecurityUtilsTest {
 
   private static void configureSecurityContext(UserInfo expectedUserInfo) {
     SecurityContextHolder.setContext(new SecurityContextImpl(new UsernamePasswordAuthenticationToken(expectedUserInfo, "token")));
+  }
+
+  @BeforeEach
+  void clearContexts(){
+    RequestContextHolder.resetRequestAttributes();
+    SecurityContextHolder.clearContext();
   }
 
 //region test getLoggedUser
