@@ -35,4 +35,17 @@ class NotificationServiceImplTest {
 
     Assertions.assertSame(expectedResponse,response);
   }
+
+  @Test
+  void whenDeleteSendNotificationThenInvokeClient(){
+    String accessToken = "access_token";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    Mockito.doNothing().when(notificationClientMock).deleteSendNotification(sendNotificationId,organizationId,accessToken);
+
+    notificationService.deleteSendNotification(
+      sendNotificationId,organizationId, accessToken);
+
+    Mockito.verifyNoMoreInteractions(notificationClientMock);
+  }
 }

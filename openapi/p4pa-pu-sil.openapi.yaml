@@ -36,6 +36,34 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
+  /organization/{organizationId}/send-notification/{sendNotificationId}:
+    delete:
+      tags:
+        - SendNotification
+      summary: Delete notification
+      description: Delete notification
+      operationId: deleteSendNotification
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: sendNotificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+        '403':
+          description: Forbidden
+        '500':
+          description: Internal server error
 security:
   - BearerAuth: []
 components:

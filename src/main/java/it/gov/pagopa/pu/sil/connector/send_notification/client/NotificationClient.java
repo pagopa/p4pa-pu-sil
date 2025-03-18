@@ -21,4 +21,9 @@ public class NotificationClient {
       .createSendNotification(organizationId, createNotificationRequest);
   }
 
+  public void deleteSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
+    sendNotificationApisHolder.getNotificationApi(accessToken)
+      .deleteSendNotification(sendNotificationId, organizationId);
+  }
+
 }
