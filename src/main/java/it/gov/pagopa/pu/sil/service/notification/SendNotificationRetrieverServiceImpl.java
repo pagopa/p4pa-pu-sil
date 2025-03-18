@@ -24,4 +24,12 @@ public class SendNotificationRetrieverServiceImpl implements SendNotificationRet
     AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser);
     return notificationService.createSendNotification(organizationId,body,accessToken);
   }
+
+  @Override
+  public void deleteSendNotification(String sendNotificationId,
+    Long organizationId,
+    UserInfo loggedUser, String accessToken) {
+    AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser);
+    notificationService.deleteSendNotification(sendNotificationId,organizationId,accessToken);
+  }
 }

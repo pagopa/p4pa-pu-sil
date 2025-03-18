@@ -27,4 +27,13 @@ public class SendNotificationController implements SendNotificationApi {
     return ResponseEntity.ok(sendNotificationRetrieverService.createSendNotification(organizationId,body,
       SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken()));
   }
+
+  @Override
+  public ResponseEntity<Void> deleteSendNotification(
+    Long organizationId, String sendNotificationId) {
+    log.info("requested deleteSendNotification having organizationId {} and sendNotificationId {}",organizationId, sendNotificationId);
+    sendNotificationRetrieverService.deleteSendNotification(sendNotificationId,organizationId,
+      SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken());
+    return ResponseEntity.ok().build();
+  }
 }

@@ -62,4 +62,40 @@ class SendNotificationRetrieverServiceImplTest {
       Mockito.verifyNoInteractions(notificationServiceMock);
     }
   }
+
+  @Test
+  void givenValidUserWhenDeleteSendNotificationThenOk(){
+    UserInfo loggedUser = new UserInfo();
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
+      Mockito.doNothing().when(notificationServiceMock).deleteSendNotification(sendNotificationId,organizationId,accessToken);
+
+      sendNotificationRetrieverService.deleteSendNotification(
+        sendNotificationId,organizationId,loggedUser,accessToken);
+
+      Mockito.verifyNoMoreInteractions(notificationServiceMock);
+    }
+  }
+
+  @Test
+  void givenInvalidUserWhenDeleteSendNotificationThenAuthorizationDeniedException() {
+    UserInfo loggedUser = new UserInfo();
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser))
+        .thenThrow(new AuthorizationDeniedException("Access denied"));
+
+      Assertions.assertThrows(AuthorizationDeniedException.class, () ->
+        sendNotificationRetrieverService.deleteSendNotification(sendNotificationId,organizationId,loggedUser,accessToken));
+
+      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser));
+      Mockito.verifyNoInteractions(notificationServiceMock);
+    }
+  }
 }

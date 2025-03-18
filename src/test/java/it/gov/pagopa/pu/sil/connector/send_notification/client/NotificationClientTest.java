@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -50,6 +51,22 @@ class NotificationClientTest {
       organizationId, request, accessToken);
 
     assertSame(expectedResult, result);
+  }
+
+  @Test
+  void whenDeleteSendNotificationThenInvokeWithAccessToken() {
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+
+    when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
+      .thenReturn(notificationApiMock);
+    doNothing().when(notificationApiMock).deleteSendNotification(sendNotificationId,organizationId);
+
+    notificationClient.deleteSendNotification(
+      sendNotificationId,organizationId, accessToken);
+
+    Mockito.verifyNoMoreInteractions(sendNotificationApisHolderMock,notificationApiMock);
   }
 
 }
