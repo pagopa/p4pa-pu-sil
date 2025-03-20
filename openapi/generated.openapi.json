@@ -89,6 +89,83 @@
       }
     },
     "/organization/{organizationId}/send-notification/{sendNotificationId}" : {
+      "get" : {
+        "tags" : [ "SendNotification" ],
+        "summary" : "get send notification",
+        "description" : "get send notification",
+        "operationId" : "getSendNotification",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "sendNotificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Notification not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      },
       "delete" : {
         "tags" : [ "SendNotification" ],
         "summary" : "Delete notification",
@@ -138,24 +215,10 @@
           "sendNotificationId" : {
             "type" : "string"
           },
-          "preloadRef" : {
-            "type" : "array",
-            "items" : {
-              "$ref" : "#/components/schemas/PreloadNotificationDTO"
-            }
+          "preloadUrl" : {
+            "type" : "string"
           },
           "status" : {
-            "type" : "string"
-          }
-        }
-      },
-      "PreloadNotificationDTO" : {
-        "type" : "object",
-        "properties" : {
-          "preloadId" : {
-            "type" : "string"
-          },
-          "preloadUrl" : {
             "type" : "string"
           }
         }
@@ -303,6 +366,34 @@
             "type" : "array",
             "items" : {
               "$ref" : "#/components/schemas/Payment"
+            }
+          }
+        }
+      },
+      "SendNotificationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "sendNotificationId" : {
+            "type" : "string"
+          },
+          "organizationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "iun" : {
+            "type" : "string"
+          },
+          "notificationDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "status" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
             }
           }
         }

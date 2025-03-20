@@ -37,6 +37,39 @@ paths:
         '500':
           description: Internal server error
   /organization/{organizationId}/send-notification/{sendNotificationId}:
+    get:
+      tags:
+        - SendNotification
+      summary: get send notification
+      description: get send notification
+      operationId: getSendNotification
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: sendNotificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: 'SendNotificationDTO'
+        '400':
+          description: Invalid request
+        '403':
+          description: Forbidden
+        '404':
+          description: Notification not found
+        '500':
+          description: Internal server error
     delete:
       tags:
         - SendNotification
