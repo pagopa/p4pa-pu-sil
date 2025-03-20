@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.controller.generated.SendNotificationApi;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.notification.SendNotificationRetrieverService;
@@ -35,5 +36,14 @@ public class SendNotificationController implements SendNotificationApi {
     sendNotificationRetrieverService.deleteSendNotification(sendNotificationId,organizationId,
       SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken());
     return ResponseEntity.ok().build();
+  }
+
+  @Override
+  public ResponseEntity<SendNotificationDTO> getSendNotification(
+    Long organizationId,
+    String sendNotificationId) {
+    log.info("requested getSendNotification having organizationId {} and sendNotificationId {}",organizationId, sendNotificationId);
+    return ResponseEntity.ofNullable(sendNotificationRetrieverService.getSendNotification(sendNotificationId,organizationId,
+      SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken()));
   }
 }

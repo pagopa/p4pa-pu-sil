@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.event.Level;
 import org.springframework.core.Ordered;
@@ -20,8 +21,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -46,6 +45,11 @@ public class PuSilExceptionHandler {
       }
     }
     return handleException(ex, request, httpStatus, errorCode);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<PuSilErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
   }
 
   @ExceptionHandler({RuntimeException.class})

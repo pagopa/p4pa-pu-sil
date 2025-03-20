@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.send_notification;
 
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.client.NotificationClient;
 import org.springframework.stereotype.Service;
 
@@ -22,5 +23,10 @@ public class NotificationServiceImpl implements NotificationService{
   @Override
   public void deleteSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
     notificationClient.deleteSendNotification(sendNotificationId,organizationId,accessToken);
+  }
+
+  @Override
+  public SendNotificationDTO getSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
+    return notificationClient.getSendNotification(sendNotificationId,organizationId,accessToken);
   }
 }

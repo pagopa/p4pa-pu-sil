@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.notification;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.NotificationService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.junit.jupiter.api.Assertions;
@@ -93,6 +94,44 @@ class SendNotificationRetrieverServiceImplTest {
 
       Assertions.assertThrows(AuthorizationDeniedException.class, () ->
         sendNotificationRetrieverService.deleteSendNotification(sendNotificationId,organizationId,loggedUser,accessToken));
+
+      authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser));
+      Mockito.verifyNoInteractions(notificationServiceMock);
+    }
+  }
+
+  @Test
+  void givenValidUserWhenGetSendNotificationThenOk(){
+    UserInfo loggedUser = new UserInfo();
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    SendNotificationDTO expectedResult = new SendNotificationDTO();
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
+      Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId,organizationId,accessToken)).thenReturn(
+        expectedResult);
+
+      SendNotificationDTO result = sendNotificationRetrieverService.getSendNotification(
+        sendNotificationId, organizationId, loggedUser, accessToken);
+
+      Assertions.assertSame(expectedResult,result);
+    }
+  }
+
+  @Test
+  void givenInvalidUserWhenGetSendNotificationThenAuthorizationDeniedException() {
+    UserInfo loggedUser = new UserInfo();
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser))
+        .thenThrow(new AuthorizationDeniedException("Access denied"));
+
+      Assertions.assertThrows(AuthorizationDeniedException.class, () ->
+        sendNotificationRetrieverService.getSendNotification(sendNotificationId,organizationId,loggedUser,accessToken));
 
       authorizationServiceMockedStatic.verify(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser));
       Mockito.verifyNoInteractions(notificationServiceMock);

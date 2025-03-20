@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.controller;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.service.notification.SendNotificationRetrieverService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,5 +72,37 @@ class SendNotificationControllerTest {
     ResponseEntity<Void> response = sendNotificationController.deleteSendNotification(organizationId,sendNotificationId);
 
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+  }
+
+  @Test
+  void givenCorrectRequestWhenGetSendNotificationThenOk() {
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    SendNotificationDTO expectedResult = new SendNotificationDTO();
+
+    Mockito.when(sendNotificationRetrieverServiceMock.getSendNotification(
+      sendNotificationId,
+      organizationId,
+      userInfo,
+      "fakeAccessToken"
+    )).thenReturn(expectedResult);
+
+    ResponseEntity<SendNotificationDTO> response = sendNotificationController.getSendNotification(organizationId,sendNotificationId);
+
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertSame(expectedResult,response.getBody());
+  }
+
+  @Test
+  void givenNoSendNotificationWhenGetSendNotificationThenNotFound() {
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+
+    ResponseEntity<SendNotificationDTO> response = sendNotificationController.getSendNotification(organizationId,sendNotificationId);
+
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    Assertions.assertNull(response.getBody());
+    Mockito.verify(sendNotificationRetrieverServiceMock).getSendNotification(Mockito.eq(sendNotificationId),Mockito.eq(organizationId),
+      Mockito.any(), Mockito.anyString());
   }
 }

@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.notification;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.NotificationService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.springframework.stereotype.Service;
@@ -31,5 +32,13 @@ public class SendNotificationRetrieverServiceImpl implements SendNotificationRet
     UserInfo loggedUser, String accessToken) {
     AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser);
     notificationService.deleteSendNotification(sendNotificationId,organizationId,accessToken);
+  }
+
+  @Override
+  public SendNotificationDTO getSendNotification(String sendNotificationId,
+    Long organizationId,
+    UserInfo loggedUser, String accessToken) {
+    AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser);
+    return notificationService.getSendNotification(sendNotificationId,organizationId,accessToken);
   }
 }
