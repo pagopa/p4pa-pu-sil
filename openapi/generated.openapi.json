@@ -270,12 +270,10 @@
             }
           },
           "notificationFeePolicy" : {
-            "type" : "string",
-            "enum" : [ "FLAT_RATE", "DELIVERY_MODE" ]
+            "$ref" : "#/components/schemas/NotificationFeePolicyEnum"
           },
           "physicalCommunicationType" : {
-            "type" : "string",
-            "enum" : [ "AR_REGISTERED_LETTER", "REGISTERED_LETTER_890" ]
+            "$ref" : "#/components/schemas/PhysicalCommunicationTypeEnum"
           },
           "senderDenomination" : {
             "type" : "string"
@@ -302,8 +300,7 @@
             "format" : "int32"
           },
           "pagoPaIntMode" : {
-            "type" : "string",
-            "enum" : [ "SYNC", "ASYNC", "NONE" ]
+            "$ref" : "#/components/schemas/PagoPaIntModeEnum"
           }
         }
       },
@@ -320,6 +317,10 @@
             "type" : "string"
           }
         }
+      },
+      "NotificationFeePolicyEnum" : {
+        "type" : "string",
+        "enum" : [ "FLAT_RATE", "DELIVERY_MODE" ]
       },
       "PagoPa" : {
         "type" : "object",
@@ -338,6 +339,10 @@
           }
         }
       },
+      "PagoPaIntModeEnum" : {
+        "type" : "string",
+        "enum" : [ "SYNC", "ASYNC", "NONE" ]
+      },
       "Payment" : {
         "type" : "object",
         "properties" : {
@@ -346,12 +351,15 @@
           }
         }
       },
+      "PhysicalCommunicationTypeEnum" : {
+        "type" : "string",
+        "enum" : [ "AR_REGISTERED_LETTER", "REGISTERED_LETTER_890" ]
+      },
       "Recipient" : {
         "type" : "object",
         "properties" : {
           "recipientType" : {
-            "type" : "string",
-            "enum" : [ "PF", "PG" ]
+            "$ref" : "#/components/schemas/RecipientTypeEnum"
           },
           "taxId" : {
             "type" : "string"
@@ -369,6 +377,10 @@
             }
           }
         }
+      },
+      "RecipientTypeEnum" : {
+        "type" : "string",
+        "enum" : [ "PF", "PG" ]
       },
       "SendNotificationDTO" : {
         "type" : "object",
