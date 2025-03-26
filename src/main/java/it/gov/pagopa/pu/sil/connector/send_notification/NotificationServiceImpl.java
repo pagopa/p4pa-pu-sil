@@ -15,18 +15,17 @@ public class NotificationServiceImpl implements NotificationService{
   }
 
   @Override
-  public CreateNotificationResponse createSendNotification( Long organizationId,
-    CreateNotificationRequest createNotificationRequest, String accessToken) {
-    return notificationClient.createSendNotification(organizationId,createNotificationRequest,accessToken);
+  public CreateNotificationResponse createSendNotification(CreateNotificationRequest createNotificationRequest, String accessToken) {
+    return notificationClient.createSendNotification(createNotificationRequest,accessToken);
   }
 
   @Override
-  public void deleteSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
-    notificationClient.deleteSendNotification(sendNotificationId,organizationId,accessToken);
+  public void deleteSendNotification(String sendNotificationId, String accessToken) {
+    notificationClient.deleteSendNotification(sendNotificationId,accessToken);
   }
 
   @Override
-  public SendNotificationDTO getSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
-    return notificationClient.getSendNotification(sendNotificationId,organizationId,accessToken);
+  public SendNotificationDTO getSendNotification(String sendNotificationId, String accessToken) {
+    return notificationClient.getSendNotification(sendNotificationId,accessToken);
   }
 }

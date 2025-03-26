@@ -42,7 +42,7 @@ class SendNotificationApisHolderTest  extends BaseApiHolderTest {
   void whenGetNotificationApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> sendNotificationApisHolder.getNotificationApi(accessToken)
-        .createSendNotification(1L,new CreateNotificationRequest()),
+        .createSendNotification(new CreateNotificationRequest()),
       new ParameterizedTypeReference<>() {},
       sendNotificationApisHolder::unload
     );

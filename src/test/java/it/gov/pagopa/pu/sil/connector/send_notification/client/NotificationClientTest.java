@@ -43,17 +43,16 @@ class NotificationClientTest {
   @Test
   void whenCreateSendNotificationThenInvokeWithAccessToken() {
     String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
     CreateNotificationRequest request = new CreateNotificationRequest();
     CreateNotificationResponse expectedResult = new CreateNotificationResponse();
 
     when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
-    when(notificationApiMock.createSendNotification(organizationId,request))
+    when(notificationApiMock.createSendNotification(request))
       .thenReturn(expectedResult);
 
     CreateNotificationResponse result = notificationClient.createSendNotification(
-      organizationId, request, accessToken);
+      request, accessToken);
 
     assertSame(expectedResult, result);
   }
@@ -61,15 +60,14 @@ class NotificationClientTest {
   @Test
   void whenDeleteSendNotificationThenInvokeWithAccessToken() {
     String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
 
     when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
-    doNothing().when(notificationApiMock).deleteSendNotification(sendNotificationId,organizationId);
+    doNothing().when(notificationApiMock).deleteSendNotification(sendNotificationId);
 
     notificationClient.deleteSendNotification(
-      sendNotificationId,organizationId, accessToken);
+      sendNotificationId,accessToken);
 
     Mockito.verifyNoMoreInteractions(sendNotificationApisHolderMock,notificationApiMock);
   }
@@ -77,32 +75,30 @@ class NotificationClientTest {
   @Test
   void givenNoSendNotificationWhenDeleteSendNotificationThenIllegalArgumentException() {
     String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
 
     Mockito.when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
     Mockito.doThrow(
         HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null))
-      .when(notificationApiMock).deleteSendNotification(sendNotificationId,organizationId);
+      .when(notificationApiMock).deleteSendNotification(sendNotificationId);
 
-    Assertions.assertThrows(IllegalArgumentException.class,() -> notificationClient.deleteSendNotification(sendNotificationId,organizationId,accessToken));
+    Assertions.assertThrows(IllegalArgumentException.class,() -> notificationClient.deleteSendNotification(sendNotificationId,accessToken));
   }
 
   @Test
   void whenGetSendNotificationThenInvokeWithAccessToken() {
     String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
     SendNotificationDTO expectedResult = new SendNotificationDTO();
 
     when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
-    when(notificationApiMock.getSendNotification(sendNotificationId,organizationId))
+    when(notificationApiMock.getSendNotification(sendNotificationId))
       .thenReturn(expectedResult);
 
     SendNotificationDTO result = notificationClient.getSendNotification(
-      sendNotificationId, organizationId, accessToken);
+      sendNotificationId, accessToken);
 
     Assertions.assertSame(expectedResult,result);
   }
@@ -110,16 +106,15 @@ class NotificationClientTest {
   @Test
   void givenNoSendNotificationWhenGetSendNotificationThenNull() {
     String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
 
     Mockito.when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
-    when(notificationApiMock.getSendNotification(sendNotificationId,organizationId)).thenThrow(
+    when(notificationApiMock.getSendNotification(sendNotificationId)).thenThrow(
         HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     SendNotificationDTO result = notificationClient.getSendNotification(
-      sendNotificationId, organizationId, accessToken);
+      sendNotificationId, accessToken);
 
     Assertions.assertNull(result);
   }

@@ -18,15 +18,15 @@ public class NotificationClient {
     this.sendNotificationApisHolder = sendNotificationApisHolder;
   }
 
-  public CreateNotificationResponse createSendNotification(Long organizationId, CreateNotificationRequest createNotificationRequest, String accessToken) {
+  public CreateNotificationResponse createSendNotification(CreateNotificationRequest createNotificationRequest, String accessToken) {
     return sendNotificationApisHolder.getNotificationApi(accessToken)
-      .createSendNotification(organizationId, createNotificationRequest);
+      .createSendNotification(createNotificationRequest);
   }
 
-  public void deleteSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
+  public void deleteSendNotification(String sendNotificationId, String accessToken) {
     try {
       sendNotificationApisHolder.getNotificationApi(accessToken)
-        .deleteSendNotification(sendNotificationId, organizationId);
+        .deleteSendNotification(sendNotificationId);
     } catch (HttpClientErrorException.NotFound e) {
       throw new IllegalArgumentException(
         "notification with sendNotificationId %s not found".formatted(
@@ -34,10 +34,10 @@ public class NotificationClient {
     }
   }
 
-  public SendNotificationDTO getSendNotification(String sendNotificationId, Long organizationId, String accessToken) {
+  public SendNotificationDTO getSendNotification(String sendNotificationId, String accessToken) {
     try{
       return sendNotificationApisHolder.getNotificationApi(accessToken)
-        .getSendNotification(sendNotificationId,organizationId);
+        .getSendNotification(sendNotificationId);
     } catch (HttpClientErrorException.NotFound e) {
       log.warn("notification with sendNotificationId {} not found", sendNotificationId);
       return null;

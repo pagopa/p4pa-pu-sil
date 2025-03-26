@@ -257,6 +257,10 @@
       "CreateNotificationRequest" : {
         "type" : "object",
         "properties" : {
+          "organizationId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
           "paProtocolNumber" : {
             "type" : "string"
           },
@@ -382,6 +386,10 @@
         "type" : "string",
         "enum" : [ "PF", "PG" ]
       },
+      "NotificationStatus" : {
+        "type" : "string",
+        "enum" : [ "WAITING_FILE", "SENDING", "REGISTERED", "UPLOADED", "COMPLETE", "ACCEPTED" ]
+      },
       "SendNotificationDTO" : {
         "type" : "object",
         "properties" : {
@@ -397,12 +405,33 @@
           },
           "notificationDate" : {
             "type" : "string",
-            "format" : "date"
+            "format" : "date-time"
+          },
+          "payments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SendNotificationPaymentsDTO"
+            }
           },
           "status" : {
-            "type" : "string"
+            "$ref" : "#/components/schemas/NotificationStatus"
           },
           "errors" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          }
+        }
+      },
+      "SendNotificationPaymentsDTO" : {
+        "type" : "object",
+        "properties" : {
+          "debtPositionId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "navList" : {
             "type" : "array",
             "items" : {
               "type" : "string"

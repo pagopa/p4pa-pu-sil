@@ -27,12 +27,10 @@ class NotificationServiceImplTest {
   void whenCreateSendNotificationThenInvokeClient(){
     CreateNotificationRequest request = new CreateNotificationRequest();
     String accessToken = "access_token";
-    Long organizationId = 1L;
     CreateNotificationResponse expectedResponse = new CreateNotificationResponse();
-    Mockito.when(notificationClientMock.createSendNotification(organizationId,request,accessToken)).thenReturn(expectedResponse);
+    Mockito.when(notificationClientMock.createSendNotification(request,accessToken)).thenReturn(expectedResponse);
 
-    CreateNotificationResponse response = notificationService.createSendNotification(
-      organizationId,request, accessToken);
+    CreateNotificationResponse response = notificationService.createSendNotification(request, accessToken);
 
     Assertions.assertSame(expectedResponse,response);
   }
@@ -40,12 +38,10 @@ class NotificationServiceImplTest {
   @Test
   void whenDeleteSendNotificationThenInvokeClient(){
     String accessToken = "access_token";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
-    Mockito.doNothing().when(notificationClientMock).deleteSendNotification(sendNotificationId,organizationId,accessToken);
+    Mockito.doNothing().when(notificationClientMock).deleteSendNotification(sendNotificationId,accessToken);
 
-    notificationService.deleteSendNotification(
-      sendNotificationId,organizationId, accessToken);
+    notificationService.deleteSendNotification(sendNotificationId, accessToken);
 
     Mockito.verifyNoMoreInteractions(notificationClientMock);
   }
@@ -53,14 +49,12 @@ class NotificationServiceImplTest {
   @Test
   void whenGetSendNotificationThenInvokeClient(){
     String accessToken = "access_token";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
     SendNotificationDTO expectedResult = new SendNotificationDTO();
-    Mockito.when(notificationClientMock.getSendNotification(sendNotificationId,organizationId,accessToken)).thenReturn(
+    Mockito.when(notificationClientMock.getSendNotification(sendNotificationId,accessToken)).thenReturn(
       expectedResult);
 
-    SendNotificationDTO result = notificationService.getSendNotification(
-      sendNotificationId, organizationId, accessToken);
+    SendNotificationDTO result = notificationService.getSendNotification(sendNotificationId, accessToken);
 
     Assertions.assertSame(expectedResult,result);
   }

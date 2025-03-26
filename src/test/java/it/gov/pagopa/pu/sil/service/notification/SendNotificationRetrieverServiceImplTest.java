@@ -36,12 +36,13 @@ class SendNotificationRetrieverServiceImplTest {
     CreateNotificationResponse expectedResponse = new CreateNotificationResponse();
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
       authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
-      Mockito.when(notificationServiceMock.createSendNotification(organizationId, request,accessToken)).thenReturn(expectedResponse);
+      Mockito.when(notificationServiceMock.createSendNotification(request,accessToken)).thenReturn(expectedResponse);
 
       CreateNotificationResponse result = sendNotificationRetrieverService.createSendNotification(
         organizationId, request, loggedUser, accessToken);
 
       Assertions.assertSame(expectedResponse,result);
+      Assertions.assertEquals(organizationId, request.getOrganizationId());
     }
   }
 
@@ -70,14 +71,40 @@ class SendNotificationRetrieverServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
+
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(organizationId);
+    Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId,accessToken)).thenReturn(
+      sendNotificationDTO);
+
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
       authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
-      Mockito.doNothing().when(notificationServiceMock).deleteSendNotification(sendNotificationId,organizationId,accessToken);
+      Mockito.doNothing().when(notificationServiceMock).deleteSendNotification(sendNotificationId,accessToken);
 
       sendNotificationRetrieverService.deleteSendNotification(
         sendNotificationId,organizationId,loggedUser,accessToken);
 
       Mockito.verifyNoMoreInteractions(notificationServiceMock);
+    }
+  }
+
+  @Test
+  void givenInvalidOrganizationWhenDeleteSendNotificationThenIllegalArgumentException(){
+    UserInfo loggedUser = new UserInfo();
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(2L);
+    Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId,accessToken)).thenReturn(
+      sendNotificationDTO);
+
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
+
+      Assertions.assertThrows(IllegalArgumentException.class, () ->
+        sendNotificationRetrieverService.deleteSendNotification(sendNotificationId,organizationId,loggedUser,accessToken));
     }
   }
 
@@ -107,15 +134,37 @@ class SendNotificationRetrieverServiceImplTest {
     Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
     SendNotificationDTO expectedResult = new SendNotificationDTO();
+    expectedResult.setOrganizationId(organizationId);
+
     try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
       authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
-      Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId,organizationId,accessToken)).thenReturn(
+      Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId,accessToken)).thenReturn(
         expectedResult);
 
       SendNotificationDTO result = sendNotificationRetrieverService.getSendNotification(
         sendNotificationId, organizationId, loggedUser, accessToken);
 
       Assertions.assertSame(expectedResult,result);
+    }
+  }
+
+  @Test
+  void givenInvalidOrganizationWhenGetSendNotificationThenThrowIllegalArgumentExcepion(){
+    UserInfo loggedUser = new UserInfo();
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    SendNotificationDTO expectedResult = new SendNotificationDTO();
+    expectedResult.setOrganizationId(2L);
+
+    try (MockedStatic<AuthorizationService> authorizationServiceMockedStatic = Mockito.mockStatic(AuthorizationService.class)) {
+      authorizationServiceMockedStatic.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(a->null);
+      Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId,accessToken)).thenReturn(
+        expectedResult);
+
+      Assertions.assertThrows(IllegalArgumentException.class, ()->
+        sendNotificationRetrieverService.getSendNotification(sendNotificationId, organizationId, loggedUser, accessToken)
+      );
     }
   }
 
