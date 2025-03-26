@@ -5,9 +5,7 @@ import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRespons
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 
 public interface NotificationService {
-  CreateNotificationResponse createSendNotification(
-    Long organizationId, CreateNotificationRequest createNotificationRequest, String accessToken);
-
-  void deleteSendNotification(String sendNotificationId, Long organizationId, String accessToken);
-  SendNotificationDTO getSendNotification(String sendNotificationId, Long organizationId, String accessToken);
+  CreateNotificationResponse createSendNotification(CreateNotificationRequest createNotificationRequest, String accessToken);
+  void deleteSendNotification(String sendNotificationId, String accessToken);
+  SendNotificationDTO getSendNotification(String sendNotificationId, String accessToken);
 }
