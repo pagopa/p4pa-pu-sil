@@ -3,6 +3,8 @@ package it.gov.pagopa.pu.sil;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {
   "logging.level.org.springdoc.core.utils.SpringDocAnnotationsUtils=OFF"
 })
+@Slf4j
 class OpenApiGeneratorTest {
 
   @Autowired
@@ -51,7 +54,7 @@ class OpenApiGeneratorTest {
         JsonAssert.comparator(JsonCompareMode.STRICT).assertIsMatch(storedOpenApi, openApiResult);
         toStore=false;
       } catch (Throwable e){
-        //Do Nothing
+        log.info("Observed the following changes: {}", e.getMessage());
       }
     }
     if(toStore){
