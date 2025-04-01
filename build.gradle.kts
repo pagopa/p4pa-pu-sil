@@ -1,3 +1,5 @@
+import java.util.*
+
 plugins {
   java
   id("org.springframework.boot") version "3.4.3"
@@ -152,7 +154,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   ))
 }
 
-var targetEnv = when (grgit.branch.current().name) {
+var targetEnv = when (Objects.requireNonNullElse(System.getProperty("targetBranch"), grgit.branch.current().name)) {
   "uat" -> "uat"
   "main" -> "main"
   else -> "develop"
