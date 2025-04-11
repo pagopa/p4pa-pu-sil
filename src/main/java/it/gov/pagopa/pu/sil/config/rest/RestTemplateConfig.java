@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.config;
+package it.gov.pagopa.pu.sil.config.rest;
 
 import it.gov.pagopa.pu.sil.performancelogger.RestInvokePerformanceLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
