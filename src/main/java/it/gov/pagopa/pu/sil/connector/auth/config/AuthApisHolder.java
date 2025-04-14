@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.connector.auth.config;
 import it.gov.pagopa.pu.auth.controller.ApiClient;
 import it.gov.pagopa.pu.auth.controller.BaseApi;
 import it.gov.pagopa.pu.auth.controller.generated.AuthnApi;
-import it.gov.pagopa.pu.sil.config.RestTemplateConfig;
+import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
