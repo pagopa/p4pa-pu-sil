@@ -22,14 +22,14 @@ paths:
         content:
           application/json:
             schema:
-              type: 'CreateNotificationRequest'
+              $ref: '#/components/schemas/CreateNotificationRequest'
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: 'CreateNotificationResponse'
+                $ref: '#/components/schemas/CreateNotificationResponse'
         '400':
           description: Invalid request
         '403':
@@ -61,7 +61,7 @@ paths:
           content:
             application/json:
               schema:
-                type: 'SendNotificationDTO'
+                $ref: '#/components/schemas/SendNotificationDTO'
         '400':
           description: Invalid request
         '403':
@@ -97,6 +97,151 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
+  /organization/{orgFiscalCode}/import:
+    post:
+      tags:
+        - MassiveImport
+      summary: request a massive import operation and upload the file
+      description: Service to request a massive import operation and upload the file.
+      operationId: massiveImportRequest
+      parameters:
+        - name: orgFiscalCode
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: fileTypeAndVersion
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImportFileTypeAndVersion'
+        - name: fileName
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          'multipart/form-data':
+            schema:
+              required:
+                - importFile
+              type: object
+              properties:
+                importFile:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /organization/{orgFiscalCode}/import/{importId}:
+    get:
+      tags:
+        - MassiveImport
+      summary: request processing status of massive import operation
+      description: |
+        Service to request the processing status of massive import operation and the url to download
+        output files (where applicable, based on processing status and import type).
+      operationId: massiveImportStatus
+      parameters:
+        - name: orgFiscalCode
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: importId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportStatusResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /organization/{orgFiscalCode}/export:
+    post:
+      tags:
+        - MassiveExport
+      summary: request a massive export operation
+      description: Service to request a massive export operation.
+      operationId: massiveExportRequest
+      parameters:
+        - name: orgFiscalCode
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportRequestDTO"
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /organization/{orgFiscalCode}/export/{exportId}:
+    get:
+      tags:
+        - MassiveExport
+      summary: request processing status of export operation
+      description: |
+        Service to request the processing status of export operation and the url to download
+        output files (where applicable, based on processing status and export type).
+      operationId: massiveExportStatus
+      parameters:
+        - name: orgFiscalCode
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: exportId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportStatusResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
 security:
   - BearerAuth: []
 components:
@@ -112,9 +257,158 @@ components:
           enum:
             - NOT_FOUND
             - BAD_REQUEST
+            - INVALID_FILE
+            - FILE_UPLOAD_ERROR
+            - CONFLICT
+            - UNAUTHORIZED
             - GENERIC_ERROR
         message:
           type: string
+    CreateNotificationRequest:
+      type: object
+      properties:
+        code:
+          type: string
+    CreateNotificationResponse:
+      type: object
+      properties:
+        code:
+          type: string
+    SendNotificationDTO:
+      type: object
+      properties:
+        code:
+          type: string
+    ImportFileTypeAndVersion:
+      type: string
+      enum:
+        - DEBT_POSITION_1_5
+        - PAYMENTS_1_0
+        - TREASURY_OPI_1_0
+        - TREASURY_POSTE_1_0
+    ImportFileResponseDTO:
+      type: object
+      required:
+        - importId
+      properties:
+        importId:
+          type: string
+    DownloadUrl:
+      type: object
+      required:
+        - type
+        - url
+      properties:
+        code:
+          type: string
+          enum:
+            - INPUT_FILE
+            - OUTPUT_FILE
+            - DISCARDED_FILE
+            - PAYMENT_NOTICE_FILE
+        url:
+          type: string
+    ImportStatusResponseDTO:
+      type: object
+      required:
+        - importId
+        - status
+      properties:
+        importId:
+          type: string
+        status:
+          type: string
+          enum:
+            - TO_PROCESS
+            - PROCESSING
+            - PROCESSED
+            - ABORTED
+        lastUpdateDateTime:
+          type: string
+          format: date-time
+        downloadUrls:
+          type: array
+          items:
+            $ref: '#/components/schemas/DownloadUrl'
+    ExportRequestDTO:
+      type: object
+      required:
+        - exportId
+        - exportTypeAndVersion
+        - exportFilters
+      properties:
+        exportId:
+          type: string
+        exportTypeAndVersion:
+          $ref: "#/components/schemas/ExportFileTypeAndVersion"
+        exportFilters:
+          type: object
+          additionalProperties:
+            type: object
+            required:
+              - key
+              - value
+            properties:
+              key:
+                type: string
+              value:
+                type: string
+        exportFlags:
+          type: object
+          required:
+            - key
+            - value
+          additionalProperties:
+            type: object
+            properties:
+              key:
+                type: string
+              value:
+                type: boolean
+    ExportFileTypeAndVersion:
+      type: string
+      enum:
+        - DEBT_POSITION_1_0
+        - DEBT_POSITION_1_1
+        - DEBT_POSITION_1_2
+        - DEBT_POSITION_1_3
+        - CLASSIFICATION_1_0
+        - CLASSIFICATION_1_1
+        - CLASSIFICATION_1_2
+        - CLASSIFICATION_1_3
+        - CLASSIFICATION_1_4
+    ExportFileResponseDTO:
+      type: object
+      required:
+        - exportId
+      properties:
+        exportId:
+          type: string
+    ExportStatusResponseDTO:
+      type: object
+      required:
+        - importId
+        - status
+      properties:
+        importId:
+          type: string
+        status:
+          type: string
+          enum:
+            - TO_PROCESS
+            - PROCESSING
+            - PROCESSED_OK
+            - PROCESSED_ERROR
+            - PROCESSED_NO_DATA
+            - PROCESSED_MAX_ROWS_EXCEEDED
+        lastUpdateDateTime:
+          type: string
+          format: date-time
+        downloadUrl:
+          $ref: "#/components/schemas/DownloadUrl"
+    OrgFiscalCode:
+      type: string
+      pattern: '^\d{11}$'
   securitySchemes:
     BearerAuth:
       type: http
