@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.connector.send_notification.config;
 import it.gov.pagopa.pu.sendnotification.controller.ApiClient;
 import it.gov.pagopa.pu.sendnotification.controller.BaseApi;
 import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
-import it.gov.pagopa.pu.sil.config.RestTemplateConfig;
+import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
