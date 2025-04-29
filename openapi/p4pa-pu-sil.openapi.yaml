@@ -106,6 +106,7 @@ paths:
       operationId: massiveImportRequest
       parameters:
         - name: orgFiscalCode
+          description: the fiscal code of the organization
           in: path
           required: true
           schema:
@@ -155,6 +156,7 @@ paths:
       operationId: massiveImportStatus
       parameters:
         - name: orgFiscalCode
+          description: the fiscal code of the organization
           in: path
           required: true
           schema:
@@ -186,6 +188,7 @@ paths:
       operationId: massiveExportRequest
       parameters:
         - name: orgFiscalCode
+          description: the fiscal code of the organization
           in: path
           required: true
           schema:
@@ -220,6 +223,7 @@ paths:
       operationId: massiveExportStatus
       parameters:
         - name: orgFiscalCode
+          description: the fiscal code of the organization
           in: path
           required: true
           schema:
@@ -242,10 +246,132 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
+  /organization/{orgFiscalCode}/payment:
+    post:
+      tags:
+        - Payment
+      summary: request an immediate payment operation
+      description: |
+        Request an immediate payment operation, passing in input payment data,
+        and receiving in output the url to trigger the payment operation.
+      operationId: requestImmediatePayment
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImmediatePaymentRequest"
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /organization/{orgFiscalCode}/payment/notice/{nav}:
+    get:
+      tags:
+        - Payment
+      summary: request the payment of an already existing payment notice
+      description: |
+        Request the payment of an alredy exising payment notice, passing in input the notice number,
+        and receiving in output the url to trigger the payment operation if payable; otherwise
+        the reason of error.
+      operationId: requestNoticePayment
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: nav
+          description: the notice number of the notice to pay
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/NoticeNumber'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /organization/{orgFiscalCode}/payment/{idType}/{id}:
+    get:
+      tags:
+        - Payment
+      summary: request processing status of payment operation
+      description: |
+        Service to request the processing status of payment operation and the url to download
+        output files (where applicable, based on processing status and export type).
+      operationId: paymentStatus
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: idType
+          description: the type of identifier used to identify the payment operation
+          in: path
+          required: true
+          schema:
+            type: string
+            enum:
+              - PAYMENT_ID
+              - NOTICE_NUMBER
+              - IUD
+        - name: id
+          description: the identifier used to identify the payment
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
 security:
   - BearerAuth: []
 components:
   schemas:
+    OrgFiscalCode:
+      type: string
+      pattern: '^\d{11}$'
+    NoticeNumber:
+      type: string
+      pattern: '^\d{18}$'
     PuSilErrorDTO:
       type: object
       required:
@@ -387,10 +513,10 @@ components:
     ExportStatusResponseDTO:
       type: object
       required:
-        - importId
+        - exportId
         - status
       properties:
-        importId:
+        exportId:
           type: string
         status:
           type: string
@@ -406,9 +532,270 @@ components:
           format: date-time
         downloadUrl:
           $ref: "#/components/schemas/DownloadUrl"
-    OrgFiscalCode:
-      type: string
-      pattern: '^\d{11}$'
+    PaymentDTO:
+      required:
+        - amountCents
+        - debtor
+        - remittanceInformation
+        - transfers
+      type: object
+      properties:
+        iud:
+          type: string
+        notificationFeeCents:
+          type: integer
+          format: int64
+        amountCents:
+          type: integer
+          format: int64
+        remittanceInformation:
+          type: string
+        balance:
+          type: string
+        debtor:
+          $ref: "#/components/schemas/PersonDTO"
+        transfers:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/TransferDTO"
+    TransferDTO:
+      required:
+        - amountCents
+        - category
+        - orgFiscalCode
+        - orgName
+        - remittanceInformation
+        - transferIndex
+      type: object
+      properties:
+        orgFiscalCode:
+          type: string
+        orgName:
+          type: string
+        amountCents:
+          type: integer
+          format: int64
+        remittanceInformation:
+          type: string
+        stampType:
+          type: string
+        stampHashDocument:
+          type: string
+        stampProvincialResidence:
+          type: string
+        iban:
+          type: string
+        postalIban:
+          type: string
+        category:
+          type: string
+        transferIndex:
+          type: integer
+          format: int32
+    PersonDTO:
+      required:
+        - fullName
+        - entityType
+        - fiscalCode
+      type: object
+      properties:
+        entityType:
+          type: string
+          enum:
+            - F
+            - G
+        fiscalCode:
+          type: string
+        fullName:
+          type: string
+        address:
+          type: string
+        civic:
+          type: string
+        postalCode:
+          type: string
+        location:
+          type: string
+        province:
+          type: string
+        nation:
+          type: string
+        email:
+          type: string
+    ImmediatePaymentRequest:
+      required:
+        - payments
+      type: object
+      properties:
+        payments:
+          type: array
+          description: the payments data
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/PaymentDTO"
+        callbackUrl:
+          type: string
+          description: |
+            the url to redirect the navigation flow to, after completing the payment operation.
+            If not set, a generic PU page will be used. The parameters paymentId and outcome (OK/KO)
+            will be added to query string of url.
+    PaymentResponse:
+      type: object
+      properties:
+        triggerPaymentUrl:
+          type: string
+          description: the url to trigger the payment operation
+        paymentId:
+          type: string
+          description: id to query payment operation status
+        outcome:
+          type: string
+          description: the outcome of payment request
+          enum:
+            - OK
+            - ALREADY_PAID
+            - NOT_PAYABLE
+            - NOT_FOUND
+    PaymentStatusResponseDTO:
+      type: object
+      required:
+        - paymentId
+        - status
+      properties:
+        paymentId:
+          type: string
+        status:
+          type: string
+          enum:
+            - NOT_PAID
+            - PAID
+        receipt:
+          $ref: "#/components/schemas/ReceiptDTO"
+        lastUpdateDateTime:
+          type: string
+          format: date-time
+    ReceiptDTO:
+      type: object
+      required:
+        - receiptOrigin
+        - paymentReceiptId
+        - noticeNumber
+        - orgFiscalCode
+        - outcome
+        - creditorReferenceId
+        - paymentAmountCents
+        - description
+        - companyName
+        - idPsp
+        - pspCompanyName
+        - idChannel
+        - channelDescription
+        - debtor
+      properties:
+        paymentReceiptId:
+          type: string
+        noticeNumber:
+          type: string
+        paymentNote:
+          type: string
+        orgFiscalCode:
+          type: string
+        outcome:
+          type: string
+        creditorReferenceId:
+          type: string
+        paymentAmountCents:
+          type: integer
+          format: int64
+        description:
+          type: string
+        companyName:
+          type: string
+        officeName:
+          type: string
+        idPsp:
+          type: string
+        pspFiscalCode:
+          type: string
+        pspPartitaIva:
+          type: string
+        pspCompanyName:
+          type: string
+        idChannel:
+          type: string
+        channelDescription:
+          type: string
+        paymentMethod:
+          type: string
+        feeCents:
+          type: integer
+          format: int64
+        paymentDateTime:
+          type: string
+          format: date-time
+        applicationDate:
+          type: string
+          format: date-time
+        transferDate:
+          type: string
+          format: date-time
+        standin:
+          type: boolean
+        debtor:
+          $ref: "#/components/schemas/PersonDTO"
+        payer:
+          $ref: "#/components/schemas/PersonDTO"
+    ReceiptTransferDTO:
+      required:
+        - idTransfer
+        - transferAmountCents
+        - fiscalCodePA
+        - remittanceInformation
+        - transferCategory
+      type: object
+      properties:
+        idTransfer:
+          type: integer
+          format: int32
+        transferAmountCents:
+          type: integer
+          format: int64
+        fiscalCodePA:
+          type: string
+        companyName:
+          type: string
+        mbdAttachment:
+          type: string
+          format: byte
+        iban:
+          type: string
+        remittanceInformation:
+          type: string
+        transferCategory:
+          type: string
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+    ReceiptWithAdditionalNodeDataDTO:
+      allOf:
+        - $ref: "#/components/schemas/ReceiptDTO"
+        - type: object
+          required:
+            - transfers
+          properties:
+            transfers:
+              type: array
+              minItems: 1
+              items:
+                $ref: "#/components/schemas/ReceiptTransferDTO"
+            metadata:
+              type: object
+              additionalProperties:
+                type: string
   securitySchemes:
     BearerAuth:
       type: http
