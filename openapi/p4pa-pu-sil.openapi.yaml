@@ -397,7 +397,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /organization/{orgFiscalCode}/assessment/{type}:
+  /organization/{orgFiscalCode}/assessment/{searchType}:
     get:
       tags:
         - Assessment
@@ -412,7 +412,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/OrgFiscalCode'
-        - name: type
+        - name: searchType
           description: the type of identifier used to identify the assessment
           in: path
           required: true
@@ -420,12 +420,12 @@ paths:
             type: string
             enum:
               - REPORTING
-              - INVOICE
+              - BILL
         - name: searchParams
           in: query
           description: |
             If type = REPORTING, then only iuf must be set;
-            if type = INVOICE, then only invoiceYear and invoiceNumber must be set.
+            if type = BILL, then only billYear and billNumber must be set.
           required: true
           style: form
           explode: true
@@ -434,19 +434,13 @@ paths:
             properties:
               iuf:
                 type: string
-              invoiceYear:
+              billYear:
                 type: number
-              invoiceNumber:
+              billNumber:
                 type: string
             oneOf:
               - required: [iuf]
-              - required: [invoiceYear , invoiceNumber]
-        - name: id
-          description: the identifier used to identify the payment
-          in: query
-          required: true
-          schema:
-            type: string
+              - required: [billYear , billNumber]
       responses:
         '200':
           description: Ok
@@ -873,10 +867,10 @@ components:
     BalanceDTO:
       type: object
       required:
-        - branch
+        - office
         - debtPositionTypeOrgs
       properties:
-        branch:
+        office:
           type: string
         debtPositionTypeOrgs:
           type: array
@@ -886,21 +880,21 @@ components:
       type: object
       required:
         - debtPositionTypeOrgCode
-        - debtPositionTypeOrgs
+        - sections
       properties:
         debtPositionTypeOrgCode:
           type: string
-        chapters:
+        sections:
           type: array
           items:
-            $ref: "#/components/schemas/ChapterDTO"
-    ChapterDTO:
+            $ref: "#/components/schemas/SectionDTO"
+    SectionDTO:
       type: object
       required:
-        - chapterCode
+        - sectionCode
         - assessments
       properties:
-        chapterCode:
+        sectionCode:
           type: string
         assessments:
           type: array
