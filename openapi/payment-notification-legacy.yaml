@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: Notifiche esito pagamento
-  description: |-
+  description: |
     API che devono essere esposte da un ente creditore che vuole
     utilizzare la funzionalità di notifica push esito pagamento
     messa a disposizione da PU.
@@ -46,10 +46,13 @@ components:
       properties:
         rt:
           type: string
-          description: stringa codificata Base64 della RT cosi come ricevuta da nodo pagamenti PagoPA senza elaborazioni da parte di PU
+          description: |
+            Stringa codificata Base64 della RT cosi come ricevuta da nodo pagamenti PagoPA senza elaborazioni da parte di PU
         esito:
           type: string
-          description: stringa codificata Base64 dell'oggetto "CtPagati" (descritto nello schema "PagInf_Dovuti_Pagati_6_2_0.xsd") modellato come "<fragment-xml>", contenente informazioni circa il pagamento effettuato
+          description: |
+            Stringa codificata Base64 dell'oggetto "CtPagati" (descritto nello schema "PagInf_Dovuti_Pagati_6_2_0.xsd")
+            modellato come "<fragment-xml>", contenente informazioni circa il pagamento effettuato
       required:
         - rt
         - esito
