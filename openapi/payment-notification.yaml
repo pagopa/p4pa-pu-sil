@@ -1,0 +1,102 @@
+openapi: 3.0.1
+info:
+  title: Notifiche esito pagamento
+  description: |
+    API che devono essere esposte da un ente creditore che vuole
+    utilizzare la funzionalità di notifica push esito pagamento
+    messa a disposizione da PU.
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: https://swagger.io
+servers:
+  - url: https://www.enteintermediato.it/api
+paths:
+  /payment-notification:
+    post:
+      summary: Invia dati di avvenuto pagamento di un dovuto gestito da PU.
+      description: Invia dati di avvenuto pagamento di un dovuto gestito da PU.
+      operationId: payment-notification
+      requestBody:
+        description: dati pagamento
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentNotificationRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful operation (empty response) or managed error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Generic error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security: []
+components:
+  schemas:
+    PaymentNotificationRequest:
+      type: object
+      properties:
+        encodedReceipt:
+          type: string
+          description: |
+            Stringa codificata Base64 della receipt cosi come ricevuta da nodo pagamenti PagoPA senza elaborazioni da parte di PU
+        paymentData:
+          $ref: "#/components/schemas/PaymentDataDTO"
+          description: |
+            Stringa codificata Base64 dell'oggetto "CtPagati" (descritto nello schema "PagInf_Dovuti_Pagati_6_2_0.xsd")
+            modellato come "<fragment-xml>", contenente informazioni circa il pagamento effettuato
+      required:
+        - encodedReceipt
+        - paymentData
+    PaymentDataDTO:
+      type: object
+      properties:
+        orgFiscalCode:
+          type: string
+          description: codice fiscale dell'ente creditore
+        nav:
+          type: string
+          description: numero avviso del pagamento
+        debtPositionTypeOrgCode:
+          type: string
+          description: codice del tipo di posizione debitoria
+        iud:
+          type: string
+          description: identificativo univoco dell'avviso determinato da ente creditore
+        paymentDate:
+          type: string
+          format: date-time
+          description: data del pagamento
+        amountCents:
+          type: integer
+          format: int64
+          description: importo del pagamento effettuato in eurocent
+          minimum: 0
+        notificationFeeCents:
+          type: integer
+          format: int64
+          description: spese di notifica in eurocent assegnate da PN alla notifica collegata al numero avviso
+          minimum: 0
+      required:
+        - orgFiscalCode
+        - nav
+        - amountCents
+        - debtPositionTypeOrgCode
+        - iud
+        - paymentDate
+    Error:
+      type: object
+      properties:
+        faultCode:
+          type: string
+        faultDescription:
+          type: string
+      required:
+        - faultCode

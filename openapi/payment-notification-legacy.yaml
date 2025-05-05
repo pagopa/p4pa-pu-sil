@@ -1,16 +1,16 @@
 openapi: 3.0.1
 info:
-  title: Notifiche esito pagamento
+  title: Notifiche esito pagamento (legacy)
   description: |
-    API che devono essere esposte da un ente creditore che vuole
-    utilizzare la funzionalità di notifica push esito pagamento
-    messa a disposizione da PU.
+    API legacy (retro-compatibili MyPay) che devono essere esposte
+    da un ente creditore che vuole utilizzare la funzionalità di
+    notifica push esito pagamento messa a disposizione da PU.
   version: 1.0.0
 externalDocs:
   description: Find out more about Swagger
   url: https://swagger.io
 servers:
-  - url: https://www.enteintermediato.it/api
+  - url: https://www.enteintermediato.it/api/legacy
 paths:
   /payment-notification:
     post:
@@ -67,7 +67,6 @@ components:
         - faultCode
   securitySchemes:
     token_auth:
-      type: apiKey
-      name: Authorization
-      in: header
-      bearerFormat: "<jwt token>"
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

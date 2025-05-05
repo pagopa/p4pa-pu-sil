@@ -1,15 +1,16 @@
 openapi: 3.0.1
 info:
-  title: Attualizzazione importi PU
+  title: Attualizzazione importi PU legacy
   description: |-
-    API che devono essere esposte da un ente creditore che vuole
-    utilizzare la funzionalità di attualizzazione importi di PU.
+    API legacy (retro-compatibili MyPay) che devono essere esposte
+    da un ente creditore che vuole utilizzare la funzionalità di
+    attualizzazione importi di PU.
   version: 1.0.0
 externalDocs:
   description: Find out more about Swagger
   url: https://swagger.io
 servers:
-  - url: https://www.enteintermediato.it/api
+  - url: https://www.enteintermediato.it/api/legacy
 paths:
   /login:
     post:
@@ -106,6 +107,10 @@ components:
           description: descrizione dell'errore in caso la chiamata sia con esito KO
     Pagamento:
       type: object
+      required:
+        - cfEnteCreditore
+        - importoPosizione
+        - numeroAvviso
       properties:
         cfEnteCreditore:
           type: string
@@ -127,6 +132,9 @@ components:
           pattern: \d{18}
     PagamentoAggiornato:
       type: object
+      required:
+        - numeroAvviso
+        - importoPosizione
       properties:
         numeroAvviso:
           type: string
@@ -166,7 +174,6 @@ components:
         - message
   securitySchemes:
     token_auth:
-      type: apiKey
-      name: Authorization
-      in: header
-      bearerFormat: "Bearer <token>"
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
