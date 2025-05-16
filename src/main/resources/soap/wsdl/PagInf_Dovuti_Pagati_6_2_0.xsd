@@ -109,7 +109,7 @@
 			<xsd:pattern value="[0-9]{1,1}" />
 			<xsd:enumeration value="0" /><!-- Pagamento eseguito -->
 			<xsd:enumeration value="1" /><!-- Pagamento non eseguito -->
-			<xsd:enumeration value="2" /><!-- Pagamento parzialmente 
+			<xsd:enumeration value="2" /><!-- Pagamento parzialmente
 				eseguito -->
 			<xsd:enumeration value="3" /><!-- Decorrenza termini -->
 			<xsd:enumeration value="4" /><!-- Decorrenza termini parziale -->
@@ -216,7 +216,7 @@
 
 	<xsd:simpleType name="stTipoAllegatoRicevuta">
 		<xsd:restriction base="xsd:string">
-			<xsd:enumeration value="ES" /><!-- Esito originario pagamento 
+			<xsd:enumeration value="ES" /><!-- Esito originario pagamento
 				(come ricevuto da PSP) -->
 			<xsd:enumeration value="BD" /><!-- Marca da bollo digitale -->
 			<xsd:length value="2" />
@@ -1613,12 +1613,6 @@
 					</xsd:documentation>
 				</xsd:annotation>
 			</xsd:element>
-			<!-- 			<xsd:element name="flagGeneraIuv" type="xsd:boolean" minOccurs="0" nillable="true">
-                            <xsd:annotation>
-                                <xsd:documentation>Indica se deve oppure no essere generato lo iuv
-                                </xsd:documentation>
-                            </xsd:annotation>
-                        </xsd:element> -->
 			<xsd:element name="azione" type="pay_i:stText1"
 						 minOccurs="1">
 				<xsd:annotation>
