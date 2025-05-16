@@ -64,6 +64,10 @@ logging:
     PERFORMANCE_LOG.API_REQUEST: "\${LOG_LEVEL_PERFORMANCE_LOG_API_REQUEST:\${logging.level.PERFORMANCE_LOG}}"
     PERFORMANCE_LOG.REST_INVOKE: "\${LOG_LEVEL_PERFORMANCE_LOG_REST_INVOKE:\${logging.level.PERFORMANCE_LOG}}"
 
+soap:
+  sil:
+    wsdl-base-url: "\${SIL_WSDL_BASE_URL:http://localhost:8080}"
+
 rest:
   defaults:
     connection-pool:
