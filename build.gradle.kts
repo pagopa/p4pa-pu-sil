@@ -238,8 +238,8 @@ jaxb {
     register("puForOrganizationPay") {
       args = listOf("-wsdl")
       outputDir = file("$projectDir/build/generated/jaxb/java")
-      schema = file("src/main/resources/soap/wsdl/puForOrganization-pay.wsdl")
-      bindings = layout.files("src/main/resources/soap/wsdl/puForOrganization-pay.xjb")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/puForOrganization-pay.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/puForOrganization-pay.xjb")
     }
   }
 }
