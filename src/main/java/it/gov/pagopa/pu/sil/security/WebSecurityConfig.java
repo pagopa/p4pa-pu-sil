@@ -42,13 +42,6 @@ public class WebSecurityConfig {
         ).permitAll()
 
         // WsSoap (only to retrieve WSDL and XSD)
-//        .requestMatchers(
-//          HttpMethod.GET,
-//          SOAP_WS_BASE_PATH+"/*/*.wsdl",
-//          SOAP_WS_BASE_PATH+"/*/*.xsd"
-//        ).permitAll()
-
-        // WsSoap (only to retrieve WSDL and XSD)
         // use regex matcher because request matcher causes this error:
         // No more pattern data allowed after {*...} or ** pattern element
         .requestMatchers(
