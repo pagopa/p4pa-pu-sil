@@ -10,7 +10,7 @@ plugins {
   id("org.openapi.generator") version "7.13.0"
   id("org.ajoberstar.grgit") version "5.3.0"
   id("com.gorylenko.gradle-git-properties") version "2.5.0"
-  //code generation for soap webservices classes (via jaxb)
+  //code generation for soap webservices classes (via  jaxb)
   id("com.intershop.gradle.jaxb") version "7.0.1"
 }
 
