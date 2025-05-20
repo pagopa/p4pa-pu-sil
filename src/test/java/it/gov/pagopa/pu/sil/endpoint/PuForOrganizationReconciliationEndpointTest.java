@@ -2,8 +2,7 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlusso;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoRisposta;
+import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -18,29 +17,61 @@ class PuForOrganizationReconciliationEndpointTest {
   @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
 
-  private final PodamFactory podamFactory;
-
-  PuForOrganizationReconciliationEndpointTest() {
-    podamFactory = TestUtils.getPodamFactory();
-  }
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   //region pivotSILAutorizzaImportFlusso
 
   @Test
   void givenAnyWhenPivotSILAutorizzaImportFlussoThenFault() throws Exception {
-    // given
-    PivotSILAutorizzaImportFlusso request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlusso.class);
-    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-
-    // when
-    PivotSILAutorizzaImportFlussoRisposta response = puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlusso(request, header);
-
-    // verify
-    Assertions.assertNotNull(response);
-    Assertions.assertNotNull(response.getFault());
-    Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+    testFaultResponse(PivotSILAutorizzaImportFlusso.class,
+            SilFaults.PIVOT_SYSTEM_ERROR.code(),
+            puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlusso);
   }
 
   //endregion
+
+  //region pivotSILChiediPagatiRiconciliati
+  @Test
+  void givenAnyWhenPivotSILChiediPagatiRiconciliatiThenFault() throws Exception {
+    testFaultResponse(PivotSILChiediPagatiRiconciliati.class,
+            SilFaults.PIVOT_SYSTEM_ERROR.code(),
+            puForOrganizationReconciliationEndpoint::pivotSILChiediPagatiRiconciliati);
+  }
+  //endregion
+
+  //region pivotSILAutorizzaImportFlussoRendicontazione
+  @Test
+  void givenAnyWhenPivotSILAutorizzaImportFlussoRendicontazioneThenFault() throws Exception {
+    testFaultResponse(PivotSILAutorizzaImportFlussoRendicontazione.class,
+            SilFaults.PIVOT_SYSTEM_ERROR.code(),
+            puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRendicontazione);
+  }
+  //endregion
+
+  //region pivotSILAutorizzaImportFlussoRT
+  @Test
+  void givenAnyWhenPivotSILAutorizzaImportFlussoRTThenFault() throws Exception {
+    testFaultResponse(PivotSILAutorizzaImportFlussoRT.class,
+            SilFaults.PIVOT_SYSTEM_ERROR.code(),
+            puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRT);
+  }
+  //endregion
+
+  private interface TestFunction<T, R> {
+    R apply(T request, SoapHeaderElement header) throws Exception;
+  }
+
+  private <T, R extends Risposta> void testFaultResponse(Class<T> requestClass,
+                                                         String faultCode,
+                                                         TestFunction<T, R> testFunction) throws Exception {
+    T request = podamFactory.manufacturePojo(requestClass);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    R response = testFunction.apply(request, header);
+
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(faultCode, response.getFault().getFaultCode());
+  }
 }
