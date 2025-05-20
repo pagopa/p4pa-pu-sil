@@ -13,7 +13,7 @@
     <jaxb:bindings schemaLocation="PagInf_Dovuti_Pagati_6_2_0.xsd" node="/xs:schema[@targetNamespace='http://www.regione.veneto.it/schemas/2012/Pagamenti/Ente/']">
         <jaxb:globalBindings>
             <xjc:simple />
-            <xjc:javaType name="java.lang.String" xmlType="xs:string" adapter="it.regioneveneto.mygov.payment.mypay4.ws.helper.TrimStringXmlAdapter"/>
+            <xjc:javaType name="java.lang.String" xmlType="xs:string" adapter="it.gov.pagopa.pu.sil.util.soap.TrimStringXmlAdapter"/>
         </jaxb:globalBindings>
     </jaxb:bindings>
 </jaxb:bindings>

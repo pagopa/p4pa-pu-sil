@@ -137,7 +137,8 @@ tasks.register("dependenciesBuild") {
     "openApiGeneratePUSIL",
     "openApiGenerateP4PAAUTH",
     "openApiGenerateP4PASENDNOTIFICATION",
-    "jaxbJavaGenPuForOrganizationPay",
+    "jaxbJavaGenPuForOrganizationPayments",
+    "jaxbJavaGenPuForOrganizationReconciliation"
   )
 }
 
@@ -235,11 +236,19 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 
 jaxb {
   javaGen {
-    register("puForOrganizationPay") {
+    register("puForOrganizationPayments") {
       args = listOf("-wsdl")
       outputDir = file("$projectDir/build/generated/jaxb/java")
-      schema = file("$rootDir/src/main/resources/soap/wsdl/puForOrganization-pay.wsdl")
-      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/puForOrganization-pay.xjb")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/payments/puForOrganization-payments.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/payments/puForOrganization-payments.xjb")
+    }
+  }
+  javaGen {
+    register("puForOrganizationReconciliation") {
+      args = listOf("-wsdl")
+      outputDir = file("$projectDir/build/generated/jaxb/java")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.xjb")
     }
   }
 }

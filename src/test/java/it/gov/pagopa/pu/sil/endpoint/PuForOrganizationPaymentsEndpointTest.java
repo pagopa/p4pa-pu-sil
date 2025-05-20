@@ -14,14 +14,14 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
 
 @ExtendWith(MockitoExtension.class)
-class PuForOrganizationPayEndpointTest {
+class PuForOrganizationPaymentsEndpointTest {
 
   @InjectMocks
-  private PuForOrganizationPayEndpoint puForOrganizationPayEndpoint;
+  private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
 
   private final PodamFactory podamFactory;
 
-  PuForOrganizationPayEndpointTest() {
+  PuForOrganizationPaymentsEndpointTest() {
     podamFactory = TestUtils.getPodamFactory();
   }
 
@@ -35,7 +35,7 @@ class PuForOrganizationPayEndpointTest {
     SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     // when
-    PaaSILAutorizzaImportFlussoRisposta response = puForOrganizationPayEndpoint.paaSILAutorizzaImportFlusso(request, header);
+    PaaSILAutorizzaImportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILAutorizzaImportFlusso(request, header);
 
     // verify
     Assertions.assertNotNull(response);
