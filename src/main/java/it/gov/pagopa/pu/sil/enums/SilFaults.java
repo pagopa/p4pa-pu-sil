@@ -2,7 +2,9 @@ package it.gov.pagopa.pu.sil.enums;
 
 public enum SilFaults {
 
-  PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR");
+  PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR"),
+
+  PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR");
 
   private final String description;
 

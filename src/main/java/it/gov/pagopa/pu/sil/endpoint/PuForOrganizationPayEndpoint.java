@@ -28,7 +28,7 @@ public class PuForOrganizationPayEndpoint {
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header){
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
     log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", intestazionePPT.getCodIpaEnte());
-    //TODO: implement the logic to handle the SOAP Action P4ADEV-2893
+    //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
     return handleFault(SilFaults.PAA_SYSTEM_ERROR, new PaaSILAutorizzaImportFlussoRisposta());
   }
 
