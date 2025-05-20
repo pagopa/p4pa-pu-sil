@@ -10,7 +10,7 @@
         <jaxws:enableAsyncMapping>false</jaxws:enableAsyncMapping>
     </jaxws:bindings>
 
-    <jaxb:bindings schemaLocation="puForOrganization-pivot.wsdl" node="/wsdl:definitions/wsdl:types/xs:schema[@targetNamespace='http://www.regione.veneto.it/pagamenti/pivot/ente/']">
+    <jaxb:bindings schemaLocation="puForOrganization-reconciliation.wsdl" node="/wsdl:definitions/wsdl:types/xs:schema[@targetNamespace='http://www.regione.veneto.it/pagamenti/pivot/ente/']">
         <jaxb:globalBindings>
             <xjc:simple />
             <xjc:javaType name="java.lang.String" xmlType="xs:string" adapter="it.gov.pagopa.pu.sil.util.soap.TrimStringXmlAdapter"/>

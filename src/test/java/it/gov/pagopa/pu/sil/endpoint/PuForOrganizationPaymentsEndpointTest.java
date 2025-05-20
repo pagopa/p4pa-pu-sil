@@ -4,8 +4,6 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlusso;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoRisposta;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,16 +13,14 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
 
 @ExtendWith(MockitoExtension.class)
-class PuForOrganizationPayEndpointTest {
+class PuForOrganizationPaymentsEndpointTest {
 
   @InjectMocks
-  private PuForOrganizationPayEndpoint puForOrganizationPayEndpoint;
-  @InjectMocks
-  private PuForOrganizationPivotEndpoint puForOrganizationPivotEndpoint;
+  private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
 
   private final PodamFactory podamFactory;
 
-  PuForOrganizationPayEndpointTest() {
+  PuForOrganizationPaymentsEndpointTest() {
     podamFactory = TestUtils.getPodamFactory();
   }
 
@@ -38,7 +34,7 @@ class PuForOrganizationPayEndpointTest {
     SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     // when
-    PaaSILAutorizzaImportFlussoRisposta response = puForOrganizationPayEndpoint.paaSILAutorizzaImportFlusso(request, header);
+    PaaSILAutorizzaImportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILAutorizzaImportFlusso(request, header);
 
     // verify
     Assertions.assertNotNull(response);

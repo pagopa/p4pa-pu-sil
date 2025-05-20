@@ -18,7 +18,7 @@ import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 @Endpoint
 @Slf4j
-public class PuForOrganizationPivotEndpoint {
+public class PuForOrganizationReconciliationEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/pivot/ente/";
   public static final String NAME = "PagamentiTelematiciPagatiRiconciliati";
 
