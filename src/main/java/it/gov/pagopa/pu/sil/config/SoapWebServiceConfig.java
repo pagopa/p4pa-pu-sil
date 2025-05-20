@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.config;
 
-import it.gov.pagopa.pu.sil.endpoint.PuForOrganizationPayEndpoint;
-import it.gov.pagopa.pu.sil.endpoint.PuForOrganizationPivotEndpoint;
+import it.gov.pagopa.pu.sil.endpoint.PuForOrganizationPaymentsEndpoint;
+import it.gov.pagopa.pu.sil.endpoint.PuForOrganizationReconciliationEndpoint;
 import it.gov.pagopa.pu.sil.security.WebSecurityConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -33,13 +33,13 @@ import java.util.Set;
 @Configuration(proxyBeanMethods = false)
 public class SoapWebServiceConfig extends WsConfigurerAdapter {
 
-  public static final String WS_PATH_PAY = WebSecurityConfig.SOAP_WS_BASE_PATH+"/pay/";
-  public static final String WS_PATH_PIVOT = WebSecurityConfig.SOAP_WS_BASE_PATH+"/pivot/";
+  public static final String WS_PATH_PAYMENTS = WebSecurityConfig.SOAP_WS_BASE_PATH+"/payments/";
+  public static final String WS_PATH_RECONCILIATION = WebSecurityConfig.SOAP_WS_BASE_PATH+"/reconciliation/";
   private static final String SOAP_RESOURCES_FOLDER = "soap/";
 
   private static final String WSDL_PATH = "wsdl/";
-  private static final String WSDL_PAY = WSDL_PATH + "pay/";
-  private static final String WSDL_PIVOT = WSDL_PATH + "pivot/";
+  private static final String WSDL_PAYMENTS = WSDL_PATH + "payments/";
+  private static final String WSDL_RECONCILIATION = WSDL_PATH + "reconciliation/";
 
   public static final String XSD_DOVUTI_PAGATI = "PagInf_Dovuti_Pagati_6_2_0";
   public static final String XSD_PAG_INF_RP_ESITO_6_0_2 = "PagInf_RP_Esito_6_0_2";
@@ -48,9 +48,9 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
   protected static final Set<String> WS_PATH_NAME_SET = new HashSet<>();
 
   public static final Map<String, String> XSD_NAME_PATH_MAP = Map.of(
-    XSD_DOVUTI_PAGATI, WSDL_PAY,
-    XSD_PAG_INF_RP_ESITO_6_0_2, WSDL_PIVOT,
-    XSD_FLUSSO_RIVERSAMENTO_1_0_4, WSDL_PIVOT
+    XSD_DOVUTI_PAGATI, WSDL_PAYMENTS,
+    XSD_PAG_INF_RP_ESITO_6_0_2, WSDL_RECONCILIATION,
+    XSD_FLUSSO_RIVERSAMENTO_1_0_4, WSDL_RECONCILIATION
   );
 
   private final String silWsdlBaseUrl;
@@ -136,16 +136,16 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
     return null;
   }
 
-  @Bean(name = "bean" + PuForOrganizationPayEndpoint.NAME)
-  public Wsdl11Definition puForOrganizationPayEndpoint(XsdSchemaCollection xsdSchemaCollection) {
-    registerWsdlDefinition(WS_PATH_PAY + WSDL_PATH + PuForOrganizationPayEndpoint.NAME);
-    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"wsdl/pay/puForOrganization-pay.wsdl"));
+  @Bean(name = "bean" + PuForOrganizationPaymentsEndpoint.NAME)
+  public Wsdl11Definition puForOrganizationPaymentsEndpoint(XsdSchemaCollection xsdSchemaCollection) {
+    registerWsdlDefinition(WS_PATH_PAYMENTS + WSDL_PATH + PuForOrganizationPaymentsEndpoint.NAME);
+    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"wsdl/payments/puForOrganization-payments.wsdl"));
   }
 
-  @Bean(name = "bean" + PuForOrganizationPivotEndpoint.NAME)
-  public Wsdl11Definition puForOrganizationPivotEndpoint(XsdSchemaCollection xsdSchemaCollection) {
-    registerWsdlDefinition(WS_PATH_PIVOT + WSDL_PATH + PuForOrganizationPivotEndpoint.NAME);
-    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"wsdl/pivot/puForOrganization-pivot.wsdl"));
+  @Bean(name = "bean" + PuForOrganizationReconciliationEndpoint.NAME)
+  public Wsdl11Definition puForOrganizationReconciliationEndpoint(XsdSchemaCollection xsdSchemaCollection) {
+    registerWsdlDefinition(WS_PATH_RECONCILIATION + WSDL_PATH + PuForOrganizationReconciliationEndpoint.NAME);
+    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"wsdl/reconciliation/puForOrganization-reconciliation.wsdl"));
   }
 
   @Bean(name = "beanPagInfDovutiPagati620")
