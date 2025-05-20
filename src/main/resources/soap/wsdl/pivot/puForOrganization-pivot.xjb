@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jaxb:bindings version="2.1"
+                xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+                xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+                xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <jaxws:bindings xmlns:jaxws="http://java.sun.com/xml/ns/jaxws">
+        <jaxws:enableWrapperStyle>true</jaxws:enableWrapperStyle>
+        <jaxws:enableAsyncMapping>false</jaxws:enableAsyncMapping>
+    </jaxws:bindings>
+
+    <jaxb:bindings schemaLocation="puForOrganization-pivot.wsdl" node="/wsdl:definitions/wsdl:types/xs:schema[@targetNamespace='http://www.regione.veneto.it/pagamenti/pivot/ente/']">
+        <jaxb:globalBindings>
+            <xjc:simple />
+            <xjc:javaType name="java.lang.String" xmlType="xs:string" adapter="it.gov.pagopa.pu.sil.util.soap.TrimStringXmlAdapter"/>
+        </jaxb:globalBindings>
+    </jaxb:bindings>
+
+</jaxb:bindings>
