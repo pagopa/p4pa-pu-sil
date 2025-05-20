@@ -2,8 +2,7 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlusso;
-import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlussoRisposta;
+import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlusso;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoRisposta;
@@ -65,6 +64,75 @@ class PuForOrganizationPayEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertNotNull(response.getFault());
     Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
+
+  //endregion
+
+  //region paaSILChiediAvvisiPendenti
+  @Test
+  void givenAnyWhenPaaSILChiediAvvisiPendentiThenFaultThenFault() throws Exception {
+    // given
+    PaaSILChiediAvvisiPendenti request = podamFactory.manufacturePojo(PaaSILChiediAvvisiPendenti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    // when
+    PaaSILChiediAvvisiPendentiRisposta response = puForOrganizationPayEndpoint.paaSILChiediAvvisiPendenti(request, header);
+
+    // verify
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
+
+  //endregion
+
+  //region paaSILChiediPosizioniAperte
+  @Test
+  void givenAnyWhenPaaSILChiediPosizioniAperteThenFault() throws Exception {
+    // given
+    PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    // when
+    PaaSILChiediPosizioniAperteRisposta response = puForOrganizationPayEndpoint.paaSILChiediPosizioniAperte(request, header);
+    // verify
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
+
+  //endregion
+
+  //region paaSILChiediStoricoPagamenti
+  @Test
+  void givenAnyWhenPaaSILChiediStoricoPagamentiThenFault() throws Exception {
+    // given
+    PaaSILChiediStoricoPagamenti request = podamFactory.manufacturePojo(PaaSILChiediStoricoPagamenti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    // when
+    PaaSILChiediStoricoPagamentiRisposta response = puForOrganizationPayEndpoint.paaSILChiediStoricoPagamenti(request, header);
+    // verify
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
+
+  //endregion
+
+  //region paaSILRegistraPagamento
+  @Test
+  void givenAnyWhenPaaSILRegistraPagamentoThenFault() throws Exception {
+    // given
+    PaaSILRegistraPagamento request = podamFactory.manufacturePojo(PaaSILRegistraPagamento.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    SoapHeaderElement header =  TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    // when
+    PaaSILRegistraPagamentoRisposta response = puForOrganizationPayEndpoint.paaSILRegistraPagamento(request, header);
+    // verify
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
   }
 
   //endregion
