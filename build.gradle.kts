@@ -138,6 +138,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateP4PAAUTH",
     "openApiGenerateP4PASENDNOTIFICATION",
     "jaxbJavaGenPuForOrganizationPay",
+    "jaxbJavaGenPuForOrganizationPivot"
   )
 }
 
@@ -238,8 +239,16 @@ jaxb {
     register("puForOrganizationPay") {
       args = listOf("-wsdl")
       outputDir = file("$projectDir/build/generated/jaxb/java")
-      schema = file("$rootDir/src/main/resources/soap/wsdl/puForOrganization-pay.wsdl")
-      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/puForOrganization-pay.xjb")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/pay/puForOrganization-pay.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/pay/puForOrganization-pay.xjb")
+    }
+  }
+  javaGen {
+    register("puForOrganizationPivot") {
+      args = listOf("-wsdl")
+      outputDir = file("$projectDir/build/generated/jaxb/java")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/pivot/puForOrganization-pivot.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/pivot/puForOrganization-pivot.xjb")
     }
   }
 }
