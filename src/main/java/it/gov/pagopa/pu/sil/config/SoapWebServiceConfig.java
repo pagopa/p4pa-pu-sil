@@ -35,11 +35,10 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
 
   public static final String WS_PATH_PAYMENTS = WebSecurityConfig.SOAP_WS_BASE_PATH+"/payments/";
   public static final String WS_PATH_RECONCILIATION = WebSecurityConfig.SOAP_WS_BASE_PATH+"/reconciliation/";
-  private static final String SOAP_RESOURCES_FOLDER = "soap/";
+  private static final String SOAP_RESOURCES_FOLDER = "soap/wsdl/";
 
-  private static final String WSDL_PATH = "wsdl/";
-  private static final String WSDL_PAYMENTS = WSDL_PATH + "payments/";
-  private static final String WSDL_RECONCILIATION = WSDL_PATH + "reconciliation/";
+  private static final String WSDL_PAYMENTS = "payments/";
+  private static final String WSDL_RECONCILIATION = "reconciliation/";
 
   public static final String XSD_DOVUTI_PAGATI = "PagInf_Dovuti_Pagati_6_2_0";
   public static final String XSD_PAG_INF_RP_ESITO_6_0_2 = "PagInf_RP_Esito_6_0_2";
@@ -78,12 +77,13 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
           return null;
       }
 
+      @SuppressWarnings("squid:S1075") // Suppressing Hard coded path delimiter: it's a URL, not a file location
       @Override
       protected XsdSchema getXsdSchema(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String name = WebUtils.extractFilenameFromUrlPath(uri);
         String path = extractPathFromUrlPath(uri);
-        String xsdPath = request.getContextPath()+ SOAP_RESOURCES_FOLDER + XSD_NAME_PATH_MAP.getOrDefault(name,"__NOT_FOUND__");
+        String xsdPath = request.getContextPath()+ WebSecurityConfig.SOAP_WS_BASE_PATH + "/" +XSD_NAME_PATH_MAP.getOrDefault(name,"__NOT_FOUND__");
         if(xsdPath.equals(path))
           return super.getXsdSchema(request);
         else
@@ -136,29 +136,34 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
     return null;
   }
 
-  @Bean(name = "bean" + PuForOrganizationPaymentsEndpoint.NAME)
+  @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
+  @Bean(name = PuForOrganizationPaymentsEndpoint.NAME)
   public Wsdl11Definition puForOrganizationPaymentsEndpoint(XsdSchemaCollection xsdSchemaCollection) {
-    registerWsdlDefinition(WS_PATH_PAYMENTS + WSDL_PATH + PuForOrganizationPaymentsEndpoint.NAME);
-    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"wsdl/payments/puForOrganization-payments.wsdl"));
+    registerWsdlDefinition(WS_PATH_PAYMENTS + PuForOrganizationPaymentsEndpoint.NAME);
+    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"payments/puForOrganization-payments.wsdl"));
   }
 
-  @Bean(name = "bean" + PuForOrganizationReconciliationEndpoint.NAME)
+  @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
+  @Bean(name = PuForOrganizationReconciliationEndpoint.NAME)
   public Wsdl11Definition puForOrganizationReconciliationEndpoint(XsdSchemaCollection xsdSchemaCollection) {
-    registerWsdlDefinition(WS_PATH_RECONCILIATION + WSDL_PATH + PuForOrganizationReconciliationEndpoint.NAME);
-    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"wsdl/reconciliation/puForOrganization-reconciliation.wsdl"));
+    registerWsdlDefinition(WS_PATH_RECONCILIATION + PuForOrganizationReconciliationEndpoint.NAME);
+    return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"reconciliation/puForOrganization-reconciliation.wsdl"));
   }
 
-  @Bean(name = "beanPagInfDovutiPagati620")
+  @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
+  @Bean(name = XSD_DOVUTI_PAGATI)
   public XsdSchema getPaForOrganizationXsd() {
     return new SimpleXsdSchema(new ClassPathResource(SOAP_RESOURCES_FOLDER+XSD_NAME_PATH_MAP.get(XSD_DOVUTI_PAGATI)+ XSD_DOVUTI_PAGATI +".xsd"));
   }
 
-  @Bean(name = "beanFlussoRiversamento104")
+  @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
+  @Bean(name = XSD_FLUSSO_RIVERSAMENTO_1_0_4)
   public XsdSchema getFlussoRiversamento104Xsd() {
     return new SimpleXsdSchema(new ClassPathResource(SOAP_RESOURCES_FOLDER+XSD_NAME_PATH_MAP.get(XSD_FLUSSO_RIVERSAMENTO_1_0_4)+ XSD_FLUSSO_RIVERSAMENTO_1_0_4 +".xsd"));
   }
 
-  @Bean(name = "beanPagInfRPEsito602")
+  @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
+  @Bean(name = XSD_PAG_INF_RP_ESITO_6_0_2)
   public XsdSchema getPagInfRPEsito602Xsd() {
     return new SimpleXsdSchema(new ClassPathResource(SOAP_RESOURCES_FOLDER+XSD_NAME_PATH_MAP.get(XSD_PAG_INF_RP_ESITO_6_0_2)+ XSD_PAG_INF_RP_ESITO_6_0_2 +".xsd"));
   }
