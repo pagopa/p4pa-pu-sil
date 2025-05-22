@@ -26,7 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE, addFilters = false)
 @TestPropertySource(properties = {
-  "logging.level.org.springdoc.core.utils.SpringDocAnnotationsUtils=OFF"
+  "logging.level.org.springdoc.core.utils.SpringDocAnnotationsUtils=OFF",
+  "springwolf.enabled=false"
 })
 @Slf4j
 class OpenApiGeneratorTest {
