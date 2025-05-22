@@ -1,0 +1,140 @@
+{
+  "asyncapi": "3.0.0",
+  "info": {
+    "title": "p4pa-pu-sil",
+    "version": "0.0.1",
+    "description": "AsyncAPI And Models",
+    "x-generator": "springwolf"
+  },
+  "defaultContentType": "application/json",
+  "servers": {
+    "kafka-server": {
+      "host": "p4pa-d-itn-payhub-evhns.servicebus.windows.net:9093",
+      "protocol": "kafka"
+    }
+  },
+  "channels": {
+    "p4pa-payhub-payments-evh": {
+      "address": "p4pa-payhub-payments-evh",
+      "messages": {
+        "RegistryEventDTO": {
+          "$ref": "#/components/messages/RegistryEventDTO"
+        }
+      },
+      "bindings": {
+        "kafka": { }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HeadersNotDocumented": {
+        "title": "HeadersNotDocumented",
+        "type": "object",
+        "properties": { },
+        "description": "There can be headers, but they are not explicitly documented.",
+        "examples": [
+          { }
+        ]
+      },
+      "RegistryEventDTO": {
+        "title": "RegistryEventDTO",
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "brokerFiscalCode": {
+            "type": "string"
+          },
+          "eventDateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "eventId": {
+            "type": "string"
+          },
+          "eventOrigin": {
+            "type": "string"
+          },
+          "eventSubType": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "grantorId": {
+            "type": "string"
+          },
+          "nav": {
+            "type": "string"
+          },
+          "orgFiscalCode": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "requestorId": {
+            "type": "string"
+          },
+          "traceId": {
+            "type": "string"
+          }
+        },
+        "examples": [
+          {
+            "body": "string",
+            "brokerFiscalCode": "string",
+            "eventDateTime": "2015-07-20T15:49:04-07:00",
+            "eventId": "string",
+            "eventOrigin": "string",
+            "eventSubType": "string",
+            "eventType": "string",
+            "grantorId": "string",
+            "nav": "string",
+            "orgFiscalCode": "string",
+            "outcome": "string",
+            "requestorId": "string",
+            "traceId": "string"
+          }
+        ]
+      }
+    },
+    "messages": {
+      "RegistryEventDTO": {
+        "headers": {
+          "$ref": "#/components/schemas/HeadersNotDocumented"
+        },
+        "payload": {
+          "schemaFormat": "application/vnd.aai.asyncapi+json;version=3.0.0",
+          "schema": {
+            "$ref": "#/components/schemas/RegistryEventDTO"
+          }
+        },
+        "name": "RegistryEventDTO",
+        "title": "RegistryEventDTO",
+        "bindings": {
+          "kafka": { }
+        }
+      }
+    }
+  },
+  "operations": {
+    "p4pa-payhub-payments-evh_send_registryProducer": {
+      "action": "send",
+      "channel": {
+        "$ref": "#/channels/p4pa-payhub-payments-evh"
+      },
+      "description": "Auto-generated description",
+      "bindings": {
+        "kafka": { }
+      },
+      "messages": [
+        {
+          "$ref": "#/channels/p4pa-payhub-payments-evh/messages/RegistryEventDTO"
+        }
+      ]
+    }
+  }
+}

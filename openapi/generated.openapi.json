@@ -88,6 +88,117 @@
         } ]
       }
     },
+    "/springwolf/ui-config" : {
+      "get" : {
+        "tags" : [ "ui-config-controller" ],
+        "operationId" : "getUiConfig",
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UiConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/springwolf/docs" : {
+      "get" : {
+        "tags" : [ "async-api-controller" ],
+        "operationId" : "asyncApiYaml",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/yaml" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/springwolf/docs/{group}" : {
+      "get" : {
+        "tags" : [ "async-api-controller" ],
+        "operationId" : "asyncApiYaml_1",
+        "parameters" : [ {
+          "name" : "group",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/yaml" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/springwolf/docs.yaml" : {
+      "get" : {
+        "tags" : [ "async-api-controller" ],
+        "operationId" : "asyncApiYaml_2",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/yaml" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/springwolf/docs.json" : {
+      "get" : {
+        "tags" : [ "async-api-controller" ],
+        "operationId" : "asyncApiJson",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/organization/{organizationId}/send-notification/{sendNotificationId}" : {
       "get" : {
         "tags" : [ "SendNotification" ],
@@ -385,6 +496,39 @@
       "RecipientTypeEnum" : {
         "type" : "string",
         "enum" : [ "PF", "PG" ]
+      },
+      "InitialConfig" : {
+        "type" : "object",
+        "properties" : {
+          "showBindings" : {
+            "type" : "boolean"
+          },
+          "showHeaders" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "UiConfig" : {
+        "type" : "object",
+        "properties" : {
+          "initialConfig" : {
+            "$ref" : "#/components/schemas/InitialConfig"
+          },
+          "groups" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UiConfigGroup"
+            }
+          }
+        }
+      },
+      "UiConfigGroup" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          }
+        }
       },
       "NotificationStatus" : {
         "type" : "string",

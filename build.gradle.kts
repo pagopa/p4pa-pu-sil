@@ -34,10 +34,17 @@ repositories {
   mavenCentral()
 }
 
+dependencyManagement {
+  imports {
+    mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.1")
+  }
+}
+
 val springDocOpenApiVersion = "2.8.6"
 val openApiToolsVersion = "0.2.6"
 val micrometerVersion = "1.4.6"
 val httpClientVersion = "5.4.4"
+val springWolfAsyncApiVersion = "1.13.0"
 val podamVersion = "8.0.2.RELEASE"
 val jaxbVersion = "4.0.5"
 val jaxbApiVersion = "4.0.2"
@@ -52,9 +59,13 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web-services")
+  implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
+  implementation("io.github.springwolf:springwolf-kafka:${springWolfAsyncApiVersion}")
+  implementation("io.github.springwolf:springwolf-ui:${springWolfAsyncApiVersion}")
+  implementation("io.github.springwolf:springwolf-cloud-stream:${springWolfAsyncApiVersion}")
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
