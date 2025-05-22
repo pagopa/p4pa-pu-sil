@@ -14,8 +14,8 @@
     }
   },
   "channels": {
-    "p4pa-payhub-payments-evh": {
-      "address": "p4pa-payhub-payments-evh",
+    "p4pa-payhub-registries-evh": {
+      "address": "p4pa-payhub-registries-evh",
       "messages": {
         "RegistryEventDTO": {
           "$ref": "#/components/messages/RegistryEventDTO"
@@ -47,15 +47,9 @@
           "brokerFiscalCode": {
             "type": "string"
           },
-          "eventDateTime": {
+          "dateTime": {
             "type": "string",
             "format": "date-time"
-          },
-          "eventId": {
-            "type": "string"
-          },
-          "eventOrigin": {
-            "type": "string"
           },
           "eventSubType": {
             "type": "string"
@@ -66,6 +60,9 @@
           "grantorId": {
             "type": "string"
           },
+          "iuv": {
+            "type": "string"
+          },
           "nav": {
             "type": "string"
           },
@@ -73,6 +70,12 @@
             "type": "string"
           },
           "outcome": {
+            "type": "string"
+          },
+          "registryId": {
+            "type": "string"
+          },
+          "registryOrigin": {
             "type": "string"
           },
           "requestorId": {
@@ -86,15 +89,16 @@
           {
             "body": "string",
             "brokerFiscalCode": "string",
-            "eventDateTime": "2015-07-20T15:49:04-07:00",
-            "eventId": "string",
-            "eventOrigin": "string",
+            "dateTime": "2015-07-20T15:49:04-07:00",
             "eventSubType": "string",
             "eventType": "string",
             "grantorId": "string",
+            "iuv": "string",
             "nav": "string",
             "orgFiscalCode": "string",
             "outcome": "string",
+            "registryId": "string",
+            "registryOrigin": "string",
             "requestorId": "string",
             "traceId": "string"
           }
@@ -121,10 +125,10 @@
     }
   },
   "operations": {
-    "p4pa-payhub-payments-evh_send_registryProducer": {
+    "p4pa-payhub-registries-evh_send_registryProducer": {
       "action": "send",
       "channel": {
-        "$ref": "#/channels/p4pa-payhub-payments-evh"
+        "$ref": "#/channels/p4pa-payhub-registries-evh"
       },
       "description": "Auto-generated description",
       "bindings": {
@@ -132,7 +136,7 @@
       },
       "messages": [
         {
-          "$ref": "#/channels/p4pa-payhub-payments-evh/messages/RegistryEventDTO"
+          "$ref": "#/channels/p4pa-payhub-registries-evh/messages/RegistryEventDTO"
         }
       ]
     }
