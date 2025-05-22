@@ -47,7 +47,7 @@ class RegistryProducerServiceTest {
 
   @BeforeEach
   void setUp() {
-    registryProducerService = new RegistryProducerService(streamBridge);
+    registryProducerService = new RegistryProducerService(streamBridge, new ObjectMapper());
   }
 
   @AfterEach

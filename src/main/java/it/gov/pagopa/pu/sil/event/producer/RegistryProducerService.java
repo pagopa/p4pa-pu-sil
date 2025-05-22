@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.event.producer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
@@ -35,10 +34,9 @@ public class RegistryProducerService {
 
   private final ObjectMapper objectMapper;
 
-  public RegistryProducerService(StreamBridge streamBridge) {
+  public RegistryProducerService(StreamBridge streamBridge, ObjectMapper objectMapper) {
     this.streamBridge = streamBridge;
-    this.objectMapper = new ObjectMapper();
-    this.objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    this.objectMapper = objectMapper;
   }
 
   @Configuration
