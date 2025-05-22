@@ -59,8 +59,7 @@ public class RegistryProducerService {
         .findFirst()
         .orElseThrow(() -> new ApplicationException("invalid user for organization " + orgFiscalCode));
 
-      OffsetDateTime now = OffsetDateTime.now();
-      String eventId = String.join("-", eventType.name(), String.valueOf(now.toInstant().toEpochMilli()), UUID.randomUUID().toString());
+      String eventId = String.join("-", eventType.name(), String.valueOf(System.currentTimeMillis()), UUID.randomUUID().toString());
       String traceId = Utilities.getTraceId();
 
       String bodyString = null;
@@ -75,7 +74,7 @@ public class RegistryProducerService {
             .eventId(eventId)
             .traceId(traceId)
             .eventOrigin("pu-sil")
-            .eventDateTime(now)
+            .eventDateTime(OffsetDateTime.now())
             .eventType(eventType.name())
             .eventSubType(subType.name())
             .brokerFiscalCode(loggedUser.getBrokerFiscalCode())
