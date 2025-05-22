@@ -9,7 +9,7 @@
   "defaultContentType": "application/json",
   "servers": {
     "kafka-server": {
-      "host": "p4pa-d-itn-payhub-evhns.servicebus.windows.net:9093",
+      "host": "localhost:9093",
       "protocol": "kafka"
     }
   },
