@@ -2,14 +2,16 @@ import java.util.*
 
 plugins {
   java
-  id("org.springframework.boot") version "3.4.3"
+  id("org.springframework.boot") version "3.4.5"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "6.0.1.5171"
-  id("com.github.ben-manes.versions") version "0.51.0"
-  id("org.openapi.generator") version "7.10.0"
+  id("org.sonarqube") version "6.1.0.5360"
+  id("com.github.ben-manes.versions") version "0.52.0"
+  id("org.openapi.generator") version "7.13.0"
   id("org.ajoberstar.grgit") version "5.3.0"
   id("com.gorylenko.gradle-git-properties") version "2.5.0"
+  //code generation for soap webservices classes (via  jaxb)
+  id("com.intershop.gradle.jaxb") version "7.0.1"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -32,10 +34,23 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "2.8.5"
+dependencyManagement {
+  imports {
+    mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.1")
+  }
+}
+
+val springDocOpenApiVersion = "2.8.6"
 val openApiToolsVersion = "0.2.6"
-val micrometerVersion = "1.4.3"
-val httpClientVersion = "5.4.2"
+val micrometerVersion = "1.4.6"
+val httpClientVersion = "5.4.4"
+val springWolfAsyncApiVersion = "1.13.0"
+val podamVersion = "8.0.2.RELEASE"
+val jaxbVersion = "4.0.5"
+val jaxbApiVersion = "4.0.2"
+val activationVersion = "2.1.3"
+val wsdl4jVersion = "1.6.3"
+val xmlSchemaVersion = "2.3.1"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -43,12 +58,31 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-security")
+  implementation("org.springframework.boot:spring-boot-starter-web-services")
+  implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
+  implementation("io.github.springwolf:springwolf-kafka:${springWolfAsyncApiVersion}")
+  implementation("io.github.springwolf:springwolf-ui:${springWolfAsyncApiVersion}")
+  implementation("io.github.springwolf:springwolf-cloud-stream:${springWolfAsyncApiVersion}")
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+
+  //webservice soap
+  implementation("wsdl4j:wsdl4j:$wsdl4jVersion")
+  implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
+  runtimeOnly("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
+  //jaxb
+  jaxb("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
+  jaxb("com.sun.xml.bind:jaxb-xjc:$jaxbVersion")
+  jaxb("com.sun.xml.bind:jaxb-jxc:$jaxbVersion")
+  jaxb("com.sun.xml.bind:jaxb-core:$jaxbVersion")
+  jaxb("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
+  jaxb("jakarta.activation:jakarta.activation-api:$activationVersion")
+  jaxbext("org.jvnet.jaxb:jaxb-plugin-annotate:3.0.2")
+  jaxbext("org.slf4j:slf4j-simple:2.0.16") // see https://github.com/IntershopCommunicationsAG/jaxb-gradle-plugin/issues/37
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -58,6 +92,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
+  testImplementation("uk.co.jemos.podam:podam:${podamVersion}")
 }
 
 tasks.withType<Test> {
@@ -112,7 +147,9 @@ tasks.register("dependenciesBuild") {
   dependsOn(
     "openApiGeneratePUSIL",
     "openApiGenerateP4PAAUTH",
-    "openApiGenerateP4PASENDNOTIFICATION"
+    "openApiGenerateP4PASENDNOTIFICATION",
+    "jaxbJavaGenPuForOrganizationPayments",
+    "jaxbJavaGenPuForOrganizationReconciliation"
   )
 }
 
@@ -206,4 +243,23 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
   ))
   library.set("resttemplate")
+}
+
+jaxb {
+  javaGen {
+    register("puForOrganizationPayments") {
+      args = listOf("-wsdl")
+      outputDir = file("$projectDir/build/generated/jaxb/java")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/payments/puForOrganization-payments.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/payments/puForOrganization-payments.xjb")
+    }
+  }
+  javaGen {
+    register("puForOrganizationReconciliation") {
+      args = listOf("-wsdl")
+      outputDir = file("$projectDir/build/generated/jaxb/java")
+      schema = file("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.wsdl")
+      bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.xjb")
+    }
+  }
 }
