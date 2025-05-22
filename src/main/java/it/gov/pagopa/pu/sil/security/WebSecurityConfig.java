@@ -41,7 +41,12 @@ public class WebSecurityConfig {
           "/actuator/**"
         ).permitAll()
 
-        // WsSoap (only to retrieve WSDL and XSD)
+        // springwolf endpoints
+        .requestMatchers(
+          "/springwolf/**"
+        ).permitAll()
+
+        // Web service Soap (only to retrieve WSDL and XSD)
         // use regex matcher because request matcher causes this error:
         // No more pattern data allowed after {*...} or ** pattern element
         .requestMatchers(
