@@ -52,14 +52,14 @@ public class RegistryProducerService {
   public void notifySilEvent(UserInfo loggedUser, String orgFiscalCode,
                              RegistrySilEventType eventType, RegistryEventSubType subType,
                              String requestorId, String grantorId,
-                             String nav, boolean outcomeOk, Object body) {
+                             String iuv, String nav, boolean outcomeOk, Object body) {
     try {
       UserOrganizationRoles userOrg = loggedUser.getOrganizations().stream()
         .filter(x -> StringUtils.equals(x.getOrganizationFiscalCode(), orgFiscalCode))
         .findFirst()
         .orElseThrow(() -> new ApplicationException("invalid user for organization " + orgFiscalCode));
 
-      String eventId = String.join("-", eventType.name(), String.valueOf(System.currentTimeMillis()), UUID.randomUUID().toString());
+      String registryId = String.join("-", eventType.name(), String.valueOf(System.currentTimeMillis()), UUID.randomUUID().toString());
       String traceId = Utilities.getTraceId();
 
       String bodyString = null;
@@ -71,14 +71,15 @@ public class RegistryProducerService {
 
       streamBridge.send("registryProducer-out-0", binder,
         MessageBuilder.withPayload(RegistryEventDTO.builder()
-            .eventId(eventId)
+            .registryId(registryId)
             .traceId(traceId)
-            .eventOrigin("pu-sil")
-            .eventDateTime(OffsetDateTime.now())
+            .registryOrigin("pu-sil")
+            .dateTime(OffsetDateTime.now())
             .eventType(eventType.name())
             .eventSubType(subType.name())
             .brokerFiscalCode(loggedUser.getBrokerFiscalCode())
             .orgFiscalCode(userOrg.getOrganizationFiscalCode())
+            .iuv(iuv)
             .nav(nav)
             .requestorId(requestorId)
             .grantorId(grantorId)

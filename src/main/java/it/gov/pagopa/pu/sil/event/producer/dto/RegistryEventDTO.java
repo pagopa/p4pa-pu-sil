@@ -12,15 +12,16 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @Builder
 public class RegistryEventDTO {
-  private String eventId;
+  private String registryId;
+  private String registryOrigin;
+  private OffsetDateTime dateTime;
   private String traceId;
-  private String eventOrigin;
-  private OffsetDateTime eventDateTime;
-  private String eventType;
-  private String eventSubType;
   private String brokerFiscalCode;
   private String orgFiscalCode;
+  private String iuv;
   private String nav;
+  private String eventType;
+  private String eventSubType;
   private String requestorId;
   private String grantorId;
   private String outcome;

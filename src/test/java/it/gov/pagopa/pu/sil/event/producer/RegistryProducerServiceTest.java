@@ -65,6 +65,7 @@ class RegistryProducerServiceTest {
     RegistryEventSubType subType = podamFactory.manufacturePojo(RegistryEventSubType.class);
     String requestorId = "requestorId";
     String grantorId = "grantorId";
+    String iuv = "iuv";
     String nav = "nav";
     boolean outcomeOk;
     Object body;
@@ -91,7 +92,7 @@ class RegistryProducerServiceTest {
     UtilitiesTest.setTraceId(traceId);
 
     // When
-    registryProducerService.notifySilEvent(loggedUser, orgFiscalCode, eventType, subType, requestorId, grantorId, nav, outcomeOk, body);
+    registryProducerService.notifySilEvent(loggedUser, orgFiscalCode, eventType, subType, requestorId, grantorId, iuv, nav, outcomeOk, body);
 
     // Then
     Mockito.verify(streamBridge, Mockito.times(1)).send(
@@ -102,20 +103,21 @@ class RegistryProducerServiceTest {
 
         RegistryEventDTO payload = (RegistryEventDTO) m.getPayload();
         String eventIdPrefix = eventType.name();
-        Assertions.assertEquals(eventIdPrefix, payload.getEventId().substring(0, eventIdPrefix.length()));
+        Assertions.assertEquals(eventIdPrefix, payload.getRegistryId().substring(0, eventIdPrefix.length()));
         Assertions.assertEquals(traceId, payload.getTraceId());
-        Assertions.assertEquals("pu-sil", payload.getEventOrigin());
+        Assertions.assertEquals("pu-sil", payload.getRegistryOrigin());
 
         Assertions.assertEquals(eventType.name(), payload.getEventType());
         Assertions.assertEquals(subType.name(), payload.getEventSubType());
         Assertions.assertEquals(loggedUser.getBrokerFiscalCode(), payload.getBrokerFiscalCode());
         Assertions.assertEquals(loggedUser.getOrganizations().getFirst().getOrganizationFiscalCode(), payload.getOrgFiscalCode());
+        Assertions.assertEquals(iuv, payload.getIuv());
         Assertions.assertEquals(nav, payload.getNav());
         Assertions.assertEquals(requestorId, payload.getRequestorId());
         Assertions.assertEquals(grantorId, payload.getGrantorId());
         Assertions.assertEquals(outcomeOk ? "OK" : "KO", payload.getOutcome());
         Assertions.assertEquals(serializedBody, payload.getBody());
-        Assertions.assertTrue(OffsetDateTime.now().toEpochSecond() - payload.getEventDateTime().toEpochSecond() < 5);
+        Assertions.assertTrue(OffsetDateTime.now().toEpochSecond() - payload.getDateTime().toEpochSecond() < 5);
         return true;
       }));
   }
