@@ -68,7 +68,7 @@ public class SecurityUtils {
       : null;
   }
 
-  public static boolean isValidWsSilUser(String organizationIpaCode) {
+  public static boolean isAdminUser(String organizationIpaCode) {
     UserInfo loggedUser = getLoggedUser();
     if (loggedUser != null) {
       return loggedUser.getOrganizations().stream()

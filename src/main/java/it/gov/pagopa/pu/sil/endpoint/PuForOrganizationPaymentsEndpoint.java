@@ -30,7 +30,7 @@ public class PuForOrganizationPaymentsEndpoint {
     PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
 
     //check if the logged user has the right to call this endpoint
-    if(!SecurityUtils.isValidWsSilUser(intestazionePPT.getCodIpaEnte())){
+    if(!SecurityUtils.isAdminUser(intestazionePPT.getCodIpaEnte())){
       log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
         SecurityUtils.getLoggedUser().getUserId() ,intestazionePPT.getCodIpaEnte());
       return FaultUtils.setFaultOnResponse(

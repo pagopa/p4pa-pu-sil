@@ -181,7 +181,7 @@ public class SecurityUtilsTest {
     "true, IPA_3, false", // Organization not associated with the user
     "false, IPA_2, false"  // Invalid user (no logged-in user)
   })
-  void testIsValidWsSilUser(boolean logged, String organizationIpaCode, boolean expectedResult) {
+  void testIsAdminUser(boolean logged, String organizationIpaCode, boolean expectedResult) {
     // Given
     if (logged) {
       UserInfo expectedUserInfo = new UserInfo();
@@ -194,7 +194,7 @@ public class SecurityUtilsTest {
     }
 
     // When
-    boolean result = SecurityUtils.isValidWsSilUser(organizationIpaCode);
+    boolean result = SecurityUtils.isAdminUser(organizationIpaCode);
 
     // Then
     Assertions.assertEquals(expectedResult, result);
