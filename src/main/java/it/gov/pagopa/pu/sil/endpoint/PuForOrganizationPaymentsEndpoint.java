@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
@@ -14,6 +15,9 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
+import java.util.Optional;
+import java.util.function.Supplier;
+
 @Endpoint
 @Slf4j
 public class PuForOrganizationPaymentsEndpoint {
@@ -26,28 +30,20 @@ public class PuForOrganizationPaymentsEndpoint {
       @RequestPayload PaaSILAutorizzaImportFlusso request,
       @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header){
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", intestazionePPT.getCodIpaEnte());
-    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+    log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
 
     //check if the logged user has the right to call this endpoint
-    if(!SecurityUtils.isAdminUser(intestazionePPT.getCodIpaEnte())){
+    if(intestazionePPT==null || !SecurityUtils.isAdminUser(intestazionePPT.getCodIpaEnte())){
       log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
-        SecurityUtils.getLoggedUser().getUserId() ,intestazionePPT.getCodIpaEnte());
-      return FaultUtils.setFaultOnResponse(
-        response,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        "Utente non autorizzato",
-        intestazionePPT.getCodIpaEnte(),
-        FaultBean::new,
-        PaaSILAutorizzaImportFlussoRisposta::setFault
-      );
+        Optional.ofNullable(SecurityUtils.getLoggedUser()).map(UserInfo::getUserId).orElse(null),
+        Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null) );
+      return notAuthorizedFaultResponse(PaaSILAutorizzaImportFlussoRisposta::new);
     }
 
     //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
     return FaultUtils.setFaultOnResponse(
-      response,
+      new PaaSILAutorizzaImportFlussoRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
-      intestazionePPT.getCodIpaEnte(),
       intestazionePPT.getCodIpaEnte(),
       FaultBean::new,
       PaaSILAutorizzaImportFlussoRisposta::setFault
@@ -62,8 +58,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PaaSILChiediAvvisiPendentiRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILChiediAvvisiPendenti is an UNSUPPORTED Operation",
-      request.getCodIpaEnte(),
+      "paaSILChiediAvvisiPendenti non è una operazione supportata",
       FaultBean::new,
       PaaSILChiediAvvisiPendentiRisposta::setFault
     );
@@ -77,8 +72,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PaaSILChiediPosizioniAperteRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILChiediPosizioniAperte is an UNSUPPORTED Operation",
-      request.getCodIpaEnte(),
+      "paaSILChiediPosizioniAperte non è una operazione supportata",
       FaultBean::new,
       PaaSILChiediPosizioniAperteRisposta::setFault
     );
@@ -92,8 +86,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PaaSILChiediStoricoPagamentiRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILChiediStoricoPagamenti is an UNSUPPORTED Operation",
-      request.getCodIpaEnte(),
+      "paaSILChiediStoricoPagamenti non è una operazione supportata",
       FaultBean::new,
       PaaSILChiediStoricoPagamentiRisposta::setFault
     );
@@ -107,10 +100,21 @@ public class PuForOrganizationPaymentsEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PaaSILRegistraPagamentoRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILRegistraPagamento is an UNSUPPORTED Operation",
-      request.getCodIpaEnte(),
+      "paaSILRegistraPagamento non è una operazione supportata",
       FaultBean::new,
       PaaSILRegistraPagamentoRisposta::setFault
     );
+  }
+
+  private <T extends Risposta> T notAuthorizedFaultResponse(Supplier<T> responseSupplier){
+    FaultBean fault = new FaultBean();
+    fault.setFaultCode(SilFaults.PAA_ENTE_NON_VALIDO.code());
+    fault.setFaultString(SilFaults.PAA_ENTE_NON_VALIDO.description());
+    fault.setDescription("Utente non autorizzato");
+    fault.setId(String.valueOf(System.currentTimeMillis()));
+    fault.setSerial(0);
+    T response = responseSupplier.get();
+    response.setFault(fault);
+    return response;
   }
 }

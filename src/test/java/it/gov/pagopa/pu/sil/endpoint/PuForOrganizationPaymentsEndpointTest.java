@@ -68,8 +68,8 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertNotNull(response.getFault());
     Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.description(), response.getFault().getDescription());
-    Assertions.assertEquals("Utente non autorizzato", response.getFault().getFaultString());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.description(), response.getFault().getFaultString());
+    Assertions.assertEquals("Utente non autorizzato", response.getFault().getDescription());
     Assertions.assertNull(response.getAuthorizationToken());
     Assertions.assertNull(response.getImportPath());
     Assertions.assertNull(response.getRequestToken());

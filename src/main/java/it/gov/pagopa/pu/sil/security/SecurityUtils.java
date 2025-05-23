@@ -70,7 +70,7 @@ public class SecurityUtils {
 
   public static boolean isAdminUser(String organizationIpaCode) {
     UserInfo loggedUser = getLoggedUser();
-    if (loggedUser != null) {
+    if (loggedUser != null && organizationIpaCode != null) {
       return loggedUser.getOrganizations().stream()
         .anyMatch(org ->
           org.getOrganizationIpaCode().equals(organizationIpaCode) &&

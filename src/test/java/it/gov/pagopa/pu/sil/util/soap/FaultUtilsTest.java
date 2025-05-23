@@ -18,7 +18,7 @@ class FaultUtilsTest {
     FaultBean faultBean = new FaultBean();
     Supplier<Object> faultBeanSupplier = () -> faultBean;
     BiConsumer<Object, Object> faultSetter = (response, bean) -> {
-      assertTrue(bean instanceof it.veneto.regione.pagamenti.ente.FaultBean);
+      assertInstanceOf(FaultBean.class, bean);
     };
 
     // Act
@@ -26,17 +26,16 @@ class FaultUtilsTest {
       responseObj,
       SilFaults.PAA_SYSTEM_ERROR,
       "Fault String 1",
-      "Emitter1",
       faultBeanSupplier,
       faultSetter
     );
 
     // Assert
     assertEquals(responseObj, result);
-    assertEquals("Fault String 1", faultBean.getFaultString());
-    assertEquals("Emitter1", faultBean.getId());
+    assertEquals("Fault String 1", faultBean.getDescription());
+    assertNotNull(faultBean.getId());
     assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), faultBean.getFaultCode());
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR.description(), faultBean.getDescription());
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR.description(), faultBean.getFaultString());
     assertEquals(0, faultBean.getSerial());
   }
 }
