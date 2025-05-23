@@ -1,8 +1,9 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
+import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
+import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,25 @@ public class PuForOrganizationPaymentsEndpoint {
       @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header){
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
     log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", intestazionePPT.getCodIpaEnte());
+    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+
+    //check if the logged user has the right to call this endpoint
+    if(!SecurityUtils.isValidWsSilUser(intestazionePPT.getCodIpaEnte())){
+      log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
+        SecurityUtils.getLoggedUser().getUserId() ,intestazionePPT.getCodIpaEnte());
+      return FaultUtils.setFaultOnResponse(
+        response,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        "Utente non autorizzato",
+        intestazionePPT.getCodIpaEnte(),
+        FaultBean::new,
+        PaaSILAutorizzaImportFlussoRisposta::setFault
+      );
+    }
+
     //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
     return FaultUtils.setFaultOnResponse(
-      new PaaSILAutorizzaImportFlussoRisposta(),
+      response,
       SilFaults.PAA_SYSTEM_ERROR,
       intestazionePPT.getCodIpaEnte(),
       intestazionePPT.getCodIpaEnte(),
