@@ -19,6 +19,7 @@ public class SecurityUtils {
 
   public static final String SYSTEM_USERID_PREFIX = "WS_USER-piattaforma-unitaria_";
   public static final String HEADER_USER_ID = "X-user-id";
+  public static final String OPERATOR_ROLE_ADMIN = "ROLE_ADMIN";
 
   /**
    * It will return user's session data from ThreadLocal
@@ -65,6 +66,17 @@ public class SecurityUtils {
     return uri != null
       ? uri.toString().replaceAll("=[^&]*", "=***")
       : null;
+  }
+
+  public static boolean isAdminUser(String organizationIpaCode) {
+    UserInfo loggedUser = getLoggedUser();
+    if (loggedUser != null && organizationIpaCode != null) {
+      return loggedUser.getOrganizations().stream()
+        .anyMatch(org ->
+          org.getOrganizationIpaCode().equals(organizationIpaCode) &&
+          org.getRoles().contains(OPERATOR_ROLE_ADMIN));
+    }
+    return false;
   }
 
 }

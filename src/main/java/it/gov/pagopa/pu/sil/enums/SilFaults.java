@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.enums;
 public enum SilFaults {
 
   PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR"),
+  PAA_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR");
 

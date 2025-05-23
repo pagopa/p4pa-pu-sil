@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
+import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +12,8 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
+
+import java.util.Optional;
 
 @Endpoint
 @Slf4j
@@ -26,13 +28,12 @@ public class PuForOrganizationReconciliationEndpoint {
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header){
 
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    log.info("processing PivotSILAutorizzaImportFlusso codIpaEnte[{}]", intestazionePPT.getCodIpaEnte());
+    log.info("processing PivotSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
     //TODO: implement the logic to handle the SOAP Action P4ADEV-2893
     return FaultUtils.setFaultOnResponse(
       new PivotSILAutorizzaImportFlussoRisposta(),
       SilFaults.PIVOT_SYSTEM_ERROR,
-      intestazionePPT.getCodIpaEnte(),
-      intestazionePPT.getCodIpaEnte(),
+      Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null),
       FaultBean::new,
       PivotSILAutorizzaImportFlussoRisposta::setFault
     );
@@ -46,8 +47,7 @@ public class PuForOrganizationReconciliationEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PivotSILChiediPagatiRiconciliatiRisposta(),
       SilFaults.PIVOT_SYSTEM_ERROR,
-      "paaSILRegistraPagamento is an UNSUPPORTED Operation",
-      SoapUtils.unmarshallHeader(header, IntestazionePPT.class).getCodIpaEnte(),
+      "paaSILRegistraPagamento non è una operazione supportata",
       FaultBean::new,
       PivotSILChiediPagatiRiconciliatiRisposta::setFault
     );
@@ -61,8 +61,7 @@ public class PuForOrganizationReconciliationEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PivotSILAutorizzaImportFlussoRendicontazioneRisposta(),
       SilFaults.PIVOT_SYSTEM_ERROR,
-      "pivotSILAutorizzaImportFlussoRendicontazione is an UNSUPPORTED Operation",
-      SoapUtils.unmarshallHeader(header, IntestazionePPT.class).getCodIpaEnte(),
+      "pivotSILAutorizzaImportFlussoRendicontazione non è una operazione supportata",
       FaultBean::new,
       PivotSILAutorizzaImportFlussoRendicontazioneRisposta::setFault
     );
@@ -76,8 +75,7 @@ public class PuForOrganizationReconciliationEndpoint {
     return FaultUtils.setFaultOnResponse(
       new PivotSILAutorizzaImportFlussoRTRisposta(),
       SilFaults.PIVOT_SYSTEM_ERROR,
-      "pivotSILAutorizzaImportFlussoRT is an UNSUPPORTED Operation",
-      SoapUtils.unmarshallHeader(header, IntestazionePPT.class).getCodIpaEnte(),
+      "pivotSILAutorizzaImportFlussoRT non è una operazione supportata",
       FaultBean::new,
       PivotSILAutorizzaImportFlussoRTRisposta::setFault
     );
