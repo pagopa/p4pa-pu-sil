@@ -149,7 +149,6 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateP4PAAUTH",
     "openApiGenerateP4PASENDNOTIFICATION",
     "openApiGeneratePROCESSEXECUTION",
-    "openApiGenerateFILESHARE",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation"
   )
@@ -272,29 +271,6 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
   ))
   library.set("resttemplate")
-}
-
-tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
-  group = "openapi"
-  description = "description"
-
-  generatorName.set("spring")
-  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-fileshare/refs/heads/$targetEnv/openapi/generated.openapi.json")
-  outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
-  modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
-  configOptions.set(mapOf(
-    "dateLibrary" to "java8",
-    "requestMappingMode" to "api_interface",
-    "useSpringBoot3" to "true",
-    "interfaceOnly" to "true",
-    "useTags" to "true",
-    "useBeanValidation" to "true",
-    "generateConstructorWithAllArgs" to "true",
-    "generatedConstructorWithRequiredArgs" to "true",
-    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)",
-    "serializationLibrary" to "jackson"
-  ))
 }
 
 jaxb {
