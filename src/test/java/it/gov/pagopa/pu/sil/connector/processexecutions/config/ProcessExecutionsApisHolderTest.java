@@ -41,11 +41,8 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
   @Test
   void whenGetIngestionFlowFileControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> {
-        processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
-          .createIngestionFlowFileReservation(new IngestionFlowFileRequestDTO());
-        return voidMock;
-      },
+      accessToken -> processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
+          .createIngestionFlowFileReservation(new IngestionFlowFileRequestDTO()),
       new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }
