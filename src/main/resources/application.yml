@@ -142,6 +142,8 @@ rest:
     max-attempts: "\${PROCESS_EXECUTIONS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${PROCESS_EXECUTIONS_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR:true}"
+  file-share:
+    base-url: "\${FILESHARE_BASE_URL:}"
 
 springdoc:
   writer-with-default-pretty-printer: true
