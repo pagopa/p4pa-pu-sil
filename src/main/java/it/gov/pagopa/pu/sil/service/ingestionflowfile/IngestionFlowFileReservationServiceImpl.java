@@ -18,9 +18,9 @@ public class IngestionFlowFileReservationServiceImpl implements IngestionFlowFil
   private final String fileShareBaseUrl;
 
   public IngestionFlowFileReservationServiceImpl(IngestionFlowFileService ingestionFlowFileService,
-                                                 @Value("${rest.file-share.base-url}") String fileShareBaseUrl) {
+                                                 @Value("${public-base-url.fileshare}") String fileSharePublicBaseUrl) {
     this.ingestionFlowFileService = ingestionFlowFileService;
-    this.fileShareBaseUrl = fileShareBaseUrl;
+    this.fileShareBaseUrl = fileSharePublicBaseUrl;
   }
 
   @Override
@@ -34,7 +34,7 @@ public class IngestionFlowFileReservationServiceImpl implements IngestionFlowFil
     IngestionFlowFileRequestDTO requestDTO = mapToReservationRequest(ingestionFlowFileType, organizationId);
 
     Long ingestionFlowFileId = ingestionFlowFileService.createIngestionFlowFileReservation(requestDTO, accessToken);
-    log.info("Reservation created with ID: {}", ingestionFlowFileId);
+    log.debug("Reservation created with ID: {}", ingestionFlowFileId);
     requestDTO.setIngestionFlowFileId(ingestionFlowFileId);
 
     String uploadUrl = composeUploadUrl(requestDTO);
