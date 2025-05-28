@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.DovutiEntiSecondari;
 import lombok.extern.slf4j.Slf4j;
@@ -94,7 +95,8 @@ public class PuForOrganizationPaymentsEndpoint {
       //try-catch-finally block to handle the unmarshalling of the request and create the REQUEST event body
       try {
         //TODO P4ADEV-3013 : unmarshall the Dovuti object
-        Dovuti dovutiObject = null;
+        Dovuti dovutiObject = new Dovuti();
+        dovutiObject.setDatiVersamento(new CtDatiVersamentoDovuti());
         //TODO P4ADEV-3013 : unmarshall the DovutiEntiSecondari object
         DovutiEntiSecondari dovutiEntiSecondariObject = null;
 

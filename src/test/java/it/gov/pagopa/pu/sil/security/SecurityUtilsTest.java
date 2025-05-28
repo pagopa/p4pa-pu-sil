@@ -173,7 +173,7 @@ public class SecurityUtilsTest {
     Assertions.assertNull(SecurityUtils.removePiiFromURI(null));
   }
 
-  //region test getLoggedUser
+  //region test isAdminUser
   @ParameterizedTest
   @CsvSource({
     "true, IPA_2, true",  // Valid admin user for the organization
@@ -200,5 +200,75 @@ public class SecurityUtilsTest {
     Assertions.assertEquals(expectedResult, result);
   }
 
+  //endregion
+
+  //region test getOrganizationInfoFromLoggedUser
+  @Test
+  void whenGetOrganizationInfoFromLoggedUserWithValidIpaCodeThenReturnOrganizationInfo() {
+    // Given
+    String organizationIpaCode = "ORG1";
+    UserOrganizationRoles expectedOrganization = new UserOrganizationRoles();
+    expectedOrganization.setOrganizationIpaCode(organizationIpaCode);
+    expectedOrganization.setRoles(List.of("ROLE1"));
+
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(expectedOrganization));
+    configureSecurityContext(userInfo);
+
+    // When
+    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser(organizationIpaCode);
+
+    // Then
+    Assertions.assertSame(expectedOrganization, result);
+  }
+
+  @Test
+  void whenGetOrganizationInfoFromLoggedUserWithInvalidIpaCodeThenReturnNull() {
+    // Given
+    String organizationIpaCode = "INVALID_ORG";
+    UserOrganizationRoles organization = new UserOrganizationRoles();
+    organization.setOrganizationIpaCode("ORG1");
+    organization.setRoles(List.of("ROLE1"));
+
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(organization));
+    configureSecurityContext(userInfo);
+
+    // When
+    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser(organizationIpaCode);
+
+    // Then
+    Assertions.assertNull(result);
+  }
+
+  @Test
+  void whenGetOrganizationInfoFromLoggedUserWithNullIpaCodeThenReturnNull() {
+    // Given
+    UserOrganizationRoles organization = new UserOrganizationRoles();
+    organization.setOrganizationIpaCode("ORG1");
+    organization.setRoles(List.of("ROLE1"));
+
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(organization));
+    configureSecurityContext(userInfo);
+
+    // When
+    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser(null);
+
+    // Then
+    Assertions.assertNull(result);
+  }
+
+  @Test
+  void whenGetOrganizationInfoFromLoggedUserWithNoLoggedUserThenReturnNull() {
+    // Given
+    SecurityContextHolder.clearContext();
+
+    // When
+    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser("ORG1");
+
+    // Then
+    Assertions.assertNull(result);
+  }
   //endregion
 }

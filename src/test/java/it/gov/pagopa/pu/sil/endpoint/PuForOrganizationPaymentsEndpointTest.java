@@ -2,7 +2,10 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -12,6 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +33,9 @@ class PuForOrganizationPaymentsEndpointTest {
   private static final String VALID_ORG_IPA_CODE = "IPA_2";
   private static final String INVALID_ORG_IPA_CODE = "IPA_1";
 
+  @Mock
+  private RegistryProducerService registryProducerServiceMock;
+
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
 
@@ -38,7 +46,7 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   @BeforeEach
-  void clearContexts(){
+  void clearContexts() {
     RequestContextHolder.resetRequestAttributes();
     SecurityContextHolder.clearContext();
 
@@ -46,8 +54,8 @@ class PuForOrganizationPaymentsEndpointTest {
     UserInfo expectedUserInfo = new UserInfo();
     expectedUserInfo.setMappedExternalUserId("USERID");
     expectedUserInfo.setOrganizations(List.of(
-      new UserOrganizationRoles("OID1", 1L, INVALID_ORG_IPA_CODE,"CF_1", "email", List.of("")),
-      new UserOrganizationRoles("OID2", 2L, VALID_ORG_IPA_CODE,"CF_2", "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN))
+      new UserOrganizationRoles("OID1", 1L, INVALID_ORG_IPA_CODE, "CF_1", "email", List.of("")),
+      new UserOrganizationRoles("OID2", 2L, VALID_ORG_IPA_CODE, "CF_2", "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN))
     ));
     configureSecurityContext(expectedUserInfo);
   }
@@ -79,8 +87,84 @@ class PuForOrganizationPaymentsEndpointTest {
   @Test
   void givenAnyWhenPaaSILAutorizzaImportFlussoThenFault() throws Exception {
     testFaultResponse(PaaSILAutorizzaImportFlusso.class,
-                      SilFaults.PAA_SYSTEM_ERROR.code(),
-                      puForOrganizationPaymentsEndpoint::paaSILAutorizzaImportFlusso);
+      SilFaults.PAA_SYSTEM_ERROR.code(),
+      puForOrganizationPaymentsEndpoint::paaSILAutorizzaImportFlusso);
+  }
+
+  // endregion
+
+  // region PasSILImportaDovuto
+
+  @Test
+  void givenValidUserAndValidRequestWhenPaaSILImportaDovutoThenSuccess() throws Exception {
+    // Given
+    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    // When
+    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(SilOutcome.OK.name(), response.getEsito());
+  }
+
+  @Test
+  void givenInvalidUserWhenPaaSILImportaDovutoThenFault() throws Exception {
+    // Given
+    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    // When
+    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.description(), response.getFault().getFaultString());
+    Assertions.assertEquals(SilOutcome.KO.name(), response.getEsito());
+  }
+
+  @Test
+  void givenNullHeaderWhenPaaSILImportaDovutoThenFault() {
+    // Given
+    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
+
+    // When
+    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, null);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
+    Assertions.assertEquals(SilOutcome.KO.name(), response.getEsito());
+  }
+
+  @Test
+  void givenExceptionDuringProcessingWhenPaaSILImportaDovutoThenSystemErrorFault() throws Exception {
+    // Given
+    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    // Simulate exception on REQ event notification
+    Mockito.doThrow(new RuntimeException("Simulated exception"))
+      .when(registryProducerServiceMock).notifySilEvent(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(RegistryEventSubType.REQ), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
+
+    // When
+    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+    Assertions.assertEquals(SilOutcome.KO.name(), response.getEsito());
   }
 
   // endregion
@@ -89,8 +173,8 @@ class PuForOrganizationPaymentsEndpointTest {
   @Test
   void givenAnyWhenPaaSILChiediAvvisiPendentiThenFault() throws Exception {
     testFaultResponse(PaaSILChiediAvvisiPendenti.class,
-                      SilFaults.PAA_SYSTEM_ERROR.code(),
-                      puForOrganizationPaymentsEndpoint::paaSILChiediAvvisiPendenti);
+      SilFaults.PAA_SYSTEM_ERROR.code(),
+      puForOrganizationPaymentsEndpoint::paaSILChiediAvvisiPendenti);
   }
   // endregion
 
@@ -98,8 +182,8 @@ class PuForOrganizationPaymentsEndpointTest {
   @Test
   void givenAnyWhenPaaSILChiediPosizioniAperteThenFault() throws Exception {
     testFaultResponse(PaaSILChiediPosizioniAperte.class,
-                      SilFaults.PAA_SYSTEM_ERROR.code(),
-                      puForOrganizationPaymentsEndpoint::paaSILChiediPosizioniAperte);
+      SilFaults.PAA_SYSTEM_ERROR.code(),
+      puForOrganizationPaymentsEndpoint::paaSILChiediPosizioniAperte);
   }
   // endregion
 
@@ -107,8 +191,8 @@ class PuForOrganizationPaymentsEndpointTest {
   @Test
   void givenAnyWhenPaaSILChiediStoricoPagamentiThenFault() throws Exception {
     testFaultResponse(PaaSILChiediStoricoPagamenti.class,
-                      SilFaults.PAA_SYSTEM_ERROR.code(),
-                      puForOrganizationPaymentsEndpoint::paaSILChiediStoricoPagamenti);
+      SilFaults.PAA_SYSTEM_ERROR.code(),
+      puForOrganizationPaymentsEndpoint::paaSILChiediStoricoPagamenti);
   }
   // endregion
 
@@ -116,8 +200,8 @@ class PuForOrganizationPaymentsEndpointTest {
   @Test
   void givenAnyWhenPaaSILRegistraPagamentoThenFault() throws Exception {
     testFaultResponse(PaaSILRegistraPagamento.class,
-                      SilFaults.PAA_SYSTEM_ERROR.code(),
-                      puForOrganizationPaymentsEndpoint::paaSILRegistraPagamento);
+      SilFaults.PAA_SYSTEM_ERROR.code(),
+      puForOrganizationPaymentsEndpoint::paaSILRegistraPagamento);
   }
   // endregion
 
@@ -126,8 +210,8 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   private <T, R extends Risposta> void testFaultResponse(Class<T> requestClass,
-                                        String faultCode,
-                                        TestFunction<T, R> testFunction) throws Exception {
+                                                         String faultCode,
+                                                         TestFunction<T, R> testFunction) throws Exception {
     T request = podamFactory.manufacturePojo(requestClass);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     //set IPA_2 because the test user is authorized for this org
