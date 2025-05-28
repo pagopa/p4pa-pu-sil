@@ -59,7 +59,6 @@ public class IngestionFlowFileReservationServiceImpl implements IngestionFlowFil
       .queryParam("ingestionFlowFileId", requestDTO.getIngestionFlowFileId())
       .queryParam("ingestionFlowFileType", requestDTO.getIngestionFlowFileType())
       .queryParam("fileOrigin", requestDTO.getFileOrigin())
-      .queryParam("fileName", requestDTO.getFileName())
       .buildAndExpand(requestDTO.getOrganizationId())
       .toUriString();
   }

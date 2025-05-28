@@ -58,8 +58,7 @@ class IngestionFlowFileReservationServiceTest {
                         "/ingestionflowfiles" +
                         "?ingestionFlowFileId=" + ingestionFlowFileId +
                         "&ingestionFlowFileType=" + fileType +
-                        "&fileOrigin=SIL" +
-                        "&fileName=UNKNOWN";
+                        "&fileOrigin=SIL";
 
     assertEquals(expectedUrl, resultUrl);
   }
