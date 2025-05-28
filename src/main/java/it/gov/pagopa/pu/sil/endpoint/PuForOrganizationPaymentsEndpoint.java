@@ -1,8 +1,10 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileReservationService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -16,6 +18,7 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 @Endpoint
@@ -23,6 +26,12 @@ import java.util.function.Supplier;
 public class PuForOrganizationPaymentsEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/ente/";
   public static final String NAME = "PagamentiTelematiciDovutiPagati";
+
+  private final IngestionFlowFileReservationService ingestionFlowFileReservationService;
+
+  public PuForOrganizationPaymentsEndpoint(IngestionFlowFileReservationService ingestionFlowFileReservationService) {
+    this.ingestionFlowFileReservationService = ingestionFlowFileReservationService;
+  }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")
   @ResponsePayload
@@ -40,14 +49,22 @@ public class PuForOrganizationPaymentsEndpoint {
       return notAuthorizedFaultResponse(PaaSILAutorizzaImportFlussoRisposta::new);
     }
 
-    //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
-    return FaultUtils.setFaultOnResponse(
-      new PaaSILAutorizzaImportFlussoRisposta(),
-      SilFaults.PAA_SYSTEM_ERROR,
-      intestazionePPT.getCodIpaEnte(),
-      FaultBean::new,
-      PaaSILAutorizzaImportFlussoRisposta::setFault
-    );
+    String accessToken = SecurityUtils.getAccessToken();
+    try {
+      String uploadUrl = ingestionFlowFileReservationService.uploadUrlGenerator(IngestionFlowFileTypeEnum.DP_INSTALLMENTS, 1L, accessToken);
+      PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+      response.setRequestToken(intestazionePPT.getCodIpaEnte() + UUID.randomUUID());
+      response.setUploadUrl(uploadUrl);
+      return response;
+    } catch (Exception e) {
+      return FaultUtils.setFaultOnResponse(
+        new PaaSILAutorizzaImportFlussoRisposta(),
+        SilFaults.PAA_SYSTEM_ERROR,
+        intestazionePPT.getCodIpaEnte(),
+        FaultBean::new,
+        PaaSILAutorizzaImportFlussoRisposta::setFault
+      );
+    }
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediAvvisiPendenti")
