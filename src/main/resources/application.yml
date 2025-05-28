@@ -143,5 +143,8 @@ rest:
     wait-time-millis: "\${PROCESS_EXECUTIONS_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR:true}"
 
+public-base-url:
+  fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
+
 springdoc:
   writer-with-default-pretty-printer: true
