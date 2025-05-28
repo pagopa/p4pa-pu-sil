@@ -29,7 +29,8 @@ public class PuForOrganizationReconciliationEndpoint {
 
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
     log.info("processing PivotSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
-    //TODO: implement the logic to handle the SOAP Action P4ADEV-2893
+
+
     return FaultUtils.setFaultOnResponse(
       new PivotSILAutorizzaImportFlussoRisposta(),
       SilFaults.PIVOT_SYSTEM_ERROR,
