@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.security;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -56,6 +57,19 @@ public class SecurityUtils {
         .collect(Collectors.toSet());
     }
     return Collections.emptySet();
+  }
+
+  /**
+   * It will return organization info on requested organization IPA code retrieving it from ThreadLocal
+   */
+  public static UserOrganizationRoles getOrganizationInfoFromLoggedUser(String organizationIpaCode) {
+    UserInfo loggedUser = getLoggedUser();
+    if (loggedUser != null && organizationIpaCode != null) {
+      return loggedUser.getOrganizations().stream()
+        .filter(org -> org.getOrganizationIpaCode().equals(organizationIpaCode))
+        .findFirst().orElse(null);
+    }
+    return null;
   }
 
   public static String getAccessToken(){

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
+import it.gov.pagopa.pu.sil.UtilitiesTest;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediAvvisiPendentiRisposta;
@@ -20,6 +21,7 @@ class FaultUtilsTest {
     BiConsumer<Object, Object> faultSetter = (response, bean) -> {
       assertInstanceOf(FaultBean.class, bean);
     };
+    UtilitiesTest.setTraceId("TRACE_ID");
 
     // Act
     Object result = FaultUtils.setFaultOnResponse(
@@ -30,12 +32,14 @@ class FaultUtilsTest {
       faultSetter
     );
 
+    UtilitiesTest.clearTraceIdContext();
+
     // Assert
     assertEquals(responseObj, result);
     assertEquals("Fault String 1", faultBean.getDescription());
-    assertNotNull(faultBean.getId());
+    assertEquals("TRACE_ID", faultBean.getId());
     assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), faultBean.getFaultCode());
     assertEquals(SilFaults.PAA_SYSTEM_ERROR.description(), faultBean.getFaultString());
-    assertEquals(0, faultBean.getSerial());
+    assertNotNull(faultBean.getSerial());
   }
 }

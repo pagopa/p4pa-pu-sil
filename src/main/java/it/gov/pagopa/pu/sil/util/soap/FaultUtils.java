@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.BiConsumer;
@@ -22,14 +23,14 @@ public class FaultUtils {
       fb.setFaultCode(fault.code());
       fb.setDescription(description);
       fb.setFaultString(fault.description());
-      fb.setId(String.valueOf(System.currentTimeMillis()));
-      fb.setSerial(0);
+      fb.setId(Utilities.getTraceId());
+      fb.setSerial(Utilities.systemTimeSecondsFrom2025());
     } else if (faultBean instanceof it.veneto.regione.pagamenti.pivot.ente.FaultBean fb) {
       fb.setFaultCode(fault.code());
       fb.setDescription(description);
       fb.setFaultString(fault.description());
-      fb.setId(String.valueOf(System.currentTimeMillis()));
-      fb.setSerial(0);
+      fb.setId(Utilities.getTraceId());
+      fb.setSerial(Utilities.systemTimeSecondsFrom2025());
     }
     faultSetter.accept(responseObj, faultBean);
     return responseObj;

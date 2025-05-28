@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.event.producer.dto.RegistryEventDTO;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.util.Utilities;
@@ -26,6 +27,8 @@ import java.util.function.Supplier;
 @Slf4j
 @Component
 public class RegistryProducerService {
+
+  public static final String PU_ID = "piattaforma-unitaria";
 
   @Value("${spring.cloud.stream.bindings.registryProducer-out-0.binder}")
   private String binder;
@@ -50,7 +53,7 @@ public class RegistryProducerService {
   public void notifySilEvent(UserInfo loggedUser, String orgFiscalCode,
                              RegistrySilEventType eventType, RegistryEventSubType subType,
                              String requestorId, String grantorId,
-                             String iuv, String nav, boolean outcomeOk, Object body) {
+                             String iuv, String nav, SilOutcome outcome, Object body) {
     try {
       UserOrganizationRoles userOrg = loggedUser.getOrganizations().stream()
         .filter(x -> StringUtils.equals(x.getOrganizationFiscalCode(), orgFiscalCode))
@@ -81,7 +84,7 @@ public class RegistryProducerService {
             .nav(nav)
             .requestorId(requestorId)
             .grantorId(grantorId)
-            .outcome(outcomeOk ? "OK" : "KO")
+            .outcome(outcome.name())
             .body(bodyString)
             .build()
           )
