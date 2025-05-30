@@ -2,11 +2,12 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
+import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -34,7 +35,12 @@ class PuForOrganizationPaymentsEndpointTest {
   private static final String INVALID_ORG_IPA_CODE = "IPA_1";
 
   @Mock
-  private RegistryProducerService registryProducerServiceMock;
+  private RegistryLogger registryLoggerMock;
+
+  @Mock
+  private PaaSILImportaDovutoService paaSILImportaDovutoServiceMock;
+  @Mock
+  private RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -96,75 +102,22 @@ class PuForOrganizationPaymentsEndpointTest {
   // region PasSILImportaDovuto
 
   @Test
-  void givenValidUserAndValidRequestWhenPaaSILImportaDovutoThenSuccess() throws Exception {
+  void givenValidRequestWhenPaaSILImportaDovutoThenRegistryLoggerInvoked() throws Exception {
     // Given
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    // When
-    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
-
-    // Then
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(SilOutcome.OK.name(), response.getEsito());
-  }
-
-  @Test
-  void givenInvalidUserWhenPaaSILImportaDovutoThenFault() throws Exception {
-    // Given
-    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
-    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
-    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.paaSILImportaDovuto), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenReturn(new PaaSILImportaDovutoRisposta());
 
     // When
     PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
 
     // Then
     Assertions.assertNotNull(response);
-    Assertions.assertNotNull(response.getFault());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.description(), response.getFault().getFaultString());
-    Assertions.assertEquals(SilOutcome.KO.name(), response.getEsito());
-  }
-
-  @Test
-  void givenNullHeaderWhenPaaSILImportaDovutoThenFault() {
-    // Given
-    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
-
-    // When
-    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, null);
-
-    // Then
-    Assertions.assertNotNull(response);
-    Assertions.assertNotNull(response.getFault());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
-    Assertions.assertEquals(SilOutcome.KO.name(), response.getEsito());
-  }
-
-  @Test
-  void givenExceptionDuringProcessingWhenPaaSILImportaDovutoThenSystemErrorFault() throws Exception {
-    // Given
-    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
-    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
-    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-
-    // Simulate exception on REQ event notification
-    Mockito.doThrow(new RuntimeException("Simulated exception"))
-      .when(registryProducerServiceMock).notifySilEvent(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(RegistryEventSubType.REQ), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
-
-    // When
-    PaaSILImportaDovutoRisposta response = puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
-
-    // Then
-    Assertions.assertNotNull(response);
-    Assertions.assertNotNull(response.getFault());
-    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
-    Assertions.assertEquals(SilOutcome.KO.name(), response.getEsito());
   }
 
   // endregion

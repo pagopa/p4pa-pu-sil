@@ -5,8 +5,6 @@ import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -173,102 +171,4 @@ public class SecurityUtilsTest {
     Assertions.assertNull(SecurityUtils.removePiiFromURI(null));
   }
 
-  //region test isAdminUser
-  @ParameterizedTest
-  @CsvSource({
-    "true, IPA_2, true",  // Valid admin user for the organization
-    "true, IPA_1, false", // User without admin role for the organization
-    "true, IPA_3, false", // Organization not associated with the user
-    "false, IPA_2, false"  // Invalid user (no logged-in user)
-  })
-  void testIsAdminUser(boolean logged, String organizationIpaCode, boolean expectedResult) {
-    // Given
-    if (logged) {
-      UserInfo expectedUserInfo = new UserInfo();
-      expectedUserInfo.setMappedExternalUserId("USERID");
-      expectedUserInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN))
-      ));
-      configureSecurityContext(expectedUserInfo);
-    }
-
-    // When
-    boolean result = SecurityUtils.isAdminUser(organizationIpaCode);
-
-    // Then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  //endregion
-
-  //region test getOrganizationInfoFromLoggedUser
-  @Test
-  void whenGetOrganizationInfoFromLoggedUserWithValidIpaCodeThenReturnOrganizationInfo() {
-    // Given
-    String organizationIpaCode = "ORG1";
-    UserOrganizationRoles expectedOrganization = new UserOrganizationRoles();
-    expectedOrganization.setOrganizationIpaCode(organizationIpaCode);
-    expectedOrganization.setRoles(List.of("ROLE1"));
-
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(expectedOrganization));
-    configureSecurityContext(userInfo);
-
-    // When
-    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser(organizationIpaCode);
-
-    // Then
-    Assertions.assertSame(expectedOrganization, result);
-  }
-
-  @Test
-  void whenGetOrganizationInfoFromLoggedUserWithInvalidIpaCodeThenReturnNull() {
-    // Given
-    String organizationIpaCode = "INVALID_ORG";
-    UserOrganizationRoles organization = new UserOrganizationRoles();
-    organization.setOrganizationIpaCode("ORG1");
-    organization.setRoles(List.of("ROLE1"));
-
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(organization));
-    configureSecurityContext(userInfo);
-
-    // When
-    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser(organizationIpaCode);
-
-    // Then
-    Assertions.assertNull(result);
-  }
-
-  @Test
-  void whenGetOrganizationInfoFromLoggedUserWithNullIpaCodeThenReturnNull() {
-    // Given
-    UserOrganizationRoles organization = new UserOrganizationRoles();
-    organization.setOrganizationIpaCode("ORG1");
-    organization.setRoles(List.of("ROLE1"));
-
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(organization));
-    configureSecurityContext(userInfo);
-
-    // When
-    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser(null);
-
-    // Then
-    Assertions.assertNull(result);
-  }
-
-  @Test
-  void whenGetOrganizationInfoFromLoggedUserWithNoLoggedUserThenReturnNull() {
-    // Given
-    SecurityContextHolder.clearContext();
-
-    // When
-    UserOrganizationRoles result = SecurityUtils.getOrganizationInfoFromLoggedUser("ORG1");
-
-    // Then
-    Assertions.assertNull(result);
-  }
-  //endregion
 }

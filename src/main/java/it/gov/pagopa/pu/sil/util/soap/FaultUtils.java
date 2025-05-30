@@ -2,6 +2,8 @@ package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.util.Utilities;
+import it.veneto.regione.pagamenti.ente.FaultBean;
+import it.veneto.regione.pagamenti.ente.Risposta;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.BiConsumer;
@@ -34,5 +36,23 @@ public class FaultUtils {
     }
     faultSetter.accept(responseObj, faultBean);
     return responseObj;
+  }
+
+  public static <T extends Risposta> T setFaultOnResponse(T response, SilFaults fault, String description) {
+    return FaultUtils.setFaultOnResponse(response,
+      fault,
+      description,
+      FaultBean::new,
+      T::setFault
+    );
+  }
+
+  public static <T extends it.veneto.regione.pagamenti.pivot.ente.Risposta> T setFaultOnResponse(T response, SilFaults fault, String description) {
+    return FaultUtils.setFaultOnResponse(response,
+      fault,
+      description,
+      it.veneto.regione.pagamenti.pivot.ente.FaultBean::new,
+      T::setFault
+    );
   }
 }

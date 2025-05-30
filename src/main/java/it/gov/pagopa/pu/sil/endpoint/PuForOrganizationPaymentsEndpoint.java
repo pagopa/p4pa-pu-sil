@@ -1,22 +1,19 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
-import it.gov.pagopa.pu.sil.util.Utilities;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
-import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovuti;
-import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
-import it.veneto.regione.schemas._2012.pagamenti.ente.DovutiEntiSecondari;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
@@ -24,10 +21,7 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @Endpoint
 @Slf4j
@@ -35,10 +29,17 @@ public class PuForOrganizationPaymentsEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/ente/";
   public static final String NAME = "PagamentiTelematiciDovutiPagati";
 
-  private final RegistryProducerService registryProducerService;
+  private final RegistryLogger registryLogger;
 
-  public PuForOrganizationPaymentsEndpoint(RegistryProducerService registryProducerService) {
-    this.registryProducerService = registryProducerService;
+  private final PaaSILImportaDovutoService paaSILImportaDovutoService;
+  private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService;
+
+  public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
+                                           PaaSILImportaDovutoService paaSILImportaDovutoService,
+                                           RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService) {
+    this.registryLogger = registryLogger;
+    this.paaSILImportaDovutoService = paaSILImportaDovutoService;
+    this.registryExtraInfoHandlerPaaSILImportaDovutoService = registryExtraInfoHandlerPaaSILImportaDovutoService;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")
@@ -46,15 +47,17 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILAutorizzaImportFlussoRisposta paaSILAutorizzaImportFlusso(
     @RequestPayload PaaSILAutorizzaImportFlusso request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
     log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
 
     //check if the logged user has the right to call this endpoint
-    if (intestazionePPT == null || !SecurityUtils.isAdminUser(intestazionePPT.getCodIpaEnte())) {
+    if (intestazionePPT == null || !AuthorizationService.isAdminRole(intestazionePPT.getCodIpaEnte(), userInfo)) {
       log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
         Optional.ofNullable(SecurityUtils.getLoggedUser()).map(UserInfo::getUserId).orElse(null),
         Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
-      return notAuthorizedFaultResponse(PaaSILAutorizzaImportFlussoRisposta::new);
+      return notAuthorizedFaultResponse(response);
     }
 
     //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
@@ -72,69 +75,26 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILImportaDovutoRisposta paaSILImportaDovuto(
     @RequestPayload PaaSILImportaDovuto request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-
+    PaaSILImportaDovutoRisposta faultResponse = new PaaSILImportaDovutoRisposta();
+    faultResponse.setEsito(SilOutcome.KO.name());
     String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILImportaDovuto");
-    PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
-    response.setEsito(SilOutcome.KO.name());
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
 
-    //check if the logged user has the right to call this endpoint
-    String clientId = Optional.ofNullable(SecurityUtils.getLoggedUser()).map(UserInfo::getUserId).orElse(null);
-    if (!SecurityUtils.isAdminUser(orgIpaCode)) {
-      log.error("ClientId [{}] not authorized to call paaSILImportaDovuto for organization {}", clientId, orgIpaCode);
-      return notAuthorizedFaultResponse(() -> response);
-    }
+    //write the request/response to the registry, and execute the service
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILImportaDovuto,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
+      (Exception e) -> systemErrorFaultResponse(faultResponse, e),
+      () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
+      registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo
+    );
 
-    String orgFiscalCode = SecurityUtils.getOrganizationInfoFromLoggedUser(orgIpaCode).getOrganizationFiscalCode();
 
-    String eventIuv = null;
-    Object eventBody = null;
-    SilOutcome outcome = SilOutcome.KO;
-    //try-catch-finally block to handle the response and create the RESPONSE event body
-    try {
-
-      //try-catch-finally block to handle the unmarshalling of the request and create the REQUEST event body
-      try {
-        //TODO P4ADEV-3013 : unmarshall the Dovuti object
-        Dovuti dovutiObject = new Dovuti();
-        dovutiObject.setDatiVersamento(new CtDatiVersamentoDovuti());
-        //TODO P4ADEV-3013 : unmarshall the DovutiEntiSecondari object
-        DovutiEntiSecondari dovutiEntiSecondariObject = null;
-
-        eventIuv = dovutiObject.getDatiVersamento().getIdentificativoUnivocoVersamento();
-        Map<String, Object> eventBodyMap = new HashMap<>();
-        eventBodyMap.put("flagGeneraIuv", request.isFlagGeneraIuv());
-        eventBodyMap.put("dovuto", dovutiObject);
-        if (dovutiEntiSecondariObject != null) {
-          eventBodyMap.put("dovutoSecondario", dovutiEntiSecondariObject);
-        }
-        eventBody = eventBodyMap;
-        outcome = SilOutcome.OK;
-      } finally {
-        registryProducerService.notifySilEvent(SecurityUtils.getLoggedUser(), orgFiscalCode,
-          RegistrySilEventType.paaSILImportaDovuto, RegistryEventSubType.REQ,
-          clientId, RegistryProducerService.PU_ID, eventIuv, Utilities.iuv2Nav(eventIuv),
-          outcome, ObjectUtils.firstNonNull(eventBody, request));
-        eventBody = null; // reset eventBody to avoid sending it for response event
-      }
-
-      //TODO P4ADEV-3015..3019: implement business logic
-      eventIuv = response.getIdentificativoUnivocoVersamento();
-      eventBody = String.format("debtPositionId[%s]","TODO"); //TODO P4ADEV-3015..3019: replace with actual debt position ID
-      outcome = SilOutcome.OK;
-    } catch (Exception e) {
-      outcome = SilOutcome.KO;
-      systemErrorFaultResponse(() -> response, e);
-      eventBody = String.format("exception[%s] %s",e.getClass().getName(), e);
-    } finally {
-      response.setEsito(outcome.name());
-
-      registryProducerService.notifySilEvent(SecurityUtils.getLoggedUser(), orgFiscalCode,
-        RegistrySilEventType.paaSILImportaDovuto, RegistryEventSubType.RESP,
-        clientId, RegistryProducerService.PU_ID, eventIuv, Utilities.iuv2Nav(eventIuv),
-        outcome, eventBody);
-    }
-
-    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediAvvisiPendenti")
@@ -193,8 +153,7 @@ public class PuForOrganizationPaymentsEndpoint {
     );
   }
 
-  private <T extends Risposta> T notAuthorizedFaultResponse(Supplier<T> responseSupplier) {
-    T response = responseSupplier.get();
+  private <T extends Risposta> T notAuthorizedFaultResponse(T response) {
     FaultUtils.setFaultOnResponse(response,
       SilFaults.PAA_ENTE_NON_VALIDO,
       "Utente non autorizzato",
@@ -204,9 +163,9 @@ public class PuForOrganizationPaymentsEndpoint {
     return response;
   }
 
-  private <T extends Risposta> T systemErrorFaultResponse(Supplier<T> responseSupplier, Exception e) {
+
+  private <T extends Risposta> T systemErrorFaultResponse(T response, Exception e) {
     log.error("System error occurred", e);
-    T response = responseSupplier.get();
     FaultUtils.setFaultOnResponse(response,
       SilFaults.PAA_SYSTEM_ERROR,
       "Errore di sistema",
