@@ -1,27 +1,38 @@
 package it.gov.pagopa.pu.sil.enums;
 
+import lombok.Getter;
+
+@Getter
 @SuppressWarnings("java:S115") // Suppressing constant naming warning: this is required to match with the api name
 public enum RegistrySilEventType {
+
   //API "opzione 1" backward compatible with MyPay - MyPivot
-  paaSILAutorizzaImportFlusso,
-  paaSILChiediStatoImportFlusso,
-  paaSILImportaDovuto,
-  paaSILPrenotaExportFlusso,
-  paaSILPrenotaExportFlussoIncrementaleConRicevuta,
-  paaSILChiediStatoExportFlusso,
-  paaSILInviaDovuti,
-  paaSILVerificaAvviso,
-  paaSILChiediPagati,
-  paaSILChiediPagatiConRicevuta,
-  paaSILInviaCarrelloDovuti,
-  paaSILChiediEsitoCarrelloDovuti,
-  pivotSILAutorizzaImportFlusso,
-  pivotSILChiediStatoImportFlusso,
-  pivotSILAutorizzaImportFlussoTesoreria,
-  pivotSILChiediStatoImportFlussoTesoreria,
-  pivotSILPrenotaExportFlussoRiconciliazione,
-  pivotSILChiediStatoExportFlussoRiconciliazione,
-  pivotSILChiediAccertamento,
-  attualizzazioneImporti,
-  notificaPagamento
+  paaSILAutorizzaImportFlusso(true),
+  paaSILChiediStatoImportFlusso(true),
+  paaSILImportaDovuto(true),
+  paaSILPrenotaExportFlusso(true),
+  paaSILPrenotaExportFlussoIncrementaleConRicevuta(true),
+  paaSILChiediStatoExportFlusso(true),
+  paaSILInviaDovuti(true),
+  paaSILVerificaAvviso(true),
+  paaSILChiediPagati(true),
+  paaSILChiediPagatiConRicevuta(true),
+  paaSILInviaCarrelloDovuti(true),
+  paaSILChiediEsitoCarrelloDovuti(true),
+  pivotSILAutorizzaImportFlusso(true),
+  pivotSILChiediStatoImportFlusso(true),
+  pivotSILAutorizzaImportFlussoTesoreria(true),
+  pivotSILChiediStatoImportFlussoTesoreria(true),
+  pivotSILPrenotaExportFlussoRiconciliazione(true),
+  pivotSILChiediStatoExportFlussoRiconciliazione(true),
+  pivotSILChiediAccertamento(true),
+  attualizzazioneImporti(false),
+  notificaPagamento(false);
+
+  private final boolean exposedByPU;
+
+  RegistrySilEventType(boolean exposedByPU) {
+    this.exposedByPU = exposedByPU;
+  }
+
 }

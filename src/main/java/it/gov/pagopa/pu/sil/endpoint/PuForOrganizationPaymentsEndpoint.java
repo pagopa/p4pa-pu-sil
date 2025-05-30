@@ -1,10 +1,14 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileReservationService;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -18,8 +22,6 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Supplier;
 
 @Endpoint
 @Slf4j
@@ -27,51 +29,79 @@ public class PuForOrganizationPaymentsEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/ente/";
   public static final String NAME = "PagamentiTelematiciDovutiPagati";
 
-  private final IngestionFlowFileReservationService ingestionFlowFileReservationService;
+  private final RegistryLogger registryLogger;
 
-  public PuForOrganizationPaymentsEndpoint(IngestionFlowFileReservationService ingestionFlowFileReservationService) {
-    this.ingestionFlowFileReservationService = ingestionFlowFileReservationService;
+  private final PaaSILImportaDovutoService paaSILImportaDovutoService;
+  private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService;
+
+  public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
+                                           PaaSILImportaDovutoService paaSILImportaDovutoService,
+                                           RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService) {
+    this.registryLogger = registryLogger;
+    this.paaSILImportaDovutoService = paaSILImportaDovutoService;
+    this.registryExtraInfoHandlerPaaSILImportaDovutoService = registryExtraInfoHandlerPaaSILImportaDovutoService;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")
   @ResponsePayload
   public PaaSILAutorizzaImportFlussoRisposta paaSILAutorizzaImportFlusso(
-      @RequestPayload PaaSILAutorizzaImportFlusso request,
-      @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header){
+    @RequestPayload PaaSILAutorizzaImportFlusso request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
     IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
     log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
 
     //check if the logged user has the right to call this endpoint
-    if(intestazionePPT==null || !SecurityUtils.isAdminUser(intestazionePPT.getCodIpaEnte())){
+    if (intestazionePPT == null || !AuthorizationService.isAdminRole(intestazionePPT.getCodIpaEnte(), userInfo)) {
       log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
         Optional.ofNullable(SecurityUtils.getLoggedUser()).map(UserInfo::getUserId).orElse(null),
-        Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null) );
-      return notAuthorizedFaultResponse(PaaSILAutorizzaImportFlussoRisposta::new);
+        Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
+      return notAuthorizedFaultResponse(response);
     }
 
-    String accessToken = SecurityUtils.getAccessToken();
-    try {
-      String uploadUrl = ingestionFlowFileReservationService.uploadUrlGenerator(IngestionFlowFileTypeEnum.DP_INSTALLMENTS, 1L, accessToken);
-      PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
-      response.setRequestToken(intestazionePPT.getCodIpaEnte() + UUID.randomUUID());
-      response.setUploadUrl(uploadUrl);
-      return response;
-    } catch (Exception e) {
-      return FaultUtils.setFaultOnResponse(
-        new PaaSILAutorizzaImportFlussoRisposta(),
-        SilFaults.PAA_SYSTEM_ERROR,
-        intestazionePPT.getCodIpaEnte(),
-        FaultBean::new,
-        PaaSILAutorizzaImportFlussoRisposta::setFault
-      );
-    }
+    //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
+    return FaultUtils.setFaultOnResponse(
+      new PaaSILAutorizzaImportFlussoRisposta(),
+      SilFaults.PAA_SYSTEM_ERROR,
+      intestazionePPT.getCodIpaEnte(),
+      FaultBean::new,
+      PaaSILAutorizzaImportFlussoRisposta::setFault
+    );
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILImportaDovuto")
+  @ResponsePayload
+  public PaaSILImportaDovutoRisposta paaSILImportaDovuto(
+    @RequestPayload PaaSILImportaDovuto request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    PaaSILImportaDovutoRisposta faultResponse = new PaaSILImportaDovutoRisposta();
+    faultResponse.setEsito(SilOutcome.KO.name());
+    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILImportaDovuto");
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+
+    //write the request/response to the registry, and execute the service
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILImportaDovuto,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
+      (Exception e) -> systemErrorFaultResponse(faultResponse, e),
+      () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
+      registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo
+    );
+
+
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediAvvisiPendenti")
   @ResponsePayload
   public PaaSILChiediAvvisiPendentiRisposta paaSILChiediAvvisiPendenti(
-      @RequestPayload PaaSILChiediAvvisiPendenti request,
-      @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    @RequestPayload PaaSILChiediAvvisiPendenti request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     return FaultUtils.setFaultOnResponse(
       new PaaSILChiediAvvisiPendentiRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
@@ -84,8 +114,8 @@ public class PuForOrganizationPaymentsEndpoint {
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediPosizioniAperte")
   @ResponsePayload
   public PaaSILChiediPosizioniAperteRisposta paaSILChiediPosizioniAperte(
-      @RequestPayload PaaSILChiediPosizioniAperte request,
-      @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    @RequestPayload PaaSILChiediPosizioniAperte request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     return FaultUtils.setFaultOnResponse(
       new PaaSILChiediPosizioniAperteRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
@@ -98,8 +128,8 @@ public class PuForOrganizationPaymentsEndpoint {
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStoricoPagamenti")
   @ResponsePayload
   public PaaSILChiediStoricoPagamentiRisposta paaSILChiediStoricoPagamenti(
-      @RequestPayload PaaSILChiediStoricoPagamenti request,
-      @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    @RequestPayload PaaSILChiediStoricoPagamenti request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     return FaultUtils.setFaultOnResponse(
       new PaaSILChiediStoricoPagamentiRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
@@ -112,8 +142,8 @@ public class PuForOrganizationPaymentsEndpoint {
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILRegistraPagamento")
   @ResponsePayload
   public PaaSILRegistraPagamentoRisposta paaSILRegistraPagamento(
-      @RequestPayload PaaSILRegistraPagamento request,
-      @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    @RequestPayload PaaSILRegistraPagamento request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     return FaultUtils.setFaultOnResponse(
       new PaaSILRegistraPagamentoRisposta(),
       SilFaults.PAA_SYSTEM_ERROR,
@@ -123,15 +153,35 @@ public class PuForOrganizationPaymentsEndpoint {
     );
   }
 
-  private <T extends Risposta> T notAuthorizedFaultResponse(Supplier<T> responseSupplier){
-    FaultBean fault = new FaultBean();
-    fault.setFaultCode(SilFaults.PAA_ENTE_NON_VALIDO.code());
-    fault.setFaultString(SilFaults.PAA_ENTE_NON_VALIDO.description());
-    fault.setDescription("Utente non autorizzato");
-    fault.setId(String.valueOf(System.currentTimeMillis()));
-    fault.setSerial(0);
-    T response = responseSupplier.get();
-    response.setFault(fault);
+  private <T extends Risposta> T notAuthorizedFaultResponse(T response) {
+    FaultUtils.setFaultOnResponse(response,
+      SilFaults.PAA_ENTE_NON_VALIDO,
+      "Utente non autorizzato",
+      FaultBean::new,
+      T::setFault
+    );
     return response;
   }
+
+
+  private <T extends Risposta> T systemErrorFaultResponse(T response, Exception e) {
+    log.error("System error occurred", e);
+    FaultUtils.setFaultOnResponse(response,
+      SilFaults.PAA_SYSTEM_ERROR,
+      "Errore di sistema",
+      FaultBean::new,
+      T::setFault
+    );
+    return response;
+  }
+
+  private String getOrganizationIpaCodeFromHeader(SoapHeaderElement header, String operationName) {
+    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
+    String orgIpaCode = Optional.ofNullable(intestazionePPT)
+      .map(IntestazionePPT::getCodIpaEnte)
+      .orElse(null);
+    log.info("processing {} orgIpaCode[{}]", operationName, orgIpaCode);
+    return orgIpaCode;
+  }
+
 }
