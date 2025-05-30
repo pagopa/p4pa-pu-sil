@@ -25,13 +25,13 @@ public class Utilities {
     if (iuv == null || iuv.isBlank()) {
       return null;
     }
-    return "3"+iuv;
+    return Constants.AUX_DIGIT+iuv;
   }
 
   public static String nav2Iuv(String nav) {
     if (nav == null || nav.isBlank()) {
       return null;
-    } else if (nav.length() < 2 || !nav.startsWith("3")) {
+    } else if (nav.length() < 2 || !nav.startsWith(Constants.AUX_DIGIT)) {
       throw new IllegalArgumentException("Invalid NAV format: " + nav);
     }
 
