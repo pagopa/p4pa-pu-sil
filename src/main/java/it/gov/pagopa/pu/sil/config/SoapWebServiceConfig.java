@@ -35,7 +35,7 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
 
   public static final String WS_PATH_PAYMENTS = WebSecurityConfig.SOAP_WS_BASE_PATH+"/payments/";
   public static final String WS_PATH_RECONCILIATION = WebSecurityConfig.SOAP_WS_BASE_PATH+"/reconciliation/";
-  private static final String SOAP_RESOURCES_FOLDER = "soap/wsdl/";
+  public static final String SOAP_RESOURCES_FOLDER = "soap/wsdl/";
 
   private static final String WSDL_PAYMENTS = "payments/";
   private static final String WSDL_RECONCILIATION = "reconciliation/";

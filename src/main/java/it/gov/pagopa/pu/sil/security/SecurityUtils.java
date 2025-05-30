@@ -68,15 +68,4 @@ public class SecurityUtils {
       : null;
   }
 
-  public static boolean isAdminUser(String organizationIpaCode) {
-    UserInfo loggedUser = getLoggedUser();
-    if (loggedUser != null && organizationIpaCode != null) {
-      return loggedUser.getOrganizations().stream()
-        .anyMatch(org ->
-          org.getOrganizationIpaCode().equals(organizationIpaCode) &&
-          org.getRoles().contains(OPERATOR_ROLE_ADMIN));
-    }
-    return false;
-  }
-
 }
