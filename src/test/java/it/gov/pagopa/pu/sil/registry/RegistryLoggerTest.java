@@ -53,7 +53,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(null, blIuv, SilOutcome.OK), e -> null);
 
     // Then
@@ -95,7 +95,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(null, null, SilOutcome.OK), e -> null, () -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
@@ -142,7 +142,7 @@ class RegistryLoggerTest {
     Object request = new Object();
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(null, null, SilOutcome.OK), e -> null, () -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue", RegistryLogger.SKIP_XML_BODY_KEY, true);
@@ -194,7 +194,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(response), any())).thenReturn(xmlResponse);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(response, blIuv, SilOutcome.OK), e -> null);
 
     // Then
@@ -240,7 +240,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(response), any())).thenReturn(xmlResponse);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
@@ -289,7 +289,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn("<xml>mockRequest</xml>");
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue:"+r, RegistryLogger.SKIP_XML_BODY_KEY, true);
@@ -341,7 +341,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(fallbackResponse), any())).thenReturn(xmlFallbackResponse);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> {
         throw new RuntimeException("Mock Exception");
       }, e -> fallbackResponse);
@@ -388,7 +388,7 @@ class RegistryLoggerTest {
       any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
       () -> Triple.of(response, null, SilOutcome.OK), e -> null);
 
     // Then
@@ -425,13 +425,13 @@ class RegistryLoggerTest {
     String orgFiscalCode = "mockFiscalCode";
     RegistrySilEventType eventType = RegistrySilEventType.attualizzazioneImporti;
     String iuv = "mockIUV";
-    String serviceId = "mockServiceId";
+    String orgSilServiceName = "mockOrgSilServiceName";
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, serviceId,
+    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, orgSilServiceName,
       () -> Triple.of(null, null, SilOutcome.OK), e -> null);
 
     // Then
@@ -443,7 +443,7 @@ class RegistryLoggerTest {
       eq(eventType),
       argThat(e -> e.equals(RegistryEventSubType.REQ)),
       eq(RegistryProducerService.PU_ID),
-      eq(serviceId),
+      eq(orgSilServiceName),
       eq(iuv),
       any(),
       eq(SilOutcome.OK),
@@ -454,7 +454,7 @@ class RegistryLoggerTest {
       eq(orgFiscalCode),
       eq(eventType),
       argThat(e -> e.equals(RegistryEventSubType.RESP)),
-      eq(serviceId),
+      eq(orgSilServiceName),
       eq(RegistryProducerService.PU_ID),
       eq(iuv),
       any(),

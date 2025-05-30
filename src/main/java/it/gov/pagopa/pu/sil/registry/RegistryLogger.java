@@ -33,15 +33,15 @@ public class RegistryLogger {
     this.registryProducerService = registryProducerService;
   }
 
-  public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String serviceSilId,
+  public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String orgSilServiceName,
                           Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler) {
-    return this.execute(orgFiscalCode, eventType, iuv, request, loggedUser, serviceSilId, requestHandler, exceptionHandler, null, null);
+    return this.execute(orgFiscalCode, eventType, iuv, request, loggedUser, orgSilServiceName, requestHandler, exceptionHandler, null, null);
   }
 
-  public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String serviceSilId,
+  public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String orgSilServiceName,
                           Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler,
                           Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
-    produceReqRegistryEvent(orgFiscalCode, eventType, iuv, request, loggedUser, serviceSilId, registryBodyRequestExtraInfoRetriever);
+    produceReqRegistryEvent(orgFiscalCode, eventType, iuv, request, loggedUser, orgSilServiceName, registryBodyRequestExtraInfoRetriever);
     Triple<O, String, SilOutcome> response2outcome = Triple.of(null, null, SilOutcome.KO);
     try {
       response2outcome = requestHandler.get();
@@ -49,13 +49,13 @@ public class RegistryLogger {
       response2outcome = Triple.of(exceptionHandler.apply(e), null, SilOutcome.KO);
     } finally {
       produceRespRegistryEvent(orgFiscalCode, eventType, StringUtils.firstNonBlank(response2outcome.getMiddle(), iuv),
-        response2outcome.getLeft(), response2outcome.getRight(), loggedUser, serviceSilId, registryBodyResponseExtraInfoExtractor);
+        response2outcome.getLeft(), response2outcome.getRight(), loggedUser, orgSilServiceName, registryBodyResponseExtraInfoExtractor);
     }
     return response2outcome.getLeft();
   }
 
   private <I> void produceReqRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser,
-                                           String serviceSilId, Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever) {
+                                           String orgSilServiceName, Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever) {
     try {
       Object body = null;
       if (registryBodyRequestExtraInfoRetriever != null) {
@@ -69,7 +69,7 @@ public class RegistryLogger {
       } else if (request != null) {
         body = jaxbTransformService.marshalling(request, (Class<I>) request.getClass());
       }
-      produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, serviceSilId, RegistryEventSubType.REQ, SilOutcome.OK);
+      produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, orgSilServiceName, RegistryEventSubType.REQ, SilOutcome.OK);
     } catch (Exception e) {
       log.error("Error producing request registry event for orgFiscalCode: {}, eventType: {}, iuv: {}", orgFiscalCode, eventType, iuv, e);
       // In case of error in producing the request event, we do not throw an exception to avoid breaking the flow
@@ -78,7 +78,7 @@ public class RegistryLogger {
   }
 
   private <O> void produceRespRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, O response, SilOutcome outcome,
-                                            UserInfo loggedUser, String serviceSilId, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
+                                            UserInfo loggedUser, String orgSilServiceName, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
     try {
       Object body = null;
       if (registryBodyResponseExtraInfoExtractor != null) {
@@ -92,7 +92,7 @@ public class RegistryLogger {
       } else if (response != null) {
         body = jaxbTransformService.marshalling(response, (Class<O>) response.getClass());
       }
-      produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, serviceSilId, RegistryEventSubType.RESP, outcome);
+      produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, orgSilServiceName, RegistryEventSubType.RESP, outcome);
     } catch (Exception e) {
       log.error("Error producing response registry event for orgFiscalCode: {}, eventType: {}, iuv: {}", orgFiscalCode, eventType, iuv, e);
       // In case of error in producing the response event, we do not throw an exception to avoid breaking the flow
@@ -101,7 +101,7 @@ public class RegistryLogger {
   }
 
   private void produceRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, Object body,
-                                    UserInfo loggedUser, String serviceSilId, RegistryEventSubType eventSubType, SilOutcome outcome) {
+                                    UserInfo loggedUser, String orgSilServiceName, RegistryEventSubType eventSubType, SilOutcome outcome) {
     String requestorId;
     String grantorId;
     if (eventType.isExposedByPU() && RegistryEventSubType.REQ.equals(eventSubType)) {
@@ -112,9 +112,9 @@ public class RegistryLogger {
       grantorId = loggedUser.getUserId();
     } else if (RegistryEventSubType.REQ.equals(eventSubType)) {
       requestorId = RegistryProducerService.PU_ID;
-      grantorId = serviceSilId;
+      grantorId = orgSilServiceName;
     } else {
-      requestorId = serviceSilId;
+      requestorId = orgSilServiceName;
       grantorId = RegistryProducerService.PU_ID;
     }
     registryProducerService.notifySilEvent(
