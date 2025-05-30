@@ -5,6 +5,7 @@ import it.veneto.regione.pagamenti.ente.ElementoListaDovutiEntiSecondari;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.ws.soap.SoapHeaderElement;
 
 import java.nio.charset.StandardCharsets;
@@ -21,9 +22,8 @@ public class RegistryExtraInfoHandlerPaaSILImportaDovuto {
     } else {
       body.put("dovuto", null);
     }
-    if (request.getListaDovutiEntiSecondari() != null
-      && request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris() != null
-      && !request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris().isEmpty()) {
+    if (request.getListaDovutiEntiSecondari() != null &&
+      !CollectionUtils.isEmpty(request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris())) {
       body.put("dovutiEntiSecondariList", request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris().stream()
         .map(ElementoListaDovutiEntiSecondari::getDovutiEntiSecondari)
         .map(d -> new String(d, StandardCharsets.UTF_8))
