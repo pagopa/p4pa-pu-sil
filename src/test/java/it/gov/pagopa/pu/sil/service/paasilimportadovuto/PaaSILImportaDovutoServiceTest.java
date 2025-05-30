@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoServ
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +35,7 @@ class PaaSILImportaDovutoServiceTest {
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
 
     //when
-    Pair<PaaSILImportaDovutoRisposta, SilOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
+    Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
 
     //verify
     Assertions.assertNotNull(response);
@@ -43,6 +43,7 @@ class PaaSILImportaDovutoServiceTest {
     Assertions.assertNotNull(response.getLeft());
     Assertions.assertEquals(SilOutcome.OK.name(), response.getLeft().getEsito());
     Assertions.assertNull(response.getLeft().getFault());
+    Assertions.assertNotNull(response.getMiddle());
   }
 
   @Test
@@ -53,7 +54,7 @@ class PaaSILImportaDovutoServiceTest {
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
 
     //when
-    Pair<PaaSILImportaDovutoRisposta, SilOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
+    Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
 
     //verify
     Assertions.assertNotNull(response);
@@ -62,5 +63,6 @@ class PaaSILImportaDovutoServiceTest {
     Assertions.assertEquals(SilOutcome.KO.name(), response.getLeft().getEsito());
     Assertions.assertNotNull(response.getLeft().getFault());
     Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.name(), response.getLeft().getFault().getFaultCode());
+    Assertions.assertNull(response.getMiddle());
   }
 }

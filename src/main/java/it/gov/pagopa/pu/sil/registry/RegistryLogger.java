@@ -8,7 +8,8 @@ import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -33,21 +34,22 @@ public class RegistryLogger {
   }
 
   public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String serviceSilId,
-                          Supplier<Pair<O, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler) {
+                          Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler) {
     return this.execute(orgFiscalCode, eventType, iuv, request, loggedUser, serviceSilId, requestHandler, exceptionHandler, null, null);
   }
 
   public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String serviceSilId,
-                          Supplier<Pair<O, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler,
+                          Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler,
                           Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
     produceReqRegistryEvent(orgFiscalCode, eventType, iuv, request, loggedUser, serviceSilId, registryBodyRequestExtraInfoRetriever);
-    Pair<O, SilOutcome> response2outcome = Pair.of(null, SilOutcome.KO);
+    Triple<O, String, SilOutcome> response2outcome = Triple.of(null, null, SilOutcome.KO);
     try {
       response2outcome = requestHandler.get();
     } catch (Exception e) {
-      response2outcome = Pair.of(exceptionHandler.apply(e), SilOutcome.KO);
+      response2outcome = Triple.of(exceptionHandler.apply(e), null, SilOutcome.KO);
     } finally {
-      produceRespRegistryEvent(orgFiscalCode, eventType, iuv, response2outcome.getLeft(), response2outcome.getRight(), loggedUser, serviceSilId, registryBodyResponseExtraInfoExtractor);
+      produceRespRegistryEvent(orgFiscalCode, eventType, StringUtils.firstNonBlank(response2outcome.getMiddle(), iuv),
+        response2outcome.getLeft(), response2outcome.getRight(), loggedUser, serviceSilId, registryBodyResponseExtraInfoExtractor);
     }
     return response2outcome.getLeft();
   }

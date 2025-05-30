@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,28 +17,28 @@ import java.util.Optional;
 @Slf4j
 public class PaaSILImportaDovutoService {
 
-  public Pair<PaaSILImportaDovutoRisposta, SilOutcome> paaSILImportaDovuto(UserInfo userInfo, String orgIpaCode, PaaSILImportaDovuto request) {
+  public Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> paaSILImportaDovuto(UserInfo userInfo, String orgIpaCode, PaaSILImportaDovuto request) {
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call paaSILImportaDovuto for organization {}", clientId, orgIpaCode);
-      return setFaultResponsePair(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
+      return setFaultResponse(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
     }
 
     //TODO P4ADEV-3013 : unmarshall the Dovuti and the DovutiEntiSecondari object
 
     //TODO P4ADEV-3015..3019: implement business logic
-
+    String iuv = "iuv";
     response.setEsito(SilOutcome.OK.name());
-    return Pair.of(response, SilOutcome.OK);
+    return Triple.of(response, iuv, SilOutcome.OK);
   }
 
-  private Pair<PaaSILImportaDovutoRisposta, SilOutcome> setFaultResponsePair(SilFaults fault, String description){
+  private Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> setFaultResponse(SilFaults fault, String description){
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
     response.setEsito(SilOutcome.KO.name());
-    return Pair.of(FaultUtils.setFaultOnResponse(response, fault, description), SilOutcome.KO);
+    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, SilOutcome.KO);
   }
 
 }

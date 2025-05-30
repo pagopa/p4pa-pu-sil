@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,13 +47,14 @@ class RegistryLoggerTest {
     String orgFiscalCode = "mockFiscalCode";
     RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
     String iuv = "mockIUV";
+    String blIuv = "businessLogicIUV";
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(null, SilOutcome.OK), e -> null);
+      () -> Triple.of(null, blIuv, SilOutcome.OK), e -> null);
 
     // Then
     assertNull(actualResponse);
@@ -77,7 +78,7 @@ class RegistryLoggerTest {
       argThat(e -> e.equals(RegistryEventSubType.RESP)),
       eq(RegistryProducerService.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
+      eq(blIuv),
       any(),
       eq(SilOutcome.OK),
       any());
@@ -95,7 +96,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(null, SilOutcome.OK), e -> null, () -> {
+      () -> Triple.of(null, null, SilOutcome.OK), e -> null, () -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
       }, null);
@@ -142,7 +143,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(null, SilOutcome.OK), e -> null, () -> {
+      () -> Triple.of(null, null, SilOutcome.OK), e -> null, () -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue", RegistryLogger.SKIP_XML_BODY_KEY, true);
       }, null);
@@ -185,6 +186,7 @@ class RegistryLoggerTest {
     String orgFiscalCode = "mockFiscalCode";
     RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
     String iuv = "mockIUV";
+    String blIuv = "businessLogicIUV";
     String xmlResponse = "<xml>mockResponse</xml>";
     Object request = new Object();
     Object response = new Object();
@@ -193,7 +195,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(response, SilOutcome.OK), e -> null);
+      () -> Triple.of(response, blIuv, SilOutcome.OK), e -> null);
 
     // Then
     assertEquals(response, actualResponse);
@@ -218,7 +220,7 @@ class RegistryLoggerTest {
       argThat(e -> e.equals(RegistryEventSubType.RESP)),
       eq(RegistryProducerService.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
+      eq(blIuv),
       any(),
       eq(SilOutcome.OK),
       eq(xmlResponse)
@@ -239,7 +241,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(response, SilOutcome.OK), e -> null, null, r -> {
+      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
       });
@@ -288,7 +290,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(response, SilOutcome.OK), e -> null, null, r -> {
+      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue:"+r, RegistryLogger.SKIP_XML_BODY_KEY, true);
       });
@@ -387,7 +389,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockServiceId",
-      () -> Pair.of(response, SilOutcome.OK), e -> null);
+      () -> Triple.of(response, null, SilOutcome.OK), e -> null);
 
     // Then
     assertEquals(response, actualResponse);
@@ -430,7 +432,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, serviceId,
-      () -> Pair.of(null, SilOutcome.OK), e -> null);
+      () -> Triple.of(null, null, SilOutcome.OK), e -> null);
 
     // Then
     assertNull(actualResponse);
