@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
@@ -8,6 +9,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -32,13 +34,16 @@ public class PuForOrganizationPaymentsEndpoint {
   private final RegistryLogger registryLogger;
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
+  private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
   private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService;
 
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
                                            PaaSILImportaDovutoService paaSILImportaDovutoService,
+                                           IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
                                            RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService) {
     this.registryLogger = registryLogger;
     this.paaSILImportaDovutoService = paaSILImportaDovutoService;
+    this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
     this.registryExtraInfoHandlerPaaSILImportaDovutoService = registryExtraInfoHandlerPaaSILImportaDovutoService;
   }
 
@@ -49,24 +54,21 @@ public class PuForOrganizationPaymentsEndpoint {
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
     UserInfo userInfo = SecurityUtils.getLoggedUser();
-    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILAutorizzaImportFlusso");
 
-    //check if the logged user has the right to call this endpoint
-    if (intestazionePPT == null || !AuthorizationService.isAdminRole(intestazionePPT.getCodIpaEnte(), userInfo)) {
-      log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
-        Optional.ofNullable(SecurityUtils.getLoggedUser()).map(UserInfo::getUserId).orElse(null),
-        Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
-      return notAuthorizedFaultResponse(response);
-    }
-
-    //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
-    return FaultUtils.setFaultOnResponse(
-      new PaaSILAutorizzaImportFlussoRisposta(),
-      SilFaults.PAA_SYSTEM_ERROR,
-      intestazionePPT.getCodIpaEnte(),
-      FaultBean::new,
-      PaaSILAutorizzaImportFlussoRisposta::setFault
+    //write the request/response to the registry, and execute the service
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILAutorizzaImportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(userInfo, accessToken, orgIpaCode, IngestionFlowFileTypeEnum.DP_INSTALLMENTS),
+      (Exception e) -> systemErrorFaultResponse(response, e),
+      null,
+      null
     );
   }
 
@@ -152,17 +154,6 @@ public class PuForOrganizationPaymentsEndpoint {
       PaaSILRegistraPagamentoRisposta::setFault
     );
   }
-
-  private <T extends Risposta> T notAuthorizedFaultResponse(T response) {
-    FaultUtils.setFaultOnResponse(response,
-      SilFaults.PAA_ENTE_NON_VALIDO,
-      "Utente non autorizzato",
-      FaultBean::new,
-      T::setFault
-    );
-    return response;
-  }
-
 
   private <T extends Risposta> T systemErrorFaultResponse(T response, Exception e) {
     log.error("System error occurred", e);

@@ -60,6 +60,14 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  public static Long getOrganizationIdFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
+    if(loggedUser == null || organizationIpaCode == null) {
+      return null;
+    }
+    return getUserOrganizationRoles(organizationIpaCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
+      .orElse(null);
+  }
+
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
     throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
