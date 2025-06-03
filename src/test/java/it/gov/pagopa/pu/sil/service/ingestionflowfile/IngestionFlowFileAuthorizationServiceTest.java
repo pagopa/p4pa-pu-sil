@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlussoRisposta;
 import it.veneto.regione.pagamenti.ente.FaultBean;
+import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoRisposta;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -202,4 +203,36 @@ class IngestionFlowFileAuthorizationServiceTest {
     }
   }
 
+  @Test
+  void givenUserNotAdminAndPAYMENT_NOTIFICATIONWhenAuthorizeIngestionFlowFileThenKo() {
+    UserInfo userInfo = new UserInfo();
+    userInfo.setUserId("admin1");
+    String orgIpaCode = "ORG2";
+    String accessToken = "token2";
+    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION;
+
+    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
+      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
+
+      Triple<PivotSILAutorizzaImportFlussoRisposta, String, SilOutcome> result =
+          service.authorizeIngestionFlowFile(
+              userInfo,
+              accessToken,
+              orgIpaCode,
+              type,
+              PivotSILAutorizzaImportFlussoRisposta::new,
+              it.veneto.regione.pagamenti.pivot.ente.FaultBean::new,
+              PivotSILAutorizzaImportFlussoRisposta::setFault,
+              PivotSILAutorizzaImportFlussoRisposta::setRequestToken,
+              PivotSILAutorizzaImportFlussoRisposta::setUploadUrl
+          );
+
+      assertNotNull(result);
+      assertEquals(SilOutcome.KO, result.getRight());
+      assertNotNull(result.getLeft());
+      assertNull(result.getMiddle());
+      assertNotNull(result.getLeft().getFault());
+      verifyNoInteractions(ingestionFlowFileServiceMock, ingestionFlowFileReservationServiceMock);
+    }
+  }
 }
