@@ -47,6 +47,27 @@ class PuForOrganizationReconciliationEndpointTest {
 
   //endregion
 
+  //region pivotSILAutorizzaImportFlussoTesoreria
+
+  @Test
+  void givenValidRequestWhenPivotSILAutorizzaImportFlussoTesoreriaThenRegistryLoggerInvoked() throws Exception {
+    PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenReturn(new PivotSILAutorizzaImportFlussoRisposta());
+
+    PivotSILAutorizzaImportFlussoTesoreriaRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlussoTesoreria(request, header);
+
+    Assertions.assertNotNull(response);
+    Assertions.assertNull(response.getFault());
+  }
+
+  // endregion
+
   //region pivotSILChiediPagatiRiconciliati
   @Test
   void givenAnyWhenPivotSILChiediPagatiRiconciliatiThenFault() throws Exception {
