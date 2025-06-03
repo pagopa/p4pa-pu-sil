@@ -55,4 +55,15 @@ public class FaultUtils {
       T::setFault
     );
   }
+
+  public static <T, F> T systemErrorFaultResponse(
+      T response,
+      Exception e,
+      SilFaults fault,
+      String description,
+      Supplier<F> faultBeanSupplier,
+      BiConsumer<T, F> faultSetter) {
+    log.error("System error occurred", e);
+    return setFaultOnResponse(response, fault, description, faultBeanSupplier, faultSetter);
+  }
 }

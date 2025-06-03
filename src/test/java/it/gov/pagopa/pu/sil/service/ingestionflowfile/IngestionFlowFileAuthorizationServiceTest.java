@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlussoRisposta;
+import it.veneto.regione.pagamenti.ente.FaultBean;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +62,17 @@ class IngestionFlowFileAuthorizationServiceTest {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
 
       Triple<PaaSILAutorizzaImportFlussoRisposta, String, SilOutcome> result =
-        service.authorizeIngestionFlowFile(userInfo, accessToken, orgIpaCode, type);
+        service.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          type,
+          PaaSILAutorizzaImportFlussoRisposta::new,
+          FaultBean::new,
+          PaaSILAutorizzaImportFlussoRisposta::setFault,
+          PaaSILAutorizzaImportFlussoRisposta::setRequestToken,
+          PaaSILAutorizzaImportFlussoRisposta::setUploadUrl
+        );
 
       assertNotNull(result);
       assertEquals(SilOutcome.KO, result.getRight());
@@ -88,7 +99,17 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn("http://upload.url");
 
       Triple<PaaSILAutorizzaImportFlussoRisposta, String, SilOutcome> result =
-        service.authorizeIngestionFlowFile(userInfo, accessToken, orgIpaCode, type);
+        service.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          type,
+          PaaSILAutorizzaImportFlussoRisposta::new,
+          FaultBean::new,
+          PaaSILAutorizzaImportFlussoRisposta::setFault,
+          PaaSILAutorizzaImportFlussoRisposta::setRequestToken,
+          PaaSILAutorizzaImportFlussoRisposta::setUploadUrl
+        );
 
       assertNotNull(result);
       assertEquals(SilOutcome.OK, result.getRight());
@@ -117,7 +138,17 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn("http://upload.null");
 
       Triple<PaaSILAutorizzaImportFlussoRisposta, String, SilOutcome> result =
-        service.authorizeIngestionFlowFile(userInfo, accessToken, orgIpaCode, type);
+        service.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          type,
+          PaaSILAutorizzaImportFlussoRisposta::new,
+          FaultBean::new,
+          PaaSILAutorizzaImportFlussoRisposta::setFault,
+          PaaSILAutorizzaImportFlussoRisposta::setRequestToken,
+          PaaSILAutorizzaImportFlussoRisposta::setUploadUrl
+        );
 
       assertNotNull(result);
       assertEquals(SilOutcome.OK, result.getRight());
@@ -147,7 +178,17 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn(null);
 
       Triple<PaaSILAutorizzaImportFlussoRisposta, String, SilOutcome> result =
-        service.authorizeIngestionFlowFile(userInfo, accessToken, orgIpaCode, type);
+        service.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          type,
+          PaaSILAutorizzaImportFlussoRisposta::new,
+          FaultBean::new,
+          PaaSILAutorizzaImportFlussoRisposta::setFault,
+          PaaSILAutorizzaImportFlussoRisposta::setRequestToken,
+          PaaSILAutorizzaImportFlussoRisposta::setUploadUrl
+        );
 
       assertNotNull(result);
       assertEquals(SilOutcome.OK, result.getRight());

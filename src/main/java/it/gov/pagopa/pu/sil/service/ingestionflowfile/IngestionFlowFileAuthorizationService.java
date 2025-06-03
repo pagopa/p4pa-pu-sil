@@ -8,12 +8,13 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
-import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlussoRisposta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -30,14 +31,36 @@ public class IngestionFlowFileAuthorizationService {
     this.ingestionFlowFileReservationService = ingestionFlowFileReservationService;
   }
 
-  public Triple<PaaSILAutorizzaImportFlussoRisposta, String, SilOutcome> authorizeIngestionFlowFile(UserInfo userInfo, String accessToken, String orgIpaCode, IngestionFlowFileTypeEnum ingestionFlowFileType) {
-    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+  @SuppressWarnings("squid:S00107")
+  public <T, F> Triple<T, String, SilOutcome> authorizeIngestionFlowFile(
+      UserInfo userInfo,
+      String accessToken,
+      String orgIpaCode,
+      IngestionFlowFileTypeEnum ingestionFlowFileType,
+      Supplier<T> responseSupplier,
+      Supplier<F> faultBeanSupplier,
+      BiConsumer<T, F> faultSetter,
+      BiConsumer<T, String> requestTokenSetter,
+      BiConsumer<T, String> uploadUrlSetter) {
+
+    T response = responseSupplier.get();
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
-    // Check if the logged user has the right to call this endpoint
+
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", clientId, orgIpaCode);
-      return Triple.of(FaultUtils.setFaultOnResponse(response, SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato"), null, SilOutcome.KO);
+
+      SilFaults fault;
+      if (faultBeanSupplier.get() instanceof it.veneto.regione.pagamenti.pivot.ente.FaultBean) {
+        fault = SilFaults.PIVOT_ENTE_NON_VALIDO;
+      } else {
+        fault = SilFaults.PAA_ENTE_NON_VALIDO;
+      }
+
+      return Triple.of(
+          FaultUtils.setFaultOnResponse(response, fault, "Utente non autorizzato", faultBeanSupplier, faultSetter),
+          null,
+          SilOutcome.KO);
     }
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
@@ -49,8 +72,8 @@ public class IngestionFlowFileAuthorizationService {
     String uploadUrl = ingestionFlowFileReservationService.generateUploadUrl(requestDTO);
     log.debug("Generated upload URL: {}", uploadUrl);
 
-    response.setRequestToken(String.valueOf(ingestionFlowFileId));
-    response.setUploadUrl(uploadUrl);
+    requestTokenSetter.accept(response, String.valueOf(ingestionFlowFileId));
+    uploadUrlSetter.accept(response, uploadUrl);
     return Triple.of(response, null, SilOutcome.OK);
   }
 

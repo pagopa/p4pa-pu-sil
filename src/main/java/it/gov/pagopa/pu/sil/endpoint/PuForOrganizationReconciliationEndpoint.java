@@ -1,10 +1,17 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
-import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
+import it.veneto.regione.pagamenti.pivot.ente.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
@@ -13,30 +20,61 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.Optional;
-
 @Endpoint
 @Slf4j
 public class PuForOrganizationReconciliationEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/pivot/ente/";
   public static final String NAME = "PagamentiTelematiciPagatiRiconciliati";
 
+  private final RegistryLogger registryLogger;
+
+  private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
+
+  public PuForOrganizationReconciliationEndpoint(RegistryLogger registryLogger,
+                                                 IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService) {
+    this.registryLogger = registryLogger;
+    this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
+  }
+
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlusso")
   @ResponsePayload
   public PivotSILAutorizzaImportFlussoRisposta pivotSILAutorizzaImportFlusso(
     @RequestPayload PivotSILAutorizzaImportFlusso request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header){
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILAutorizzaImportFlusso");
 
-    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    log.info("processing PivotSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
-
-
-    return FaultUtils.setFaultOnResponse(
-      new PivotSILAutorizzaImportFlussoRisposta(),
-      SilFaults.PIVOT_SYSTEM_ERROR,
-      Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null),
-      FaultBean::new,
-      PivotSILAutorizzaImportFlussoRisposta::setFault
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.pivotSILAutorizzaImportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () ->  ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION,
+        PivotSILAutorizzaImportFlussoRisposta::new,
+        FaultBean::new,
+        PivotSILAutorizzaImportFlussoRisposta::setFault,
+        PivotSILAutorizzaImportFlussoRisposta::setRequestToken,
+        PivotSILAutorizzaImportFlussoRisposta::setUploadUrl),
+      (Exception e) -> FaultUtils.systemErrorFaultResponse(
+        new PivotSILAutorizzaImportFlussoRisposta(),
+        e,
+        SilFaults.PAA_SYSTEM_ERROR,
+        "Errore di sistema",
+        FaultBean::new,
+        PivotSILAutorizzaImportFlussoRisposta::setFault
+      ),
+      null,
+      null
     );
   }
 
@@ -82,4 +120,3 @@ public class PuForOrganizationReconciliationEndpoint {
     );
   }
 }
-

@@ -23,8 +23,6 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.Optional;
-
 @Endpoint
 @Slf4j
 public class PuForOrganizationPaymentsEndpoint {
@@ -52,10 +50,12 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILAutorizzaImportFlussoRisposta paaSILAutorizzaImportFlusso(
     @RequestPayload PaaSILAutorizzaImportFlusso request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
-    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILAutorizzaImportFlusso");
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILAutorizzaImportFlusso");
 
     //write the request/response to the registry, and execute the service
     return registryLogger.execute(
@@ -65,8 +65,24 @@ public class PuForOrganizationPaymentsEndpoint {
       request,
       userInfo,
       null,
-      () -> ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(userInfo, accessToken, orgIpaCode, IngestionFlowFileTypeEnum.DP_INSTALLMENTS),
-      (Exception e) -> systemErrorFaultResponse(response, e),
+      () -> ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+            userInfo,
+            accessToken,
+            orgIpaCode,
+            IngestionFlowFileTypeEnum.DP_INSTALLMENTS,
+            PaaSILAutorizzaImportFlussoRisposta::new,
+            FaultBean::new,
+            PaaSILAutorizzaImportFlussoRisposta::setFault,
+            PaaSILAutorizzaImportFlussoRisposta::setRequestToken,
+            PaaSILAutorizzaImportFlussoRisposta::setUploadUrl),
+      (Exception e) -> FaultUtils.systemErrorFaultResponse(
+        new PaaSILAutorizzaImportFlussoRisposta(),
+        e,
+        SilFaults.PAA_SYSTEM_ERROR,
+        "Errore di sistema",
+        FaultBean::new,
+        PaaSILAutorizzaImportFlussoRisposta::setFault
+      ),
       null,
       null
     );
@@ -79,7 +95,10 @@ public class PuForOrganizationPaymentsEndpoint {
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     PaaSILImportaDovutoRisposta faultResponse = new PaaSILImportaDovutoRisposta();
     faultResponse.setEsito(SilOutcome.KO.name());
-    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILImportaDovuto");
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILImportaDovuto");
     UserInfo userInfo = SecurityUtils.getLoggedUser();
 
     //write the request/response to the registry, and execute the service
@@ -91,7 +110,14 @@ public class PuForOrganizationPaymentsEndpoint {
       userInfo,
       null,
       () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
-      (Exception e) -> systemErrorFaultResponse(faultResponse, e),
+      (Exception e) -> FaultUtils.systemErrorFaultResponse(
+        faultResponse,
+        e,
+        SilFaults.PAA_SYSTEM_ERROR,
+        "Errore di sistema",
+        FaultBean::new,
+        PaaSILImportaDovutoRisposta::setFault
+      ),
       () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo
     );
@@ -154,25 +180,4 @@ public class PuForOrganizationPaymentsEndpoint {
       PaaSILRegistraPagamentoRisposta::setFault
     );
   }
-
-  private <T extends Risposta> T systemErrorFaultResponse(T response, Exception e) {
-    log.error("System error occurred", e);
-    FaultUtils.setFaultOnResponse(response,
-      SilFaults.PAA_SYSTEM_ERROR,
-      "Errore di sistema",
-      FaultBean::new,
-      T::setFault
-    );
-    return response;
-  }
-
-  private String getOrganizationIpaCodeFromHeader(SoapHeaderElement header, String operationName) {
-    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    String orgIpaCode = Optional.ofNullable(intestazionePPT)
-      .map(IntestazionePPT::getCodIpaEnte)
-      .orElse(null);
-    log.info("processing {} orgIpaCode[{}]", operationName, orgIpaCode);
-    return orgIpaCode;
-  }
-
 }

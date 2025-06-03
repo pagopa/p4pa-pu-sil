@@ -22,5 +22,16 @@ public class SoapUtils {
     }
   }
 
-
+  public static <H> String getOrganizationIpaCodeFromHeader(
+      SoapHeaderElement header,
+      Class<H> headerClass,
+      java.util.function.Function<H, String> orgIpaCodeExtractor,
+      String operationName) {
+    H intestazionePPT = unmarshallHeader(header, headerClass);
+    String orgIpaCode = java.util.Optional.ofNullable(intestazionePPT)
+        .map(orgIpaCodeExtractor)
+        .orElse(null);
+    log.info("processing {} orgIpaCode[{}]", operationName, orgIpaCode);
+    return orgIpaCode;
+  }
 }
