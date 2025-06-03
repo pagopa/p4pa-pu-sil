@@ -20,6 +20,8 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
+import java.util.Set;
+
 @Endpoint
 @Slf4j
 public class PuForOrganizationReconciliationEndpoint {
@@ -34,6 +36,64 @@ public class PuForOrganizationReconciliationEndpoint {
                                                  IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService) {
     this.registryLogger = registryLogger;
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlussoTesoreria")
+  @ResponsePayload
+  public PivotSILAutorizzaImportFlussoTesoreriaRisposta pivotSILAutorizzaImportFlussoTesoreria(
+    @RequestPayload PivotSILAutorizzaImportFlussoTesoreria request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILAutorizzaImportFlussoTesoreria");
+
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.valueOf(request.getTipoFlusso());
+    if (!Set.of(
+        IngestionFlowFileTypeEnum.TREASURY_OPI,
+        IngestionFlowFileTypeEnum.TREASURY_CSV,
+        IngestionFlowFileTypeEnum.TREASURY_XLS,
+        IngestionFlowFileTypeEnum.TREASURY_POSTE)
+      .contains(type)) {
+      return FaultUtils.setFaultOnResponse(
+        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
+        "Tipo di flusso tesoreria non valido",
+        FaultBean::new,
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault
+      );
+    }
+
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        type,
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::new,
+        FaultBean::new,
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setRequestToken,
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setUploadUrl),
+      (Exception e) -> FaultUtils.systemErrorFaultResponse(
+        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+        e,
+        SilFaults.PIVOT_SYSTEM_ERROR,
+        "Errore di sistema",
+        FaultBean::new,
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault
+      ),
+      null,
+      null
+    );
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlusso")
@@ -68,7 +128,7 @@ public class PuForOrganizationReconciliationEndpoint {
       (Exception e) -> FaultUtils.systemErrorFaultResponse(
         new PivotSILAutorizzaImportFlussoRisposta(),
         e,
-        SilFaults.PAA_SYSTEM_ERROR,
+        SilFaults.PIVOT_SYSTEM_ERROR,
         "Errore di sistema",
         FaultBean::new,
         PivotSILAutorizzaImportFlussoRisposta::setFault
