@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -36,7 +37,8 @@ class PuForOrganizationPaymentsEndpointTest {
 
   @Mock
   private RegistryLogger registryLoggerMock;
-
+  @Mock
+  private IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationServiceMock;
   @Mock
   private PaaSILImportaDovutoService paaSILImportaDovutoServiceMock;
   @Mock
@@ -67,34 +69,24 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   // region PaaSILAutorizzaImportFlusso
+
   @Test
-  void givenInvalidUserWhenPaaSILAutorizzaImportFlussoThenFault() throws Exception {
+  void givenValidRequestWhenPaaSILAutorizzaImportFlussoThenRegistryLoggerInvoked() throws Exception {
     // Given
     PaaSILAutorizzaImportFlusso request = podamFactory.manufacturePojo(PaaSILAutorizzaImportFlusso.class);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    // when
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.paaSILAutorizzaImportFlusso), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenReturn(new PaaSILAutorizzaImportFlussoRisposta());
+
+    // When
     PaaSILAutorizzaImportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILAutorizzaImportFlusso(request, header);
 
-    // verify
+    // Then
     Assertions.assertNotNull(response);
-    Assertions.assertNotNull(response.getFault());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.description(), response.getFault().getFaultString());
-    Assertions.assertEquals("Utente non autorizzato", response.getFault().getDescription());
-    Assertions.assertNull(response.getAuthorizationToken());
-    Assertions.assertNull(response.getImportPath());
-    Assertions.assertNull(response.getRequestToken());
-    Assertions.assertNull(response.getUploadUrl());
-  }
-
-  @Test
-  void givenAnyWhenPaaSILAutorizzaImportFlussoThenFault() throws Exception {
-    testFaultResponse(PaaSILAutorizzaImportFlusso.class,
-      SilFaults.PAA_SYSTEM_ERROR.code(),
-      puForOrganizationPaymentsEndpoint::paaSILAutorizzaImportFlusso);
   }
 
   // endregion
