@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequest
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
@@ -16,6 +17,8 @@ import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
@@ -57,7 +60,6 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILAutorizzaImportFlusso");
 
-    //write the request/response to the registry, and execute the service
     return registryLogger.execute(
       AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
       RegistrySilEventType.paaSILAutorizzaImportFlusso,
@@ -65,24 +67,37 @@ public class PuForOrganizationPaymentsEndpoint {
       request,
       userInfo,
       null,
-      () -> ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
-            userInfo,
-            accessToken,
-            orgIpaCode,
-            IngestionFlowFileTypeEnum.DP_INSTALLMENTS,
-            PaaSILAutorizzaImportFlussoRisposta::new,
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          IngestionFlowFileTypeEnum.DP_INSTALLMENTS
+        );
+        PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      (Exception e) -> {
+        if (e instanceof UnauthorizedException ue) {
+          return FaultUtils.setFaultOnResponse(
+            new PaaSILAutorizzaImportFlussoRisposta(),
+            ue.getCode(),
+            ue.getMessage(),
             FaultBean::new,
-            PaaSILAutorizzaImportFlussoRisposta::setFault,
-            PaaSILAutorizzaImportFlussoRisposta::setRequestToken,
-            PaaSILAutorizzaImportFlussoRisposta::setUploadUrl),
-      (Exception e) -> FaultUtils.systemErrorFaultResponse(
-        new PaaSILAutorizzaImportFlussoRisposta(),
-        e,
-        SilFaults.PAA_SYSTEM_ERROR,
-        "Errore di sistema",
-        FaultBean::new,
-        PaaSILAutorizzaImportFlussoRisposta::setFault
-      ),
+            PaaSILAutorizzaImportFlussoRisposta::setFault
+          );
+        }
+        return FaultUtils.systemErrorFaultResponse(
+          new PaaSILAutorizzaImportFlussoRisposta(),
+          e,
+          SilFaults.PAA_SYSTEM_ERROR,
+          "Errore di sistema",
+          FaultBean::new,
+          PaaSILAutorizzaImportFlussoRisposta::setFault
+        );
+      },
       null,
       null
     );

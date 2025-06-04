@@ -4,6 +4,8 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -13,6 +15,8 @@ import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
@@ -55,24 +59,36 @@ public class PuForOrganizationReconciliationEndpoint {
       request,
       userInfo,
       null,
-      () ->  ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
-        userInfo,
-        accessToken,
-        orgIpaCode,
-        IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION,
-        PivotSILAutorizzaImportFlussoRisposta::new,
-        FaultBean::new,
-        PivotSILAutorizzaImportFlussoRisposta::setFault,
-        PivotSILAutorizzaImportFlussoRisposta::setRequestToken,
-        PivotSILAutorizzaImportFlussoRisposta::setUploadUrl),
-      (Exception e) -> FaultUtils.systemErrorFaultResponse(
-        new PivotSILAutorizzaImportFlussoRisposta(),
-        e,
-        SilFaults.PAA_SYSTEM_ERROR,
-        "Errore di sistema",
-        FaultBean::new,
-        PivotSILAutorizzaImportFlussoRisposta::setFault
-      ),
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
+        PivotSILAutorizzaImportFlussoRisposta response = new PivotSILAutorizzaImportFlussoRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      (Exception e) -> {
+        if (e instanceof UnauthorizedException ue) {
+          return FaultUtils.setFaultOnResponse(
+            new PivotSILAutorizzaImportFlussoRisposta(),
+            ue.getCode(),
+            ue.getMessage(),
+            FaultBean::new,
+            PivotSILAutorizzaImportFlussoRisposta::setFault
+          );
+        }
+        return FaultUtils.systemErrorFaultResponse(
+          new PivotSILAutorizzaImportFlussoRisposta(),
+          e,
+          SilFaults.PAA_SYSTEM_ERROR,
+          "Errore di sistema",
+          FaultBean::new,
+          PivotSILAutorizzaImportFlussoRisposta::setFault
+        );
+      },
       null,
       null
     );
