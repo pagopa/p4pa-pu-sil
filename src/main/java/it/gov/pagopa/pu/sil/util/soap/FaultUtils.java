@@ -1,12 +1,14 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.Risposta;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -65,5 +67,41 @@ public class FaultUtils {
       BiConsumer<T, F> faultSetter) {
     log.error("System error occurred", e);
     return setFaultOnResponse(response, fault, description, faultBeanSupplier, faultSetter);
+  }
+
+  public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
+    Supplier<T> responseSupplier,
+    BiConsumer<T, F> faultSetter,
+    Supplier<F> faultBeanSupplier,
+    SilFaults unauthorizedFault) {
+    return unauthorizedExceptionHandler(responseSupplier.get(), faultSetter, faultBeanSupplier, unauthorizedFault);
+  }
+
+  public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
+    T responseObj,
+    BiConsumer<T, F> faultSetter,
+    Supplier<F> faultBeanSupplier,
+    SilFaults unauthorizedFault) {
+    return (Exception e) -> {
+      if (e instanceof UnauthorizedException ue) {
+        return setFaultOnResponse(
+          responseObj,
+          unauthorizedFault,
+          ue.getMessage(),
+          faultBeanSupplier,
+          faultSetter
+        );
+      }
+      SilFaults systemErrorFault = faultBeanSupplier.get() instanceof it.veneto.regione.pagamenti.pivot.ente.FaultBean ?
+        SilFaults.PIVOT_SYSTEM_ERROR : SilFaults.PAA_SYSTEM_ERROR;
+      return systemErrorFaultResponse(
+        responseObj,
+        e,
+        systemErrorFault,
+        "Errore di sistema",
+        faultBeanSupplier,
+        faultSetter
+      );
+    };
   }
 }

@@ -2,8 +2,9 @@ package it.gov.pagopa.pu.sil.service.paasilimportadovuto;
 
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
@@ -13,10 +14,15 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 class PaaSILImportaDovutoServiceTest {
@@ -53,16 +59,12 @@ class PaaSILImportaDovutoServiceTest {
     String orgIpaCode = podamFactory.manufacturePojo(String.class);
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
 
-    //when
-    Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
+    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
+      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
 
-    //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(SilOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertEquals(SilOutcome.KO.name(), response.getLeft().getEsito());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.name(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+      //when then
+      assertThrows(UnauthorizedException.class, () ->
+        paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request));
+    }
   }
 }

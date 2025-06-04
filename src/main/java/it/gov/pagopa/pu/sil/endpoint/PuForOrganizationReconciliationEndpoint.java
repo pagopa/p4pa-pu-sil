@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequest
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -23,6 +22,8 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
+
+import java.util.function.Supplier;
 
 @Endpoint
 @Slf4j
@@ -70,25 +71,12 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      (Exception e) -> {
-        if (e instanceof UnauthorizedException ue) {
-          return FaultUtils.setFaultOnResponse(
-            new PivotSILAutorizzaImportFlussoRisposta(),
-            ue.getCode(),
-            ue.getMessage(),
-            FaultBean::new,
-            PivotSILAutorizzaImportFlussoRisposta::setFault
-          );
-        }
-        return FaultUtils.systemErrorFaultResponse(
-          new PivotSILAutorizzaImportFlussoRisposta(),
-          e,
-          SilFaults.PAA_SYSTEM_ERROR,
-          "Errore di sistema",
-          FaultBean::new,
-          PivotSILAutorizzaImportFlussoRisposta::setFault
-        );
-      },
+      FaultUtils.unauthorizedExceptionHandler(
+        (Supplier<PivotSILAutorizzaImportFlussoRisposta>) PivotSILAutorizzaImportFlussoRisposta::new,
+        PivotSILAutorizzaImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PIVOT_ENTE_NON_VALIDO
+      ),
       null,
       null
     );

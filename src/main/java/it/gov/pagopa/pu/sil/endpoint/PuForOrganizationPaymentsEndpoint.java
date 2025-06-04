@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequest
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
@@ -25,6 +24,8 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
+
+import java.util.function.Supplier;
 
 @Endpoint
 @Slf4j
@@ -79,25 +80,12 @@ public class PuForOrganizationPaymentsEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      (Exception e) -> {
-        if (e instanceof UnauthorizedException ue) {
-          return FaultUtils.setFaultOnResponse(
-            new PaaSILAutorizzaImportFlussoRisposta(),
-            ue.getCode(),
-            ue.getMessage(),
-            FaultBean::new,
-            PaaSILAutorizzaImportFlussoRisposta::setFault
-          );
-        }
-        return FaultUtils.systemErrorFaultResponse(
-          new PaaSILAutorizzaImportFlussoRisposta(),
-          e,
-          SilFaults.PAA_SYSTEM_ERROR,
-          "Errore di sistema",
-          FaultBean::new,
-          PaaSILAutorizzaImportFlussoRisposta::setFault
-        );
-      },
+      FaultUtils.unauthorizedExceptionHandler(
+        (Supplier<PaaSILAutorizzaImportFlussoRisposta>) PaaSILAutorizzaImportFlussoRisposta::new,
+        PaaSILAutorizzaImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO
+      ),
       null,
       null
     );
@@ -108,14 +96,13 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILImportaDovutoRisposta paaSILImportaDovuto(
     @RequestPayload PaaSILImportaDovuto request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    PaaSILImportaDovutoRisposta faultResponse = new PaaSILImportaDovutoRisposta();
-    faultResponse.setEsito(SilOutcome.KO.name());
+    PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
+    response.setEsito(SilOutcome.KO.name());
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
     String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
       IntestazionePPT.class,
       IntestazionePPT::getCodIpaEnte,
       "paaSILImportaDovuto");
-    UserInfo userInfo = SecurityUtils.getLoggedUser();
-
     //write the request/response to the registry, and execute the service
     return registryLogger.execute(
       AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
@@ -125,13 +112,11 @@ public class PuForOrganizationPaymentsEndpoint {
       userInfo,
       null,
       () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
-      (Exception e) -> FaultUtils.systemErrorFaultResponse(
-        faultResponse,
-        e,
-        SilFaults.PAA_SYSTEM_ERROR,
-        "Errore di sistema",
+      FaultUtils.unauthorizedExceptionHandler(
+        response,
+        PaaSILImportaDovutoRisposta::setFault,
         FaultBean::new,
-        PaaSILImportaDovutoRisposta::setFault
+        SilFaults.PAA_ENTE_NON_VALIDO
       ),
       () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo

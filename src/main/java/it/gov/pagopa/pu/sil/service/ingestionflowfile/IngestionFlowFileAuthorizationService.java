@@ -38,7 +38,7 @@ public class IngestionFlowFileAuthorizationService {
 
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", clientId, orgIpaCode);
-      throw new UnauthorizedException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
+      throw new UnauthorizedException("Utente non autorizzato");
     }
 
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
