@@ -71,15 +71,6 @@ public class FaultUtils {
   }
 
   public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
-    Supplier<T> responseSupplier,
-    BiConsumer<T, F> faultSetter,
-    Supplier<F> faultBeanSupplier,
-    SilFaults unauthorizedFault,
-    SilFaults systemErrorFault) {
-    return unauthorizedExceptionHandler(responseSupplier.get(), faultSetter, faultBeanSupplier, unauthorizedFault, systemErrorFault);
-  }
-
-  public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
       T responseObj,
       BiConsumer<T, F> faultSetter,
       Supplier<F> faultBeanSupplier,

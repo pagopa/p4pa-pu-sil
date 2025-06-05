@@ -25,7 +25,6 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Endpoint
 @Slf4j
@@ -73,13 +72,7 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      FaultUtils.unauthorizedExceptionHandler(
-        (Supplier<PivotSILAutorizzaImportFlussoTesoreriaRisposta>) PivotSILAutorizzaImportFlussoTesoreriaRisposta::new,
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR
-      ),
+      handleIngestionFlowFileTypeValidationException(),
       null,
       null
     );
@@ -115,7 +108,12 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      handleException(),
+      FaultUtils.unauthorizedExceptionHandler(
+        new PivotSILAutorizzaImportFlussoRisposta(),
+        PivotSILAutorizzaImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR),
       null,
       null
     );
@@ -164,23 +162,22 @@ public class PuForOrganizationReconciliationEndpoint {
     );
   }
 
-  private Function<Exception, PivotSILAutorizzaImportFlussoRisposta> handleException() {
+  private Function<Exception, PivotSILAutorizzaImportFlussoTesoreriaRisposta> handleIngestionFlowFileTypeValidationException() {
     return (Exception e) -> {
       if (e instanceof IngestionFlowFileTypeValidationException ie) {
         return FaultUtils.setFaultOnResponse(
-          new PivotSILAutorizzaImportFlussoRisposta(),
+          new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
           SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
           ie.getMessage()
         );
       }
-      return (PivotSILAutorizzaImportFlussoRisposta) FaultUtils.unauthorizedExceptionHandler(
-        (Supplier<PivotSILAutorizzaImportFlussoRisposta>) PivotSILAutorizzaImportFlussoRisposta::new,
-        PivotSILAutorizzaImportFlussoRisposta::setFault,
+      return FaultUtils.unauthorizedExceptionHandler(
+        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
         FaultBean::new,
         SilFaults.PIVOT_ENTE_NON_VALIDO,
         SilFaults.PIVOT_SYSTEM_ERROR
-      );
+      ).apply(e);
     };
   }
 }
-

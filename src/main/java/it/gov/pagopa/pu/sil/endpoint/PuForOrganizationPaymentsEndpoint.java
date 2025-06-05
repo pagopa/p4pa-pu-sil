@@ -25,8 +25,6 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.function.Supplier;
-
 @Endpoint
 @Slf4j
 public class PuForOrganizationPaymentsEndpoint {
@@ -81,7 +79,7 @@ public class PuForOrganizationPaymentsEndpoint {
         return Triple.of(response, null, SilOutcome.OK);
       },
       FaultUtils.unauthorizedExceptionHandler(
-        (Supplier<PaaSILAutorizzaImportFlussoRisposta>) PaaSILAutorizzaImportFlussoRisposta::new,
+        new PaaSILAutorizzaImportFlussoRisposta(),
         PaaSILAutorizzaImportFlussoRisposta::setFault,
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
