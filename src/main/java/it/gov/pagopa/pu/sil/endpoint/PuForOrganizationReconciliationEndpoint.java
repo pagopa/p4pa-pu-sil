@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -13,6 +14,8 @@ import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
@@ -20,6 +23,7 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
+import java.util.function.Supplier;
 import java.util.Set;
 
 @Endpoint
@@ -115,23 +119,22 @@ public class PuForOrganizationReconciliationEndpoint {
       request,
       userInfo,
       null,
-      () ->  ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
-        userInfo,
-        accessToken,
-        orgIpaCode,
-        IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION,
-        PivotSILAutorizzaImportFlussoRisposta::new,
-        FaultBean::new,
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
+        PivotSILAutorizzaImportFlussoRisposta response = new PivotSILAutorizzaImportFlussoRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedExceptionHandler(
+        (Supplier<PivotSILAutorizzaImportFlussoRisposta>) PivotSILAutorizzaImportFlussoRisposta::new,
         PivotSILAutorizzaImportFlussoRisposta::setFault,
-        PivotSILAutorizzaImportFlussoRisposta::setRequestToken,
-        PivotSILAutorizzaImportFlussoRisposta::setUploadUrl),
-      (Exception e) -> FaultUtils.systemErrorFaultResponse(
-        new PivotSILAutorizzaImportFlussoRisposta(),
-        e,
-        SilFaults.PIVOT_SYSTEM_ERROR,
-        "Errore di sistema",
         FaultBean::new,
-        PivotSILAutorizzaImportFlussoRisposta::setFault
+        SilFaults.PIVOT_ENTE_NON_VALIDO
       ),
       null,
       null
