@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.connector.processexecutions.config;
 import it.gov.pagopa.pu.processexecutions.controller.BaseApi;
 import it.gov.pagopa.pu.processexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 public class ProcessExecutionsApisHolder {
 
   private final IngestionFlowFileControllerApi ingestionFlowFileControllerApi;
+  private final IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApi;
 
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
@@ -31,6 +33,7 @@ public class ProcessExecutionsApisHolder {
     }
 
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
+    this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);
   }
 
   @PreDestroy
@@ -45,6 +48,11 @@ public class ProcessExecutionsApisHolder {
   public IngestionFlowFileControllerApi getIngestionFlowFileControllerApi(
     String accessToken) {
     return getApi(accessToken, ingestionFlowFileControllerApi);
+  }
+
+  public IngestionFlowFileEntityControllerApi getIngestionFlowFileEntityControllerApi(
+    String accessToken) {
+    return getApi(accessToken, ingestionFlowFileEntityControllerApi);
   }
 
   private <T extends BaseApi> T getApi(String accessToken, T api) {
