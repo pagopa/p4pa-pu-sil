@@ -149,6 +149,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateP4PAAUTH",
     "openApiGenerateP4PASENDNOTIFICATION",
     "openApiGeneratePROCESSEXECUTION",
+    "openApiGenerateNodeCheckout",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation"
   )
@@ -258,6 +259,30 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   typeMappings.set(mapOf(
     "LocalDateTime" to "java.time.LocalDateTime"
   ))
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateNodeCheckout") {
+  group = "openapi"
+  description = "description"
+
+  generatorName.set("java")
+  inputSpec.set("$rootDir/openapi/node_checkout.yaml")
+  outputDir.set("$projectDir/build/generated")
+  apiPackage.set("it.gov.pagopa.nodo.checkout.controller.generated")
+  modelPackage.set("it.gov.pagopa.nodo.checkout.dto.generated")
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
