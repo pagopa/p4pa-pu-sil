@@ -134,7 +134,7 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
-    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
+    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenReturn(Pair.of(expectedToken, expectedUrl));
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
@@ -148,6 +148,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
   }
+
 
   // endregion
 

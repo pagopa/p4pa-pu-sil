@@ -2,11 +2,13 @@ package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.UtilitiesTest;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeNotValidException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediAvvisiPendentiRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoRisposta;
+import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoTesoreriaRisposta;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -116,6 +118,9 @@ class FaultUtilsTest {
     BiConsumer<PivotSILAutorizzaImportFlussoRisposta, it.veneto.regione.pagamenti.pivot.ente.FaultBean> pivotSILAutorizzaImportFlussoFaultSetter = PivotSILAutorizzaImportFlussoRisposta::setFault;
     Supplier<it.veneto.regione.pagamenti.pivot.ente.FaultBean> pivotFaultBeanSupplier = it.veneto.regione.pagamenti.pivot.ente.FaultBean::new;
 
+    Supplier<PivotSILAutorizzaImportFlussoTesoreriaRisposta> pivotSILAutorizzaImportFlussoTesoreriaRispostaSupplier = PivotSILAutorizzaImportFlussoTesoreriaRisposta::new;
+    BiConsumer<PivotSILAutorizzaImportFlussoTesoreriaRisposta, it.veneto.regione.pagamenti.pivot.ente.FaultBean> pivotSILAutorizzaImportFlussoTesoreriaFaultSetter = PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault;
+
     return Stream.of(
       new Object[] {
         paaSILImportaDovutoSupplier,
@@ -156,6 +161,16 @@ class FaultUtilsTest {
         new RuntimeException("Pivot generic error"),
         SilFaults.PIVOT_SYSTEM_ERROR.code(),
         "Errore di sistema"
+      },
+      new Object[] {
+        pivotSILAutorizzaImportFlussoTesoreriaRispostaSupplier,
+        pivotSILAutorizzaImportFlussoTesoreriaFaultSetter,
+        pivotFaultBeanSupplier,
+        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR,
+        new IngestionFlowFileTypeNotValidException("Pivot not valid"),
+        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.code(),
+        "Pivot not valid"
       }
     );
   }

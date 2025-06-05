@@ -1,10 +1,12 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeNotValidException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.Risposta;
+import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoTesoreriaRisposta;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.BiConsumer;
@@ -90,6 +92,15 @@ public class FaultUtils {
           responseObj,
           unauthorizedFault,
           ue.getMessage(),
+          faultBeanSupplier,
+          faultSetter
+        );
+      }
+      if (e instanceof IngestionFlowFileTypeNotValidException ie) {
+        return setFaultOnResponse(
+          responseObj,
+          SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
+          ie.getMessage(),
           faultBeanSupplier,
           faultSetter
         );

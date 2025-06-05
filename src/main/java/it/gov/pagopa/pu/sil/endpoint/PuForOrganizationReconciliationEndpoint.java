@@ -24,7 +24,6 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 import java.util.function.Supplier;
-import java.util.Set;
 
 @Endpoint
 @Slf4j
@@ -54,22 +53,6 @@ public class PuForOrganizationReconciliationEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "pivotSILAutorizzaImportFlussoTesoreria");
 
-    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.valueOf(request.getTipoFlusso());
-    if (!Set.of(
-        IngestionFlowFileTypeEnum.TREASURY_OPI,
-        IngestionFlowFileTypeEnum.TREASURY_CSV,
-        IngestionFlowFileTypeEnum.TREASURY_XLS,
-        IngestionFlowFileTypeEnum.TREASURY_POSTE)
-      .contains(type)) {
-      return FaultUtils.setFaultOnResponse(
-        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
-        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
-        "Tipo di flusso tesoreria non valido",
-        FaultBean::new,
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault
-      );
-    }
-
     return registryLogger.execute(
       AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
       RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria,
@@ -78,11 +61,11 @@ public class PuForOrganizationReconciliationEndpoint {
       userInfo,
       null,
       () -> {
-        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeTreasuryIngestionFlowFile(
           userInfo,
           accessToken,
           orgIpaCode,
-          type);
+          IngestionFlowFileTypeEnum.valueOf(request.getTipoFlusso()));
         PivotSILAutorizzaImportFlussoTesoreriaRisposta response = new PivotSILAutorizzaImportFlussoTesoreriaRisposta();
         response.setRequestToken(String.valueOf(result.getLeft()));
         response.setUploadUrl(result.getRight());
