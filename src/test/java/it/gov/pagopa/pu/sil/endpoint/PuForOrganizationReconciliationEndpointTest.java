@@ -81,6 +81,29 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNull(response.getFault());
   }
 
+  @Test
+  void givenValidRequestWhenPivotSILAutorizzaImportFlussoThenResponseContainsExpectedTokenAndUrl() throws Exception {
+    PivotSILAutorizzaImportFlusso request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlusso.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Long expectedToken = 98765L;
+    String expectedUrl = "https://upload.pivot.url";
+    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenReturn(org.apache.commons.lang3.tuple.Pair.of(expectedToken, expectedUrl));
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlusso), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenCallRealMethod();
+
+    PivotSILAutorizzaImportFlussoRisposta response =
+            puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlusso(request, header);
+
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+    Assertions.assertEquals(expectedUrl, response.getUploadUrl());
+  }
+
   //endregion
 
   //region pivotSILChiediPagatiRiconciliati
