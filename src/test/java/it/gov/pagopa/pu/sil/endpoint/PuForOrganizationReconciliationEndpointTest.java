@@ -10,6 +10,7 @@ import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthoriza
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,7 +92,7 @@ class PuForOrganizationReconciliationEndpointTest {
     String expectedUrl = "https://upload.pivot.url";
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
-    )).thenReturn(org.apache.commons.lang3.tuple.Pair.of(expectedToken, expectedUrl));
+    )).thenReturn(Pair.of(expectedToken, expectedUrl));
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlusso), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
       .thenCallRealMethod();
@@ -116,13 +117,36 @@ class PuForOrganizationReconciliationEndpointTest {
 
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
-      .thenReturn(new PivotSILAutorizzaImportFlussoRisposta());
+      .thenReturn(new PivotSILAutorizzaImportFlussoTesoreria());
 
     PivotSILAutorizzaImportFlussoTesoreriaRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlussoTesoreria(request, header);
 
     Assertions.assertNotNull(response);
     Assertions.assertNull(response.getFault());
+  }
+
+  @Test
+  void givenValidRequestWhenPivotSILAutorizzaImportFlussoTesoreriaThenResponseContainsExpectedTokenAndUrl() throws Exception {
+    PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Long expectedToken = 98765L;
+    String expectedUrl = "https://upload.pivot.url";
+    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenReturn(Pair.of(expectedToken, expectedUrl));
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenCallRealMethod();
+
+    PivotSILAutorizzaImportFlussoTesoreriaRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlussoTesoreria(request, header);
+
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+    Assertions.assertEquals(expectedUrl, response.getUploadUrl());
   }
 
   // endregion
