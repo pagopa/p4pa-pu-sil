@@ -108,17 +108,15 @@ class FaultUtilsTest {
   }
 
   static Stream<Object[]> unauthorizedExceptionHandlerCases() {
-    Supplier<PaaSILImportaDovutoRisposta> paaSILImportaDovutoSupplier = PaaSILImportaDovutoRisposta::new;
     BiConsumer<PaaSILImportaDovutoRisposta, FaultBean> paaSILImportaDovutoFaultSetter = PaaSILImportaDovutoRisposta::setFault;
     Supplier<FaultBean> faultBeanSupplier = FaultBean::new;
 
-    Supplier<PivotSILAutorizzaImportFlussoRisposta> pivotSILAutorizzaImportFlussoRispostaSupplier = PivotSILAutorizzaImportFlussoRisposta::new;
     BiConsumer<PivotSILAutorizzaImportFlussoRisposta, it.veneto.regione.pagamenti.pivot.ente.FaultBean> pivotSILAutorizzaImportFlussoFaultSetter = PivotSILAutorizzaImportFlussoRisposta::setFault;
     Supplier<it.veneto.regione.pagamenti.pivot.ente.FaultBean> pivotFaultBeanSupplier = it.veneto.regione.pagamenti.pivot.ente.FaultBean::new;
 
     return Stream.of(
       new Object[] {
-        paaSILImportaDovutoSupplier,
+        new PaaSILImportaDovutoRisposta(),
         paaSILImportaDovutoFaultSetter,
         faultBeanSupplier,
         SilFaults.PAA_ENTE_NON_VALIDO,
@@ -128,7 +126,7 @@ class FaultUtilsTest {
         "Not authorized"
       },
       new Object[] {
-        paaSILImportaDovutoSupplier,
+        new PaaSILImportaDovutoRisposta(),
         paaSILImportaDovutoFaultSetter,
         faultBeanSupplier,
         SilFaults.PAA_ENTE_NON_VALIDO,
@@ -138,7 +136,7 @@ class FaultUtilsTest {
         "Errore di sistema"
       },
       new Object[] {
-        pivotSILAutorizzaImportFlussoRispostaSupplier,
+        new PivotSILAutorizzaImportFlussoRisposta(),
         pivotSILAutorizzaImportFlussoFaultSetter,
         pivotFaultBeanSupplier,
         SilFaults.PIVOT_ENTE_NON_VALIDO,
@@ -148,7 +146,7 @@ class FaultUtilsTest {
         "Pivot unauthorized"
       },
       new Object[] {
-        pivotSILAutorizzaImportFlussoRispostaSupplier,
+        new PivotSILAutorizzaImportFlussoRisposta(),
         pivotSILAutorizzaImportFlussoFaultSetter,
         pivotFaultBeanSupplier,
         SilFaults.PIVOT_ENTE_NON_VALIDO,
@@ -163,7 +161,7 @@ class FaultUtilsTest {
   @ParameterizedTest
   @MethodSource("unauthorizedExceptionHandlerCases")
   <T, F> void testUnauthorizedExceptionHandler(
-    Supplier<T> responseSupplier,
+    T responseObj,
     BiConsumer<T, F> faultSetter,
     Supplier<F> faultBeanSupplier,
     SilFaults unauthorizedFault,
@@ -173,7 +171,7 @@ class FaultUtilsTest {
     String expectedDescription
   ) {
     var handler = FaultUtils.unauthorizedExceptionHandler(
-      responseSupplier,
+      responseObj,
       faultSetter,
       faultBeanSupplier,
       unauthorizedFault,

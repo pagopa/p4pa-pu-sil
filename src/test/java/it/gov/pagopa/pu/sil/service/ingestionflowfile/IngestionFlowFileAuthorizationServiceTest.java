@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.apache.commons.lang3.tuple.Pair;
@@ -159,5 +160,52 @@ class IngestionFlowFileAuthorizationServiceTest {
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
     }
+  }
+
+  @Test
+  void givenUserIsAdminWhenAuthorizeTreasuryIngestionFlowFileThenOk() {
+    UserInfo userInfo = new UserInfo();
+    userInfo.setUserId("admin1");
+    String orgIpaCode = "ORG2";
+    String accessToken = "token2";
+    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI;
+
+    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
+      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
+      authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode))).thenReturn(123L);
+
+      when(ingestionFlowFileServiceMock.createIngestionFlowFileReservation(any(), eq(accessToken))).thenReturn(456L);
+      when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn("http://upload.url");
+
+      Pair<Long, String> result = service.authorizeTreasuryIngestionFlowFile(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        type
+      );
+
+      assertNotNull(result);
+      assertEquals(456L, result.getLeft());
+      assertEquals("http://upload.url", result.getRight());
+      verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
+      verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
+    }
+  }
+
+  @Test
+  void givenUserIsAdminAndWrongTypeWhenAuthorizeTreasuryIngestionFlowFileThenThrowsIngestionFlowFileTypeNotValidException() {
+    UserInfo userInfo = new UserInfo();
+    userInfo.setUserId("admin1");
+    String orgIpaCode = "ORG2";
+    String accessToken = "token2";
+    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
+
+    assertThrows(IngestionFlowFileTypeValidationException.class,
+      () -> service.authorizeTreasuryIngestionFlowFile(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        type
+      ));
   }
 }
