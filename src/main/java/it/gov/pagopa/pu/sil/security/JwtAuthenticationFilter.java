@@ -11,6 +11,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -60,10 +61,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         MDC.put("externalUserId", mdcUserId);
       }
-    } catch (InvalidAccessTokenException e){
-      log.info("An invalid accessToken has been provided: " + e.getMessage());
-    } catch (Exception e){
-      log.error("Something gone wrong while validate accessToken", e);
+    }  catch (Exception e){
+      if(e instanceof InvalidAccessTokenException){
+        log.info("An invalid accessToken has been provided: " + e.getMessage());
+        response.getWriter().write(e.getMessage());
+      } else {
+        log.error("Something gone wrong while validate accessToken", e);
+      }
+      response.setStatus(HttpStatus.UNAUTHORIZED.value());
+      return;
     }
     filterChain.doFilter(request, response);
   }
