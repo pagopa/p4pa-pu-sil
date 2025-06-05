@@ -4,13 +4,9 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeNotValidException;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
-import it.veneto.regione.pagamenti.pivot.ente.FaultBean;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoTesoreriaRisposta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -69,7 +65,7 @@ public class IngestionFlowFileAuthorizationService {
         IngestionFlowFileTypeEnum.TREASURY_XLS,
         IngestionFlowFileTypeEnum.TREASURY_POSTE)
       .contains(ingestionFlowFileType)) {
-      throw new IngestionFlowFileTypeNotValidException("Tipo di flusso non valido: " + ingestionFlowFileType);
+      throw new IngestionFlowFileTypeValidationException("Tipo di flusso non valido: " + ingestionFlowFileType);
     }
     return authorizeIngestionFlowFile(
       userInfo,

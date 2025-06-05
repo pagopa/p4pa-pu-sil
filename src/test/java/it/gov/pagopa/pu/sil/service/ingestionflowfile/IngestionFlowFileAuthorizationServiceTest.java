@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
-import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeNotValidException;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.apache.commons.lang3.tuple.Pair;
@@ -200,7 +200,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     String accessToken = "token2";
     IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
-    assertThrows(IngestionFlowFileTypeNotValidException.class,
+    assertThrows(IngestionFlowFileTypeValidationException.class,
       () -> service.authorizeTreasuryIngestionFlowFile(
         userInfo,
         accessToken,

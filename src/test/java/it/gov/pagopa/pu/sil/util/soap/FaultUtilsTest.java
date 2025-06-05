@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.UtilitiesTest;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeNotValidException;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediAvvisiPendentiRisposta;
@@ -168,7 +168,7 @@ class FaultUtilsTest {
         pivotFaultBeanSupplier,
         SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
         SilFaults.PIVOT_SYSTEM_ERROR,
-        new IngestionFlowFileTypeNotValidException("Pivot not valid"),
+        new IngestionFlowFileTypeValidationException("Pivot not valid"),
         SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.code(),
         "Pivot not valid"
       }
