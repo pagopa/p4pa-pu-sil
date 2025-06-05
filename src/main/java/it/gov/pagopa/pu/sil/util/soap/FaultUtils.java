@@ -80,26 +80,17 @@ public class FaultUtils {
   }
 
   public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
-    T responseObj,
-    BiConsumer<T, F> faultSetter,
-    Supplier<F> faultBeanSupplier,
-    SilFaults unauthorizedFault,
-    SilFaults systemErrorFault) {
+      T responseObj,
+      BiConsumer<T, F> faultSetter,
+      Supplier<F> faultBeanSupplier,
+      SilFaults unauthorizedFault,
+      SilFaults systemErrorFault) {
     return (Exception e) -> {
       if (e instanceof UnauthorizedException ue) {
         return setFaultOnResponse(
           responseObj,
           unauthorizedFault,
           ue.getMessage(),
-          faultBeanSupplier,
-          faultSetter
-        );
-      }
-      if (e instanceof IngestionFlowFileTypeValidationException ie) {
-        return setFaultOnResponse(
-          responseObj,
-          SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
-          ie.getMessage(),
           faultBeanSupplier,
           faultSetter
         );
