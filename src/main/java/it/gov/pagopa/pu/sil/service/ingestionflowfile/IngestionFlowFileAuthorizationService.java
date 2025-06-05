@@ -65,6 +65,7 @@ public class IngestionFlowFileAuthorizationService {
         IngestionFlowFileTypeEnum.TREASURY_XLS,
         IngestionFlowFileTypeEnum.TREASURY_POSTE)
       .contains(ingestionFlowFileType)) {
+      log.error("Invalid ingestion flow file type: {}", ingestionFlowFileType);
       throw new IngestionFlowFileTypeValidationException("Tipo di flusso non valido: " + ingestionFlowFileType);
     }
     return authorizeIngestionFlowFile(

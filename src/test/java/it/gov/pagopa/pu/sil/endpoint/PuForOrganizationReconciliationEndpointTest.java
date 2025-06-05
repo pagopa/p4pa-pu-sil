@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -110,32 +111,16 @@ class PuForOrganizationReconciliationEndpointTest {
   //region pivotSILAutorizzaImportFlussoTesoreria
 
   @Test
-  void givenValidRequestWhenPivotSILAutorizzaImportFlussoTesoreriaThenRegistryLoggerInvoked() throws Exception {
-    PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
-    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-
-    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
-        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
-      .thenReturn(new PivotSILAutorizzaImportFlussoTesoreria());
-
-    PivotSILAutorizzaImportFlussoTesoreriaRisposta response =
-      puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlussoTesoreria(request, header);
-
-    Assertions.assertNotNull(response);
-    Assertions.assertNull(response.getFault());
-  }
-
-  @Test
   void givenValidRequestWhenPivotSILAutorizzaImportFlussoTesoreriaThenResponseContainsExpectedTokenAndUrl() throws Exception {
     PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
+    request.setTipoFlusso(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI.name());
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI)
     )).thenReturn(Pair.of(expectedToken, expectedUrl));
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
