@@ -122,6 +122,7 @@ class FaultUtilsTest {
         paaSILImportaDovutoFaultSetter,
         faultBeanSupplier,
         SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR,
         new UnauthorizedException("Not authorized"),
         SilFaults.PAA_ENTE_NON_VALIDO.code(),
         "Not authorized"
@@ -131,6 +132,7 @@ class FaultUtilsTest {
         paaSILImportaDovutoFaultSetter,
         faultBeanSupplier,
         SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR,
         new RuntimeException("Generic error"),
         SilFaults.PAA_SYSTEM_ERROR.code(),
         "Errore di sistema"
@@ -140,6 +142,7 @@ class FaultUtilsTest {
         pivotSILAutorizzaImportFlussoFaultSetter,
         pivotFaultBeanSupplier,
         SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR,
         new UnauthorizedException("Pivot unauthorized"),
         SilFaults.PIVOT_ENTE_NON_VALIDO.code(),
         "Pivot unauthorized"
@@ -149,6 +152,7 @@ class FaultUtilsTest {
         pivotSILAutorizzaImportFlussoFaultSetter,
         pivotFaultBeanSupplier,
         SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR,
         new RuntimeException("Pivot generic error"),
         SilFaults.PIVOT_SYSTEM_ERROR.code(),
         "Errore di sistema"
@@ -163,6 +167,7 @@ class FaultUtilsTest {
     BiConsumer<T, F> faultSetter,
     Supplier<F> faultBeanSupplier,
     SilFaults unauthorizedFault,
+    SilFaults systemErrorFault,
     Exception exception,
     String expectedFaultCode,
     String expectedDescription
@@ -171,7 +176,8 @@ class FaultUtilsTest {
       responseSupplier,
       faultSetter,
       faultBeanSupplier,
-      unauthorizedFault
+      unauthorizedFault,
+      systemErrorFault
     );
     T resp = handler.apply(exception);
     Object fault = null;

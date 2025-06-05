@@ -75,7 +75,8 @@ public class PuForOrganizationReconciliationEndpoint {
         (Supplier<PivotSILAutorizzaImportFlussoRisposta>) PivotSILAutorizzaImportFlussoRisposta::new,
         PivotSILAutorizzaImportFlussoRisposta::setFault,
         FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR
       ),
       null,
       null

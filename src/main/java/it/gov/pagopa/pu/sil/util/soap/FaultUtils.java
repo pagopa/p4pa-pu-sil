@@ -73,15 +73,17 @@ public class FaultUtils {
     Supplier<T> responseSupplier,
     BiConsumer<T, F> faultSetter,
     Supplier<F> faultBeanSupplier,
-    SilFaults unauthorizedFault) {
-    return unauthorizedExceptionHandler(responseSupplier.get(), faultSetter, faultBeanSupplier, unauthorizedFault);
+    SilFaults unauthorizedFault,
+    SilFaults systemErrorFault) {
+    return unauthorizedExceptionHandler(responseSupplier.get(), faultSetter, faultBeanSupplier, unauthorizedFault, systemErrorFault);
   }
 
   public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
     T responseObj,
     BiConsumer<T, F> faultSetter,
     Supplier<F> faultBeanSupplier,
-    SilFaults unauthorizedFault) {
+    SilFaults unauthorizedFault,
+    SilFaults systemErrorFault) {
     return (Exception e) -> {
       if (e instanceof UnauthorizedException ue) {
         return setFaultOnResponse(
@@ -92,8 +94,6 @@ public class FaultUtils {
           faultSetter
         );
       }
-      SilFaults systemErrorFault = faultBeanSupplier.get() instanceof it.veneto.regione.pagamenti.pivot.ente.FaultBean ?
-        SilFaults.PIVOT_SYSTEM_ERROR : SilFaults.PAA_SYSTEM_ERROR;
       return systemErrorFaultResponse(
         responseObj,
         e,
