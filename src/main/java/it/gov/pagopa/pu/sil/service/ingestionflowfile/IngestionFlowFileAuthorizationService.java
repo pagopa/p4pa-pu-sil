@@ -5,12 +5,10 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequest
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
-import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlussoRisposta;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -30,17 +28,20 @@ public class IngestionFlowFileAuthorizationService {
     this.ingestionFlowFileReservationService = ingestionFlowFileReservationService;
   }
 
-  public Triple<PaaSILAutorizzaImportFlussoRisposta, String, SilOutcome> authorizeIngestionFlowFile(UserInfo userInfo, String accessToken, String orgIpaCode, IngestionFlowFileTypeEnum ingestionFlowFileType) {
-    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+  public Pair<Long, String> authorizeIngestionFlowFile(
+      UserInfo userInfo,
+      String accessToken,
+      String orgIpaCode,
+      IngestionFlowFileTypeEnum ingestionFlowFileType) {
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
-    // Check if the logged user has the right to call this endpoint
+
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", clientId, orgIpaCode);
-      return Triple.of(FaultUtils.setFaultOnResponse(response, SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato"), null, SilOutcome.KO);
+      throw new UnauthorizedException("Utente non autorizzato");
     }
-    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
+    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     IngestionFlowFileRequestDTO requestDTO = mapToReservationRequest(ingestionFlowFileType, organizationId);
 
     Long ingestionFlowFileId = ingestionFlowFileService.createIngestionFlowFileReservation(requestDTO, accessToken);
@@ -49,9 +50,7 @@ public class IngestionFlowFileAuthorizationService {
     String uploadUrl = ingestionFlowFileReservationService.generateUploadUrl(requestDTO);
     log.debug("Generated upload URL: {}", uploadUrl);
 
-    response.setRequestToken(String.valueOf(ingestionFlowFileId));
-    response.setUploadUrl(uploadUrl);
-    return Triple.of(response, null, SilOutcome.OK);
+    return Pair.of(ingestionFlowFileId, uploadUrl);
   }
 
   private IngestionFlowFileRequestDTO mapToReservationRequest(IngestionFlowFileTypeEnum ingestionFlowFileType, Long organizationId) {

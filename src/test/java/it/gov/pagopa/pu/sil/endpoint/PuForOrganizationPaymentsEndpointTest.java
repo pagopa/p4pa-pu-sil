@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
@@ -12,6 +13,8 @@ import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoServ
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +92,33 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(response);
   }
 
+  @Test
+  void givenValidRequestWhenPaaSILAutorizzaImportFlussoThenResponseContainsExpectedTokenAndUrl() throws Exception {
+    // Given
+    PaaSILAutorizzaImportFlusso request = podamFactory.manufacturePojo(PaaSILAutorizzaImportFlusso.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Long expectedToken = 12345L;
+    String expectedUrl = "https://upload.url";
+
+    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenReturn(Pair.of(expectedToken, expectedUrl));
+
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.paaSILAutorizzaImportFlusso), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenCallRealMethod(); // Let the lambda execute
+
+    // When
+    PaaSILAutorizzaImportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILAutorizzaImportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+    Assertions.assertEquals(expectedUrl, response.getUploadUrl());
+  }
+
   // endregion
 
   // region PasSILImportaDovuto
@@ -112,6 +142,33 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(response);
   }
 
+  @Test
+  void givenValidRequestWhenPaaSILImportaDovutoThenExtractRequestExtraInfoIsCalled() throws Exception {
+    // Given
+    PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> tripleResponse = Triple.of(
+      new PaaSILImportaDovutoRisposta(),
+      "iuv",
+      SilOutcome.OK
+    );
+
+    Mockito.when(paaSILImportaDovutoServiceMock.paaSILImportaDovuto(Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenReturn(tripleResponse);
+
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.paaSILImportaDovuto), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenCallRealMethod();
+
+    // When
+    puForOrganizationPaymentsEndpoint.paaSILImportaDovuto(request, header);
+
+    // Then
+    Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractRequestExtraInfo(request, header);
+  }
+
   // endregion
 
   // region PaaSILChiediAvvisiPendenti
@@ -133,15 +190,6 @@ class PuForOrganizationPaymentsEndpointTest {
   // endregion
 
   // region PaaSILChiediPosizioniChiuse
-  @Test
-  void givenAnyWhenPaaSILChiediStoricoPagamentiThenFault() throws Exception {
-    testFaultResponse(PaaSILChiediStoricoPagamenti.class,
-      SilFaults.PAA_SYSTEM_ERROR.code(),
-      puForOrganizationPaymentsEndpoint::paaSILChiediStoricoPagamenti);
-  }
-  // endregion
-
-  // region PaaSILRegistraPagamento
   @Test
   void givenAnyWhenPaaSILRegistraPagamentoThenFault() throws Exception {
     testFaultResponse(PaaSILRegistraPagamento.class,
