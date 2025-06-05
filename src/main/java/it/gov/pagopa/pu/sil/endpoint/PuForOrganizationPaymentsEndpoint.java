@@ -84,7 +84,8 @@ public class PuForOrganizationPaymentsEndpoint {
         (Supplier<PaaSILAutorizzaImportFlussoRisposta>) PaaSILAutorizzaImportFlussoRisposta::new,
         PaaSILAutorizzaImportFlussoRisposta::setFault,
         FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
       ),
       null,
       null
@@ -116,7 +117,8 @@ public class PuForOrganizationPaymentsEndpoint {
         response,
         PaaSILImportaDovutoRisposta::setFault,
         FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
       ),
       () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo

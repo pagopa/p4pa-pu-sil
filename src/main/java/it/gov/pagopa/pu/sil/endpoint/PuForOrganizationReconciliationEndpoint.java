@@ -77,23 +77,23 @@ public class PuForOrganizationReconciliationEndpoint {
       request,
       userInfo,
       null,
-      () -> ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
-        userInfo,
-        accessToken,
-        orgIpaCode,
-        type,
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::new,
-        FaultBean::new,
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          type);
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta response = new PivotSILAutorizzaImportFlussoTesoreriaRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedExceptionHandler(
+        (Supplier<PivotSILAutorizzaImportFlussoTesoreriaRisposta>) PivotSILAutorizzaImportFlussoTesoreriaRisposta::new,
         PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setRequestToken,
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setUploadUrl),
-      (Exception e) -> FaultUtils.systemErrorFaultResponse(
-        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
-        e,
-        SilFaults.PIVOT_SYSTEM_ERROR,
-        "Errore di sistema",
         FaultBean::new,
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR
       ),
       null,
       null
@@ -134,7 +134,8 @@ public class PuForOrganizationReconciliationEndpoint {
         (Supplier<PivotSILAutorizzaImportFlussoRisposta>) PivotSILAutorizzaImportFlussoRisposta::new,
         PivotSILAutorizzaImportFlussoRisposta::setFault,
         FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR
       ),
       null,
       null
