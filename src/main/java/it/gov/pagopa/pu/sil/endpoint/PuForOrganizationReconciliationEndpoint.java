@@ -24,8 +24,6 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.function.Function;
-
 @Endpoint
 @Slf4j
 public class PuForOrganizationReconciliationEndpoint {
@@ -72,7 +70,7 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      handleIngestionFlowFileTypeValidationException(),
+      this::handleIngestionFlowFileTypeValidationException,
       null,
       null
     );
@@ -162,22 +160,20 @@ public class PuForOrganizationReconciliationEndpoint {
     );
   }
 
-  private Function<Exception, PivotSILAutorizzaImportFlussoTesoreriaRisposta> handleIngestionFlowFileTypeValidationException() {
-    return (Exception e) -> {
-      if (e instanceof IngestionFlowFileTypeValidationException ie) {
-        return FaultUtils.setFaultOnResponse(
-          new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
-          SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
-          ie.getMessage()
-        );
-      }
-      return FaultUtils.unauthorizedExceptionHandler(
+  private PivotSILAutorizzaImportFlussoTesoreriaRisposta handleIngestionFlowFileTypeValidationException(Exception e) {
+    if (e instanceof IngestionFlowFileTypeValidationException ie) {
+      return FaultUtils.setFaultOnResponse(
         new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
-        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR
-      ).apply(e);
-    };
+        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
+        ie.getMessage()
+      );
+    }
+    return FaultUtils.unauthorizedExceptionHandler(
+      new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+      PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
+      FaultBean::new,
+      SilFaults.PIVOT_ENTE_NON_VALIDO,
+      SilFaults.PIVOT_SYSTEM_ERROR
+    ).apply(e);
   }
 }
