@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -158,19 +159,22 @@ class JwtAuthenticationFilterTest {
   void givenInvalidTokenWhenDoFilterInternalThenInvalidAccessTokenException() throws ServletException, IOException {
     // Given
     String accessToken = "INVALIDACCESSTOKEN";
+    String message = "An invalid accessToken has been provided";
     MockHttpServletRequest request = new MockHttpServletRequest(HttpMethod.GET.name(), "/path");
     request.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
 
     MockHttpServletResponse response = new MockHttpServletResponse();
 
-    Mockito.doThrow(new InvalidAccessTokenException("An invalid accessToken has been provided")).when(authorizationServiceMock).validateToken(accessToken);
+    Mockito.doThrow(new InvalidAccessTokenException(message)).when(authorizationServiceMock).validateToken(accessToken);
 
     // When
     jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);
 
     // Then
     Assertions.assertNull(MDC.get("externalUserId"));
-    Mockito.verify(filterChainMock).doFilter(request, response);
+    Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+    Assertions.assertEquals(message, response.getContentAsString());
+    Mockito.verify(filterChainMock, Mockito.times(0)).doFilter(request, response);
   }
 
   @Test
@@ -189,7 +193,8 @@ class JwtAuthenticationFilterTest {
 
     // Then
     Assertions.assertNull(MDC.get("externalUserId"));
-    Mockito.verify(filterChainMock).doFilter(request, response);
+    Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
+    Mockito.verify(filterChainMock, Mockito.times(0)).doFilter(request, response);
   }
 
 }
