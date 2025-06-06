@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -23,6 +24,7 @@ public class RegistryLogger {
 
   public static final String SKIP_XML_BODY_KEY = "skipXmlBody";
   public static final String XML_BODY_KEY = "xmlBody";
+  public static final String IUV_SEPARATOR = "-";
 
   private final JAXBTransformService jaxbTransformService;
 
@@ -40,7 +42,7 @@ public class RegistryLogger {
 
   public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String orgSilServiceName,
                           Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler,
-                          Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
+                          Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever, BiFunction<O, String, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
     produceReqRegistryEvent(orgFiscalCode, eventType, iuv, request, loggedUser, orgSilServiceName, registryBodyRequestExtraInfoRetriever);
     Triple<O, String, SilOutcome> response2outcome = Triple.of(null, null, SilOutcome.KO);
     try {
@@ -78,11 +80,11 @@ public class RegistryLogger {
   }
 
   private <O> void produceRespRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, O response, SilOutcome outcome,
-                                            UserInfo loggedUser, String orgSilServiceName, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
+                                            UserInfo loggedUser, String orgSilServiceName, BiFunction<O, String, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
     try {
       Object body = null;
       if (registryBodyResponseExtraInfoExtractor != null) {
-        Map<String, Object> bodyMap = new HashMap<>(registryBodyResponseExtraInfoExtractor.apply(response));
+        Map<String, Object> bodyMap = new HashMap<>(registryBodyResponseExtraInfoExtractor.apply(response, iuv));
         if (bodyMap.containsKey(SKIP_XML_BODY_KEY)) {
           bodyMap.remove(SKIP_XML_BODY_KEY);
         } else if (response != null) {
@@ -91,6 +93,11 @@ public class RegistryLogger {
         body = bodyMap;
       } else if (response != null) {
         body = jaxbTransformService.marshalling(response, (Class<O>) response.getClass());
+      }
+      // if the iuv contains the separator, it is a list of IUVs, so we don't log it in the iuv field of event;
+      // instead we may log it in the body of the event (the list of IUVs it is passed as a string in the registryBodyResponseExtraInfoExtractor method).
+      if(StringUtils.contains(iuv, IUV_SEPARATOR)) {
+        iuv = null;
       }
       produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, orgSilServiceName, RegistryEventSubType.RESP, outcome);
     } catch (Exception e) {

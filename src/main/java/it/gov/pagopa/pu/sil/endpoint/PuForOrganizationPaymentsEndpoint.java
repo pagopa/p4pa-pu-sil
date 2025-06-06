@@ -6,8 +6,12 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.paasilinviacarrellodovuti.PaaSILInviaCarrelloDovutiService;
+import it.gov.pagopa.pu.sil.service.paasilinviadovuto.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -32,14 +36,28 @@ public class PuForOrganizationPaymentsEndpoint {
   private final RegistryLogger registryLogger;
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
-  private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService;
+  private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto;
+
+  private final PaaSILInviaDovutiService paaSILInviaDovutiService;
+  private final RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovuti;
+
+  private final PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
+  private final RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
 
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
                                            PaaSILImportaDovutoService paaSILImportaDovutoService,
-                                           RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService) {
+                                           RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto,
+                                           PaaSILInviaDovutiService paaSILInviaDovutiService,
+                                           RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovuti,
+                                           PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService,
+                                           RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti) {
     this.registryLogger = registryLogger;
     this.paaSILImportaDovutoService = paaSILImportaDovutoService;
-    this.registryExtraInfoHandlerPaaSILImportaDovutoService = registryExtraInfoHandlerPaaSILImportaDovutoService;
+    this.registryExtraInfoHandlerPaaSILImportaDovuto = registryExtraInfoHandlerPaaSILImportaDovuto;
+    this.paaSILInviaDovutiService = paaSILInviaDovutiService;
+    this.registryExtraInfoHandlerPaaSILInviaDovuti = registryExtraInfoHandlerPaaSILInviaDovuti;
+    this.paaSILInviaCarrelloDovutiService = paaSILInviaCarrelloDovutiService;
+    this.registryExtraInfoHandlerPaaSILInviaCarrelloDovuti = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")
@@ -90,12 +108,63 @@ public class PuForOrganizationPaymentsEndpoint {
       null,
       () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
       (Exception e) -> systemErrorFaultResponse(faultResponse, e),
-      () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
-      registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo
+      () -> registryExtraInfoHandlerPaaSILImportaDovuto.extractRequestExtraInfo(request, header),
+      registryExtraInfoHandlerPaaSILImportaDovuto::extractResponseExtraInfo
     );
 
 
   }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILInviaDovuti")
+  @ResponsePayload
+  public PaaSILInviaDovutiRisposta paaSILInviaDovuti(
+    @RequestPayload PaaSILInviaDovuti request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    PaaSILInviaDovutiRisposta faultResponse = new PaaSILInviaDovutiRisposta();
+    faultResponse.setEsito(SilOutcome.KO.name());
+    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILInviaDovuti");
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+
+    //write the request/response to the registry, and execute the service
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILInviaDovuti,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request),
+      (Exception e) -> systemErrorFaultResponse(faultResponse, e),
+      () -> registryExtraInfoHandlerPaaSILInviaDovuti.extractRequestExtraInfo(request, header),
+      registryExtraInfoHandlerPaaSILInviaDovuti::extractResponseExtraInfo
+    );
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILInviaCarrelloDovuti")
+  @ResponsePayload
+  public PaaSILInviaCarrelloDovutiRisposta paaSILInviaCarrelloDovuti(
+    @RequestPayload PaaSILInviaCarrelloDovuti request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    PaaSILInviaCarrelloDovutiRisposta faultResponse = new PaaSILInviaCarrelloDovutiRisposta();
+    faultResponse.setEsito(SilOutcome.KO.name());
+    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILInviaCarrelloDovuti");
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+
+    //write the request/response to the registry, and execute the service
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILInviaCarrelloDovuti,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request),
+      (Exception e) -> systemErrorFaultResponse(faultResponse, e),
+      () -> registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractRequestExtraInfo(request, header),
+      registryExtraInfoHandlerPaaSILInviaCarrelloDovuti::extractResponseExtraInfo
+    );
+  }
+
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediAvvisiPendenti")
   @ResponsePayload

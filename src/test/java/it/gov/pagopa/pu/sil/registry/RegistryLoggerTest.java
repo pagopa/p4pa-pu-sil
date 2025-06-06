@@ -241,7 +241,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
+      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, (r, i) -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
       });
@@ -290,7 +290,7 @@ class RegistryLoggerTest {
 
     // When
     Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
+      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, (r, i) -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue:"+r, RegistryLogger.SKIP_XML_BODY_KEY, true);
       });
