@@ -23,7 +23,8 @@ public class IngestionFlowFileProcessingStatusService {
     this.ingestionFlowFileService = ingestionFlowFileService;
   }
 
-  public IngestionFlowFileStatus getProcessingStatus(UserInfo userInfo,                                                                         String accessToken,
+  public IngestionFlowFileStatus getProcessingStatus(UserInfo userInfo,
+                                                     String accessToken,
                                                      String orgIpaCode,
                                                      Long ingestionFlowFileId,
                                                      IngestionFlowFileTypeEnum expectedType) {
