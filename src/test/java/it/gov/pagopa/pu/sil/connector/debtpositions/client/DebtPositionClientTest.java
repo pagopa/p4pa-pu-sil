@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeOrgSe
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +62,7 @@ class DebtPositionClientTest {
   }
 
   @Test
-  void givenNotExistentTypeOrgWhenGetDebtPositionTypeOrgByOrganizationIdAndCodeThenException(){
+  void givenNotExistentTypeOrgWhenGetDebtPositionTypeOrgByOrganizationIdAndCodeThenNull(){
     //Given
     String accessToken = "ACCESSTOKEN";
     long debtPositionTypeOrgId = 1L;
@@ -74,9 +73,11 @@ class DebtPositionClientTest {
     Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode))
       .thenThrow(HttpClientErrorException.NotFound.class);
 
+    // When
+    DebtPositionTypeOrg response = client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
+
     // Then
-    Assertions.assertThrows(ApplicationException.class,
-      () -> client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken));
+    Assertions.assertNull(response);
   }
 
 }
