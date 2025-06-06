@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 public class RegistryEventDTO {
   private String registryId;
   private String registryOrigin;
+  private String registryType;
   private OffsetDateTime dateTime;
   private String traceId;
   private String brokerFiscalCode;

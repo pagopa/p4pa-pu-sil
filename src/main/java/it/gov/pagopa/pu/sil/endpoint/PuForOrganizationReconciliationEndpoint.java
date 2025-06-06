@@ -1,11 +1,22 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
-import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
+import it.veneto.regione.pagamenti.pivot.ente.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
@@ -13,31 +24,99 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.Optional;
-
 @Endpoint
 @Slf4j
 public class PuForOrganizationReconciliationEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/pivot/ente/";
   public static final String NAME = "PagamentiTelematiciPagatiRiconciliati";
 
+  private final RegistryLogger registryLogger;
+
+  private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
+
+  public PuForOrganizationReconciliationEndpoint(RegistryLogger registryLogger,
+                                                 IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService) {
+    this.registryLogger = registryLogger;
+    this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlussoTesoreria")
+  @ResponsePayload
+  public PivotSILAutorizzaImportFlussoTesoreriaRisposta pivotSILAutorizzaImportFlussoTesoreria(
+    @RequestPayload PivotSILAutorizzaImportFlussoTesoreria request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILAutorizzaImportFlussoTesoreria");
+
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeTreasuryIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          IngestionFlowFileTypeEnum.valueOf(request.getTipoFlusso()));
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta response = new PivotSILAutorizzaImportFlussoTesoreriaRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      this::handleIngestionFlowFileTypeValidationException,
+      null,
+      null
+    );
+  }
+
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlusso")
   @ResponsePayload
   public PivotSILAutorizzaImportFlussoRisposta pivotSILAutorizzaImportFlusso(
     @RequestPayload PivotSILAutorizzaImportFlusso request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header){
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILAutorizzaImportFlusso");
 
-    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    log.info("processing PivotSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
-    //TODO: implement the logic to handle the SOAP Action P4ADEV-2893
-    return FaultUtils.setFaultOnResponse(
-      new PivotSILAutorizzaImportFlussoRisposta(),
-      SilFaults.PIVOT_SYSTEM_ERROR,
-      Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null),
-      FaultBean::new,
-      PivotSILAutorizzaImportFlussoRisposta::setFault
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.pivotSILAutorizzaImportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
+        PivotSILAutorizzaImportFlussoRisposta response = new PivotSILAutorizzaImportFlussoRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedExceptionHandler(
+        new PivotSILAutorizzaImportFlussoRisposta(),
+        PivotSILAutorizzaImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR),
+      null,
+      null
     );
   }
+
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediPagatiRiconciliati")
   @ResponsePayload
@@ -80,5 +159,21 @@ public class PuForOrganizationReconciliationEndpoint {
       PivotSILAutorizzaImportFlussoRTRisposta::setFault
     );
   }
-}
 
+  private PivotSILAutorizzaImportFlussoTesoreriaRisposta handleIngestionFlowFileTypeValidationException(Exception e) {
+    if (e instanceof IngestionFlowFileTypeValidationException ie) {
+      return FaultUtils.setFaultOnResponse(
+        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
+        ie.getMessage()
+      );
+    }
+    return FaultUtils.unauthorizedExceptionHandler(
+      new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+      PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
+      FaultBean::new,
+      SilFaults.PIVOT_ENTE_NON_VALIDO,
+      SilFaults.PIVOT_SYSTEM_ERROR
+    ).apply(e);
+  }
+}

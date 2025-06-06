@@ -5,6 +5,9 @@ import jakarta.xml.bind.JAXBContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ws.soap.SoapHeaderElement;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 @Slf4j
 public class SoapUtils {
 
@@ -22,5 +25,16 @@ public class SoapUtils {
     }
   }
 
-
+  public static <H> String getOrganizationIpaCodeFromHeader(
+      SoapHeaderElement header,
+      Class<H> headerClass,
+      Function<H, String> orgIpaCodeExtractor,
+      String operationName) {
+    H intestazionePPT = unmarshallHeader(header, headerClass);
+    String orgIpaCode = Optional.ofNullable(intestazionePPT)
+        .map(orgIpaCodeExtractor)
+        .orElse(null);
+    log.info("processing {} orgIpaCode[{}]", operationName, orgIpaCode);
+    return orgIpaCode;
+  }
 }

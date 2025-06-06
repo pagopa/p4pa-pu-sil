@@ -74,6 +74,7 @@ public class RegistryProducerService {
           .registryId(registryId)
           .traceId(traceId)
           .registryOrigin("pu-sil")
+          .registryType("REGISTRY_SIL")
           .dateTime(OffsetDateTime.now())
           .eventType(eventType.name())
           .eventSubType(subType.name())

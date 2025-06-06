@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
@@ -8,20 +9,21 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.ws.server.endpoint.annotation.Endpoint;
 import org.springframework.ws.server.endpoint.annotation.PayloadRoot;
 import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
-
-import java.util.Optional;
 
 @Endpoint
 @Slf4j
@@ -32,13 +34,16 @@ public class PuForOrganizationPaymentsEndpoint {
   private final RegistryLogger registryLogger;
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
+  private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
   private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService;
 
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
                                            PaaSILImportaDovutoService paaSILImportaDovutoService,
+                                           IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
                                            RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoService) {
     this.registryLogger = registryLogger;
     this.paaSILImportaDovutoService = paaSILImportaDovutoService;
+    this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
     this.registryExtraInfoHandlerPaaSILImportaDovutoService = registryExtraInfoHandlerPaaSILImportaDovutoService;
   }
 
@@ -47,26 +52,41 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILAutorizzaImportFlussoRisposta paaSILAutorizzaImportFlusso(
     @RequestPayload PaaSILAutorizzaImportFlusso request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
     UserInfo userInfo = SecurityUtils.getLoggedUser();
-    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    log.info("processing paaSILAutorizzaImportFlusso codIpaEnte[{}]", Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILAutorizzaImportFlusso");
 
-    //check if the logged user has the right to call this endpoint
-    if (intestazionePPT == null || !AuthorizationService.isAdminRole(intestazionePPT.getCodIpaEnte(), userInfo)) {
-      log.error("User [{}] not authorized to call paaSILAutorizzaImportFlusso for organization {}",
-        Optional.ofNullable(SecurityUtils.getLoggedUser()).map(UserInfo::getUserId).orElse(null),
-        Optional.ofNullable(intestazionePPT).map(IntestazionePPT::getCodIpaEnte).orElse(null));
-      return notAuthorizedFaultResponse(response);
-    }
-
-    //TODO: implement the logic to handle the SOAP Action P4ADEV-2892
-    return FaultUtils.setFaultOnResponse(
-      new PaaSILAutorizzaImportFlussoRisposta(),
-      SilFaults.PAA_SYSTEM_ERROR,
-      intestazionePPT.getCodIpaEnte(),
-      FaultBean::new,
-      PaaSILAutorizzaImportFlussoRisposta::setFault
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILAutorizzaImportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          IngestionFlowFileTypeEnum.DP_INSTALLMENTS
+        );
+        PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setUploadUrl(result.getRight());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedExceptionHandler(
+        new PaaSILAutorizzaImportFlussoRisposta(),
+        PaaSILAutorizzaImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ),
+      null,
+      null
     );
   }
 
@@ -75,11 +95,13 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILImportaDovutoRisposta paaSILImportaDovuto(
     @RequestPayload PaaSILImportaDovuto request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    PaaSILImportaDovutoRisposta faultResponse = new PaaSILImportaDovutoRisposta();
-    faultResponse.setEsito(SilOutcome.KO.name());
-    String orgIpaCode = getOrganizationIpaCodeFromHeader(header, "paaSILImportaDovuto");
+    PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
+    response.setEsito(SilOutcome.KO.name());
     UserInfo userInfo = SecurityUtils.getLoggedUser();
-
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILImportaDovuto");
     //write the request/response to the registry, and execute the service
     return registryLogger.execute(
       AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
@@ -89,7 +111,13 @@ public class PuForOrganizationPaymentsEndpoint {
       userInfo,
       null,
       () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
-      (Exception e) -> systemErrorFaultResponse(faultResponse, e),
+      FaultUtils.unauthorizedExceptionHandler(
+        response,
+        PaaSILImportaDovutoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ),
       () -> registryExtraInfoHandlerPaaSILImportaDovutoService.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILImportaDovutoService::extractResponseExtraInfo
     );
@@ -152,36 +180,4 @@ public class PuForOrganizationPaymentsEndpoint {
       PaaSILRegistraPagamentoRisposta::setFault
     );
   }
-
-  private <T extends Risposta> T notAuthorizedFaultResponse(T response) {
-    FaultUtils.setFaultOnResponse(response,
-      SilFaults.PAA_ENTE_NON_VALIDO,
-      "Utente non autorizzato",
-      FaultBean::new,
-      T::setFault
-    );
-    return response;
-  }
-
-
-  private <T extends Risposta> T systemErrorFaultResponse(T response, Exception e) {
-    log.error("System error occurred", e);
-    FaultUtils.setFaultOnResponse(response,
-      SilFaults.PAA_SYSTEM_ERROR,
-      "Errore di sistema",
-      FaultBean::new,
-      T::setFault
-    );
-    return response;
-  }
-
-  private String getOrganizationIpaCodeFromHeader(SoapHeaderElement header, String operationName) {
-    IntestazionePPT intestazionePPT = SoapUtils.unmarshallHeader(header, IntestazionePPT.class);
-    String orgIpaCode = Optional.ofNullable(intestazionePPT)
-      .map(IntestazionePPT::getCodIpaEnte)
-      .orElse(null);
-    log.info("processing {} orgIpaCode[{}]", operationName, orgIpaCode);
-    return orgIpaCode;
-  }
-
 }
