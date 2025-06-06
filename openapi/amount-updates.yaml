@@ -42,8 +42,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-      security: [] # no security required for this endpoint
+security:
+  - BearerAuth: []
+    Agid-JWT-Signature: []
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    Agid-JWT-Signature:
+      type: apiKey
+      in: header
+      name: Agid-JWT-Signature
+      description: |-
+        JWS Token to enforce the integrity of the message.
+        See [integrity_rest_02] on https://www.agid.gov.it/sites/agid/files/2024-07/Linee_guida_interoperabilit%C3%A0PA_All2_Pattern_sicurezza.pdf
   schemas:
     Payment:
       type: object
