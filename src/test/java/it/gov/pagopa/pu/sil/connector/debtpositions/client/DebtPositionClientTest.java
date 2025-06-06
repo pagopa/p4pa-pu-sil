@@ -63,7 +63,7 @@ class DebtPositionClientTest {
   }
 
   @Test
-  void givenNotExistentTypeOrgWhenGetDebtPositionTypeOrgByOrganizationIdAndCodeThenException(){
+  void givenNotExistentTypeOrgWhenGetDebtPositionTypeOrgByOrganizationIdAndCodeThenNull(){
     //Given
     String accessToken = "ACCESSTOKEN";
     long debtPositionTypeOrgId = 1L;
@@ -74,9 +74,11 @@ class DebtPositionClientTest {
     Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode))
       .thenThrow(HttpClientErrorException.NotFound.class);
 
+    // When
+    DebtPositionTypeOrg response = client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
+
     // Then
-    Assertions.assertThrows(ApplicationException.class,
-      () -> client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken));
+    Assertions.assertNull(response);
   }
 
 }

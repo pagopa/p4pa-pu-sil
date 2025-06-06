@@ -24,7 +24,7 @@ public class CheckoutClient {
     RestTemplate restTemplate = restTemplateBuilder.build();
 
     if (clientConfig.isPrintBodyWhenError()) {
-      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("CHECKOUT"));
+      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("PAGOPA-CHECKOUT"));
     }
 
     ApiClient apiClient = new ApiClient(restTemplate);

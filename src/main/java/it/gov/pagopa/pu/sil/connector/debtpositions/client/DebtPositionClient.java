@@ -23,8 +23,8 @@ public class DebtPositionClient {
         .getDebtPositionTypeOrgSearchControllerApi(accessToken)
         .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
     } catch (HttpClientErrorException.NotFound e){
-      log.error("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
-      throw new ApplicationException("DebtPositionTypeOrg not found");
+      log.info("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
+      return null;
     }
   }
 

@@ -106,6 +106,7 @@ class RegistryProducerServiceTest {
         Assertions.assertEquals(eventIdPrefix, payload.getRegistryId().substring(0, eventIdPrefix.length()));
         Assertions.assertEquals(traceId, payload.getTraceId());
         Assertions.assertEquals("pu-sil", payload.getRegistryOrigin());
+        Assertions.assertEquals("REGISTRY_SIL", payload.getRegistryType());
 
         Assertions.assertEquals(eventType.name(), payload.getEventType());
         Assertions.assertEquals(subType.name(), payload.getEventSubType());
@@ -118,6 +119,13 @@ class RegistryProducerServiceTest {
         Assertions.assertEquals(outcome.name(), payload.getOutcome());
         Assertions.assertEquals(serializedBody, payload.getBody());
         Assertions.assertTrue(OffsetDateTime.now().toEpochSecond() - payload.getDateTime().toEpochSecond() < 5);
+
+        String[] ignoredFields = {};
+        if(body == null) {
+          ignoredFields = new String[]{"body"};
+        }
+        TestUtils.checkNotNullFields(payload, ignoredFields);
+
         return true;
       }));
   }
