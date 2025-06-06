@@ -36,7 +36,7 @@ public class IngestionFlowFileProcessingStatusService {
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
     log.debug("Retrieved IngestionFlowFile: {}", ingestionFlowFile);
 
-    if (!ingestionFlowFile.getIngestionFlowFileType().name().equals(expectedType.name())) {
+    if (!ingestionFlowFile.getIngestionFlowFileType().toString().equals(expectedType.toString())) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, ingestionFlowFile.getIngestionFlowFileType()));
     }
