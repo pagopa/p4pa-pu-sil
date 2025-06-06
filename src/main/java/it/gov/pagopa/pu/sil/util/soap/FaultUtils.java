@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
@@ -70,20 +71,11 @@ public class FaultUtils {
   }
 
   public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
-    Supplier<T> responseSupplier,
-    BiConsumer<T, F> faultSetter,
-    Supplier<F> faultBeanSupplier,
-    SilFaults unauthorizedFault,
-    SilFaults systemErrorFault) {
-    return unauthorizedExceptionHandler(responseSupplier.get(), faultSetter, faultBeanSupplier, unauthorizedFault, systemErrorFault);
-  }
-
-  public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
-    T responseObj,
-    BiConsumer<T, F> faultSetter,
-    Supplier<F> faultBeanSupplier,
-    SilFaults unauthorizedFault,
-    SilFaults systemErrorFault) {
+      T responseObj,
+      BiConsumer<T, F> faultSetter,
+      Supplier<F> faultBeanSupplier,
+      SilFaults unauthorizedFault,
+      SilFaults systemErrorFault) {
     return (Exception e) -> {
       if (e instanceof UnauthorizedException ue) {
         return setFaultOnResponse(

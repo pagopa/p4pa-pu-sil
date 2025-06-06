@@ -78,6 +78,9 @@
           "registryOrigin": {
             "type": "string"
           },
+          "registryType": {
+            "type": "string"
+          },
           "requestorId": {
             "type": "string"
           },
@@ -99,6 +102,7 @@
             "outcome": "string",
             "registryId": "string",
             "registryOrigin": "string",
+            "registryType": "string",
             "requestorId": "string",
             "traceId": "string"
           }
