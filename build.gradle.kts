@@ -51,6 +51,7 @@ val jaxbApiVersion = "4.0.2"
 val activationVersion = "2.1.3"
 val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.1"
+val caffeineVersion = "3.2.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -59,6 +60,8 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-actuator")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web-services")
+  implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
@@ -149,6 +152,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateP4PAAUTH",
     "openApiGenerateP4PASENDNOTIFICATION",
     "openApiGeneratePROCESSEXECUTION",
+    "openApiGenerateDEBTPOSITIONS",
     "openApiGenerateNodeCheckout",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation"
@@ -256,6 +260,33 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.processexecutions.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.processexecutions.dto.generated")
+  typeMappings.set(mapOf(
+    "LocalDateTime" to "java.time.LocalDateTime"
+  ))
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateDEBTPOSITIONS") {
+  group = "openapi"
+  description = "description"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-debt-positions/refs/heads/$targetEnv/openapi/generated.openapi.json")
+  outputDir.set("$projectDir/build/generated")
+  apiPackage.set("it.gov.pagopa.pu.debtpositions.controller.generated")
+  modelPackage.set("it.gov.pagopa.pu.debtpositions.dto.generated")
   typeMappings.set(mapOf(
     "LocalDateTime" to "java.time.LocalDateTime"
   ))
