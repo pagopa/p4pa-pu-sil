@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
@@ -36,7 +36,7 @@ public class IngestionFlowFileProcessingStatusService {
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
     log.debug("Retrieved IngestionFlowFile: {}", ingestionFlowFile);
 
-    if (!ingestionFlowFile.getIngestionFlowFileType().toString().equals(expectedType.toString())) {
+    if (!ingestionFlowFile.getIngestionFlowFileType().equals(expectedType)) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, ingestionFlowFile.getIngestionFlowFileType()));
     }

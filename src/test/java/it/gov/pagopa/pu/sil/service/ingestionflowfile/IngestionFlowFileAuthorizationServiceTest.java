@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
@@ -55,7 +55,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
     String accessToken = "token";
-    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
@@ -78,7 +78,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("admin1");
     String orgIpaCode = "ORG2";
     String accessToken = "token2";
-    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -107,7 +107,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     UserInfo userInfo = null;
     String orgIpaCode = "ORG3";
     String accessToken = "token3";
-    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), isNull())).thenReturn(true);
@@ -137,7 +137,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("admin2");
     String orgIpaCode = "ORG4";
     String accessToken = "token4";
-    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -168,7 +168,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("admin1");
     String orgIpaCode = "ORG2";
     String accessToken = "token2";
-    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI;
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.TREASURY_OPI;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -198,7 +198,7 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("admin1");
     String orgIpaCode = "ORG2";
     String accessToken = "token2";
-    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum type = IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
+    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
     assertThrows(IngestionFlowFileTypeValidationException.class,
       () -> service.authorizeTreasuryIngestionFlowFile(
