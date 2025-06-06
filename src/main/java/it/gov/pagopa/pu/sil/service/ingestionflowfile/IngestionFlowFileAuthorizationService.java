@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
@@ -82,7 +82,7 @@ public class IngestionFlowFileAuthorizationService {
       .filePathName(UNKNOWN)
       .fileName(UNKNOWN)
       .fileSize(0L)
-      .ingestionFlowFileType(ingestionFlowFileType)
+      .ingestionFlowFileType(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.valueOf(ingestionFlowFileType.toString()))
       .fileOrigin(FILE_ORIGIN);
   }
 }

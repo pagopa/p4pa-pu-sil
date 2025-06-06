@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
@@ -115,14 +115,14 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenValidRequestWhenPivotSILAutorizzaImportFlussoTesoreriaThenResponseContainsExpectedTokenAndUrl() throws Exception {
     PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
-    request.setTipoFlusso(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI.name());
+    request.setTipoFlusso(IngestionFlowFileTypeEnum.TREASURY_OPI.name());
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI)
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileTypeEnum.TREASURY_OPI)
     )).thenReturn(Pair.of(expectedToken, expectedUrl));
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
@@ -139,13 +139,13 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenIngestionFlowFileTypeValidationExceptionWhenPivotSILAutorizzaImportFlussoTesoreriaThenCustomHandlerIsUsed() throws Exception {
     PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
-    request.setTipoFlusso(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.name());
+    request.setTipoFlusso(IngestionFlowFileTypeEnum.DP_INSTALLMENTS.name());
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     String customMessage = "Tipo flusso non valido";
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenThrow(new IngestionFlowFileTypeValidationException(customMessage));
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
@@ -163,12 +163,12 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenGenericExceptionWhenPivotSILAutorizzaImportFlussoTesoreriaThenBaseHandlerIsUsed() throws Exception {
     PivotSILAutorizzaImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILAutorizzaImportFlussoTesoreria.class);
-    request.setTipoFlusso(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI.name());
+    request.setTipoFlusso(IngestionFlowFileTypeEnum.TREASURY_OPI.name());
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI)
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(IngestionFlowFileTypeEnum.TREASURY_OPI)
     )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILAutorizzaImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
