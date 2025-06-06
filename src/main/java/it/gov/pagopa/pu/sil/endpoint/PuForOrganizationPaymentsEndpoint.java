@@ -96,7 +96,7 @@ public class PuForOrganizationPaymentsEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      FaultUtils.unauthorizedExceptionHandler(
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILAutorizzaImportFlussoRisposta(),
         PaaSILAutorizzaImportFlussoRisposta::setFault,
         FaultBean::new,
@@ -129,7 +129,7 @@ public class PuForOrganizationPaymentsEndpoint {
       userInfo,
       null,
       () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
-      FaultUtils.unauthorizedExceptionHandler(
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         response,
         PaaSILImportaDovutoRisposta::setFault,
         FaultBean::new,
@@ -163,7 +163,7 @@ public class PuForOrganizationPaymentsEndpoint {
       userInfo,
       null,
       () -> paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request),
-      FaultUtils.unauthorizedExceptionHandler(
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaDovutiRisposta(),
         PaaSILInviaDovutiRisposta::setFault,
         FaultBean::new,
@@ -195,7 +195,7 @@ public class PuForOrganizationPaymentsEndpoint {
       userInfo,
       null,
       () -> paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request),
-      FaultUtils.unauthorizedExceptionHandler(
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaCarrelloDovutiRisposta(),
         PaaSILInviaCarrelloDovutiRisposta::setFault,
         FaultBean::new,
