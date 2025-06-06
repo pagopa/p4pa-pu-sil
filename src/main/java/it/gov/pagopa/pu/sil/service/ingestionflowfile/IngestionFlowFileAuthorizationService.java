@@ -82,7 +82,7 @@ public class IngestionFlowFileAuthorizationService {
       .filePathName(UNKNOWN)
       .fileName(UNKNOWN)
       .fileSize(0L)
-      .ingestionFlowFileType(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.valueOf(ingestionFlowFileType.name()))
+      .ingestionFlowFileType(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.valueOf(ingestionFlowFileType.toString()))
       .fileOrigin(FILE_ORIGIN);
   }
 }
