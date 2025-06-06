@@ -2,10 +2,10 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,7 +37,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
   }
 
   @Test
-  void givenUserNotAdminWhenAuthorizeIngestionFlowFileThenKo() {
+  void givenUserNotAdminWhenGetProcessingStatusThenKo() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
@@ -47,7 +46,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
-      assertThrows(UnsupportedOperationException.class, () ->
+      assertThrows(UnauthorizedException.class, () ->
         service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, type)
       );
       verifyNoInteractions(ingestionFlowFileServiceMock);
@@ -55,22 +54,23 @@ class IngestionFlowFileProcessingStatusServiceTest {
   }
 
   @Test
-  void givenUserAdminWhenAuthorizeIngestionFlowFileThenOk() {
+  void givenUserAdminWhenGetProcessingStatusThenOk() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
     String accessToken = "token";
-    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
-    String expectedType = type.name();
     IngestionFlowFile expectedIngestionFlowFile = new IngestionFlowFile()
-      .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.valueOf(expectedType));
+      .ingestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      .status(IngestionFlowFileStatus.PROCESSING);
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
+
       when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken))
         .thenReturn(expectedIngestionFlowFile);
 
-      IngestionFlowFileStatus result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, type);
+      IngestionFlowFileStatus result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+
       assertNotNull(result);
       assertEquals(expectedIngestionFlowFile.getStatus().name(), result.name());
 
@@ -93,7 +93,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
         .thenReturn(expectedIngestionFlowFile);
 
       assertThrows(IllegalArgumentException.class, () ->
-        service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+        service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.TREASURY_OPI)
       );
 
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
