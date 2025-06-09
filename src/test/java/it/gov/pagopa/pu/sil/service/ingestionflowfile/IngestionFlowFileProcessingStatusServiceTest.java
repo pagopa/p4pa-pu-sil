@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
+import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.junit.jupiter.api.AfterEach;
@@ -72,7 +73,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
       String result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
       assertNotNull(result);
-      assertEquals(expectedIngestionFlowFile.getStatus().name(), result);
+      assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(expectedIngestionFlowFile.getStatus().getValue()), result);
 
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }
