@@ -151,7 +151,7 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setUploadUrl(result.getRight());
         return Triple.of(response, null, SilOutcome.OK);
       },
-      FaultUtils.unauthorizedExceptionHandler(
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PivotSILAutorizzaImportFlussoRisposta(),
         PivotSILAutorizzaImportFlussoRisposta::setFault,
         FaultBean::new,
@@ -213,7 +213,7 @@ public class PuForOrganizationReconciliationEndpoint {
         ie.getMessage()
       );
     }
-    return FaultUtils.unauthorizedExceptionHandler(
+    return FaultUtils.unauthorizedOrSystemExceptionHandler(
       new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
       PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
       FaultBean::new,

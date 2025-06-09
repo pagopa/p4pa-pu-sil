@@ -26,11 +26,11 @@ public class UtilitiesTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = "IUV")
+  @ValueSource(strings = {"IUV","IUV1,IUV2,IUV3"})
   @NullAndEmptySource
   void testIuv2Nav(String iuv){
     // Given
-    String expectedResult = StringUtils.isBlank(iuv) ? null : "3" + iuv;
+    String expectedResult = StringUtils.isBlank(iuv) ? null : ("IUV".equals(iuv) ? "3IUV" : "3IUV1,3IUV2,3IUV3");
 
     // When
     String result = Utilities.iuv2Nav(iuv);
@@ -40,11 +40,11 @@ public class UtilitiesTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = "3NAV")
+  @ValueSource(strings = {"3NAV","3NAV1,3NAV2,3NAV3"})
   @NullAndEmptySource
   void testNav2Iuv(String nav){
     // Given
-    String expectedResult = StringUtils.isBlank(nav) ? null : nav.substring(1);
+    String expectedResult = StringUtils.isBlank(nav) ? null : ("3NAV".equals(nav) ? "NAV" : "NAV1,NAV2,NAV3");
 
     // When
     String result = Utilities.nav2Iuv(nav);
