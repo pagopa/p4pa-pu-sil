@@ -7,8 +7,6 @@ import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
-import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
-import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

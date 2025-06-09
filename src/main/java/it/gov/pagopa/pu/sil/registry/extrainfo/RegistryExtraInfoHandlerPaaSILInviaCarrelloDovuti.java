@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.registry.extrainfo;
 
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.veneto.regione.pagamenti.ente.*;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.ws.soap.SoapHeaderElement;

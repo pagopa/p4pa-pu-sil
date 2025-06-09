@@ -6,8 +6,6 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.service.paasilinviadovuto.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
-import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import org.apache.commons.lang3.tuple.Triple;
