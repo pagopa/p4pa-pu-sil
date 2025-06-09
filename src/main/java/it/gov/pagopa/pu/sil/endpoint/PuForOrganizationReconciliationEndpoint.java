@@ -74,7 +74,7 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setStato(processingStatus);
         return Triple.of(response, null, SilOutcome.OK);
       },
-      FaultUtils.unauthorizedExceptionHandler(
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PivotSILChiediStatoImportFlussoRisposta(),
         PivotSILChiediStatoImportFlussoRisposta::setFault,
         FaultBean::new,
