@@ -107,7 +107,7 @@ class FaultUtilsTest {
     assertNotNull(faultBean.getSerial());
   }
 
-  static Stream<Object[]> unauthorizedExceptionHandlerCases() {
+  static Stream<Object[]> unauthorizedOrSystemExceptionHandlerCases() {
     BiConsumer<PaaSILImportaDovutoRisposta, FaultBean> paaSILImportaDovutoFaultSetter = PaaSILImportaDovutoRisposta::setFault;
     Supplier<FaultBean> faultBeanSupplier = FaultBean::new;
 
@@ -159,8 +159,8 @@ class FaultUtilsTest {
   }
 
   @ParameterizedTest
-  @MethodSource("unauthorizedExceptionHandlerCases")
-  <T, F> void testUnauthorizedExceptionHandler(
+  @MethodSource("unauthorizedOrSystemExceptionHandlerCases")
+  <T, F> void testUnauthorizedOrSystemExceptionHandler(
     T responseObj,
     BiConsumer<T, F> faultSetter,
     Supplier<F> faultBeanSupplier,
@@ -170,7 +170,7 @@ class FaultUtilsTest {
     String expectedFaultCode,
     String expectedDescription
   ) {
-    var handler = FaultUtils.unauthorizedExceptionHandler(
+    var handler = FaultUtils.unauthorizedOrSystemExceptionHandler(
       responseObj,
       faultSetter,
       faultBeanSupplier,
