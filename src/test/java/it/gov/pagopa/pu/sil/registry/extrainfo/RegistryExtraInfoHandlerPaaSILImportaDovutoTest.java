@@ -64,9 +64,8 @@ class RegistryExtraInfoHandlerPaaSILImportaDovutoTest {
   @Test
   void extractResponseExtraInfo() {
     PaaSILImportaDovutoRisposta response = null;
-    String iuv = "IUV";
 
-    Map<String, Object> result = registryExtraInfoHandlerPaaSILImportaDovuto.extractResponseExtraInfo(response, iuv);
+    Map<String, Object> result = registryExtraInfoHandlerPaaSILImportaDovuto.extractResponseExtraInfo(response);
 
     assertNotNull(result);
     assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));

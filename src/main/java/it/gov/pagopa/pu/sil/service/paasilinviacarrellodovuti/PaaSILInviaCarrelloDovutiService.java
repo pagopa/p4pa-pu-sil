@@ -3,13 +3,13 @@ package it.gov.pagopa.pu.sil.service.paasilinviacarrellodovuti;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
-import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
-import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +30,7 @@ public class PaaSILInviaCarrelloDovutiService {
     //TODO P4ADEV-3076: unmarshall the request
 
     //TODO P4ADEV-3078: implement business logic
-    String iuv = "iuv";
+    String iuv = StringUtils.joinWith(RegistryLogger.IUV_SEPARATOR,"iuv1", "iuv2", "iuv3");
     PaaSILInviaCarrelloDovutiRisposta response = new PaaSILInviaCarrelloDovutiRisposta();
     response.setEsito(SilOutcome.OK.name());
     return Triple.of(response, iuv, SilOutcome.OK);

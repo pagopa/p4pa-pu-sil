@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -57,7 +56,7 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
       response.setUrl(null);
     }
 
-    Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaDovuti.extractResponseExtraInfo(response, "IUV");
+    Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaDovuti.extractResponseExtraInfo(response);
 
     assertNotNull(result);
     assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));

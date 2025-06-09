@@ -38,16 +38,13 @@ public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti {
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaCarrelloDovutiRisposta response, String iuv) {
+  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaCarrelloDovutiRisposta response) {
     Map<String, Object> body = new HashMap<>();
     if(response.getIdSessionCarrello()!=null){
       body.put("idSession", response.getIdSessionCarrello());
     }
     if(response.getUrl()!=null){
       body.put("url", response.getUrl());
-    }
-    if(iuv!=null){
-      body.put("iuv", StringUtils.split(iuv, RegistryLogger.IUV_SEPARATOR));
     }
     body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
     return body;

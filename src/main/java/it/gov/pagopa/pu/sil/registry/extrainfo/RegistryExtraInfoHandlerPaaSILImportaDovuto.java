@@ -33,7 +33,7 @@ public class RegistryExtraInfoHandlerPaaSILImportaDovuto {
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILImportaDovutoRisposta response, String iuv) {
+  public Map<String, Object> extractResponseExtraInfo(PaaSILImportaDovutoRisposta response) {
     return Map.of(RegistryLogger.SKIP_XML_BODY_KEY, "true");
   }
 }

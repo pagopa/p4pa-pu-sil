@@ -24,7 +24,7 @@ public class RegistryExtraInfoHandlerPaaSILInviaDovuti {
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaDovutiRisposta response, String iuv) {
+  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaDovutiRisposta response) {
     Map<String, Object> body = new HashMap<>();
     if(response.getIdSession()!=null){
       body.put("idSession", response.getIdSession());

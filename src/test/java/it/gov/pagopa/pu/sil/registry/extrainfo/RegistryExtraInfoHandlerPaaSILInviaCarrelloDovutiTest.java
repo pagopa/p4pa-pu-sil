@@ -68,29 +68,21 @@ class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovutiTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"happyCase", "iuvNull", "iuvMultiple", "idSessionNull", "urlNull"})
+  @ValueSource(strings = {"happyCase", "idSessionNull", "urlNull"})
   void extractResponseExtraInfo(String testType) {
     PaaSILInviaCarrelloDovutiRisposta response = podamFactory.manufacturePojo(PaaSILInviaCarrelloDovutiRisposta.class);
-    String iuv = "IUV";
 
     switch (testType) {
-      case "iuvNull" -> iuv = null;
-      case "iuvMultiple" -> iuv = "IUV1" + RegistryLogger.IUV_SEPARATOR + "IUV2";
       case "idSessionNull" -> response.setIdSessionCarrello(null);
       case "urlNull" -> response.setUrl(null);
     }
 
-    Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractResponseExtraInfo(response, iuv);
+    Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractResponseExtraInfo(response);
 
     assertNotNull(result);
     assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
-    assertEquals(testType.equals("happyCase") || testType.equals("iuvMultiple") ? 4 : 3, result.size());
+    assertEquals(testType.equals("happyCase") ? 3 : 2, result.size());
     assertEquals(response.getUrl(), testType.equals("urlNull")?null:result.get("url"));
     assertEquals(response.getIdSessionCarrello(), testType.equals("idSessionNull")?null:result.get("idSession"));
-    if(!testType.equals("iuvNull")) {
-      assertArrayEquals(iuv.split(RegistryLogger.IUV_SEPARATOR), (String[]) result.get("iuv"));
-    } else {
-      assertNull(result.get("iuv"));
-    }
   }
 }
