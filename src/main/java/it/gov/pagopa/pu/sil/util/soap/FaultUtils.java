@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
@@ -70,7 +69,7 @@ public class FaultUtils {
     return setFaultOnResponse(response, fault, description, faultBeanSupplier, faultSetter);
   }
 
-  public static <T, F> Function<Exception, T> unauthorizedExceptionHandler(
+  public static <T, F> Function<Exception, T> unauthorizedOrSystemExceptionHandler(
       T responseObj,
       BiConsumer<T, F> faultSetter,
       Supplier<F> faultBeanSupplier,
