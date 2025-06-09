@@ -64,14 +64,14 @@ public class PuForOrganizationReconciliationEndpoint {
       userInfo,
       null,
       () -> {
-        IngestionFlowFileStatus processingStatus = ingestionFlowFileProcessingStatusService.getProcessingStatus(
+        String processingStatus = ingestionFlowFileProcessingStatusService.getProcessingStatus(
           userInfo,
           accessToken,
           orgIpaCode,
           Long.valueOf(request.getRequestToken()),
           IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
         PivotSILChiediStatoImportFlussoRisposta response = new PivotSILChiediStatoImportFlussoRisposta();
-        response.setStato(processingStatus.getValue());
+        response.setStato(processingStatus);
         return Triple.of(response, null, SilOutcome.OK);
       },
       FaultUtils.unauthorizedExceptionHandler(
@@ -109,7 +109,7 @@ public class PuForOrganizationReconciliationEndpoint {
           userInfo,
           accessToken,
           orgIpaCode,
-          IngestionFlowFileTypeEnum.valueOf(request.getTipoFlusso()));
+          request.getTipoFlusso());
         PivotSILAutorizzaImportFlussoTesoreriaRisposta response = new PivotSILAutorizzaImportFlussoTesoreriaRisposta();
         response.setRequestToken(String.valueOf(result.getLeft()));
         response.setUploadUrl(result.getRight());
@@ -222,3 +222,5 @@ public class PuForOrganizationReconciliationEndpoint {
     ).apply(e);
   }
 }
+
+

@@ -69,10 +69,10 @@ class IngestionFlowFileProcessingStatusServiceTest {
       when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken))
         .thenReturn(expectedIngestionFlowFile);
 
-      IngestionFlowFileStatus result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+      String result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
       assertNotNull(result);
-      assertEquals(expectedIngestionFlowFile.getStatus().name(), result.name());
+      assertEquals(expectedIngestionFlowFile.getStatus().name(), result);
 
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }
