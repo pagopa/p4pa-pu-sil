@@ -5,14 +5,12 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequest
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyType;
-import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 @Slf4j
@@ -60,18 +58,12 @@ public class IngestionFlowFileAuthorizationService {
       String accessToken,
       String orgIpaCode,
       String ingestionFlowFileLegacyType) {
-    IngestionFlowFileLegacyType ingestionFlowFileLegacyTypeEnum = Arrays.stream(IngestionFlowFileLegacyType.values())
-      .filter(e -> e.getValue().equals(ingestionFlowFileLegacyType))
-      .findFirst()
-      .orElseThrow(() -> {
-        log.error("Invalid ingestion flow file type: {}", ingestionFlowFileLegacyType);
-        throw new IngestionFlowFileTypeValidationException("Tipo di flusso non valido: " + ingestionFlowFileLegacyType);
-      });
+    IngestionFlowFileTypeEnum ingestionFlowFileTypeEnum = IngestionFlowFileLegacyType.fromLegacyValue2CurrentValue(ingestionFlowFileLegacyType);
     return authorizeIngestionFlowFile(
       userInfo,
       accessToken,
       orgIpaCode,
-      IngestionFlowFileTypeEnum.valueOf(ingestionFlowFileLegacyTypeEnum.getCode())
+      ingestionFlowFileTypeEnum
     );
   }
 

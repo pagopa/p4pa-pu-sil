@@ -181,7 +181,7 @@ class IngestionFlowFileAuthorizationServiceTest {
         userInfo,
         accessToken,
         orgIpaCode,
-        IngestionFlowFileLegacyType.TREASURY_OPI.getValue()
+        IngestionFlowFileLegacyType.TREASURY_OPI.getLegacyValue()
       );
 
       assertNotNull(result);

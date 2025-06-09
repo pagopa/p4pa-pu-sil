@@ -1,29 +1,31 @@
 package it.gov.pagopa.pu.sil.enums.legacy;
 
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
+
 import java.util.Arrays;
 
 public enum IngestionFlowFileLegacyStatus {
-  UPLOADED("UPLOADED", "FILE_SCARICATO"),
-  PROCESSING("PROCESSING", "FILE_IN_CARICAMENTO"),
-  COMPLETED("COMPLETED", "FILE_CARICATO"),
-  ERROR("ERROR", "ERROR_LOAD"),
-  WAITING_FILE("WAITING_FILE", "WAITING_FILE") /** no such value exists in the legacy system */
+  UPLOADED(IngestionFlowFileStatus.UPLOADED, "FILE_SCARICATO"),
+  PROCESSING(IngestionFlowFileStatus.PROCESSING, "FILE_IN_CARICAMENTO"),
+  COMPLETED(IngestionFlowFileStatus.COMPLETED, "FILE_CARICATO"),
+  ERROR(IngestionFlowFileStatus.ERROR, "ERROR_LOAD"),
+  WAITING_FILE(IngestionFlowFileStatus.WAITING_FILE, "WAITING_FILE") /** no such value exists in the legacy system */
   ;
 
-  private String value;
+  private IngestionFlowFileStatus value;
   private String legacyValue;
 
-  IngestionFlowFileLegacyStatus(String value, String legacyValue) {
+  IngestionFlowFileLegacyStatus(IngestionFlowFileStatus value, String legacyValue) {
     this.value = value;
     this.legacyValue = legacyValue;
   }
 
-  public String getValue() { return value; }
+  public IngestionFlowFileStatus getValue() { return value; }
   public String getLegacyValue() { return legacyValue; }
 
   public static String fromValue2LegacyValue(String value) {
     return Arrays.stream(IngestionFlowFileLegacyStatus.values())
-      .filter(e -> e.getValue().equals(value))
+      .filter(e -> e.getValue().toString().equals(value))
       .findFirst()
       .map(IngestionFlowFileLegacyStatus::getLegacyValue)
       .orElseThrow(()-> new IllegalArgumentException("Unexpected value %s".formatted(value)));
