@@ -21,23 +21,24 @@ public class ExportFileClient {
     this.processExecutionsApisHolder = processExecutionsApisHolder;
   }
 
-  public String createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken) {
+  public Long createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken) {
     ResponseEntity<Void> response = processExecutionsApisHolder.getExportFileControllerApi(accessToken)
       .createClassificationsExportFileWithHttpInfo(classificationsExportFileRequestDTO);
     return locationHeader(response);
   }
 
-  public String createPaidExportFile(PaidExportFileRequestDTO paidExportFileRequestDTO, String accessToken) {
+  public Long createPaidExportFile(PaidExportFileRequestDTO paidExportFileRequestDTO, String accessToken) {
     ResponseEntity<Void> response = processExecutionsApisHolder.getExportFileControllerApi(accessToken)
       .createPaidExportFileWithHttpInfo(paidExportFileRequestDTO);
     return locationHeader(response);
   }
 
-  private String locationHeader(ResponseEntity<Void> response) {
+  private Long locationHeader(ResponseEntity<Void> response) {
     return Optional.ofNullable(response)
       .map(HttpEntity::getHeaders)
       .flatMap(h -> Optional.ofNullable(h.getLocation()))
       .map(URI::toString)
+      .map(Long::valueOf)
       .orElse(null);
   }
 

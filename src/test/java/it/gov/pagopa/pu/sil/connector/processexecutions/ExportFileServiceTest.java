@@ -39,14 +39,14 @@ class ExportFileServiceTest {
   @Test
   void whenCreateClassificationsExportFileThenInvokeWithAccessToken() {
     // Given
-    String expectedId = "<exportFileId>";
+    Long expectedId = 123L;
     ClassificationsExportFileRequestDTO dto = new ClassificationsExportFileRequestDTO();
 
     Mockito.when(apiClientMock.createClassificationsExportFile(Mockito.same(dto), Mockito.same(accessToken)))
       .thenReturn(expectedId);
 
     // When
-    String result = service.createClassificationsExportFile(dto, accessToken);
+    Long result = service.createClassificationsExportFile(dto, accessToken);
     // Then
     Assertions.assertSame(expectedId, result);
   }
@@ -54,14 +54,14 @@ class ExportFileServiceTest {
   @Test
   void whenCreatePaidExportFileThenInvokeWithAccessToken() {
     // Given
-    String expectedId = "<exportFileId>";
+    Long expectedId = 123L;
     PaidExportFileRequestDTO dto = new PaidExportFileRequestDTO();
 
     Mockito.when(apiClientMock.createPaidExportFile(Mockito.same(dto), Mockito.same(accessToken)))
       .thenReturn(expectedId);
 
     // When
-    String result = service.createPaidExportFile(dto, accessToken);
+    Long result = service.createPaidExportFile(dto, accessToken);
     // Then
     Assertions.assertSame(expectedId, result);
   }

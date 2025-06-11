@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO
 
 public interface ExportFileService {
 
-  String createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken);
+  Long createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken);
 
-  String createPaidExportFile(PaidExportFileRequestDTO paidExportFileRequestDTO, String accessToken);
+  Long createPaidExportFile(PaidExportFileRequestDTO paidExportFileRequestDTO, String accessToken);
 }

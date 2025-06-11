@@ -14,12 +14,12 @@ public class ExportFileServiceImpl implements ExportFileService {
   }
 
   @Override
-  public String createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken) {
+  public Long createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken) {
     return apiClient.createClassificationsExportFile(classificationsExportFileRequestDTO, accessToken);
   }
 
   @Override
-  public String createPaidExportFile(PaidExportFileRequestDTO paidExportFileRequestDTO, String accessToken) {
+  public Long createPaidExportFile(PaidExportFileRequestDTO paidExportFileRequestDTO, String accessToken) {
     return apiClient.createPaidExportFile(paidExportFileRequestDTO, accessToken);
   }
 }

@@ -44,16 +44,16 @@ class ExportFileClientTest {
   @Test
   void whenCreateClassificationsExportFileThenInvokeWithAccessToken() {
     // Given
-    String expectedId = "https://example.com/exportFileId";
+    Long expectedId = 123L;
     ClassificationsExportFileRequestDTO dto = new ClassificationsExportFileRequestDTO();
 
     Mockito.when(processExecutionsApisHolderMock.getExportFileControllerApi(accessToken))
       .thenReturn(exportFileControllerApiMock);
     Mockito.when(exportFileControllerApiMock.createClassificationsExportFileWithHttpInfo(dto))
-      .thenReturn(ResponseEntity.created(URI.create(expectedId)).build());
+      .thenReturn(ResponseEntity.created(URI.create(expectedId.toString())).build());
 
     // When
-    String result = client.createClassificationsExportFile(dto, accessToken);
+    Long result = client.createClassificationsExportFile(dto, accessToken);
     // Then
     Assertions.assertSame(expectedId, result);
   }
@@ -61,16 +61,16 @@ class ExportFileClientTest {
   @Test
   void whenCreatePaidExportFileThenInvokeWithAccessToken() {
     // Given
-    String expectedId = "https://example.com/exportFileId";
+    Long expectedId = 123L;
     PaidExportFileRequestDTO dto = new PaidExportFileRequestDTO();
 
     Mockito.when(processExecutionsApisHolderMock.getExportFileControllerApi(accessToken))
       .thenReturn(exportFileControllerApiMock);
     Mockito.when(exportFileControllerApiMock.createPaidExportFileWithHttpInfo(dto))
-      .thenReturn(ResponseEntity.created(URI.create(expectedId)).build());
+      .thenReturn(ResponseEntity.created(URI.create(expectedId.toString())).build());
 
     // When
-    String result = client.createPaidExportFile(dto, accessToken);
+    Long result = client.createPaidExportFile(dto, accessToken);
     // Then
     Assertions.assertSame(expectedId, result);
   }
