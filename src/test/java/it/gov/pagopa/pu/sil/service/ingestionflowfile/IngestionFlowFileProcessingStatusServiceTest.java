@@ -73,7 +73,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
       String result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
       assertNotNull(result);
-      assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(expectedIngestionFlowFile.getStatus().getValue()), result);
+      assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(expectedIngestionFlowFile.getStatus()), result);
 
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }

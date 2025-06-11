@@ -80,7 +80,7 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    String expectedStatus = IngestionFlowFileLegacyStatus.fromValue2LegacyValue(IngestionFlowFileStatus.COMPLETED.getValue());
+    String expectedStatus = IngestionFlowFileLegacyStatus.fromValue2LegacyValue(IngestionFlowFileStatus.COMPLETED);
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(expectedStatus);

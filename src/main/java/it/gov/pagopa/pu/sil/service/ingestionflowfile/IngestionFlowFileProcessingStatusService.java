@@ -41,7 +41,7 @@ public class IngestionFlowFileProcessingStatusService {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, ingestionFlowFile.getIngestionFlowFileType()));
     }
-    return IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus().getValue());
+    return IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus());
   }
 }
 

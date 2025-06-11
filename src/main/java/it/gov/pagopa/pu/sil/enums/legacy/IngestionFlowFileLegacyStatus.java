@@ -23,9 +23,9 @@ public enum IngestionFlowFileLegacyStatus {
   public IngestionFlowFileStatus getValue() { return value; }
   public String getLegacyValue() { return legacyValue; }
 
-  public static String fromValue2LegacyValue(String value) {
+  public static String fromValue2LegacyValue(IngestionFlowFileStatus value) {
     return Arrays.stream(IngestionFlowFileLegacyStatus.values())
-      .filter(e -> e.getValue().toString().equals(value))
+      .filter(e -> e.getValue().equals(value))
       .findFirst()
       .map(IngestionFlowFileLegacyStatus::getLegacyValue)
       .orElseThrow(()-> new IllegalArgumentException("Unexpected value %s".formatted(value)));
