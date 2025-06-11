@@ -10,6 +10,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
@@ -31,13 +32,56 @@ public class PuForOrganizationReconciliationEndpoint {
   public static final String NAME = "PagamentiTelematiciPagatiRiconciliati";
 
   private final RegistryLogger registryLogger;
-
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
+  private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
 
   public PuForOrganizationReconciliationEndpoint(RegistryLogger registryLogger,
-                                                 IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService) {
+                                                 IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
+                                                 IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService) {
     this.registryLogger = registryLogger;
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
+    this.ingestionFlowFileProcessingStatusService = ingestionFlowFileProcessingStatusService;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediStatoImportFlusso")
+  @ResponsePayload
+  public PivotSILChiediStatoImportFlussoRisposta pivotSILChiediStatoImportFlusso(
+    @RequestPayload PivotSILChiediStatoImportFlusso request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILChiediStatoImportFlusso");
+
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.pivotSILChiediStatoImportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        String processingStatus = ingestionFlowFileProcessingStatusService.getProcessingStatus(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          Long.valueOf(request.getRequestToken()),
+          IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
+        PivotSILChiediStatoImportFlussoRisposta response = new PivotSILChiediStatoImportFlussoRisposta();
+        response.setStato(processingStatus);
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PivotSILChiediStatoImportFlussoRisposta(),
+        PivotSILChiediStatoImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR),
+      null,
+      null
+    );
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlussoTesoreria")
@@ -64,7 +108,7 @@ public class PuForOrganizationReconciliationEndpoint {
           userInfo,
           accessToken,
           orgIpaCode,
-          IngestionFlowFileTypeEnum.valueOf(request.getTipoFlusso()));
+          request.getTipoFlusso());
         PivotSILAutorizzaImportFlussoTesoreriaRisposta response = new PivotSILAutorizzaImportFlussoTesoreriaRisposta();
         response.setRequestToken(String.valueOf(result.getLeft()));
         response.setUploadUrl(result.getRight());
@@ -177,3 +221,5 @@ public class PuForOrganizationReconciliationEndpoint {
     ).apply(e);
   }
 }
+
+

@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
+import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyType;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -168,7 +169,6 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("admin1");
     String orgIpaCode = "ORG2";
     String accessToken = "token2";
-    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.TREASURY_OPI;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -181,7 +181,7 @@ class IngestionFlowFileAuthorizationServiceTest {
         userInfo,
         accessToken,
         orgIpaCode,
-        type
+        IngestionFlowFileLegacyType.TREASURY_OPI.getLegacyValue()
       );
 
       assertNotNull(result);
@@ -198,14 +198,13 @@ class IngestionFlowFileAuthorizationServiceTest {
     userInfo.setUserId("admin1");
     String orgIpaCode = "ORG2";
     String accessToken = "token2";
-    IngestionFlowFileTypeEnum type = IngestionFlowFileTypeEnum.DP_INSTALLMENTS;
 
     assertThrows(IngestionFlowFileTypeValidationException.class,
       () -> service.authorizeTreasuryIngestionFlowFile(
         userInfo,
         accessToken,
         orgIpaCode,
-        type
+        "A"
       ));
   }
 }

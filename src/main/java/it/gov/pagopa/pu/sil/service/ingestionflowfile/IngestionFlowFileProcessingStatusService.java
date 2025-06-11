@@ -3,8 +3,8 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
+import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,8 @@ public class IngestionFlowFileProcessingStatusService {
     this.ingestionFlowFileService = ingestionFlowFileService;
   }
 
-  public IngestionFlowFileStatus getProcessingStatus(UserInfo userInfo,                                                                         String accessToken,
+  public String getProcessingStatus(UserInfo userInfo,
+                                                     String accessToken,
                                                      String orgIpaCode,
                                                      Long ingestionFlowFileId,
                                                      IngestionFlowFileTypeEnum expectedType) {
@@ -40,7 +41,7 @@ public class IngestionFlowFileProcessingStatusService {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, ingestionFlowFile.getIngestionFlowFileType()));
     }
-    return ingestionFlowFile.getStatus();
+    return IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus());
   }
 }
 

@@ -82,6 +82,7 @@ management:
     health:
       probes.enabled: true
       logging.slow-indicator-threshold: "\${HEALTH_ACTUATOR_LOGGER_TIMEOUT_DURATION:PT1S}"
+      show-details: "\${HEALTH_ACTUATOR_SHOW_DETAILS:when-authorized}"
       group:
         readiness.include: "*"
         liveness.include: livenessState,diskSpace,ping
@@ -169,3 +170,6 @@ cache:
   debtPositionTypeOrg:
     size: "\${CACHE_DEBTPOSITION_TYPE_ORG_SIZE:1000}"
     expire-in: "\${CACHE_DEBTPOSITION_TYPE_ORG_MINUTES:60}"
+  organization:
+    size: "\${CACHE_ORGANIZATION_SIZE:1000}"
+    expire-in: "\${CACHE_ORGANIZATION_MINUTES:60}"

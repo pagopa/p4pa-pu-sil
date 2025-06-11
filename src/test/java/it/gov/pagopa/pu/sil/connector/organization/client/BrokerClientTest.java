@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class BrokerClientTest {
@@ -50,5 +51,23 @@ class BrokerClientTest {
 
     // Then
     Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void givenNotExistentBrokerWhenFindByIdThenNull(){
+    //Given
+    String accessToken = "ACCESS_TOKEN";
+    long brokerId = 1L;
+
+    Mockito.when(organizationApisHolderMock.getBrokerEntityControllerApi(accessToken))
+      .thenReturn(brokerEntityControllerApiMock);
+    Mockito.when(brokerEntityControllerApiMock.crudGetBroker(Long.toString(brokerId)))
+      .thenThrow(HttpClientErrorException.NotFound.class);
+
+    // When
+    Broker result = brokerClient.findById(brokerId, accessToken);
+
+    // Then
+    Assertions.assertNull(result);
   }
 }
