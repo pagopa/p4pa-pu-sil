@@ -62,7 +62,7 @@ public class IngestionFlowFileProcessingStatusService {
                                                          IngestionFlowFileTypeEnum... expectedTypes) {
     IngestionFlowFile ingestionFlowFile = getIngestionFlowFile(userInfo, accessToken, orgIpaCode, ingestionFlowFileId, expectedTypes);
     PaymentsProcessingStatusDTO statusDTO = PaymentsProcessingStatusDTO.builder()
-      .status(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()))
+      .status(ingestionFlowFile.getStatus())
       .build();
     if (!IngestionFlowFileStatus.COMPLETED.equals(ingestionFlowFile.getStatus())) {
       log.debug("IngestionFlowFile type {} with ID {} is not completed, returning status only: {}",

@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
@@ -99,7 +100,7 @@ public class PuForOrganizationPaymentsEndpoint {
         Long.valueOf(request.getRequestToken()),
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
         PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
-        response.setStato(processingStatusDTO.getStatus());
+        response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
         response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
         response.setUrlFileIUV(processingStatusDTO.getUrlImported());
         response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());

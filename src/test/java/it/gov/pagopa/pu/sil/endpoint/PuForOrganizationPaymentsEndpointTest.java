@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.endpoint;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -93,7 +94,7 @@ class PuForOrganizationPaymentsEndpointTest {
     statusDTO.setUrlNotice(null);
     statusDTO.setUrlImported(expectedUrl + "/imported");
     statusDTO.setUrlErrors(expectedUrl + "/errors");
-    statusDTO.setStatus(IngestionFlowFileLegacyStatus.COMPLETED.getLegacyValue());
+    statusDTO.setStatus(IngestionFlowFileStatus.COMPLETED);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
@@ -110,7 +111,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // Then
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(statusDTO.getStatus(), response.getStato());
+    Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(statusDTO.getStatus()), response.getStato());
     Assertions.assertEquals(statusDTO.getUrlImported(), response.getUrlFileIUV());
     Assertions.assertEquals(statusDTO.getUrlErrors(), response.getUrlFileScarti());
     Assertions.assertEquals(statusDTO.getUrlNotice(), response.getUrlFileAvvisi());
