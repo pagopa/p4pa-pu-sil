@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class IngestionFlowFileProcessingStatusService {
                                                      String accessToken,
                                                      String orgIpaCode,
                                                      Long ingestionFlowFileId,
-                                                     IngestionFlowFileTypeEnum expectedType) {
+                                                     IngestionFlowFileTypeEnum... expectedTypes) {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
 
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
@@ -37,11 +38,12 @@ public class IngestionFlowFileProcessingStatusService {
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
     log.debug("Retrieved IngestionFlowFile: {}", ingestionFlowFile);
 
-    if (!ingestionFlowFile.getIngestionFlowFileType().equals(expectedType)) {
+    if (Arrays.stream(expectedTypes).noneMatch(ingestionFlowFile.getIngestionFlowFileType()::equals)) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
-        .formatted(expectedType, ingestionFlowFile.getIngestionFlowFileType()));
+        .formatted(expectedTypes, ingestionFlowFile.getIngestionFlowFileType()));
+    } else {
+      return IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus());
     }
-    return IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus());
   }
 }
 
