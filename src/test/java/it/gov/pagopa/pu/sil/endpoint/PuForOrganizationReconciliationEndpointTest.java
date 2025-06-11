@@ -81,8 +81,13 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     String expectedStatus = IngestionFlowFileLegacyStatus.fromValue2LegacyValue(IngestionFlowFileStatus.COMPLETED);
+    IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
+      IngestionFlowFileTypeEnum.TREASURY_CSV,
+      IngestionFlowFileTypeEnum.TREASURY_XLS,
+      IngestionFlowFileTypeEnum.TREASURY_POSTE};
+
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.TREASURY_OPI)
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(expectedStatus);
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILChiediStatoImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
