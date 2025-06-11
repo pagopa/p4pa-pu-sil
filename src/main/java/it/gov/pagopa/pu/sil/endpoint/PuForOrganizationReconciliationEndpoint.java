@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.Ingest
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyType;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
@@ -25,8 +24,6 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
-
-import java.util.Arrays;
 
 @Endpoint
 @Slf4j
