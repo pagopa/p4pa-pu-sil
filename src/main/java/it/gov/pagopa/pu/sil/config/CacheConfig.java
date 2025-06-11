@@ -23,28 +23,31 @@ import java.util.concurrent.TimeUnit;
 @FieldNameConstants
 public class CacheConfig {
 
-    @NestedConfigurationProperty
-    private CacheConfigurationProperties debtPositionTypeOrg;
+  @NestedConfigurationProperty
+  private CacheConfigurationProperties debtPositionTypeOrg;
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CacheConfigurationProperties {
-        private long size;
-        private long expireIn;
-    }
+  @NestedConfigurationProperty
+  private CacheConfigurationProperties organization;
 
-    @Bean
-    public CacheManager localCacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.registerCustomCache(Fields.debtPositionTypeOrg, buildCache(debtPositionTypeOrg));
-        return cacheManager;
-    }
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class CacheConfigurationProperties {
+    private long size;
+    private long expireIn;
+  }
 
-    private Cache<Object, Object> buildCache(CacheConfigurationProperties cacheConfig) {
-        return Caffeine.newBuilder()
-                .maximumSize(cacheConfig.size)
-                .expireAfterAccess(cacheConfig.expireIn, TimeUnit.MINUTES)
-                .build();
-    }
+  @Bean
+  public CacheManager localCacheManager() {
+    CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+    cacheManager.registerCustomCache(Fields.debtPositionTypeOrg, buildCache(debtPositionTypeOrg));
+    return cacheManager;
+  }
+
+  private Cache<Object, Object> buildCache(CacheConfigurationProperties cacheConfig) {
+    return Caffeine.newBuilder()
+      .maximumSize(cacheConfig.size)
+      .expireAfterAccess(cacheConfig.expireIn, TimeUnit.MINUTES)
+      .build();
+  }
 }

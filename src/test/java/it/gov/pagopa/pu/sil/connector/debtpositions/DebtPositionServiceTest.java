@@ -47,4 +47,29 @@ class DebtPositionServiceTest {
     Assertions.assertSame(expectedResult, result);
   }
 
+  @Test
+  void whenCountExistingInstallmentsByIudIuvNavThenReturnCorrectCount() {
+      // Given
+      Long organizationId = 1L;
+      String iud = "IUD";
+      String iuv = "IUV";
+      String nav = "NAV";
+      String accessToken = "ACCESSTOKEN";
+      Long expectedCount = 10L;
+
+      Mockito.when(clientMock.countExistingInstallmentsByIudIuvNav(
+              Mockito.same(organizationId),
+              Mockito.same(iud),
+              Mockito.same(iuv),
+              Mockito.same(nav),
+              Mockito.same(accessToken)))
+          .thenReturn(expectedCount);
+
+      // When
+      Long result = service.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
+
+      // Then
+      Assertions.assertEquals(expectedCount, result);
+  }
+
 }

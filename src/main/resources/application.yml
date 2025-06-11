@@ -137,6 +137,11 @@ rest:
     max-attempts: "\${DEBT_POSITION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${DEBT_POSITION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${DEBT_POSITION_PRINT_BODY_WHEN_ERROR:true}"
+  organization:
+    base-url: "\${ORGANIZATION_BASE_URL:http://localhost:8081}"
+    max-attempts: "\${ORGANIZATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${ORGANIZATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${ORGANIZATION_PRINT_BODY_WHEN_ERROR:true}"
   send-notification:
     base-url: "\${SEND_NOTIFICATION_BASE_URL:}"
     max-attempts: "\${SEND_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
