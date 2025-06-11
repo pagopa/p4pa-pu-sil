@@ -66,7 +66,7 @@ public class IngestionFlowFileProcessingStatusService {
       .build();
     if (!IngestionFlowFileStatus.COMPLETED.equals(ingestionFlowFile.getStatus())) {
       log.debug("IngestionFlowFile type {} with ID {} is not completed, returning status only: {}",
-        ingestionFlowFile.getStatus(), ingestionFlowFileId, statusDTO);
+        ingestionFlowFile.getIngestionFlowFileType(), ingestionFlowFileId, statusDTO);
       return statusDTO;
     }
     return statusDTO.toBuilder()
