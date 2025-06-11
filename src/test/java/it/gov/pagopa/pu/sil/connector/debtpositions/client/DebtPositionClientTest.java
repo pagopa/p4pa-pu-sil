@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeOrgSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +24,8 @@ class DebtPositionClientTest {
   private DebtPositionTypeOrgSearchControllerApi debtPositionTypeOrgSearchControllerApiMock;
   @Mock
   private InstallmentApi installmentApiMock;
+  @Mock
+  private InstallmentNoPiiSearchControllerApi installmentNoPiiSearchControllerApiMock;
 
 
   private DebtPositionClient client;
@@ -78,6 +81,28 @@ class DebtPositionClientTest {
 
     // Then
     Assertions.assertNull(response);
+  }
+
+  @Test
+  void whenCountExistingInstallmentsByIudIuvNavThenInvokeApi() {
+      // Given
+      String accessToken = "ACCESSTOKEN";
+      long organizationId = 1L;
+      String iud = "IUD";
+      String iuv = "IUV";
+      String nav = "NAV";
+      long expectedCount = 5L;
+
+      Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
+          .thenReturn(installmentNoPiiSearchControllerApiMock);
+      Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsCountExistingInstallments(organizationId, iud, iuv, nav))
+          .thenReturn(expectedCount);
+
+      // When
+      Long result = client.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
+
+      // Then
+      Assertions.assertEquals(expectedCount, result);
   }
 
 }

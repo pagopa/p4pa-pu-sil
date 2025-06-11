@@ -22,4 +22,10 @@ public class DebtPositionServiceImpl implements DebtPositionService {
     return client.getDebtPositionTypeOrgByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode, accessToken);
   }
 
+  @Override
+  public Long countExistingInstallmentsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, String accessToken) {
+    return client.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
+  }
+
+
 }
