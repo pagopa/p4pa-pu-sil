@@ -43,6 +43,50 @@ public class PuForOrganizationReconciliationEndpoint {
     this.ingestionFlowFileProcessingStatusService = ingestionFlowFileProcessingStatusService;
   }
 
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediStatoImportFlussoTesoreria")
+  @ResponsePayload
+  public PivotSILChiediStatoImportFlussoTesoreriaRisposta pivotSILChiediStatoImportFlussoTesoreria(
+    @RequestPayload PivotSILChiediStatoImportFlussoTesoreria request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILChiediStatoImportFlussoTesoreria");
+
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.pivotSILChiediStatoImportFlussoTesoreria,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        String processingStatus = ingestionFlowFileProcessingStatusService.getProcessingStatus(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          Long.valueOf(request.getRequestToken()),
+          IngestionFlowFileTypeEnum.TREASURY_OPI,
+          IngestionFlowFileTypeEnum.TREASURY_CSV,
+          IngestionFlowFileTypeEnum.TREASURY_XLS,
+          IngestionFlowFileTypeEnum.TREASURY_POSTE);
+        PivotSILChiediStatoImportFlussoTesoreriaRisposta response = new PivotSILChiediStatoImportFlussoTesoreriaRisposta();
+        response.setStato(processingStatus);
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PivotSILChiediStatoImportFlussoTesoreriaRisposta(),
+        PivotSILChiediStatoImportFlussoTesoreriaRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR),
+      null,
+      null
+    );
+  }
+
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediStatoImportFlusso")
   @ResponsePayload
   public PivotSILChiediStatoImportFlussoRisposta pivotSILChiediStatoImportFlusso(

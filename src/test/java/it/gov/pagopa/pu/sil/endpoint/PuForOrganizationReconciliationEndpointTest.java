@@ -70,6 +70,36 @@ class PuForOrganizationReconciliationEndpointTest {
     configureSecurityContext(expectedUserInfo);
   }
 
+  //region pivotSILChiediStatoImportFlussoTesoreria
+
+  @Test
+  void givenValidRequestWhenPivotSILChiediStatoImportFlussoTesoreriaThenResponseContainsExpectedStatus() throws Exception {
+    Long requestToken = 12345L;
+    PivotSILChiediStatoImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILChiediStatoImportFlussoTesoreria.class);
+    request.setRequestToken(String.valueOf(requestToken));
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    String expectedStatus = IngestionFlowFileLegacyStatus.fromValue2LegacyValue(IngestionFlowFileStatus.COMPLETED);
+    IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
+      IngestionFlowFileTypeEnum.TREASURY_CSV,
+      IngestionFlowFileTypeEnum.TREASURY_XLS,
+      IngestionFlowFileTypeEnum.TREASURY_POSTE};
+
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
+    )).thenReturn(expectedStatus);
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILChiediStatoImportFlussoTesoreria), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenCallRealMethod();
+    PivotSILChiediStatoImportFlussoTesoreriaRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlussoTesoreria(request, header);
+
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(expectedStatus, response.getStato());
+  }
+  //endregion
+
   //region pivotSILChiediStatoImportFlusso
 
   @Test
