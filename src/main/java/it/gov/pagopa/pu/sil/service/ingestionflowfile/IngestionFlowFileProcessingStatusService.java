@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.Ingest
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
-import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediStatoImportFlusso;
