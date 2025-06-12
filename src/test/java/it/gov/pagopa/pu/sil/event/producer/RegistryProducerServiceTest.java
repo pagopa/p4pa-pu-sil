@@ -7,10 +7,10 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.UtilitiesTest;
 import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
+import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.event.producer.dto.RegistryEventDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlusso;
-import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,22 +67,22 @@ class RegistryProducerServiceTest {
     String grantorId = "grantorId";
     String iuv = "iuv";
     String nav = "nav";
-    boolean outcomeOk;
+    SilOutcome outcome;
     Object body;
     String serializedBody = switch (bodyType) {
       case "null" -> {
         body = null;
-        outcomeOk = true;
+        outcome = SilOutcome.OK;
         yield null;
       }
       case "string" -> {
         body = "string body";
-        outcomeOk = false;
+        outcome = SilOutcome.KO;
         yield (String) body;
       }
       case "object" -> {
         body = podamFactory.manufacturePojo(PaaSILAutorizzaImportFlusso.class);
-        outcomeOk = RandomUtils.insecure().randomBoolean();
+        outcome = podamFactory.manufacturePojo(SilOutcome.class);
         yield objectMapper.writeValueAsString(body);
       }
       default ->
@@ -92,7 +92,7 @@ class RegistryProducerServiceTest {
     UtilitiesTest.setTraceId(traceId);
 
     // When
-    registryProducerService.notifySilEvent(loggedUser, orgFiscalCode, eventType, subType, requestorId, grantorId, iuv, nav, outcomeOk, body);
+    registryProducerService.notifySilEvent(loggedUser, orgFiscalCode, eventType, subType, requestorId, grantorId, iuv, nav, outcome, body);
 
     // Then
     Mockito.verify(streamBridge, Mockito.times(1)).send(
@@ -106,6 +106,7 @@ class RegistryProducerServiceTest {
         Assertions.assertEquals(eventIdPrefix, payload.getRegistryId().substring(0, eventIdPrefix.length()));
         Assertions.assertEquals(traceId, payload.getTraceId());
         Assertions.assertEquals("pu-sil", payload.getRegistryOrigin());
+        Assertions.assertEquals("REGISTRY_SIL", payload.getRegistryType());
 
         Assertions.assertEquals(eventType.name(), payload.getEventType());
         Assertions.assertEquals(subType.name(), payload.getEventSubType());
@@ -115,9 +116,16 @@ class RegistryProducerServiceTest {
         Assertions.assertEquals(nav, payload.getNav());
         Assertions.assertEquals(requestorId, payload.getRequestorId());
         Assertions.assertEquals(grantorId, payload.getGrantorId());
-        Assertions.assertEquals(outcomeOk ? "OK" : "KO", payload.getOutcome());
+        Assertions.assertEquals(outcome.name(), payload.getOutcome());
         Assertions.assertEquals(serializedBody, payload.getBody());
         Assertions.assertTrue(OffsetDateTime.now().toEpochSecond() - payload.getDateTime().toEpochSecond() < 5);
+
+        String[] ignoredFields = {};
+        if(body == null) {
+          ignoredFields = new String[]{"body"};
+        }
+        TestUtils.checkNotNullFields(payload, ignoredFields);
+
         return true;
       }));
   }

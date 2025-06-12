@@ -19,6 +19,7 @@ public class SecurityUtils {
 
   public static final String SYSTEM_USERID_PREFIX = "WS_USER-piattaforma-unitaria_";
   public static final String HEADER_USER_ID = "X-user-id";
+  public static final String OPERATOR_ROLE_ADMIN = "ROLE_ADMIN";
 
   /**
    * It will return user's session data from ThreadLocal

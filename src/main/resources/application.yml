@@ -76,12 +76,13 @@ management:
       exposure.include: "*"
     web:
       exposure:
-        include: health, info, prometheus, metrics
+        include: health, info, prometheus, metrics, caches
       base-path: /actuator
   endpoint:
     health:
       probes.enabled: true
       logging.slow-indicator-threshold: "\${HEALTH_ACTUATOR_LOGGER_TIMEOUT_DURATION:PT1S}"
+      show-details: "\${HEALTH_ACTUATOR_SHOW_DETAILS:when-authorized}"
       group:
         readiness.include: "*"
         liveness.include: livenessState,diskSpace,ping
@@ -132,11 +133,43 @@ rest:
     max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${AUTH_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${AUTH_PRINT_BODY_WHEN_ERROR:true}"
+  debt-position:
+    base-url: "\${DEBT_POSITION_BASE_URL:}"
+    max-attempts: "\${DEBT_POSITION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${DEBT_POSITION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${DEBT_POSITION_PRINT_BODY_WHEN_ERROR:true}"
+  organization:
+    base-url: "\${ORGANIZATION_BASE_URL:http://localhost:8081}"
+    max-attempts: "\${ORGANIZATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${ORGANIZATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${ORGANIZATION_PRINT_BODY_WHEN_ERROR:true}"
   send-notification:
     base-url: "\${SEND_NOTIFICATION_BASE_URL:}"
     max-attempts: "\${SEND_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${SEND_NOTIFICATION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+  process-executions:
+    base-url: "\${PROCESS_EXECUTIONS_BASE_URL:}"
+    max-attempts: "\${PROCESS_EXECUTIONS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${PROCESS_EXECUTIONS_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR:true}"
+  pagopa-node-services:
+    checkout:
+      base-url: "\${PAGOPA_NODE_CHECKOUT_BASE_URL:}"
+      max-attempts: "\${PAGOPA_NODE_CHECKOUT_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+      wait-time-millis: "\${PAGOPA_NODE_CHECKOUT_WAIT_TIME_MILLIS:500}"
+      print-body-when-error: "\${PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR:true}"
+
+public-base-url:
+  fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
 
 springdoc:
   writer-with-default-pretty-printer: true
+
+cache:
+  debtPositionTypeOrg:
+    size: "\${CACHE_DEBTPOSITION_TYPE_ORG_SIZE:1000}"
+    expire-in: "\${CACHE_DEBTPOSITION_TYPE_ORG_MINUTES:60}"
+  organization:
+    size: "\${CACHE_ORGANIZATION_SIZE:1000}"
+    expire-in: "\${CACHE_ORGANIZATION_MINUTES:60}"
