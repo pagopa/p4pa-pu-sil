@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -80,15 +81,17 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    String expectedStatus = IngestionFlowFileLegacyStatus.fromValue2LegacyValue(IngestionFlowFileStatus.COMPLETED);
+    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+      .status(IngestionFlowFileStatus.COMPLETED);
+
     IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
       IngestionFlowFileTypeEnum.TREASURY_CSV,
       IngestionFlowFileTypeEnum.TREASURY_XLS,
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
-    )).thenReturn(expectedStatus);
+    )).thenReturn(ingestionFlowFile);
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILChiediStatoImportFlussoTesoreria), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
       .thenCallRealMethod();
@@ -96,7 +99,7 @@ class PuForOrganizationReconciliationEndpointTest {
       puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlussoTesoreria(request, header);
 
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(expectedStatus, response.getStato());
+    Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()), response.getStato());
   }
   //endregion
 
@@ -110,10 +113,11 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    String expectedStatus = IngestionFlowFileLegacyStatus.fromValue2LegacyValue(IngestionFlowFileStatus.COMPLETED);
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+      .status(IngestionFlowFileStatus.COMPLETED);
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
-    )).thenReturn(expectedStatus);
+    )).thenReturn(ingestionFlowFile);
     Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.pivotSILChiediStatoImportFlusso), Mockito.any(),
         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
       .thenCallRealMethod();
@@ -122,7 +126,7 @@ class PuForOrganizationReconciliationEndpointTest {
       puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlusso(request, header);
 
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(expectedStatus, response.getStato());
+    Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()), response.getStato());
   }
 
   //endregion
