@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
-  private static final Pattern DATI_SPECIFICI_RISCOSSIONE_PATTERN = Pattern.compile("^[0129]{1}/\\S{3,138}$");
+  private static final Pattern DATI_SPECIFICI_RISCOSSIONE_PATTERN = Pattern.compile("^[0129]/\\S{3,138}$");
   private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
   private static final Set<String> ISO_COUNTRIES = Set.of(Locale.getISOCountries());
   private static final Pattern PROVINCE_PATTERN = Pattern.compile("^[A-Z]{2}$");
