@@ -323,7 +323,7 @@ public class ValidationServiceTest {
       Pair<SilFaults, String> result = validationService.validateFiscalCodeDebtor(personIdentifier);
 
       assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, result.getLeft());
-      assertEquals("Codice fiscale persona giuridica non valido: INVALID_CF", result.getRight());
+      assertEquals("Codice fiscale persona giuridica non valido: 1234567890", result.getRight());
   }
 
   @Test
