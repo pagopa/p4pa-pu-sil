@@ -17,7 +17,7 @@
     "description" : "the SendNotification API"
   } ],
   "paths" : {
-    "/organization/{organizationId}/send-notification" : {
+    "/sil/organization/{organizationId}/send-notification" : {
       "post" : {
         "tags" : [ "SendNotification" ],
         "summary" : "Create notification",
@@ -88,7 +88,7 @@
         } ]
       }
     },
-    "/organization/{organizationId}/send-notification/{sendNotificationId}" : {
+    "/sil/organization/{organizationId}/send-notification/{sendNotificationId}" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send notification",

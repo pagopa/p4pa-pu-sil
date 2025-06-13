@@ -27,10 +27,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE, addFilters = false)
 @TestPropertySource(properties = {
   "logging.level.org.springdoc.core.utils.SpringDocAnnotationsUtils=OFF",
-  "springwolf.enabled=false"
+  "springwolf.enabled=false",
+  "springdoc.pathsToMatch=/sil/**"
 })
 @Slf4j
-class OpenApiGeneratorTest {
+class SilApiGeneratorTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -59,7 +60,7 @@ class OpenApiGeneratorTest {
 
     Assertions.assertTrue(openApiResult.startsWith("{\n  \"openapi\" : \"3."));
 
-    Path openApiGeneratedPath = Path.of("openapi/generated.openapi.json");
+    Path openApiGeneratedPath = Path.of("openapi/generated-sil.openapi.json");
     boolean toStore=true;
     if(Files.exists(openApiGeneratedPath)){
       String storedOpenApi = Files.readString(openApiGeneratedPath);
