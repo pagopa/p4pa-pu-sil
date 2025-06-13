@@ -101,19 +101,21 @@ public class PaaSILInviaDovutiMapper {
 
   private DebtPositionDTO initDebtPosition(String description, Long orgId) {
     return DebtPositionDTO.builder()
-      .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS) //TODO use SPONTANEOUS_SIL when it will be available P4ADEV-3122
+      .status(DebtPositionStatus.UNPAID)
+      .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .organizationId(orgId)
       .flagIuvVolatile(true)
       .description(description)
       .flagPuPagoPaPayment(true)
       .multiDebtor(false)
-      .debtPositionTypeOrgId(0L) // will be filled later
+      .debtPositionTypeOrgId(0L) // will be filled later, with method fillAndValidateVersamentoFieldsOfDebtPosition()
       .paymentOptions(List.of(PaymentOptionDTO.builder()
+        .status(PaymentOptionStatus.UNPAID)
         .description(description)
         .paymentOptionIndex(1)
         .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
-        .totalAmountCents(0L) // will be filled later
-        .installments(List.of()) // will be filled later
+        .totalAmountCents(0L) // will be filled later, with method fillAndValidateVersamentoFieldsOfDebtPosition()
+        .installments(List.of()) // will be filled later, with method fillAndValidateVersamentoFieldsOfDebtPosition()
         .build()))
       .build();
   }
@@ -146,6 +148,7 @@ public class PaaSILInviaDovutiMapper {
     debtPosition.getPaymentOptions().getFirst().setTotalAmountCents(amount);
     debtPosition.getPaymentOptions().getFirst().setInstallments(List.of(
       InstallmentDTO.builder()
+        .status(InstallmentStatus.UNPAID)
         .iud(versamento.getIdentificativoUnivocoDovuto())
         .amountCents(amount)
         .balance(balance)
