@@ -248,9 +248,10 @@ class JaxbTransformServiceTest {
     // given
     SAXParseException saxParseException = new SAXParseException("Invalid character", null, null, 2, 1);
     ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error", saxParseException));
-    byte[] xml = ("<root>\n" +
-      "  <>\n" +
-      "</root>").getBytes();
+    byte[] xml = ("""
+      <root>
+        <>
+      </root>""").getBytes();
 
     // when
     String result = jaxbTransformService.getDetailUnmarshalExceptionMessage(applicationException, xml);
