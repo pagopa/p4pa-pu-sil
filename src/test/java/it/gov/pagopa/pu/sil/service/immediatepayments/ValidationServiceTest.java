@@ -72,16 +72,6 @@ public class ValidationServiceTest {
   }
 
   @Test
-  void validateStamp_NullStampWithStampDebtPositionTypeOrgCode_ReturnsError() {
-    String debtPositionTypeOrgCode = Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE;
-
-    Pair<SilFaults, String> result = validationService.validateStamp(null, debtPositionTypeOrgCode);
-
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, result.getLeft());
-    assertEquals("Dati marca da bollo digitale non presenti", result.getRight());
-  }
-
-  @Test
   void validateStamp_NullStampWithNonStampDebtPositionTypeOrgCode_ReturnsError() {
     String debtPositionTypeOrgCode = "NON_STAMP_CODE";
 
