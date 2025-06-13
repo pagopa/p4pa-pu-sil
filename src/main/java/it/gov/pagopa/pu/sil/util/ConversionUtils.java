@@ -31,6 +31,10 @@ public class ConversionUtils {
     return centsAmount != null ? BigDecimal.valueOf(centsAmount).divide(HUNDRED, 2, RoundingMode.UNNECESSARY) : null;
   }
 
+  public static Long bigDecimalEuroAmountToCentsAmount(BigDecimal euroAmount) {
+    return euroAmount != null ? euroAmount.multiply(HUNDRED).setScale(0, RoundingMode.UNNECESSARY).longValue() : null;
+  }
+
   public static XMLGregorianCalendar toXMLGregorianCalendar(OffsetDateTime offsetDateTime) {
     return offsetDateTime != null ? DATATYPE_FACTORY_XML_GREGORIAN_CALENDAR.newXMLGregorianCalendar(GregorianCalendar.from(offsetDateTime.toZonedDateTime())) : null;
   }
