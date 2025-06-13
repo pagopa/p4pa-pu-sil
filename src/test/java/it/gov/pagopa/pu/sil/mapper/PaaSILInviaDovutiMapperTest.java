@@ -174,8 +174,24 @@ class PaaSILInviaDovutiMapperTest {
     assertNull(result.getRight());
     assertEquals(1, result.getLeft().size());
 
-    result.getLeft().forEach(elem -> TestUtils.checkNotNullFields(elem,
-      "debtPositionId", "status", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId"));
+    result.getLeft().forEach(dp -> {
+      TestUtils.checkNotNullFields(dp,
+        "debtPositionId", "status", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+      dp.getPaymentOptions().forEach(po -> {
+        TestUtils.checkNotNullFields(po, "paymentOptionId", "debtPositionId", "status", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+        po.getInstallments().forEach(i -> {
+          TestUtils.checkNotNullFields(i, "installmentId", "paymentOptionId", "status", "syncStatus", "iupdPagopa",
+            "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
+            "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId",
+            "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+          if(i.getTransfers()!=null) {
+            i.getTransfers().forEach(t -> {
+              TestUtils.checkNotNullFields(t, "transferId");
+            });
+          }
+        });
+      });
+    });
 
   }
 }
