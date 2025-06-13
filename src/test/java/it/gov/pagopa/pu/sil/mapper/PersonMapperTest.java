@@ -34,7 +34,7 @@ class PersonMapperTest {
   private CtSoggettoPagatore soggettoPagatore;
 
   @BeforeEach
-  public void setup(){
+  void setup(){
     soggettoPagatore = new CtSoggettoPagatore();
     soggettoPagatore.setNazionePagatore(Locale.ITALY.getCountry());
     soggettoPagatore.setIndirizzoPagatore("Via Roma");
