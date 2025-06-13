@@ -76,7 +76,7 @@ class SilApiGeneratorTest {
     }
 
     String gitStatus = execCmd("git", "status");
-    Assertions.assertFalse(gitStatus.contains("openapi/generated.openapi.json"), "Generated OpenApi not committed");
+    Assertions.assertFalse(gitStatus.contains("openapi/generated-sil.openapi.json"), "Generated OpenApi not committed");
   }
 
   public static String execCmd(String... cmd) throws java.io.IOException {
