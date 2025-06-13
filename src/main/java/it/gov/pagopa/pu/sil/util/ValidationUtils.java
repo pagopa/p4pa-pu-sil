@@ -17,7 +17,7 @@ public class ValidationUtils {
   private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
   private static final Set<String> ISO_COUNTRIES = Set.of(Locale.getISOCountries());
   private static final Pattern PROVINCE_PATTERN = Pattern.compile("^[A-Z]{2}$");
-  private static final Pattern POSTAL_CODE_IT_PATTERN = Pattern.compile("^[0-9]{5}$");
+  private static final Pattern POSTAL_CODE_IT_PATTERN = Pattern.compile("^\\d{5}$");
   private static final Pattern POSTAL_CODE_PATTERN = Pattern.compile("^[a-zA-Z0-9]{1,16}$");
   private static final Pattern CIVIC_PATTERN = Pattern.compile("^[a-z A-Z0-9.,()/'&]{1,16}$");
   private static final Pattern FISCAL_CODE_NATURAL_PERSON_PATTERN = Pattern.compile(
