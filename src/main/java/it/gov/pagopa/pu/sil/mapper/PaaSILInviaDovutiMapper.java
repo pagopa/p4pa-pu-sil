@@ -86,7 +86,7 @@ public class PaaSILInviaDovutiMapper {
 
     List<DebtPositionDTO> debtPositions = new ArrayList<>();
     for (CtDatiSingoloVersamentoDovuti versamento : dovuti.getDatiVersamento().getDatiSingoloVersamentos()) {
-      DebtPositionDTO debtPosition = initDebtPositionFromVersamento(versamento, description, organization.getOrganizationId());
+      DebtPositionDTO debtPosition = initDebtPosition(description, organization.getOrganizationId());
       Pair<SilFaults, String> fault = fillAndValidateVersamentoFieldsOfDebtPosition(debtPosition, debtorResult.getLeft(),
         organization, versamento, sourceFlowName, accessToken);
       if (fault != null) {
@@ -98,7 +98,7 @@ public class PaaSILInviaDovutiMapper {
     return Triple.of(debtPositions, null, null);
   }
 
-  private DebtPositionDTO initDebtPositionFromVersamento(CtDatiSingoloVersamentoDovuti versamento, String description, Long orgId) {
+  private DebtPositionDTO initDebtPosition(String description, Long orgId) {
     return DebtPositionDTO.builder()
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS) //TODO use SPONTANEOUS_SIL when it will be available P4ADEV-3122
       .organizationId(orgId)
