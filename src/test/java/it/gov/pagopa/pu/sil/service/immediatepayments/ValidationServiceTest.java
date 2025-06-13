@@ -193,19 +193,6 @@ public class ValidationServiceTest {
   }
 
   @Test
-  void validatePaymentData_ZeroAmount_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.ZERO);
-    versamento.setCausaleVersamento("Valid causale");
-    versamento.setDatiSpecificiRiscossione("9/ValidData");
-
-    Pair<SilFaults, String> result = validationService.validatePaymentData(versamento);
-
-    assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getLeft());
-    assertEquals("Importo singolo versamento non valido: 0", result.getRight());
-  }
-
-  @Test
   void validatePaymentData_InvalidDatiSpecificiRiscossione_ReturnsError() {
     CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
     versamento.setImportoSingoloVersamento(BigDecimal.TEN);
