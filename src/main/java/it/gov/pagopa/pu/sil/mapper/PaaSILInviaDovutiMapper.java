@@ -82,13 +82,14 @@ public class PaaSILInviaDovutiMapper {
       description = "Pagamento multiplo";
     }
 
-    String sourceFlowName = Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + UUID.randomUUID();
+    String cartId = UUID.randomUUID().toString();
 
     List<DebtPositionDTO> debtPositions = new ArrayList<>();
+    int idx = 1;
     for (CtDatiSingoloVersamentoDovuti versamento : dovuti.getDatiVersamento().getDatiSingoloVersamentos()) {
       DebtPositionDTO debtPosition = initDebtPosition(description, organization.getOrganizationId());
-      Pair<SilFaults, String> fault = fillAndValidateVersamentoFieldsOfDebtPosition(debtPosition, debtorResult.getLeft(),
-        organization, versamento, sourceFlowName, accessToken);
+      Pair<SilFaults, String> fault = fillAndValidateVersamentoFieldsOfDebtPosition(idx++, debtPosition, debtorResult.getLeft(),
+        organization, versamento, cartId, accessToken);
       if (fault != null) {
         return Triple.of(null, fault.getLeft(), fault.getRight());
       }
@@ -117,9 +118,9 @@ public class PaaSILInviaDovutiMapper {
       .build();
   }
 
-  private Pair<SilFaults, String> fillAndValidateVersamentoFieldsOfDebtPosition(DebtPositionDTO debtPosition, PersonDTO debtor, Organization org,
-                                                                                CtDatiSingoloVersamentoDovuti versamento, String sourceFlowName,
-                                                                                String accessToken) {
+  private Pair<SilFaults, String> fillAndValidateVersamentoFieldsOfDebtPosition(int idx, DebtPositionDTO debtPosition, PersonDTO debtor,
+                                                                                Organization org, CtDatiSingoloVersamentoDovuti versamento,
+                                                                                String cartId, String accessToken) {
 
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
@@ -140,6 +141,7 @@ public class PaaSILInviaDovutiMapper {
 
     Long amount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(versamento.getImportoSingoloVersamento());
 
+    debtPosition.setIupdOrg(cartId + "-" + idx);
     debtPosition.setDebtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()));
     debtPosition.getPaymentOptions().getFirst().setTotalAmountCents(amount);
     debtPosition.getPaymentOptions().getFirst().setInstallments(List.of(
@@ -151,7 +153,7 @@ public class PaaSILInviaDovutiMapper {
         .debtor(debtor)
         .legacyPaymentMetadata(versamento.getDatiSpecificiRiscossione())
         .remittanceInformation(versamento.getCausaleVersamento())
-        .sourceFlowName(sourceFlowName)
+        .sourceFlowName(Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + cartId)
         .build()
     ));
 
