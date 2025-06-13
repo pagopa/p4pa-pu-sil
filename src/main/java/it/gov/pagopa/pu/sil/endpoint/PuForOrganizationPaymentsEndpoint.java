@@ -2,9 +2,11 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
 import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
@@ -14,6 +16,7 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -39,6 +42,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
+  private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto;
 
   private final PaaSILInviaDovutiService paaSILInviaDovutiService;
@@ -47,9 +51,11 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
   private final RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
 
+  @SuppressWarnings("java:S107")
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
                                            PaaSILImportaDovutoService paaSILImportaDovutoService,
                                            IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
+                                           IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService,
                                            RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto,
                                            PaaSILInviaDovutiService paaSILInviaDovutiService,
                                            RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovuti,
@@ -58,11 +64,58 @@ public class PuForOrganizationPaymentsEndpoint {
     this.registryLogger = registryLogger;
     this.paaSILImportaDovutoService = paaSILImportaDovutoService;
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
+    this.ingestionFlowFileProcessingStatusService = ingestionFlowFileProcessingStatusService;
     this.registryExtraInfoHandlerPaaSILImportaDovuto = registryExtraInfoHandlerPaaSILImportaDovuto;
     this.paaSILInviaDovutiService = paaSILInviaDovutiService;
     this.registryExtraInfoHandlerPaaSILInviaDovuti = registryExtraInfoHandlerPaaSILInviaDovuti;
     this.paaSILInviaCarrelloDovutiService = paaSILInviaCarrelloDovutiService;
     this.registryExtraInfoHandlerPaaSILInviaCarrelloDovuti = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStatoImportFlusso")
+  @ResponsePayload
+  public PaaSILChiediStatoImportFlussoRisposta paaSILChiediStatoImportFlusso(
+    @RequestPayload PaaSILChiediStatoImportFlusso request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILChiediStatoImportFlusso");
+
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILChiediStatoImportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
+        request,
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        Long.valueOf(request.getRequestToken()),
+        IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+        PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
+        response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
+        response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
+        response.setUrlFileIUV(processingStatusDTO.getUrlImported());
+        response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILChiediStatoImportFlussoRisposta(),
+        PaaSILChiediStatoImportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ),
+      null,
+      null
+    );
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")
