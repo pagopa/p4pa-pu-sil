@@ -1,10 +1,9 @@
-package it.gov.pagopa.pu.sil.service.paasilinviadovuti;
+package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.service.paasilinviadovuto.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;

@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.service.paasilinviacarrellodovuti;
+package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;

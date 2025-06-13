@@ -3,6 +3,8 @@ package it.gov.pagopa.pu.sil.util;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import org.slf4j.MDC;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
@@ -48,5 +50,13 @@ public class Utilities {
     } else {
       return nav.substring(1);
     }
+  }
+
+  public static LocalDate getSpontaneousSilExpirationDate() {
+    LocalDateTime now = LocalDateTime.now(Constants.ZONEID);
+    boolean isSameDay = now.plusMinutes(Constants.EXPIRATION_SPONTANEOUS_SIL_DEBT_POSITION_MINUTES)
+      .toLocalDate()
+      .isEqual(now.toLocalDate());
+    return now.toLocalDate().plusDays(isSameDay ? 0 : 1);
   }
 }
