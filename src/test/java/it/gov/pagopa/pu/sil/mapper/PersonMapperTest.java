@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
@@ -46,6 +47,7 @@ class PersonMapperTest {
     soggettoPagatore.setIdentificativoUnivocoPagatore(new CtIdentificativoUnivocoPersonaFG());
     soggettoPagatore.getIdentificativoUnivocoPagatore().setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.F);
     soggettoPagatore.getIdentificativoUnivocoPagatore().setCodiceIdentificativoUnivoco("TSTTNT80A01H501O");
+    soggettoPagatore.setEMailPagatore("utente@email.it");
   }
 
 
@@ -176,6 +178,7 @@ class PersonMapperTest {
     assertNotNull(result.getLeft());
     assertNull(result.getMiddle());
     assertNull(result.getRight());
+    TestUtils.checkNotNullFields(result.getLeft());
   }
 
   @Test

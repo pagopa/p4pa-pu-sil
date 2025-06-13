@@ -173,6 +173,10 @@ class PaaSILInviaDovutiMapperTest {
     assertNull(result.getMiddle());
     assertNull(result.getRight());
     assertEquals(1, result.getLeft().size());
+
+    result.getLeft().forEach(elem -> TestUtils.checkNotNullFields(elem,
+      "debtPositionId", "status", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId"));
+
   }
 }
 
