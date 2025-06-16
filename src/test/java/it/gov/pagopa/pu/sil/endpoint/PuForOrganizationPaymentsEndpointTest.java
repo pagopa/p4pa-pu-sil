@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
@@ -53,6 +54,8 @@ class PuForOrganizationPaymentsEndpointTest {
   private RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoServiceMock;
   @Mock
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
+  @Mock
+  private PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -242,6 +245,33 @@ class PuForOrganizationPaymentsEndpointTest {
     testFaultResponse(PaaSILRegistraPagamento.class,
       SilFaults.PAA_SYSTEM_ERROR.code(),
       puForOrganizationPaymentsEndpoint::paaSILRegistraPagamento);
+  }
+  // endregion
+
+  // region PaaSILPrenotaExportFlusso
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoThenResponseContainsExpectedToken() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Long expectedToken = 12345L;
+
+    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenReturn(expectedToken);
+
+    Mockito.when(registryLoggerMock.execute(Mockito.any(), Mockito.eq(RegistrySilEventType.paaSILPrenotaExportFlusso), Mockito.any(),
+        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenCallRealMethod(); // Let the lambda execute
+
+    // When
+    PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
   }
   // endregion
 

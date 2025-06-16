@@ -13,6 +13,7 @@ import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInv
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
@@ -51,6 +52,8 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
   private final RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
 
+  private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
+
   @SuppressWarnings("java:S107")
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
                                            PaaSILImportaDovutoService paaSILImportaDovutoService,
@@ -60,7 +63,8 @@ public class PuForOrganizationPaymentsEndpoint {
                                            PaaSILInviaDovutiService paaSILInviaDovutiService,
                                            RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovuti,
                                            PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService,
-                                           RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti) {
+                                           RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti,
+                                           PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService) {
     this.registryLogger = registryLogger;
     this.paaSILImportaDovutoService = paaSILImportaDovutoService;
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
@@ -70,6 +74,7 @@ public class PuForOrganizationPaymentsEndpoint {
     this.registryExtraInfoHandlerPaaSILInviaDovuti = registryExtraInfoHandlerPaaSILInviaDovuti;
     this.paaSILInviaCarrelloDovutiService = paaSILInviaCarrelloDovutiService;
     this.registryExtraInfoHandlerPaaSILInviaCarrelloDovuti = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
+    this.paaSILPrenotaExportFlussoService = paaSILPrenotaExportFlussoService;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStatoImportFlusso")
@@ -316,4 +321,47 @@ public class PuForOrganizationPaymentsEndpoint {
       PaaSILRegistraPagamentoRisposta::setFault
     );
   }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILPrenotaExportFlusso")
+  @ResponsePayload
+  public PaaSILPrenotaExportFlussoRisposta paaSILPrenotaExportFlusso(
+    @RequestPayload PaaSILPrenotaExportFlusso request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILPrenotaExportFlusso");
+
+    return registryLogger.execute(
+      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
+      RegistrySilEventType.paaSILPrenotaExportFlusso,
+      null,
+      request,
+      userInfo,
+      null,
+      () -> {
+        Long result = paaSILPrenotaExportFlussoService.paaSILPrenotaExportFlusso(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          request
+        );
+        PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
+        response.setRequestToken(String.valueOf(result));
+        return Triple.of(response, null, SilOutcome.OK);
+      },
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILPrenotaExportFlussoRisposta(),
+        PaaSILPrenotaExportFlussoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ),
+      null,
+      null
+    );
+  }
+
 }
