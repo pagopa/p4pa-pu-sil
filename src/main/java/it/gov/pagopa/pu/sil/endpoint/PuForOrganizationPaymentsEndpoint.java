@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
+import it.gov.pagopa.pu.sil.exception.ExportFileRequestValidationException;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
@@ -352,16 +353,28 @@ public class PuForOrganizationPaymentsEndpoint {
         response.setRequestToken(String.valueOf(result));
         return Triple.of(response, null, SilOutcome.OK);
       },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
-        new PaaSILPrenotaExportFlussoRisposta(),
-        PaaSILPrenotaExportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ),
+      this::handleExportFileRequestValidationException,
       null,
       null
     );
   }
+
+  private PaaSILPrenotaExportFlussoRisposta handleExportFileRequestValidationException(Exception e) {
+    if (e instanceof ExportFileRequestValidationException ee) {
+      return FaultUtils.setFaultOnResponse(
+        new PaaSILPrenotaExportFlussoRisposta(),
+        ee.getFault(),
+        ee.getMessage()
+      );
+    }
+    return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      new PaaSILPrenotaExportFlussoRisposta(),
+      PaaSILPrenotaExportFlussoRisposta::setFault,
+      FaultBean::new,
+      SilFaults.PAA_ENTE_NON_VALIDO,
+      SilFaults.PAA_SYSTEM_ERROR
+    ).apply(e);
+  }
+
 
 }

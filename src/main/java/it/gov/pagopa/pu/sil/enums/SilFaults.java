@@ -16,6 +16,10 @@ public enum SilFaults {
   PAA_ANAGRAFICA_NON_VALIDA("Anagrafica debitore non valida"),
   PAA_XML_NON_VALIDO("XML non valido"),
   PAA_CODICE_FISCALE_NON_VALIDO("Codice fiscale non valido"),
+  PAA_VERSIONE_TRACCIATO_NON_VALIDA("Versione tracciato non valida"),
+  PAA_DATE_FROM_NON_VALIDO("Data inizio non valida"),
+  PAA_DATE_TO_NON_VALIDO("Data fine non valida"),
+  PAA_INTERVALLO_DATE_NON_VALIDO("L'intervallo data inizio e data fine non è valido"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
