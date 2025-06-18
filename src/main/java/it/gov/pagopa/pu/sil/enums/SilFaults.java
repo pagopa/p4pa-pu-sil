@@ -16,6 +16,10 @@ public enum SilFaults {
   PAA_ANAGRAFICA_NON_VALIDA("Anagrafica debitore non valida"),
   PAA_XML_NON_VALIDO("XML non valido"),
   PAA_CODICE_FISCALE_NON_VALIDO("Codice fiscale non valido"),
+  PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI("Numero massimo versamenti enti secondari superato"),
+  PAA_ENTE_SECONDARIO_NON_VALIDO("Ente secondario non valido"),
+  PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO("Numero massimo dovuti nel carrello superato"),
+  PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI("Errore recupero dovuti enti secondari"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
