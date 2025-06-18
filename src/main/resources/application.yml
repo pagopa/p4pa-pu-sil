@@ -159,6 +159,10 @@ rest:
       max-attempts: "\${PAGOPA_NODE_CHECKOUT_MAX_ATTEMPTS:3}" # It's counting also the first attempt
       wait-time-millis: "\${PAGOPA_NODE_CHECKOUT_WAIT_TIME_MILLIS:500}"
       print-body-when-error: "\${PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR:true}"
+  amount-updates:
+    max-attempts: "\${NOTIFICATION_PRICE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${NOTIFICATION_PRICE_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR:true}"
 
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"

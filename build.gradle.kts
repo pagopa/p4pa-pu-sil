@@ -155,6 +155,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateDEBTPOSITIONS",
     "openApiGenerateORGANIZATION",
     "openApiGenerateNodeCheckout",
+    "openApiGenerateAmountUpdatesLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation"
   )
@@ -355,6 +356,30 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
     )
   )
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateAmountUpdatesLegacy") {
+  group = "openapi"
+  description = "description"
+
+  generatorName.set("java")
+  inputSpec.set("$rootDir/openapi/amount-updates-legacy.yaml")
+  outputDir.set("$projectDir/build/generated")
+  apiPackage.set("it.gov.pagopa.amountupdates.legacy.controller.generated")
+  modelPackage.set("it.gov.pagopa.amountupdates.legacy.dto.generated")
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
   library.set("resttemplate")
 }
 
