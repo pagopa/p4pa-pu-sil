@@ -24,14 +24,11 @@ class ValidationUtilsTest {
     assertTrue(ValidationUtils.isValidEmail("test@example.com"));
   }
 
-  @Test
-  void isValidEmail_InvalidEmail_ReturnsFalse() {
-    assertFalse(ValidationUtils.isValidEmail("invalid-email"));
-  }
-
-  @Test
-  void isValidEmail_NullEmail_ReturnsFalse() {
-    assertFalse(ValidationUtils.isValidEmail(null));
+  @ParameterizedTest
+  @ValueSource(strings = {" ", "invalid"})
+  @NullAndEmptySource
+  void isValidEmail_InvalidEmail_ReturnsFalse(String input) {
+    assertFalse(ValidationUtils.isValidEmail(input));
   }
 
   @Test
@@ -39,14 +36,11 @@ class ValidationUtilsTest {
     assertTrue(ValidationUtils.isValidISOCountry("IT"));
   }
 
-  @Test
-  void isValidISOCountry_InvalidCountryCode_ReturnsFalse() {
-    assertFalse(ValidationUtils.isValidISOCountry("INVALID"));
-  }
-
-  @Test
-  void isValidISOCountry_NullCountryCode_ReturnsFalse() {
-    assertFalse(ValidationUtils.isValidISOCountry(null));
+  @ParameterizedTest
+  @ValueSource(strings = {"INVALID"})
+  @NullAndEmptySource
+  void isValidISOCountry_InvalidCountryCode_ReturnsFalse(String input) {
+    assertFalse(ValidationUtils.isValidISOCountry(input));
   }
 
   @Test
@@ -200,15 +194,56 @@ class ValidationUtilsTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"0/ValidData", "1/AnotherValidData", "9/Valid123", "2/Valid-Data"})
-  void isValidDatiSpecificiRiscossione_ValidInputs_ReturnsTrue(String input) {
-    assertTrue(ValidationUtils.isValidDatiSpecificiRiscossione(input));
+  void isValidLegacyPaymentMetadata_ValidInputs_ReturnsTrue(String input) {
+    assertTrue(ValidationUtils.isValidLegacyPaymentMetadata(input));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"InvalidData", "3/TooShort", "4/", "5/ThisDataIsWayTooLongToBeValidBecauseItExceedsTheMaximumAllowedLengthOf138Characters12345678901234567890123456789012345678901234567890123456789012345678901234567890"})
   @NullAndEmptySource
-  void isValidDatiSpecificiRiscossione_InvalidInputs_ReturnsFalse(String input) {
-    assertFalse(ValidationUtils.isValidDatiSpecificiRiscossione(input));
+  void isValidLegacyPaymentMetadata_InvalidInputs_ReturnsFalse(String input) {
+    assertFalse(ValidationUtils.isValidLegacyPaymentMetadata(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/."})
+  void isValidLegacyPaymentMetadataSecondary_ValidInputs_ReturnsTrue(String input) {
+    assertTrue(ValidationUtils.isValidLegacyPaymentMetadataSecondary(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"InvalidData", "0/1234534AA/", "0/1234534IM", "0/123453IM/too_short", "0/123453FIM/invalid taxonomy", "0/1234534IM/ThisDataIsWayTooLongToBeValidBecauseItExceedsTheMaximumAllowedLengthOf138Characters12345678901234567890123456789012345678901234567890123456789012345678901234567890"})
+  @NullAndEmptySource
+  void isValidLegacyPaymentMetadataSecondary_InvalidInputs_ReturnsFalse(String input) {
+    assertFalse(ValidationUtils.isValidLegacyPaymentMetadataSecondary(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/."})
+  void getTransferCategoryFromLegacyPaymentMetadataSecondary_ValidInputs_ReturnsCategory(String input) {
+    String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(input);
+    assertNotNull(category);
+    assertEquals(input.substring(2,11), category);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"InvalidData", "0/1234534AA/", "0/1234534IM", "0/123453IM/too_short", "0/123453FIM/invalid taxonomy", "0/1234534IM/ThisDataIsWayTooLongToBeValidBecauseItExceedsTheMaximumAllowedLengthOf138Characters12345678901234567890123456789012345678901234567890123456789012345678901234567890"})
+  @NullAndEmptySource
+  void getTransferCategoryFromLegacyPaymentMetadataSecondary_InvalidInputs_ReturnsNull(String input) {
+    assertNull(ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"IT60X0542811101000000123456", "IT23A0200801002000301234567"})
+  void isValidIban_ValidInputs_ReturnsTrue(String input) {
+    assertTrue(ValidationUtils.isValidIban(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"IT60X054281110100000012345", "FR1420051010050500043M02606", "IT60X0542811101000000123435G"})
+  @NullAndEmptySource
+  void isValidIban_InvalidInputs_ReturnsFalse(String input) {
+    assertFalse(ValidationUtils.isValidIban(input));
   }
 
 }

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.config.CacheConfig;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
@@ -20,6 +21,11 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   @Cacheable(cacheNames = CacheConfig.Fields.debtPositionTypeOrg, key = "#organizationId + '-' + #debtPositionTypeOrgCode", unless="#result == null")
   public DebtPositionTypeOrg getDebtPositionTypeOrgByOrgIdAndType(Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
     return client.getDebtPositionTypeOrgByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode, accessToken);
+  }
+
+  @Cacheable(cacheNames = CacheConfig.Fields.debtPositionType, key = "#id", unless="#result == null")
+  public DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken) {
+    return client.getDebtPositionTypeById(debtPositionType, accessToken);
   }
 
   @Override

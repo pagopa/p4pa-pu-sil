@@ -27,7 +27,13 @@ public class CacheConfig {
   private CacheConfigurationProperties debtPositionTypeOrg;
 
   @NestedConfigurationProperty
+  private CacheConfigurationProperties debtPositionType;
+
+  @NestedConfigurationProperty
   private CacheConfigurationProperties organization;
+
+  @NestedConfigurationProperty
+  private CacheConfigurationProperties taxonomy;
 
   @Data
   @NoArgsConstructor
