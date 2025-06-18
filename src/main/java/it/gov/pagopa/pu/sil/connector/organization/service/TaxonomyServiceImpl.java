@@ -19,7 +19,7 @@ public class TaxonomyServiceImpl implements TaxonomyService {
   }
 
   @Override
-  @Cacheable(key = "#taxonomyCode", unless = "#result.isEmpty()")
+  @Cacheable(key = "#taxonomyCode", unless = "#result == null")
   public Optional<Taxonomy> getTaxonomyByTaxonomyCode(String taxonomyCode, String accessToken) {
     return Optional.ofNullable(
       taxonomySearchClient.findByTaxonomyCode(taxonomyCode, accessToken)
