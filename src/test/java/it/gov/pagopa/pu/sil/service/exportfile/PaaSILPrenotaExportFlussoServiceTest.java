@@ -70,12 +70,14 @@ class PaaSILPrenotaExportFlussoServiceTest {
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
 
+      PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
+
       assertThrows(UnauthorizedException.class, () ->
         service.paaSILPrenotaExportFlusso(
           userInfo,
           accessToken,
           orgIpaCode,
-          new PaaSILPrenotaExportFlusso()
+          request
         )
       );
       verifyNoInteractions(
