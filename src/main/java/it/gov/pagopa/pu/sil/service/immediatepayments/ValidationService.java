@@ -63,7 +63,7 @@ public class ValidationService {
     if (versamento.getImportoSingoloVersamento() == null || BigDecimal.ZERO.compareTo(versamento.getImportoSingoloVersamento()) >= 0) {
       return Pair.of(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido: " + versamento.getImportoSingoloVersamento());
     }
-    if (StringUtils.isBlank(versamento.getDatiSpecificiRiscossione()) || !ValidationUtils.isValidDatiSpecificiRiscossione(versamento.getDatiSpecificiRiscossione())) {
+    if (StringUtils.isBlank(versamento.getDatiSpecificiRiscossione()) || !ValidationUtils.isValidLegacyPaymentMetadata(versamento.getDatiSpecificiRiscossione())) {
       return Pair.of(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, "Dati specifici riscossione non validi: " + versamento.getDatiSpecificiRiscossione());
     }
     if (!ValidationUtils.verifyBalanceAmount(versamento.getBilancio(), versamento.getImportoSingoloVersamento())) {

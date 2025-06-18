@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import org.junit.jupiter.api.AfterEach;
@@ -70,6 +71,22 @@ class DebtPositionServiceTest {
 
       // Then
       Assertions.assertEquals(expectedCount, result);
+  }
+
+  @Test
+  void whenGetDebtPositionTypeByIdThenReturnDebtPositionType() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long debtPositionTypeId = 1L;
+    DebtPositionType expectedResult = new DebtPositionType();
+
+    Mockito.when(clientMock.getDebtPositionTypeById(debtPositionTypeId, accessToken)).thenReturn(expectedResult);
+
+    //when
+    DebtPositionType result = service.getDebtPositionTypeById(debtPositionTypeId, accessToken);
+
+    //then
+    Assertions.assertEquals(expectedResult, result);
   }
 
 }

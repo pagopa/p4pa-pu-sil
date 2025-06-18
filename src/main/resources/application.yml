@@ -170,6 +170,12 @@ cache:
   debtPositionTypeOrg:
     size: "\${CACHE_DEBTPOSITION_TYPE_ORG_SIZE:1000}"
     expire-in: "\${CACHE_DEBTPOSITION_TYPE_ORG_MINUTES:60}"
+  debtPositionType:
+    size: "\${CACHE_DEBTPOSITION_TYPE_SIZE:100}"
+    expire-in: "\${CACHE_DEBTPOSITION_TYPE_MINUTES:60}"
   organization:
     size: "\${CACHE_ORGANIZATION_SIZE:1000}"
     expire-in: "\${CACHE_ORGANIZATION_MINUTES:60}"
+  taxonomy:
+    size: "\${CACHE_TAXONOMY_SIZE:100}"
+    expire-in: "\${CACHE_TAXONOMY_MINUTES:60}"
