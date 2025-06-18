@@ -4,7 +4,7 @@ info:
   description: Api and Models
   version: "1.0.0"
 paths:
-  /organization/{organizationId}/send-notification:
+  /sil/organization/{organizationId}/send-notification:
     post:
       tags:
         - SendNotification
@@ -36,7 +36,7 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
-  /organization/{organizationId}/send-notification/{sendNotificationId}:
+  /sil/organization/{organizationId}/send-notification/{sendNotificationId}:
     get:
       tags:
         - SendNotification
@@ -95,6 +95,24 @@ paths:
           description: Invalid request
         '403':
           description: Forbidden
+        '500':
+          description: Internal server error
+  /internal/example:
+    get:
+      tags:
+        - Example
+      summary: get example
+      description: get example that will be removed in the future
+      operationId: getExample
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+        '403':
+          description: Forbidden
+        '404':
+          description: Notification not found
         '500':
           description: Internal server error
 security:

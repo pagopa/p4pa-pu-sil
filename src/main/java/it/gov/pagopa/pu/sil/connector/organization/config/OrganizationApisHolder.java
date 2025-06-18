@@ -17,6 +17,7 @@ public class OrganizationApisHolder {
   private final TaxonomySearchControllerApi taxonomySearchControllerApi;
   private final BrokerEntityControllerApi brokerEntityControllerApi;
   private final BrokerSearchControllerApi brokerSearchControllerApi;
+  private final OrgSilServiceEntityControllerApi orgSilServiceEntityControllerApi;
 
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
@@ -33,6 +34,7 @@ public class OrganizationApisHolder {
       restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("ORGANIZATION"));
     }
 
+    this.orgSilServiceEntityControllerApi = new OrgSilServiceEntityControllerApi(apiClient);
     this.organizationSearchControllerApi = new OrganizationSearchControllerApi(apiClient);
     this.organizationEntityControllerApi = new OrganizationEntityControllerApi(apiClient);
     this.taxonomySearchControllerApi = new TaxonomySearchControllerApi(apiClient);
@@ -66,6 +68,10 @@ public class OrganizationApisHolder {
 
   public BrokerSearchControllerApi getBrokerSearchControllerApi(String accessToken) {
     return getApi(accessToken, brokerSearchControllerApi);
+  }
+
+  public OrgSilServiceEntityControllerApi getOrgSilServiceEntityControllerApi(String accessToken) {
+    return getApi(accessToken, orgSilServiceEntityControllerApi);
   }
 
   private <T extends BaseApi> T getApi(String accessToken, T api) {
