@@ -119,7 +119,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     request.getListaDovuti().getElementoListaDovutis().add(new ElementoListaDovuti());
     request.getListaDovuti().getElementoListaDovutis().getFirst().setDovuti(new byte[]{});
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-    when(validationServiceMock.validateSecondaryDebtPositionCount(eq(request), eq(1))).thenReturn(Pair.of(SilFaults.PAA_ENTE_NON_VALIDO, "error"));
+    when(validationServiceMock.validateSecondaryDebtPositionCount(request, 1)).thenReturn(Pair.of(SilFaults.PAA_ENTE_NON_VALIDO, "error"));
 
     Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
 
