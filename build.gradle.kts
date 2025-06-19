@@ -155,7 +155,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateDEBTPOSITIONS",
     "openApiGenerateORGANIZATION",
     "openApiGenerateNodeCheckout",
-    "openApiGenerateAmountUpdatesLegacy",
+    "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation"
   )
@@ -359,15 +359,15 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   library.set("resttemplate")
 }
 
-tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateAmountUpdatesLegacy") {
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateActualizationLegacy") {
   group = "openapi"
   description = "description"
 
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/amount-updates-legacy.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.amountupdates.legacy.controller.generated")
-  modelPackage.set("it.gov.pagopa.amountupdates.legacy.dto.generated")
+  apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
+  modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
