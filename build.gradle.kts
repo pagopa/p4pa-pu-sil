@@ -177,7 +177,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   description = "description"
 
   generatorName.set("spring")
-  inputSpec.set("$rootDir/openapi/p4pa-pu-sil.openapi.yaml")
+  inputSpec.set(file("$rootDir/openapi/p4pa-pu-sil.openapi.yaml").toURI().toString())
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.sil.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.sil.dto.generated")
