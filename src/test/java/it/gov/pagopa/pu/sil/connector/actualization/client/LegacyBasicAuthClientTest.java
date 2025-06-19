@@ -1,9 +1,9 @@
-package it.gov.pagopa.pu.sil.connector.amountupdates.client;
+package it.gov.pagopa.pu.sil.connector.actualization.client;
 
 import it.gov.pagopa.amountupdates.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.amountupdates.legacy.dto.generated.Credentials;
 import it.gov.pagopa.amountupdates.legacy.dto.generated.Token;
-import it.gov.pagopa.pu.sil.connector.amountupdates.config.AmountUpdatesApisHolder;
+import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,22 +15,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-class AmountUpdatesLegacyClientTest {
+class LegacyBasicAuthClientTest {
   @Mock
-  private AmountUpdatesApisHolder amountUpdatesApisHolderMock;
+  private ActualizationApisHolder actualizationApisHolderMock;
   @Mock
   private DefaultApi amountUpdatesLegacyApiClientMock;
 
-  private AmountUpdatesLegacyClient client;
+  private LegacyBasicAuthClient client;
 
   @BeforeEach
   void setUp() {
-    client = new AmountUpdatesLegacyClient(amountUpdatesApisHolderMock);
+    client = new LegacyBasicAuthClient(actualizationApisHolderMock);
   }
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(amountUpdatesApisHolderMock);
+    Mockito.verifyNoMoreInteractions(actualizationApisHolderMock);
   }
 
   @Test
@@ -40,7 +40,7 @@ class AmountUpdatesLegacyClientTest {
     Credentials credential = new Credentials("username", "password");
     Token expectedToken = new Token();
 
-    Mockito.when(amountUpdatesApisHolderMock.getAmountUpdatesLegacyApi(null, authUrl))
+    Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(null, authUrl))
            .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.login(credential))
            .thenReturn(expectedToken);

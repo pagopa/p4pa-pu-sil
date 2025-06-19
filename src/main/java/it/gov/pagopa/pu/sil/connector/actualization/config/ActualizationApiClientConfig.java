@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.connector.amountupdates.config;
+package it.gov.pagopa.pu.sil.connector.actualization.config;
 
 import it.gov.pagopa.pu.sil.config.rest.ApiClientConfig;
 import lombok.NoArgsConstructor;
@@ -10,5 +10,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "rest.amount-updates")
 @SuperBuilder
 @NoArgsConstructor
-public class AmountUpdatesApiClientConfig extends ApiClientConfig {
+public class ActualizationApiClientConfig extends ApiClientConfig {
 }

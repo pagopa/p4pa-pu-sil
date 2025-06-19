@@ -1,8 +1,8 @@
-package it.gov.pagopa.pu.sil.connector.amountupdates;
+package it.gov.pagopa.pu.sil.connector.actualization;
 
 import it.gov.pagopa.amountupdates.legacy.dto.generated.Credentials;
 import it.gov.pagopa.amountupdates.legacy.dto.generated.Token;
-import it.gov.pagopa.pu.sil.connector.amountupdates.client.AmountUpdatesLegacyClient;
+import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyBasicAuthClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,20 +14,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(MockitoExtension.class)
-class AmountUpdatesLegacyComponentTest {
+class LegacyBasicAuthServiceTest {
   @Mock
-  private AmountUpdatesLegacyClient amountUpdatesLegacyClientMock;
+  private LegacyBasicAuthClient legacyBasicAuthClientMock;
 
-  private AmountUpdatesLegacyComponent amountUpdatesLegacyComponent;
+  private LegacyBasicAuthService legacyBasicAuthService;
 
   @BeforeEach
   void setUp() {
-    amountUpdatesLegacyComponent = new AmountUpdatesLegacyComponentImpl(amountUpdatesLegacyClientMock);
+    legacyBasicAuthService = new LegacyBasicAuthServiceImpl(legacyBasicAuthClientMock);
   }
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(amountUpdatesLegacyClientMock);
+    Mockito.verifyNoMoreInteractions(legacyBasicAuthClientMock);
   }
 
   @Test
@@ -38,11 +38,11 @@ class AmountUpdatesLegacyComponentTest {
       .username("testUser").password("testPassword");
     Token expectedToken = new Token();
 
-    Mockito.when(amountUpdatesLegacyClientMock.login(credentials, authUrl))
+    Mockito.when(legacyBasicAuthClientMock.login(credentials, authUrl))
            .thenReturn(expectedToken);
 
     // When
-    Token result = amountUpdatesLegacyComponent.login(credentials, authUrl);
+    Token result = legacyBasicAuthService.login(credentials, authUrl);
 
     // Then
     assertSame(expectedToken, result);

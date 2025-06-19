@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.connector.amountupdates.config;
+package it.gov.pagopa.pu.sil.connector.actualization.config;
 
 import it.gov.pagopa.amountupdates.legacy.dto.generated.Credentials;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
@@ -13,18 +13,18 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 @ExtendWith(MockitoExtension.class)
-class AmountUpdatesApisHolderTest extends BaseApiHolderTest {
+class ActualizationApisHolderTest extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
-  private AmountUpdatesApisHolder apisHolder;
+  private ActualizationApisHolder apisHolder;
 
   @BeforeEach
   void setUp() {
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    AmountUpdatesApiClientConfig clientConfig = new AmountUpdatesApiClientConfig();
-    apisHolder = new AmountUpdatesApisHolder(clientConfig, restTemplateBuilderMock);
+    ActualizationApiClientConfig clientConfig = new ActualizationApiClientConfig();
+    apisHolder = new ActualizationApisHolder(clientConfig, restTemplateBuilderMock);
   }
 
   @Test
@@ -33,7 +33,7 @@ class AmountUpdatesApisHolderTest extends BaseApiHolderTest {
       accessToken -> apisHolder.getAmountUpdatesLegacyApi(accessToken, "http://example.com")
         .login(new Credentials()),
       new ParameterizedTypeReference<>() {},
-      apisHolder::unload,
+      () -> {},
       AUTH_TYPE.NO_AUTH);
   }
 }
