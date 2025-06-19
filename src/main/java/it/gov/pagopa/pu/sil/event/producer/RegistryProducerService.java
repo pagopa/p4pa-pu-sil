@@ -28,8 +28,6 @@ import java.util.function.Supplier;
 @Component
 public class RegistryProducerService {
 
-  public static final String PU_ID = "piattaforma-unitaria";
-
   @Value("${spring.cloud.stream.bindings.registryProducer-out-0.binder}")
   private String binder;
 

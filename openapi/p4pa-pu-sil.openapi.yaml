@@ -97,13 +97,13 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
-  /internal/orgSilService/{orgSilServiceId}/amount-updates/legacy:
+  /internal/orgSilService/{orgSilServiceId}/amount-updates:
     get:
       tags:
-        - AmountUpdatesLegacy
+        - AmountUpdates
       summary: get amount updates
-      description: get amount updates for backward compatibility legacy system
-      operationId: getAmountUpdatesLegacy
+      description: get amount updates
+      operationId: getAmountUpdates
       parameters:
         - name: orgSilServiceId
           in: path
@@ -127,7 +127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AmountUpdatesLegacyDTO'
+                $ref: '#/components/schemas/AmountUpdatesDTO'
         '400':
           description: Invalid request
         '403':
@@ -140,7 +140,7 @@ security:
   - BearerAuth: []
 components:
   schemas:
-    AmountUpdatesLegacyDTO:
+    AmountUpdatesDTO:
       type: object
       properties:
         outcome:

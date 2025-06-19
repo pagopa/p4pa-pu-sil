@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,17 @@ public class DebtPositionClient {
         .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
     } catch (HttpClientErrorException.NotFound e) {
       log.info("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
+      return null;
+    }
+  }
+
+  public DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken) {
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionTypeEntityControllerApi(accessToken)
+        .crudGetDebtpositiontype(String.valueOf(debtPositionType));
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DeptPositionType having id[{}]", debtPositionType, e);
       return null;
     }
   }

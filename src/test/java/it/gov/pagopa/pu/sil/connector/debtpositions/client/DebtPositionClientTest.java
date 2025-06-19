@@ -1,8 +1,10 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeEntityControllerApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeOrgSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +25,8 @@ class DebtPositionClientTest {
   @Mock
   private DebtPositionTypeOrgSearchControllerApi debtPositionTypeOrgSearchControllerApiMock;
   @Mock
+  private DebtPositionTypeEntityControllerApi debtPositionTypeEntityControllerApiMock;
+  @Mock
   private InstallmentApi installmentApiMock;
   @Mock
   private InstallmentNoPiiSearchControllerApi installmentNoPiiSearchControllerApiMock;
@@ -40,6 +44,7 @@ class DebtPositionClientTest {
     Mockito.verifyNoMoreInteractions(
       apisHolderMock,
       debtPositionTypeOrgSearchControllerApiMock,
+      debtPositionTypeEntityControllerApiMock,
       installmentApiMock
       );
   }
@@ -103,6 +108,24 @@ class DebtPositionClientTest {
 
       // Then
       Assertions.assertEquals(expectedCount, result);
+  }
+
+  @Test
+  void whenGetDebtPositionTypeByIdThenInvokeApi() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    long debtPositionTypeId = 1L;
+    DebtPositionType expectedResult = new DebtPositionType();
+
+    Mockito.when(apisHolderMock.getDebtPositionTypeEntityControllerApi(accessToken))
+      .thenReturn(debtPositionTypeEntityControllerApiMock);
+    Mockito.when(debtPositionTypeEntityControllerApiMock.crudGetDebtpositiontype(String.valueOf(debtPositionTypeId))).thenReturn(expectedResult);
+
+    //when
+    DebtPositionType result = client.getDebtPositionTypeById(debtPositionTypeId, accessToken);
+
+    //then
+    Assertions.assertEquals(expectedResult, result);
   }
 
 }

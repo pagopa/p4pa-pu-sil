@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
 import it.gov.pagopa.pu.debtpositions.controller.ApiClient;
 import it.gov.pagopa.pu.debtpositions.controller.BaseApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeEntityControllerApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeOrgSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 public class DebtPositionsApisHolder {
 
   private final DebtPositionTypeOrgSearchControllerApi debtPositionTypeOrgSearchControllerApi;
+
+  private final DebtPositionTypeEntityControllerApi debtPositionTypeEntityControllerApi;
 
   private final InstallmentApi installmentApi;
 
@@ -38,6 +41,7 @@ public class DebtPositionsApisHolder {
 
     this.installmentApi = new InstallmentApi(apiClient);
     this.debtPositionTypeOrgSearchControllerApi = new DebtPositionTypeOrgSearchControllerApi(apiClient);
+    this.debtPositionTypeEntityControllerApi = new DebtPositionTypeEntityControllerApi(apiClient);
     this.installmentNoPiiSearchControllerApi = new InstallmentNoPiiSearchControllerApi(apiClient);
   }
 
@@ -56,6 +60,10 @@ public class DebtPositionsApisHolder {
 
   public DebtPositionTypeOrgSearchControllerApi getDebtPositionTypeOrgSearchControllerApi(String accessToken) {
     return getApi(accessToken, debtPositionTypeOrgSearchControllerApi);
+  }
+
+  public DebtPositionTypeEntityControllerApi getDebtPositionTypeEntityControllerApi(String accessToken) {
+    return getApi(accessToken, debtPositionTypeEntityControllerApi);
   }
 
   private <T extends BaseApi> T getApi(String accessToken, T api) {

@@ -21,6 +21,8 @@ import java.util.function.Supplier;
 @Slf4j
 public class RegistryLogger {
 
+  public static final String PU_ID = "piattaforma-unitaria";
+
   public static final String SKIP_XML_BODY_KEY = "skipXmlBody";
   public static final String XML_BODY_KEY = "xmlBody";
   public static final String IUV_SEPARATOR = ",";
@@ -107,16 +109,16 @@ public class RegistryLogger {
     String grantorId;
     if (eventType.isExposedByPU() && RegistryEventSubType.REQ.equals(eventSubType)) {
       requestorId = loggedUser.getUserId();
-      grantorId = RegistryProducerService.PU_ID;
+      grantorId = PU_ID;
     } else if (eventType.isExposedByPU() && RegistryEventSubType.RESP.equals(eventSubType)) {
-      requestorId = RegistryProducerService.PU_ID;
+      requestorId = PU_ID;
       grantorId = loggedUser.getUserId();
     } else if (RegistryEventSubType.REQ.equals(eventSubType)) {
-      requestorId = RegistryProducerService.PU_ID;
+      requestorId = PU_ID;
       grantorId = orgSilServiceName;
     } else {
       requestorId = orgSilServiceName;
-      grantorId = RegistryProducerService.PU_ID;
+      grantorId = PU_ID;
     }
     registryProducerService.notifySilEvent(
       loggedUser,

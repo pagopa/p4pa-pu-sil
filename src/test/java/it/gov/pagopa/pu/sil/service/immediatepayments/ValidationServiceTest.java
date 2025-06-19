@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
@@ -323,6 +324,193 @@ class ValidationServiceTest {
       Pair<SilFaults, String> result = validationService.validateFiscalCodeDebtor(personIdentifier);
 
       assertNull(result);
+  }
+  //endregion
+
+  //region: validatePrimaryDebtPositionOrganization
+  @Test
+  void validatePrimaryDebtPositionOrganization_NullListaDovuti_ReturnsError() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    request.setListaDovuti(null);
+
+    Pair<SilFaults, String> result = validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE");
+
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, result.getLeft());
+    assertEquals("Dovuti non presenti", result.getRight());
+  }
+
+  @Test
+  void validatePrimaryDebtPositionOrganization_EmptyListaDovuti_ReturnsError() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    request.setListaDovuti(new ListaDovuti());
+
+    Pair<SilFaults, String> result = validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE");
+
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, result.getLeft());
+    assertEquals("Dovuti non presenti", result.getRight());
+  }
+
+  @Test
+  void validatePrimaryDebtPositionOrganization_InvalidCodIpaEnte_ReturnsError() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    request.setListaDovuti(new ListaDovuti());
+    ElementoListaDovuti elementoListaDovuti = new ElementoListaDovuti();
+    elementoListaDovuti.setCodIpaEnte("INVALID_ORG_CODE");
+    request.getListaDovuti().getElementoListaDovutis().add(elementoListaDovuti);
+
+    Pair<SilFaults, String> result = validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE");
+
+    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, result.getLeft());
+    assertEquals("L'inserimento di dovuti per enti diversi dal chiamante è deprecato", result.getRight());
+  }
+
+  @Test
+  void validatePrimaryDebtPositionOrganization_ValidCodIpaEnte_ReturnsNull() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    request.setListaDovuti(new ListaDovuti());
+    ElementoListaDovuti elementoListaDovuti = new ElementoListaDovuti();
+    elementoListaDovuti.setCodIpaEnte("ORG_CODE");
+    request.getListaDovuti().getElementoListaDovutis().add(elementoListaDovuti);
+
+    Pair<SilFaults, String> result = validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE");
+
+    assertNull(result);
+  }
+  //endregion
+
+  //region: validateSecondaryDebtPositionCount
+  @Test
+  void validateSecondaryDebtPositionCount_NoSecondaryDebtPositions_ReturnsNull() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    request.setListaDovutiEntiSecondari(null);
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionCount(request, 1);
+
+    assertNull(result);
+  }
+
+  @Test
+  void validateSecondaryDebtPositionCount_MultiplePrimaryDebtPositions_ReturnsError() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    ListaDovutiEntiSecondari listaDovutiEntiSecondari = new ListaDovutiEntiSecondari();
+    listaDovutiEntiSecondari.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
+    request.setListaDovutiEntiSecondari(listaDovutiEntiSecondari);
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionCount(request, 2);
+
+    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, result.getLeft());
+    assertEquals("Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionCount_MultipleSecondaryDebtPositions_ReturnsError() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    ListaDovutiEntiSecondari listaDovutiEntiSecondari = new ListaDovutiEntiSecondari();
+    listaDovutiEntiSecondari.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
+    listaDovutiEntiSecondari.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
+    request.setListaDovutiEntiSecondari(listaDovutiEntiSecondari);
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionCount(request, 1);
+
+    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, result.getLeft());
+    assertEquals("Non è possibile inserire pagamenti multibeneficiario con più di un dovuto secondario", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionCount_ValidSecondaryDebtPositions_ReturnsNull() {
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    ListaDovutiEntiSecondari listaDovutiEntiSecondari = new ListaDovutiEntiSecondari();
+    listaDovutiEntiSecondari.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
+    request.setListaDovutiEntiSecondari(listaDovutiEntiSecondari);
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionCount(request, 1);
+
+    assertNull(result);
+  }
+  //endregion
+
+  //region: validateSecondaryDebtPositionData
+  @Test
+  void validateSecondaryDebtPositionData_MultiplePrimaryDebtPositions_ReturnsError() {
+    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
+    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
+    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
+    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
+    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionData(secondaryTransferData, 2);
+
+    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, result.getLeft());
+    assertEquals("Non è possibile inserire pagamenti multibeneficiario con più di un dovuto", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionData_InvalidFiscalCode_ReturnsError() {
+    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
+    secondaryTransferData.setCodiceFiscaleBeneficiario("INVALID_CF");
+    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
+    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
+    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1);
+
+    assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, result.getLeft());
+    assertEquals("Codice fiscale ente secondario non valido: INVALID_CF", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionData_InvalidIban_ReturnsError() {
+    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
+    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
+    secondaryTransferData.setIbanAccreditoBeneficiario("INVALID_IBAN");
+    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
+    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1);
+
+    assertEquals(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, result.getLeft());
+    assertEquals("IBAN accredito Ente secondario non valido [INVALID_IBAN]", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionData_InvalidAmount_ReturnsError() {
+    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
+    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
+    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
+    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.ZERO);
+    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1);
+
+    assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getLeft());
+    assertEquals("Importo singolo versamento non valido: 0", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionData_InvalidPaymentMetadata_ReturnsError() {
+    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
+    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
+    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
+    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
+    secondaryTransferData.setDatiSpecificiRiscossione("INVALID_METADATA");
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1);
+
+    assertEquals(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, result.getLeft());
+    assertEquals("Dati specifici riscossione non validi: INVALID_METADATA", result.getRight());
+  }
+
+  @Test
+  void validateSecondaryDebtPositionData_ValidData_ReturnsNull() {
+    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
+    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
+    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
+    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
+    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
+
+    Pair<SilFaults, String> result = validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1);
+
+    assertNull(result);
   }
   //endregion
 }
