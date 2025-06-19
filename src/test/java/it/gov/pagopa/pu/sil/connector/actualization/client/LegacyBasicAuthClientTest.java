@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.actualization.client;
 
-import it.gov.pagopa.amountupdates.legacy.controller.generated.DefaultApi;
-import it.gov.pagopa.amountupdates.legacy.dto.generated.Credentials;
-import it.gov.pagopa.amountupdates.legacy.dto.generated.Token;
+import it.gov.pagopa.actualization.legacy.controller.generated.DefaultApi;
+import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
+import it.gov.pagopa.actualization.legacy.dto.generated.Token;
 import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

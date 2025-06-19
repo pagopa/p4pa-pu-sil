@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.actualization.config;
 
-import it.gov.pagopa.amountupdates.legacy.dto.generated.Credentials;
+import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
