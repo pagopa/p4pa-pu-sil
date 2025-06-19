@@ -47,9 +47,9 @@ See [Postman collection](/postman/p4pa-pu-sil.postman_collection.json) and [Post
 * `paaSILVerificaAvviso`: To obtain a URL towards pagoPa checkout to pay a debt position already stored in PU.
 
 ### 📌 Relevant PagamentiTelematiciPagatiRiconciliati SOAP endpoints
-* `pivotSILAutorizzaImportFlusso`: To retrieve a URl (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing payment notifications to import;
+* `pivotSILAutorizzaImportFlusso`: To retrieve a URL (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing payment notifications to import;
 * `pivotSILChiediStatoImportFlusso`: To get payment notifications file processing status;
-* `pivotSILAutorizzaImportFlussoTesoreria`: To retrieve a URl (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing treasuries to import;
+* `pivotSILAutorizzaImportFlussoTesoreria`: To retrieve a URL (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing treasuries to import;
 * `pivotSILChiediStatoImportFlussoTesoreria`: To get treasuries file processing status;
 * `pivotSILPrenotaExportFlussoRiconciliazione`: To request the export of classifications data;
 * `pivotSILChiediStatoExportFlussoRiconciliazione`: To request the status of classifications export processing;
