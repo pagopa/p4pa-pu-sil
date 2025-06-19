@@ -14,6 +14,7 @@ public class OrganizationApisHolder {
 
   private final OrganizationSearchControllerApi organizationSearchControllerApi;
   private final OrganizationEntityControllerApi organizationEntityControllerApi;
+  private final TaxonomySearchControllerApi taxonomySearchControllerApi;
   private final BrokerEntityControllerApi brokerEntityControllerApi;
   private final BrokerSearchControllerApi brokerSearchControllerApi;
   private final OrgSilServiceEntityControllerApi orgSilServiceEntityControllerApi;
@@ -36,6 +37,7 @@ public class OrganizationApisHolder {
     this.orgSilServiceEntityControllerApi = new OrgSilServiceEntityControllerApi(apiClient);
     this.organizationSearchControllerApi = new OrganizationSearchControllerApi(apiClient);
     this.organizationEntityControllerApi = new OrganizationEntityControllerApi(apiClient);
+    this.taxonomySearchControllerApi = new TaxonomySearchControllerApi(apiClient);
     this.brokerEntityControllerApi = new BrokerEntityControllerApi(apiClient);
     this.brokerSearchControllerApi = new BrokerSearchControllerApi(apiClient);
   }
@@ -54,6 +56,10 @@ public class OrganizationApisHolder {
 
   public OrganizationEntityControllerApi getOrganizationEntityControllerApi(String accessToken) {
     return getApi(accessToken, organizationEntityControllerApi);
+  }
+
+  public TaxonomySearchControllerApi getTaxonomyCodeDtoSearchControllerApi(String accessToken) {
+    return getApi(accessToken, taxonomySearchControllerApi);
   }
 
   public BrokerEntityControllerApi getBrokerEntityControllerApi(String accessToken) {

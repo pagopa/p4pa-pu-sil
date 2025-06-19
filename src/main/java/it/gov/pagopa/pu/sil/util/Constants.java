@@ -17,5 +17,9 @@ public class Constants {
   public static final String ANONYMOUS_FISCAL_CODE = "ANONIMO";
 
   public static final String SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI = "SIL_ID-";
+
+  public static final String SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI = "SIL_ICD-";
+
+  public static final int MAX_CART_SIZE = 5;
 }
 

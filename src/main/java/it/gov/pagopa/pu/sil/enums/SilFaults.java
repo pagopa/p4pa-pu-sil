@@ -20,6 +20,10 @@ public enum SilFaults {
   PAA_DATE_FROM_NON_VALIDO("Data inizio non valida"),
   PAA_DATE_TO_NON_VALIDO("Data fine non valida"),
   PAA_INTERVALLO_DATE_NON_VALIDO("L'intervallo data inizio e data fine non è valido"),
+  PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI("Numero massimo versamenti enti secondari superato"),
+  PAA_ENTE_SECONDARIO_NON_VALIDO("Ente secondario non valido"),
+  PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO("Numero massimo dovuti nel carrello superato"),
+  PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI("Errore recupero dovuti enti secondari"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),

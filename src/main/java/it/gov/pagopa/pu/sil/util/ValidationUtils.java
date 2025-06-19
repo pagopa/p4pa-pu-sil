@@ -10,10 +10,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
-  private static final Pattern DATI_SPECIFICI_RISCOSSIONE_PATTERN = Pattern.compile("^[0129]/\\S{3,138}$");
+  private static final Pattern LEGACY_PAYMENT_METADATA_PATTERN = Pattern.compile("^[0129]/\\S{3,138}$");
+  private static final Pattern LEGACY_PAYMENT_METADATA_SECONDARY_PATTERN = Pattern.compile("^[0129]/(\\d{7}(?:IM|TS|SP|SA|AP))/.{0,128}$");
+
   private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
   private static final Set<String> ISO_COUNTRIES = Set.of(Locale.getISOCountries());
   private static final Pattern PROVINCE_PATTERN = Pattern.compile("^[A-Z]{2}$");
@@ -23,13 +26,25 @@ public class ValidationUtils {
   private static final Pattern FISCAL_CODE_NATURAL_PERSON_PATTERN = Pattern.compile(
     "^(?:[A-Z][AEIOUX][AEIOUX]|[B-DF-HJ-NP-TV-Z]{2}[A-Z]){2}(?:[\\dLMNP-V]{2}(?:[A-EHLMPR-T](?:[04LQ][1-9MNP-V]|[15MR][\\dLMNP-V]|[26NS][0-8LMNP-U])|[DHPS][37PT][0L]|[ACELMRT][37PT][01LM]|[AC-EHLMPR-T][26NS][9V])|(?:[02468LNQSU][048LQU]|[13579MPRTV][26NS])B[26NS][9V])(?:[A-MZ][1-9MNP-V][\\dLMNP-V]{2}|[A-M][0L](?:[1-9MNP-V][\\dLMNP-V]|[0L][1-9MNP-V]))[A-Z]$");
   private static final Pattern FISCAL_CODE_LEGAL_ENTITY_PATTERN = Pattern.compile("^\\d{11}$");
+  private static final Pattern ITALIAN_IBAN_PATTERN = Pattern.compile("^IT\\d{2}[A-Z]\\d{5}\\d{5}[A-Z0-9]{12}$");
 
   private ValidationUtils() {
     // Utility class, no instantiation
   }
 
-  public static boolean isValidDatiSpecificiRiscossione(final String datiSpecificiRiscossione) {
-    return datiSpecificiRiscossione!=null && DATI_SPECIFICI_RISCOSSIONE_PATTERN.matcher(datiSpecificiRiscossione).matches();
+  public static boolean isValidLegacyPaymentMetadata(final String legacyPaymentMetadata) {
+    return legacyPaymentMetadata!=null && LEGACY_PAYMENT_METADATA_PATTERN.matcher(legacyPaymentMetadata).matches();
+  }
+
+  public static boolean isValidLegacyPaymentMetadataSecondary(final String legacyPaymentMetadata) {
+    return legacyPaymentMetadata!=null && LEGACY_PAYMENT_METADATA_SECONDARY_PATTERN.matcher(legacyPaymentMetadata).matches();
+  }
+
+  public static String getTransferCategoryFromLegacyPaymentMetadataSecondary(final String legacyPaymentMetadata) {
+    if(StringUtils.isBlank(legacyPaymentMetadata))
+      return null;
+    Matcher matcher = LEGACY_PAYMENT_METADATA_SECONDARY_PATTERN.matcher(legacyPaymentMetadata);
+    return matcher.matches() ? matcher.group(1) : null;
   }
 
   public static boolean isValidEmail(final String email) {
@@ -77,6 +92,10 @@ public class ValidationUtils {
 
   public static boolean isValidFiscalCodeLegalEntity(final String fiscalCode) {
     return fiscalCode!=null && FISCAL_CODE_LEGAL_ENTITY_PATTERN.matcher(fiscalCode).matches();
+  }
+
+  public static boolean isValidIban(final String iban) {
+    return iban != null && ITALIAN_IBAN_PATTERN.matcher(iban).matches();
   }
 
 }
