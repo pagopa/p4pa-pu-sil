@@ -16,7 +16,7 @@ public class AmountUpdatesLegacyClient {
   }
 
   public Token login(Credentials credentials, String authUrl) {
-    return amountUpdatesApisHolder.getAmountUpdatesLegacyApiClientByBaseUrl(authUrl)
+    return amountUpdatesApisHolder.getAmountUpdatesLegacyApi(null, authUrl)
         .login(credentials);
   }
 }

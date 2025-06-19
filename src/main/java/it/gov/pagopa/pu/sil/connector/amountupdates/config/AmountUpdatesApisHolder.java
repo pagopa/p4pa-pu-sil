@@ -1,45 +1,45 @@
 package it.gov.pagopa.pu.sil.connector.amountupdates.config;
 
 import it.gov.pagopa.amountupdates.legacy.controller.ApiClient;
+import it.gov.pagopa.amountupdates.legacy.controller.BaseApi;
 import it.gov.pagopa.amountupdates.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-@Slf4j
 @Component
 public class AmountUpdatesApisHolder {
-
-  private final RestTemplate restTemplate;
-  private final AmountUpdatesApiClientConfig clientConfig;
-
-  private final Map<String, DefaultApi> amountUpdatesLegacyApiMap = new ConcurrentHashMap<>();
+  private final DefaultApi amountUpdatesLegacyApi;
+  private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
   public AmountUpdatesApisHolder(AmountUpdatesApiClientConfig clientConfig,
                                  RestTemplateBuilder restTemplateBuilder) {
-    this.restTemplate = restTemplateBuilder.build();
-    this.clientConfig = clientConfig;
+    RestTemplate restTemplate = restTemplateBuilder.build();
+    ApiClient apiClient = new ApiClient(restTemplate);
+    apiClient.setBearerToken(bearerTokenHolder::get);
+    apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
+    apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
 
     if (clientConfig.isPrintBodyWhenError()) {
       restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("AMOUNT-UPDATES"));
     }
+    this.amountUpdatesLegacyApi = new DefaultApi(apiClient);
   }
 
-  public DefaultApi getAmountUpdatesLegacyApiClientByBaseUrl(String baseUrl) {
-    return amountUpdatesLegacyApiMap.computeIfAbsent(baseUrl, url -> {
-      ApiClient apiClient = new ApiClient(restTemplate);
-      apiClient.setBasePath(url);
-      apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
-      apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
-      return new DefaultApi(apiClient);
-    });
+  @PreDestroy
+  public void unload() {
+    bearerTokenHolder.remove();
+  }
+
+  public DefaultApi getAmountUpdatesLegacyApi(String accessToken, String serviceUrl) {
+    return getApi(accessToken, serviceUrl, amountUpdatesLegacyApi);
+  }
+
+  private <T extends BaseApi> T getApi(String accessToken, String serviceUrl, T api) {
+    bearerTokenHolder.set(accessToken);
+    api.getApiClient().setBasePath(serviceUrl);
+    return api;
   }
 }
-
-
-

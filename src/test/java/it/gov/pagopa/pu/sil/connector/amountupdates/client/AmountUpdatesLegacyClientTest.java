@@ -40,7 +40,7 @@ class AmountUpdatesLegacyClientTest {
     Credentials credential = new Credentials("username", "password");
     Token expectedToken = new Token();
 
-    Mockito.when(amountUpdatesApisHolderMock.getAmountUpdatesLegacyApiClientByBaseUrl(authUrl))
+    Mockito.when(amountUpdatesApisHolderMock.getAmountUpdatesLegacyApi(null, authUrl))
            .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.login(credential))
            .thenReturn(expectedToken);

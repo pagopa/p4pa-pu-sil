@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.connector.amountupdates.config;
 
 import it.gov.pagopa.amountupdates.legacy.dto.generated.Credentials;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,26 +23,17 @@ class AmountUpdatesApisHolderTest extends BaseApiHolderTest {
   void setUp() {
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    AmountUpdatesApiClientConfig clientConfig = AmountUpdatesApiClientConfig.builder()
-        .baseUrl("http://example.com")
-        .build();
+    AmountUpdatesApiClientConfig clientConfig = new AmountUpdatesApiClientConfig();
     apisHolder = new AmountUpdatesApisHolder(clientConfig, restTemplateBuilderMock);
-  }
-
-  @AfterEach
-  void tearDown() {
-    Mockito.verifyNoMoreInteractions(
-        restTemplateBuilderMock,
-        restTemplateMock
-    );
   }
 
   @Test
   void whenGetInstallmentApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      authUrl -> apisHolder.getAmountUpdatesLegacyApiClientByBaseUrl(authUrl)
-            .login(new Credentials()),
-        new ParameterizedTypeReference<>() {},
-        ()-> {});
+      accessToken -> apisHolder.getAmountUpdatesLegacyApi(accessToken, "http://example.com")
+        .login(new Credentials()),
+      new ParameterizedTypeReference<>() {},
+      apisHolder::unload,
+      AUTH_TYPE.NO_AUTH);
   }
 }
