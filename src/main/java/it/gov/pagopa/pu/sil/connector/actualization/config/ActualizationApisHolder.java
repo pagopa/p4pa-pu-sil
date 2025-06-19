@@ -22,7 +22,7 @@ public class ActualizationApisHolder {
     this.clientConfig = clientConfig;
 
     if (clientConfig.isPrintBodyWhenError()) {
-      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("AMOUNT-UPDATES"));
+      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("ACTUALIZATION"));
     }
   }
 

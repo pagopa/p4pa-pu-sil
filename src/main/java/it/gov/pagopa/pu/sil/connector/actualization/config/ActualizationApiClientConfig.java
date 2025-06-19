@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "rest.amount-updates")
+@ConfigurationProperties(prefix = "rest.actualization")
 @SuperBuilder
 @NoArgsConstructor
 public class ActualizationApiClientConfig extends ApiClientConfig {
