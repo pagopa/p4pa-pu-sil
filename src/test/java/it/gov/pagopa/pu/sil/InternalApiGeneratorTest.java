@@ -1,9 +1,5 @@
 package it.gov.pagopa.pu.sil;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
 import io.github.springwolf.core.asyncapi.schemas.converters.SchemaTitleModelConverter;
 import io.swagger.v3.core.converter.ModelConverters;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +16,11 @@ import org.springframework.test.json.JsonAssert;
 import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,10 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE, addFilters = false)
 @TestPropertySource(properties = {
   "logging.level.org.springdoc.core.utils.SpringDocAnnotationsUtils=OFF",
-  "springwolf.enabled=false"
+  "springwolf.enabled=false",
+  "springdoc.pathsToMatch=/internal/**"
 })
 @Slf4j
-class OpenApiGeneratorTest {
+class InternalApiGeneratorTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -59,7 +61,7 @@ class OpenApiGeneratorTest {
 
     Assertions.assertTrue(openApiResult.startsWith("{\n  \"openapi\" : \"3."));
 
-    Path openApiGeneratedPath = Path.of("openapi/generated.openapi.json");
+    Path openApiGeneratedPath = Path.of("openapi/generated-internal.openapi.json");
     boolean toStore=true;
     if(Files.exists(openApiGeneratedPath)){
       String storedOpenApi = Files.readString(openApiGeneratedPath);
@@ -75,7 +77,7 @@ class OpenApiGeneratorTest {
     }
 
     String gitStatus = execCmd("git", "status");
-    Assertions.assertFalse(gitStatus.contains("openapi/generated.openapi.json"), "Generated OpenApi not committed");
+    Assertions.assertFalse(gitStatus.contains("openapi/generated-internal.openapi.json"), "Generated OpenApi not committed");
   }
 
   public static String execCmd(String... cmd) throws java.io.IOException {

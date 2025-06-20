@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -143,6 +144,29 @@ public class JAXBTransformService {
         log.warn("stripping non valid char [\\0x{}]", Integer.toHexString(current));
     }
     return out.toString();
+  }
+
+  public String getDetailUnmarshalExceptionMessage(ApplicationException unmarshallingException, byte[] xml){
+    String detailErrorMessage = null;
+    try {
+      if (unmarshallingException.getCause()!=null &&
+          unmarshallingException.getCause().getCause() instanceof SAXParseException saxExc) {
+        detailErrorMessage = saxExc.getMessage();
+        String errorLine = new String(xml, StandardCharsets.UTF_8).split("\\n")[saxExc.getLineNumber() - 1];
+        String errorSubstr = errorLine.substring(0, saxExc.getColumnNumber()-1);
+        String field = StringUtils.substringAfter(StringUtils.substringBeforeLast(
+          StringUtils.substringAfterLast(errorSubstr, "<"), ">"),"/");
+        if(StringUtils.isNotBlank(field))
+          detailErrorMessage = "element: "+field+" - "+detailErrorMessage;
+      }
+    }catch(Exception e){
+      log.trace("error setting detailedErrorTagInfo", e);
+    }
+    //fallback in case of errors
+    if(StringUtils.isBlank(detailErrorMessage))
+      detailErrorMessage = Optional.ofNullable(unmarshallingException).map(ApplicationException::getMessage)
+        .orElse("null exception");
+    return detailErrorMessage;
   }
 
 }

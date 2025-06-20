@@ -20,13 +20,13 @@ spring:
             spring.cloud.stream.kafka.binder:
               brokers: "\${KAFKA_BINDER_BROKER:}"
               configuration:
-                sasl.jaas.config: "\${KAFKA_REGISTRY_PRODUCER_SASL_JAAS_CONFIG:}"
+                sasl.jaas.config: "\${KAFKA_REGISTRIES_PRODUCER_SASL_JAAS_CONFIG:}"
                 key.serializer: org.apache.kafka.common.serialization.StringSerializer
       bindings:
         registryProducer-out-0:
           binder: kafka-registry-producer
           content-type: "\${KAFKA_CONTENT_TYPE:application/json}"
-          destination: "\${KAFKA_TOPIC_REGISTRY:p4pa-payhub-registries-evh}"
+          destination: "\${KAFKA_TOPIC_REGISTRIES:p4pa-payhub-registries-evh}"
       kafka:
         binder:
           auto-create-topics: false
@@ -35,18 +35,18 @@ spring:
             session.timeout.ms: "\${KAFKA_CONFIG_SESSION_TIMEOUT_MS:30000}"
             request.timeout.ms: "\${KAFKA_CONFIG_REQUEST_TIMEOUT_MS:60000}"
             metadata.max.age.ms: "\${KAFKA_CONFIG_METADATA_MAX_AGE:180000}"
-            sasl.mechanism: "\${KAFKA_CONFIG_SASL_MECHANISM:}"
-            security.protocol: "\${KAFKA_CONFIG_SECURITY_PROTOCOL:}"
+            sasl.mechanism: "\${KAFKA_CONFIG_SASL_MECHANISM:PLAIN}"
+            security.protocol: "\${KAFKA_CONFIG_SECURITY_PROTOCOL:SASL_SSL}"
             max.request.size: "\${KAFKA_CONFIG_MAX_REQUEST_SIZE:1000000}"
         binders:
           registryProducer-out-0:
             producer:
               configuration:
                 client.id: pu-sil
-                connections.max.idle.ms: "\${KAFKA_REGISTRY_PRODUCER_CONNECTION_MAX_IDLE_TIME:180000}"
-                retry.backoff.ms: "\${KAFKA_REGISTRY_PRODUCER_RETRY_MS:\${KAFKA_RETRY_MS:10000}}"
-                linger.ms: "\${KAFKA_REGISTRY_PRODUCER_LINGER_MS:\${KAFKA_LINGER_MS:2}}"
-                batch.size: "\${KAFKA_REGISTRY_PRODUCER_BATCH_SIZE:\${KAFKA_BATCH_SIZE:16384}}"
+                connections.max.idle.ms: "\${KAFKA_REGISTRIES_PRODUCER_CONNECTION_MAX_IDLE_TIME:180000}"
+                retry.backoff.ms: "\${KAFKA_REGISTRIES_PRODUCER_RETRY_MS:\${KAFKA_RETRY_MS:10000}}"
+                linger.ms: "\${KAFKA_REGISTRIES_PRODUCER_LINGER_MS:\${KAFKA_LINGER_MS:2}}"
+                batch.size: "\${KAFKA_REGISTRIES_PRODUCER_BATCH_SIZE:\${KAFKA_BATCH_SIZE:16384}}"
 
 springwolf:
   docket:
@@ -159,6 +159,10 @@ rest:
       max-attempts: "\${PAGOPA_NODE_CHECKOUT_MAX_ATTEMPTS:3}" # It's counting also the first attempt
       wait-time-millis: "\${PAGOPA_NODE_CHECKOUT_WAIT_TIME_MILLIS:500}"
       print-body-when-error: "\${PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR:true}"
+  actualization:
+    max-attempts: "\${NOTIFICATION_PRICE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${NOTIFICATION_PRICE_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR:true}"
 
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
@@ -170,6 +174,12 @@ cache:
   debtPositionTypeOrg:
     size: "\${CACHE_DEBTPOSITION_TYPE_ORG_SIZE:1000}"
     expire-in: "\${CACHE_DEBTPOSITION_TYPE_ORG_MINUTES:60}"
+  debtPositionType:
+    size: "\${CACHE_DEBTPOSITION_TYPE_SIZE:100}"
+    expire-in: "\${CACHE_DEBTPOSITION_TYPE_MINUTES:60}"
   organization:
     size: "\${CACHE_ORGANIZATION_SIZE:1000}"
     expire-in: "\${CACHE_ORGANIZATION_MINUTES:60}"
+  taxonomy:
+    size: "\${CACHE_TAXONOMY_SIZE:100}"
+    expire-in: "\${CACHE_TAXONOMY_MINUTES:60}"

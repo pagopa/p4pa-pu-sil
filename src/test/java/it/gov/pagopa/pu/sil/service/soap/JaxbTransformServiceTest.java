@@ -1,14 +1,18 @@
 package it.gov.pagopa.pu.sil.service.soap;
 
+import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlusso;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
+import jakarta.xml.bind.UnmarshalException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.xml.sax.SAXParseException;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -17,6 +21,8 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
   classes = {
@@ -33,7 +39,7 @@ class JaxbTransformServiceTest {
     this.podamFactory = TestUtils.getPodamFactory();
   }
 
-  private static final String EXPECTED_RESPONSE_TEMPLATE ="<%s%s><password>%s</password></%s>";
+  private static final String EXPECTED_RESPONSE_TEMPLATE = "<%s%s><password>%s</password></%s>";
   private static final String EXPECTED_NAMESPACE = " xmlns:ns2=\"http://www.regione.veneto.it/pagamenti/ente/\"";
 
   //region Marshalling
@@ -76,7 +82,7 @@ class JaxbTransformServiceTest {
       .getBytes(StandardCharsets.UTF_8);
 
     // when
-    byte[] response = jaxbTransformService.marshallingAsBytes(request, PaaSILAutorizzaImportFlusso.class,rootElement);
+    byte[] response = jaxbTransformService.marshallingAsBytes(request, PaaSILAutorizzaImportFlusso.class, rootElement);
 
     // then
     Assertions.assertEquals(new String(expectedResponse, StandardCharsets.UTF_8), new String(response, StandardCharsets.UTF_8));
@@ -155,7 +161,7 @@ class JaxbTransformServiceTest {
 
     byte[] request = ("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Versamento\n" +
       "\txmlns=\"http://www.regione.veneto.it/schemas/2012/Pagamenti/Ente/\"><versioneOggetto>6.0</versioneOggetto><soggettoPagatore><identificativoUnivocoPagatore><tipoIdentificativoUnivoco>F</tipoIdentificativoUnivoco><codiceIdentificativoUnivoco>TSTTNT80A01H501O</codiceIdentificativoUnivoco></identificativoUnivocoPagatore><anagraficaPagatore>UTENTE TESTER</anagraficaPagatore></soggettoPagatore><datiVersamento><dataEsecuzionePagamento>2025-07-18</dataEsecuzionePagamento><identificativoUnivocoVersamento>010312345678901</identificativoUnivocoVersamento><identificativoUnivocoDovuto>99979588_10</identificativoUnivocoDovuto><importoSingoloVersamento>0.96</importoSingoloVersamento><identificativoTipoDovuto>RESTITUZIONE_FEAGA_FEASR</identificativoTipoDovuto><causaleVersamento>Restituzione PVA: XXXX</causaleVersamento><datiSpecificiRiscossione>9/---</datiSpecificiRiscossione></datiVersamento><azione>I</azione></Versamento>")
-        .getBytes(StandardCharsets.UTF_8);
+      .getBytes(StandardCharsets.UTF_8);
 
     // when
     Versamento response = jaxbTransformService.unmarshalling(request, Versamento.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd");
@@ -219,4 +225,76 @@ class JaxbTransformServiceTest {
 
   //endregion
 
+  //region: getDetailUnmarshalExceptionMessage
+  @Test
+  void getDetailUnmarshalExceptionMessage_WithSAXParseException_ReturnsDetailedMessage() {
+    // given
+    SAXParseException saxParseException = new SAXParseException("Invalid character", null, null, 2, 33);
+    ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error", saxParseException));
+    byte[] xml = ("""
+      <root>
+        <element>Invalid\u000Char</element>
+      </root>""").getBytes();
+
+    // when
+    String result = jaxbTransformService.getDetailUnmarshalExceptionMessage(applicationException, xml);
+
+    // then
+    assertEquals("element: element - Invalid character", result);
+  }
+
+  @Test
+  void getDetailUnmarshalExceptionMessage_WithSAXParseExceptionButNoField_ReturnsMessage() {
+    // given
+    SAXParseException saxParseException = new SAXParseException("Invalid character", null, null, 2, 1);
+    ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error", saxParseException));
+    byte[] xml = ("""
+      <root>
+        <>
+      </root>""").getBytes();
+
+    // when
+    String result = jaxbTransformService.getDetailUnmarshalExceptionMessage(applicationException, xml);
+
+    // then
+    assertEquals("Invalid character", result);
+  }
+
+  @Test
+  void getDetailUnmarshalExceptionMessage_WithNoSAXParseException_ReturnsFallbackMessage() {
+    // given
+    ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error"));
+    byte[] xml = "<root></root>".getBytes();
+
+    // when
+    String result = jaxbTransformService.getDetailUnmarshalExceptionMessage(applicationException, xml);
+
+    // then
+    assertEquals("Unmarshal error", result);
+  }
+
+  @Test
+  void getDetailUnmarshalExceptionMessage_WithNullException_ReturnsNull() {
+    // when
+    String result = jaxbTransformService.getDetailUnmarshalExceptionMessage(null, null);
+
+    // then
+    assertEquals("null exception", result);
+  }
+
+  @Test
+  void getDetailUnmarshalExceptionMessage_WithErrorHandling_ReturnsFallbackMessage() {
+    // given
+    ApplicationException applicationException = Mockito.mock(ApplicationException.class);
+    Mockito.when(applicationException.getCause()).thenThrow(new RuntimeException("Unexpected error"));
+    Mockito.when(applicationException.getMessage()).thenReturn("exception message");
+    byte[] xml = "<root></root>".getBytes();
+
+    // when
+    String result = jaxbTransformService.getDetailUnmarshalExceptionMessage(applicationException, xml);
+
+    // then
+    assertEquals("exception message", result);
+  }
+  //endregion
 }
