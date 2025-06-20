@@ -68,6 +68,14 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  public static Long getOrganizationIdFromOrgFiscalCode(UserInfo loggedUser, String organizationFiscalCode) {
+    if(loggedUser == null || organizationFiscalCode == null) {
+      return null;
+    }
+    return getUserOrganizationRolesFromOrgFiscalCode(organizationFiscalCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
+      .orElse(null);
+  }
+
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
     throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
@@ -85,4 +93,9 @@ public class AuthorizationService {
       .findFirst();
   }
 
+  private static Optional<UserOrganizationRoles> getUserOrganizationRolesFromOrgFiscalCode(String organizationFiscalCode, UserInfo loggedUser) {
+    return loggedUser.getOrganizations().stream()
+      .filter(o -> organizationFiscalCode.equals(o.getOrganizationFiscalCode()) && !CollectionUtils.isEmpty(o.getRoles()))
+      .findFirst();
+  }
 }
