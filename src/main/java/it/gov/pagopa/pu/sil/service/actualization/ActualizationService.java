@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 
 public class ActualizationService {
-  private static final String AUTH_CONFIG = "legacyBasic";
   private final OrgSilServiceComponent orgSilServiceComponent;
 
   public ActualizationService(OrgSilServiceComponent orgSilServiceComponent) {
