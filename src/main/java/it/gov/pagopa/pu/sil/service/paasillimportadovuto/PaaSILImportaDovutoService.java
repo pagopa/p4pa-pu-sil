@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service.paasillimportadovuto;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
@@ -16,7 +16,7 @@ import java.util.Optional;
 @Slf4j
 public class PaaSILImportaDovutoService {
 
-  public Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> paaSILImportaDovuto(UserInfo userInfo, String orgIpaCode, PaaSILImportaDovuto request) {
+  public Triple<PaaSILImportaDovutoRisposta, String, RegistryOutcome> paaSILImportaDovuto(UserInfo userInfo, String orgIpaCode, PaaSILImportaDovuto request) {
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
@@ -30,8 +30,8 @@ public class PaaSILImportaDovutoService {
 
     //TODO P4ADEV-3015..3019: implement business logic
     String iuv = "iuv";
-    response.setEsito(SilOutcome.OK.name());
-    return Triple.of(response, iuv, SilOutcome.OK);
+    response.setEsito(RegistryOutcome.OK.getValue());
+    return Triple.of(response, iuv, RegistryOutcome.OK);
   }
 }
 

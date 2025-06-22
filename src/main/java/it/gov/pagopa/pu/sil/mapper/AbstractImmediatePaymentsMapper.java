@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
@@ -29,9 +29,9 @@ abstract class AbstractImmediatePaymentsMapper {
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
 
-  protected Triple<List<DebtPositionDTO>, SilFaults, String> dovutiMapper(RegistrySilEventType operationType, Dovuti dovutiObj, Organization organization, String accessToken){
-    if(!RegistrySilEventType.paaSILInviaDovuti.equals(operationType) &&
-      !RegistrySilEventType.paaSILInviaCarrelloDovuti.equals(operationType)){
+  protected Triple<List<DebtPositionDTO>, SilFaults, String> dovutiMapper(RegistryEventType operationType, Dovuti dovutiObj, Organization organization, String accessToken){
+    if(!RegistryEventType.paaSILInviaDovuti.equals(operationType) &&
+      !RegistryEventType.paaSILInviaCarrelloDovuti.equals(operationType)){
       throw new ApplicationException("invalid operation type: " + operationType);
     }
     if (StringUtils.isNotBlank(dovutiObj.getDatiVersamento().getIdentificativoUnivocoVersamento())) {
@@ -85,7 +85,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .build();
   }
 
-  protected Pair<SilFaults, String> fillAndValidateVersamentoFieldsOfDebtPosition(RegistrySilEventType operationType, int idx,
+  protected Pair<SilFaults, String> fillAndValidateVersamentoFieldsOfDebtPosition(RegistryEventType operationType, int idx,
                                                                                   DebtPositionDTO debtPosition, PersonDTO debtor,
                                                                                   Organization org, CtDatiSingoloVersamentoDovuti versamento,
                                                                                   String cartId, String accessToken) {
@@ -109,7 +109,7 @@ abstract class AbstractImmediatePaymentsMapper {
 
     Long amount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(versamento.getImportoSingoloVersamento());
 
-    String sourceFlowName = operationType.equals(RegistrySilEventType.paaSILInviaCarrelloDovuti) ?
+    String sourceFlowName = operationType.equals(RegistryEventType.paaSILInviaCarrelloDovuti) ?
       Constants.SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI + cartId :
       Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + cartId;
 
