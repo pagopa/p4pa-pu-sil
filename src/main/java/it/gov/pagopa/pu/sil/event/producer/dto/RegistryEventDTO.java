@@ -1,5 +1,8 @@
 package it.gov.pagopa.pu.sil.event.producer.dto;
 
+import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,10 +24,10 @@ public class RegistryEventDTO {
   private String orgFiscalCode;
   private String iuv;
   private String nav;
-  private String eventType;
-  private String eventSubType;
+  private RegistryEventType eventType;
+  private RegistryEventSubType eventSubType;
   private String requestorId;
   private String grantorId;
-  private String outcome;
+  private RegistryOutcome outcome;
   private String body;
 }

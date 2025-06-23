@@ -2,11 +2,12 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
@@ -84,13 +85,15 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILChiediStatoImportFlusso");
 
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.paaSILChiediStatoImportFlusso)
+      .loggedUser(userInfo)
+      .build();
+
     return registryLogger.execute(
-      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
-      RegistrySilEventType.paaSILChiediStatoImportFlusso,
-      null,
+      contextData,
       request,
-      userInfo,
-      null,
       () -> {
         PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         request,
@@ -104,7 +107,7 @@ public class PuForOrganizationPaymentsEndpoint {
         response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
         response.setUrlFileIUV(processingStatusDTO.getUrlImported());
         response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
-        return Triple.of(response, null, SilOutcome.OK);
+        return Triple.of(response, null, RegistryOutcome.OK);
       },
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediStatoImportFlussoRisposta(),
@@ -112,9 +115,7 @@ public class PuForOrganizationPaymentsEndpoint {
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR
-      ),
-      null,
-      null
+      )
     );
   }
 
@@ -130,13 +131,15 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILAutorizzaImportFlusso");
 
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.paaSILAutorizzaImportFlusso)
+      .loggedUser(userInfo)
+      .build();
+
     return registryLogger.execute(
-      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
-      RegistrySilEventType.paaSILAutorizzaImportFlusso,
-      null,
+      contextData,
       request,
-      userInfo,
-      null,
       () -> {
         Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
           userInfo,
@@ -147,7 +150,7 @@ public class PuForOrganizationPaymentsEndpoint {
         PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
         response.setRequestToken(String.valueOf(result.getLeft()));
         response.setUploadUrl(result.getRight());
-        return Triple.of(response, null, SilOutcome.OK);
+        return Triple.of(response, null, RegistryOutcome.OK);
       },
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILAutorizzaImportFlussoRisposta(),
@@ -155,9 +158,7 @@ public class PuForOrganizationPaymentsEndpoint {
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR
-      ),
-      null,
-      null
+      )
     );
   }
 
@@ -167,20 +168,22 @@ public class PuForOrganizationPaymentsEndpoint {
     @RequestPayload PaaSILImportaDovuto request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
-    response.setEsito(SilOutcome.KO.name());
+    response.setEsito(RegistryOutcome.KO.getValue());
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
       IntestazionePPT.class,
       IntestazionePPT::getCodIpaEnte,
       "paaSILImportaDovuto");
-    //write the request/response to the registry, and execute the service
+
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.paaSILImportaDovuto)
+      .loggedUser(userInfo)
+      .build();
+
     return registryLogger.execute(
-      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
-      RegistrySilEventType.paaSILImportaDovuto,
-      null,
+      contextData,
       request,
-      userInfo,
-      null,
       () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         response,
@@ -207,14 +210,15 @@ public class PuForOrganizationPaymentsEndpoint {
       "paaSILInviaDovuti");
     UserInfo userInfo = SecurityUtils.getLoggedUser();
 
-    //write the request/response to the registry, and execute the service
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.paaSILInviaDovuti)
+      .loggedUser(userInfo)
+      .build();
+
     return registryLogger.execute(
-      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
-      RegistrySilEventType.paaSILInviaDovuti,
-      null,
+      contextData,
       request,
-      userInfo,
-      null,
       () -> paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaDovutiRisposta(),
@@ -239,14 +243,16 @@ public class PuForOrganizationPaymentsEndpoint {
       "paaSILInviaCarrelloDovuti");
     UserInfo userInfo = SecurityUtils.getLoggedUser();
 
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.paaSILInviaCarrelloDovuti)
+      .loggedUser(userInfo)
+      .build();
+
     //write the request/response to the registry, and execute the service
     return registryLogger.execute(
-      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
-      RegistrySilEventType.paaSILInviaCarrelloDovuti,
-      null,
+      contextData,
       request,
-      userInfo,
-      null,
       () -> paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaCarrelloDovutiRisposta(),

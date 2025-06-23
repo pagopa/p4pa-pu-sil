@@ -2,8 +2,8 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
@@ -34,13 +34,13 @@ class PaaSILInviaDovutiServiceTest {
     PaaSILInviaDovuti request = podamFactory.manufacturePojo(PaaSILInviaDovuti.class);
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, SilOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request);
+    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request);
 
     //verify
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(SilOutcome.OK, response.getRight());
+    Assertions.assertEquals(RegistryOutcome.OK, response.getRight());
     Assertions.assertNotNull(response.getLeft());
-    Assertions.assertEquals(SilOutcome.OK.name(), response.getLeft().getEsito());
+    Assertions.assertEquals(RegistryOutcome.OK.getValue(), response.getLeft().getEsito());
     Assertions.assertNull(response.getLeft().getFault());
     Assertions.assertNotNull(response.getMiddle());
   }
@@ -53,13 +53,13 @@ class PaaSILInviaDovutiServiceTest {
     PaaSILInviaDovuti request = podamFactory.manufacturePojo(PaaSILInviaDovuti.class);
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, SilOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request);
+    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request);
 
     //verify
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(SilOutcome.KO, response.getRight());
+    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
     Assertions.assertNotNull(response.getLeft());
-    Assertions.assertEquals(SilOutcome.KO.name(), response.getLeft().getEsito());
+    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
     Assertions.assertNotNull(response.getLeft().getFault());
     Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.name(), response.getLeft().getFault().getFaultCode());
     Assertions.assertNull(response.getMiddle());

@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -93,7 +93,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     List<DebtPositionDTO> debtPositionList = new ArrayList<>();
     for (Dovuti dovutiObj : dovutiList) {
       Triple<List<DebtPositionDTO>, SilFaults, String> result = dovutiMapper(
-        RegistrySilEventType.paaSILInviaCarrelloDovuti, dovutiObj, organization, accessToken);
+        RegistryEventType.paaSILInviaCarrelloDovuti, dovutiObj, organization, accessToken);
       if (result.getMiddle() != null) {
         return Triple.of(null, result.getMiddle(), result.getRight());
       } else {
