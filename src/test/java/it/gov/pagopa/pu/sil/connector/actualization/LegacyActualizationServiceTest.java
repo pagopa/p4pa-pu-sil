@@ -1,9 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.actualization;
 
-import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
-import it.gov.pagopa.actualization.legacy.dto.generated.Token;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyActualizationClient;
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
@@ -34,24 +32,6 @@ class LegacyActualizationServiceTest {
   @AfterEach
   void tearDown() {
     Mockito.verifyNoMoreInteractions(legacyActualizationClientMock, amountUpdatesMapperMock);
-  }
-
-  @Test
-  void whenLoginThenReturnToken() {
-    // Given
-    String authUrl = "http://example.com";
-    Credentials credentials = new Credentials()
-      .username("testUser").password("testPassword");
-    Token expectedToken = new Token();
-
-    Mockito.when(legacyActualizationClientMock.login(credentials, authUrl))
-           .thenReturn(expectedToken);
-
-    // When
-    Token result = legacyActualizationService.login(credentials, authUrl);
-
-    // Then
-    assertSame(expectedToken, result);
   }
 
   @Test
