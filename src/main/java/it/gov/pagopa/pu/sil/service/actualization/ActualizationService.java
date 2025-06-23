@@ -6,6 +6,11 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponen
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
 public class ActualizationService {
   private final OrgSilServiceComponent orgSilServiceComponent;
 
