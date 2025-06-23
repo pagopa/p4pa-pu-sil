@@ -2,13 +2,13 @@ import java.util.*
 
 plugins {
   java
-  id("org.springframework.boot") version "3.5.0"
+  id("org.springframework.boot") version "3.5.3"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "6.1.0.5360"
+  id("org.sonarqube") version "6.2.0.5505"
   id("com.github.ben-manes.versions") version "0.52.0"
   id("org.openapi.generator") version "7.13.0"
-  id("org.ajoberstar.grgit") version "5.3.0"
+  id("org.ajoberstar.grgit") version "5.3.2"
   id("com.gorylenko.gradle-git-properties") version "2.5.0"
   //code generation for soap webservices classes (via  jaxb)
   id("com.intershop.gradle.jaxb") version "7.0.1"
@@ -51,7 +51,7 @@ val jaxbApiVersion = "4.0.2"
 val activationVersion = "2.1.3"
 val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.1"
-val caffeineVersion = "3.2.0"
+val caffeineVersion = "3.2.1"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -155,6 +155,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateDEBTPOSITIONS",
     "openApiGenerateORGANIZATION",
     "openApiGenerateREGISTRIES",
+    "openApiGenerateWORKFLOWHUB",
     "openApiGenerateNodeCheckout",
     "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
@@ -350,6 +351,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "serializableModel" to "true",
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
       "generateConstructorWithAllArgs" to "true",
@@ -381,6 +383,45 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "generatedConstructorWithRequiredArgs" to "true",
     "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
   ))
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateWORKFLOWHUB") {
+  group = "AutomaticallyGeneratedCode"
+  description = "openapi"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-workflow-hub/refs/heads/$targetEnv/openapi/p4pa-workflow-hub.openapi.yaml")
+  outputDir.set("$projectDir/build/generated")
+  invokerPackage.set("it.gov.pagopa.pu.workflowhub.generated")
+  apiPackage.set("it.gov.pagopa.pu.workflowhub.controller.generated")
+  modelPackage.set("it.gov.pagopa.pu.workflowhub.dto.generated")
+  typeMappings.set(
+    mapOf(
+      "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
+      "IngestionFlowFileType" to "String",
+      "WfExecutionConfig" to "com.fasterxml.jackson.databind.JsonNode",
+      "ExportFileType" to "String",
+      "WorkflowTypeOrg" to "String",
+      "ScheduleEnum" to "String",
+      "WorkflowExecutionStatus" to "String"
+    )
+  )
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "serializableModel" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    )
+  )
   library.set("resttemplate")
 }
 
