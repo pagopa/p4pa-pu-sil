@@ -33,11 +33,11 @@ class OrgSilServiceComponentTest {
   @Test
   void givenValidOrgSilServiceIdWhenGetOrgSilServiceByIdThenOk() {
     // Given
-    String orgsilserviceid = "ORGSILSERVICEID";
+    Long orgsilserviceid = 123L;
     String accessToken = "ACCESSTOKEN";
     OrgSilService expectedResult = new OrgSilService();
 
-    Mockito.when(orgSilServiceEntityClientMock.findById(orgsilserviceid, accessToken))
+    Mockito.when(orgSilServiceEntityClientMock.findById(String.valueOf(orgsilserviceid), accessToken))
       .thenReturn(expectedResult);
 
     // When
@@ -51,10 +51,10 @@ class OrgSilServiceComponentTest {
   @Test
   void givenNonExistentOrgSilServiceIdWhenGetOrgSilServiceByIdThenEmpty() {
     // Given
-    String orgsilserviceid = "ORGSILSERVICEID";
+    Long orgsilserviceid = 123L;
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(orgSilServiceEntityClientMock.findById(orgsilserviceid, accessToken))
+    Mockito.when(orgSilServiceEntityClientMock.findById(String.valueOf(orgsilserviceid), accessToken))
       .thenReturn(null);
 
     // When
