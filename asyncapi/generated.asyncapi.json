@@ -52,10 +52,10 @@
             "format": "date-time"
           },
           "eventSubType": {
-            "type": "string"
+            "$ref": "#/components/schemas/RegistryEventSubType"
           },
           "eventType": {
-            "type": "string"
+            "$ref": "#/components/schemas/RegistryEventType"
           },
           "grantorId": {
             "type": "string"
@@ -70,7 +70,7 @@
             "type": "string"
           },
           "outcome": {
-            "type": "string"
+            "$ref": "#/components/schemas/RegistryOutcome"
           },
           "registryId": {
             "type": "string"
@@ -93,19 +93,71 @@
             "body": "string",
             "brokerFiscalCode": "string",
             "dateTime": "2015-07-20T15:49:04-07:00",
-            "eventSubType": "string",
-            "eventType": "string",
+            "eventSubType": "REQ",
+            "eventType": "paaSILAutorizzaImportFlusso",
             "grantorId": "string",
             "iuv": "string",
             "nav": "string",
             "orgFiscalCode": "string",
-            "outcome": "string",
+            "outcome": "OK",
             "registryId": "string",
             "registryOrigin": "string",
             "registryType": "string",
             "requestorId": "string",
             "traceId": "string"
           }
+        ]
+      },
+      "RegistryEventSubType": {
+        "title": "RegistryEventSubType",
+        "type": "string",
+        "enum": [
+          "REQ",
+          "RESP"
+        ],
+        "examples": [
+          "\"REQ\""
+        ]
+      },
+      "RegistryEventType": {
+        "title": "RegistryEventType",
+        "type": "string",
+        "enum": [
+          "paaSILAutorizzaImportFlusso",
+          "paaSILChiediStatoImportFlusso",
+          "paaSILImportaDovuto",
+          "paaSILPrenotaExportFlusso",
+          "paaSILPrenotaExportFlussoIncrementaleConRicevuta",
+          "paaSILChiediStatoExportFlusso",
+          "paaSILInviaDovuti",
+          "paaSILVerificaAvviso",
+          "paaSILChiediPagati",
+          "paaSILChiediPagatiConRicevuta",
+          "paaSILInviaCarrelloDovuti",
+          "paaSILChiediEsitoCarrelloDovuti",
+          "pivotSILAutorizzaImportFlusso",
+          "pivotSILChiediStatoImportFlusso",
+          "pivotSILAutorizzaImportFlussoTesoreria",
+          "pivotSILChiediStatoImportFlussoTesoreria",
+          "pivotSILPrenotaExportFlussoRiconciliazione",
+          "pivotSILChiediStatoExportFlussoRiconciliazione",
+          "pivotSILChiediAccertamento",
+          "attualizzazioneImporti",
+          "notificaPagamento"
+        ],
+        "examples": [
+          "\"paaSILAutorizzaImportFlusso\""
+        ]
+      },
+      "RegistryOutcome": {
+        "title": "RegistryOutcome",
+        "type": "string",
+        "enum": [
+          "OK",
+          "KO"
+        ],
+        "examples": [
+          "\"OK\""
         ]
       }
     },

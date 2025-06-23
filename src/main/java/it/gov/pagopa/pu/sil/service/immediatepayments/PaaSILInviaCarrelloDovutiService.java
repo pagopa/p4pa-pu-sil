@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
-import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
@@ -19,7 +19,7 @@ import java.util.Optional;
 @Slf4j
 public class PaaSILInviaCarrelloDovutiService {
 
-  public Triple<PaaSILInviaCarrelloDovutiRisposta, String, SilOutcome> paaSILInviaCarrelloDovuti(UserInfo userInfo, String orgIpaCode, PaaSILInviaCarrelloDovuti request) {
+  public Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> paaSILInviaCarrelloDovuti(UserInfo userInfo, String orgIpaCode, PaaSILInviaCarrelloDovuti request) {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
@@ -30,15 +30,15 @@ public class PaaSILInviaCarrelloDovutiService {
     //TODO P4ADEV-3076: unmarshall the request
 
     //TODO P4ADEV-3078: implement business logic
-    String iuv = StringUtils.joinWith(RegistryLogger.IUV_SEPARATOR,"iuv1", "iuv2", "iuv3");
+    String iuv = StringUtils.joinWith(Utilities.IUV_SEPARATOR,"iuv1", "iuv2", "iuv3");
     PaaSILInviaCarrelloDovutiRisposta response = new PaaSILInviaCarrelloDovutiRisposta();
-    response.setEsito(SilOutcome.OK.name());
-    return Triple.of(response, iuv, SilOutcome.OK);
+    response.setEsito(RegistryOutcome.OK.getValue());
+    return Triple.of(response, iuv, RegistryOutcome.OK);
   }
 
-  private Triple<PaaSILInviaCarrelloDovutiRisposta, String, SilOutcome> setFaultResponse(SilFaults fault, String description) {
+  private Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> setFaultResponse(SilFaults fault, String description) {
     PaaSILInviaCarrelloDovutiRisposta response = new PaaSILInviaCarrelloDovutiRisposta();
-    response.setEsito(SilOutcome.KO.name());
-    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, SilOutcome.KO);
+    response.setEsito(RegistryOutcome.KO.getValue());
+    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, RegistryOutcome.KO);
   }
 }

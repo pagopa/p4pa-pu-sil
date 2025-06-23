@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
@@ -17,7 +17,7 @@ import java.util.Optional;
 @Slf4j
 public class PaaSILInviaDovutiService {
 
-  public Triple<PaaSILInviaDovutiRisposta, String, SilOutcome> paaSILInviaDovuti(UserInfo userInfo, String orgIpaCode, PaaSILInviaDovuti request) {
+  public Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> paaSILInviaDovuti(UserInfo userInfo, String orgIpaCode, PaaSILInviaDovuti request) {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
@@ -30,13 +30,13 @@ public class PaaSILInviaDovutiService {
     //TODO P4ADEV-3078: implement business logic
     String iuv = "iuv";
     PaaSILInviaDovutiRisposta response = new PaaSILInviaDovutiRisposta();
-    response.setEsito(SilOutcome.OK.name());
-    return Triple.of(response, iuv, SilOutcome.OK);
+    response.setEsito(RegistryOutcome.OK.getValue());
+    return Triple.of(response, iuv, RegistryOutcome.OK);
   }
 
-  private Triple<PaaSILInviaDovutiRisposta, String, SilOutcome> setFaultResponse(SilFaults fault, String description) {
+  private Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> setFaultResponse(SilFaults fault, String description) {
     PaaSILInviaDovutiRisposta response = new PaaSILInviaDovutiRisposta();
-    response.setEsito(SilOutcome.KO.name());
-    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, SilOutcome.KO);
+    response.setEsito(RegistryOutcome.KO.getValue());
+    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, RegistryOutcome.KO);
   }
 }

@@ -47,9 +47,9 @@ See [Postman collection](/postman/p4pa-pu-sil.postman_collection.json) and [Post
 * `paaSILVerificaAvviso`: To obtain a URL towards pagoPa checkout to pay a debt position already stored in PU.
 
 ### 📌 Relevant PagamentiTelematiciPagatiRiconciliati SOAP endpoints
-* `pivotSILAutorizzaImportFlusso`: To retrieve a URl (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing payment notifications to import;
+* `pivotSILAutorizzaImportFlusso`: To retrieve a URL (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing payment notifications to import;
 * `pivotSILChiediStatoImportFlusso`: To get payment notifications file processing status;
-* `pivotSILAutorizzaImportFlussoTesoreria`: To retrieve a URl (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing treasuries to import;
+* `pivotSILAutorizzaImportFlussoTesoreria`: To retrieve a URL (towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare)) where to upload a file containing treasuries to import;
 * `pivotSILChiediStatoImportFlussoTesoreria`: To get treasuries file processing status;
 * `pivotSILPrenotaExportFlussoRiconciliazione`: To request the export of classifications data;
 * `pivotSILChiediStatoExportFlussoRiconciliazione`: To request the status of classifications export processing;
@@ -194,26 +194,26 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                | true    |
 
 ##### 🌀 KAFKA
-| ENV                                              | DESCRIPTION                                                        | DEFAULT                    |
-|--------------------------------------------------|--------------------------------------------------------------------|----------------------------|
-| KAFKA_BINDER_BROKER                              | Comma separated list of brokers to which the Kafka binder connects |                            |
-| KAFKA_CONFIG_HEARTBEAT_INTERVAL_MS               | Hearth beat interval (milliseconds)                                | 3000                       |
-| KAFKA_CONFIG_SESSION_TIMEOUT_MS                  | Session timeout (milliseconds)                                     | 30000                      |
-| KAFKA_CONFIG_REQUEST_TIMEOUT_MS                  | Request timeout (milliseconds)                                     | 60000                      |
-| KAFKA_CONFIG_METADATA_MAX_AGE                    | Metadata max age (milliseconds)                                    | 180000                     |
-| KAFKA_CONFIG_SASL_MECHANISM                      | SASL mechanism                                                     |                            |
-| KAFKA_CONFIG_SECURITY_PROTOCOL                   | Security protocol                                                  |                            |
-| KAFKA_CONFIG_MAX_REQUEST_SIZE                    | Max request size                                                   | 1000000                    |
+| ENV                                              | DESCRIPTION                                                        | DEFAULT   |
+|--------------------------------------------------|--------------------------------------------------------------------|-----------|
+| KAFKA_BINDER_BROKER                              | Comma separated list of brokers to which the Kafka binder connects |           |
+| KAFKA_CONFIG_HEARTBEAT_INTERVAL_MS               | Hearth beat interval (milliseconds)                                | 3000      |
+| KAFKA_CONFIG_SESSION_TIMEOUT_MS                  | Session timeout (milliseconds)                                     | 30000     |
+| KAFKA_CONFIG_REQUEST_TIMEOUT_MS                  | Request timeout (milliseconds)                                     | 60000     |
+| KAFKA_CONFIG_METADATA_MAX_AGE                    | Metadata max age (milliseconds)                                    | 180000    |
+| KAFKA_CONFIG_SASL_MECHANISM                      | SASL mechanism                                                     | PLAIN     |
+| KAFKA_CONFIG_SECURITY_PROTOCOL                   | Security protocol                                                  | SASL_SSL  |
+| KAFKA_CONFIG_MAX_REQUEST_SIZE                    | Max request size                                                   | 1000000   |
 
 ###### 📤 KAFKA PRODUCERS
-| ENV                                              | DESCRIPTION                                       | DEFAULT                    |
-|--------------------------------------------------|---------------------------------------------------|----------------------------|
-| KAFKA_TOPIC_REGISTRY                             | Topic where to publish registry events            | p4pa-payhub-registries-evh |
-| KAFKA_REGISTRY_PRODUCER_SASL_JAAS_CONFIG         | JAAS Config string used to perform authentication |                            |
-| KAFKA_REGISTRY_PRODUCER_CONNECTION_MAX_IDLE_TIME | Max producer idle time (milliseconds)             | 180000                     |
-| KAFKA_REGISTRY_PRODUCER_RETRY_MS                 | Producer retry waiting time (milliseconds)        | 10000                      |
-| KAFKA_REGISTRY_PRODUCER_LINGER_MS                | Producer linger time (milliseconds)               | 2                          |
-| KAFKA_REGISTRY_PRODUCER_BATCH_SIZE               | Producer batch size                               | 16384                      |
+| ENV                                                | DESCRIPTION                                       | DEFAULT                    |
+|----------------------------------------------------|---------------------------------------------------|----------------------------|
+| KAFKA_TOPIC_REGISTRIES                             | Topic where to publish registry events            | p4pa-payhub-registries-evh |
+| KAFKA_REGISTRIES_PRODUCER_SASL_JAAS_CONFIG         | JAAS Config string used to perform authentication |                            |
+| KAFKA_REGISTRIES_PRODUCER_CONNECTION_MAX_IDLE_TIME | Max producer idle time (milliseconds)             | 180000                     |
+| KAFKA_REGISTRIES_PRODUCER_RETRY_MS                 | Producer retry waiting time (milliseconds)        | 10000                      |
+| KAFKA_REGISTRIES_PRODUCER_LINGER_MS                | Producer linger time (milliseconds)               | 2                          |
+| KAFKA_REGISTRIES_PRODUCER_BATCH_SIZE               | Producer batch size                               | 16384                      |
 
 #### 💼 Business logic
 | ENV                        | DESCRIPTION                                                                                | DEFAULT |

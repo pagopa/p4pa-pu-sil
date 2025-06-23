@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.service.paasilimportadovuto;
 
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
@@ -41,13 +41,13 @@ class PaaSILImportaDovutoServiceTest {
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
 
     //when
-    Triple<PaaSILImportaDovutoRisposta, String, SilOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
+    Triple<PaaSILImportaDovutoRisposta, String, RegistryOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request);
 
     //verify
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(SilOutcome.OK, response.getRight());
+    Assertions.assertEquals(RegistryOutcome.OK, response.getRight());
     Assertions.assertNotNull(response.getLeft());
-    Assertions.assertEquals(SilOutcome.OK.name(), response.getLeft().getEsito());
+    Assertions.assertEquals(RegistryOutcome.OK.getValue(), response.getLeft().getEsito());
     Assertions.assertNull(response.getLeft().getFault());
     Assertions.assertNotNull(response.getMiddle());
   }

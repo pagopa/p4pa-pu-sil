@@ -97,16 +97,37 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
-  /internal/example:
+  /internal/orgSilService/{orgSilServiceId}/amount-updates:
     get:
       tags:
-        - Example
-      summary: get example
-      description: get example that will be removed in the future
-      operationId: getExample
+        - AmountUpdates
+      summary: get amount updates
+      description: get amount updates
+      operationId: getAmountUpdates
+      parameters:
+        - name: orgSilServiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: orgFiscalCode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: nav
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AmountUpdatesDTO'
         '400':
           description: Invalid request
         '403':
@@ -119,6 +140,48 @@ security:
   - BearerAuth: []
 components:
   schemas:
+    AmountUpdatesDTO:
+      type: object
+      properties:
+        outcome:
+          type: string
+          enum:
+            - OK
+            - KO
+        updatedAmount:
+          type: integer
+          format: int64
+          description: updated amount (in euro cents), if the invocation was successful
+        balance:
+          type: string
+          description: updated balance envelope string, if service active, if successful invocation and balance envelope returned from discounting service
+        errorCode:
+          type: string
+          description: Error code in case of KO outcome
+        errorDescription:
+          type: string
+          description: Error description in case of KO outcome
+        isBlockingError:
+          type: boolean
+          description: Indicates if the error is blocking or not and whether the error is blocking for payment purposes
+        nav:
+          type: string
+          description: Debt Position unique number
+        iun:
+          type: string
+          description: Unique identifier of the notification
+        notificationFee:
+          type: integer
+          format: int64
+          description: Notification fee amount (in euro cents)
+        displayDate:
+          type: string
+          format: date-time
+          description: date of ISO 8601 display of the notification by the recipient
+        completionDeadlineDate:
+          type: string
+          format: date-time
+          description: ISO 8601 date of completion due to expiry of deadline
     PuSilErrorDTO:
       type: object
       required:

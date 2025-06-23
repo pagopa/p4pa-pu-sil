@@ -1,10 +1,10 @@
-package it.gov.pagopa.pu.sil.enums;
+package it.gov.pagopa.pu.sil.registry;
 
 import lombok.Getter;
 
 @Getter
 @SuppressWarnings("java:S115") // Suppressing constant naming warning: this is required to match with the api name
-public enum RegistrySilEventType {
+public enum RegistryEventType {
 
   //API "opzione 1" backward compatible with MyPay - MyPivot
   paaSILAutorizzaImportFlusso(true),
@@ -31,7 +31,7 @@ public enum RegistrySilEventType {
 
   private final boolean exposedByPU;
 
-  RegistrySilEventType(boolean exposedByPU) {
+  RegistryEventType(boolean exposedByPU) {
     this.exposedByPU = exposedByPU;
   }
 
