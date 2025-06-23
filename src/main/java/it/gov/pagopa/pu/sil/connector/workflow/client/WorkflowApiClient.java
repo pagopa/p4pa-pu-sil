@@ -24,7 +24,7 @@ public class WorkflowApiClient {
       if (e.getStatusCode().is5xxServerError()) {
         throw e;
       } else {
-        return "WORFLOW_" + (e.getStatusCode() instanceof HttpStatus status
+        return "WORKFLOW_" + (e.getStatusCode() instanceof HttpStatus status
           ? status.name()
           : String.valueOf(e.getStatusCode().value()));
       }

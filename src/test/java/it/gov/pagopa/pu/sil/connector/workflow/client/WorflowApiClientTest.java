@@ -1,11 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.workflow.client;
 
-import it.gov.pagopa.pu.debtpositions.connector.workflow.config.WorkflowApisHolder;
-import it.gov.pagopa.pu.debtpositions.dto.WfExecutionParameters;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.workflowhub.controller.generated.DebtPositionApi;
-import it.gov.pagopa.pu.workflowhub.dto.generated.PaymentEventType;
-import it.gov.pagopa.pu.workflowhub.dto.generated.WorkflowCreatedDTO;
+import it.gov.pagopa.pu.sil.connector.workflow.config.WorkflowApisHolder;
+import it.gov.pagopa.pu.workflowhub.controller.generated.WorkflowApi;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +10,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class WorflowApiClientTest {
   @Mock
   private WorkflowApisHolder workflowApisHolderMock;
   @Mock
-  private DebtPositionApi debtPositionApiMock;
+  private WorkflowApi workflowApiMock;
 
   private WorkflowApiClient workflowApiClient;
 
@@ -37,30 +35,55 @@ class WorflowApiClientTest {
   }
 
   @Test
-  void whenHandleDpSyncThenInvokeWithAccessToken() {
+  void givenValidIdWhenWaitWorkflowCompletionThenOk() {
     // Given
     String accessToken = "ACCESSTOKEN";
-    DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
-    Boolean massive = Boolean.TRUE;
-    Boolean partialChange = Boolean.FALSE;
-    WfExecutionParameters wfExecutionParameters = WfExecutionParameters.builder()
-      .massive(massive)
-      .partialChange(partialChange)
-      .build();
-    PaymentEventType paymentEventType = PaymentEventType.DP_CREATED;
-    String eventDescription = "EVENTDESCRIPTION";
-    WorkflowCreatedDTO expectedResult = new WorkflowCreatedDTO("1", "runId");
+    String workflowId = "1234";
+    String expectedState = "WORFLOW_OK";
 
-    Mockito.when(workflowApisHolderMock.getDebtPositionApi(accessToken))
-      .thenReturn(debtPositionApiMock);
-    Mockito.when(debtPositionApiMock.syncDebtPosition(Mockito.argThat(i -> i.getDebtPosition() == debtPositionDTO && i.getExecutionConfig() == null), Mockito.same(massive), Mockito.same(partialChange), Mockito.same(paymentEventType), Mockito.same(eventDescription)))
-      .thenReturn(new WorkflowCreatedDTO("1", "runId"));
+    Mockito.when(workflowApisHolderMock.getWorkflowApi(accessToken)).thenReturn(workflowApiMock);
+    Mockito.when(workflowApiMock.waitWorkflowCompletion(workflowId, 1, 1000)).thenReturn(expectedState);
 
     // When
-    WorkflowCreatedDTO result = workflowApiClient.syncDebtPosition(debtPositionDTO, wfExecutionParameters, paymentEventType, eventDescription, accessToken);
+    String result = workflowApiClient.waitWorkflowCompletion(workflowId, 1, 1000, accessToken);
 
     // Then
-    Assertions.assertSame(expectedResult.getWorkflowId(), result.getWorkflowId());
+    Assertions.assertSame(expectedState, result);
+  }
+
+  @Test
+  void given500ErrorWhenWaitWorkflowCompletionThenException() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    String workflowId = "1234";
+
+    Mockito.when(workflowApisHolderMock.getWorkflowApi(accessToken)).thenReturn(workflowApiMock);
+    HttpClientErrorException expectedException = HttpClientErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null);
+    Mockito.when(workflowApiMock.waitWorkflowCompletion(workflowId, 1, 1000)).thenThrow(expectedException);
+
+    // When
+    HttpClientErrorException result = Assertions.assertThrows(HttpClientErrorException.class, ()->workflowApiClient.waitWorkflowCompletion(workflowId, 1, 1000, accessToken));
+
+    // Then
+    Assertions.assertSame(expectedException, result);
+  }
+
+  @Test
+  void givenInvalidStateWhenWaitWorkflowCompletionThenErrorStatus() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    String workflowId = "1234";
+
+    Mockito.when(workflowApisHolderMock.getWorkflowApi(accessToken)).thenReturn(workflowApiMock);
+    HttpClientErrorException expectedException = HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not found", null, null, null);
+    String expectedState = "WORKFLOW_"+HttpStatus.NOT_FOUND.name();
+    Mockito.when(workflowApiMock.waitWorkflowCompletion(workflowId, 1, 1000)).thenThrow(expectedException);
+
+    // When
+    String result = workflowApiClient.waitWorkflowCompletion(workflowId, 1, 1000, accessToken);
+
+    // Then
+    Assertions.assertEquals(expectedState, result);
   }
 
 }
