@@ -5,10 +5,10 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyFileVersion;
 import it.gov.pagopa.pu.sil.exception.ExportFileRequestValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -17,12 +17,10 @@ import it.veneto.regione.pagamenti.ente.PaaSILPrenotaExportFlusso;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -57,10 +55,7 @@ public class PaaSILPrenotaExportFlussoService {
 
     Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
 
-    Set<String> validFileVersionValues = Arrays.stream(ExportFileLegacyFileVersion.values())
-      .map(ExportFileLegacyFileVersion::getLegacyValue).collect(Collectors.toSet());
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato)
-      .filter(validFileVersionValues::contains)
       .orElseThrow(() -> new ExportFileRequestValidationException(SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA));
 
     OffsetDateTime from = optRequest.flatMap(r -> Optional.ofNullable(r.getDateFrom()))
@@ -94,10 +89,32 @@ public class PaaSILPrenotaExportFlussoService {
 
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgId);
 
-    Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
-    log.debug("Export file created with ID: {}", exportFileId);
+    Long exportFileId;
+    try {
+      exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
+      log.debug("Export file created with ID: {}", exportFileId);
+    } catch (HttpClientErrorException.BadRequest br) {
+      throw resolveException(br);
+    }
 
     return exportFileId;
+  }
+
+  private RuntimeException resolveException(HttpClientErrorException.BadRequest br) {
+    RuntimeException ex = br;
+    ProcessExecutionsErrorDTO error = br.getResponseBodyAs(ProcessExecutionsErrorDTO.class);
+    if (error != null) {
+      ex = switch (error.getCode()) {
+        case
+          ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
+          new ExportFileRequestValidationException(SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA);
+        case
+          ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
+          new ExportFileRequestValidationException(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO);
+        default -> br;
+      };
+    }
+    return ex;
   }
 
   private PaidExportFileRequestDTO mapToExportRequest(Long organizationId,
