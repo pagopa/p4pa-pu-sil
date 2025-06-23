@@ -94,10 +94,11 @@ class CartRequestMapperTest {
     // Arrange
     String cartId = "cart123";
     String invalidCallbackUrl = "http://";
+    List<DebtPositionDTO> debtPositions = List.of(debtPosition);
 
     // Act & Assert
     assertThrows(ApplicationException.class, () -> cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, invalidCallbackUrl));
+      debtPositions, cartId, invalidCallbackUrl));
   }
 
   @Test

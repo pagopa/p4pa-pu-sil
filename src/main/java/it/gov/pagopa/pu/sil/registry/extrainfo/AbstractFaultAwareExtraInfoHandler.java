@@ -23,5 +23,5 @@ public abstract class AbstractFaultAwareExtraInfoHandler<T extends Risposta> {
     }
   }
 
-  abstract protected Map<String, Object> extractResponseExtraInfoOutcomeOk(T response);
+  protected abstract Map<String, Object> extractResponseExtraInfoOutcomeOk(T response);
 }

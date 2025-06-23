@@ -50,7 +50,7 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
   @ValueSource(strings = {"happyCase", "idSessionNull", "urlNull", "fault"})
   void extractResponseExtraInfo(String testCase) {
     PaaSILInviaDovutiRisposta response = podamFactory.manufacturePojo(PaaSILInviaDovutiRisposta.class);
-    int expectedSize = 3;
+    int expectedSize;
     switch (testCase) {
       case "idSessionNull" -> {
         response.setIdSession(null);
@@ -62,6 +62,9 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
       }
       case "fault" -> {
         expectedSize = 6;
+      }
+      default -> {
+        expectedSize = 3;
       }
     }
     if (testCase.equals("fault")) {
