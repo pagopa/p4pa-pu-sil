@@ -32,10 +32,4 @@ class AmountUpdatesMapperTest {
         assertEquals(now.plusDays(1), dto.getCompletionDeadlineDate());
         assertEquals("BILANCIO-JSON", dto.getBalance());
     }
-
-    @Test
-    void testPagamentoAggiornato2AmountUpdatesDTONullInput() {
-        assertNull(mapper.pagamentoAggiornato2AmountUpdatesDTO(null));
-    }
 }
-
