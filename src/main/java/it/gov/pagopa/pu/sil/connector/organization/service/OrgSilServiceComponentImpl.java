@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.connector.organization.service;
 
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.sil.connector.organization.client.OrgSilServiceEntityClient;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -16,9 +15,9 @@ public class OrgSilServiceComponentImpl implements OrgSilServiceComponent {
   }
 
   @Override
-  public Optional<OrgSilService> getOrgSilServiceById(String orgSilServiceId, String accessToken) {
+  public Optional<OrgSilService> getOrgSilServiceById(Long orgSilServiceId, String accessToken) {
     return Optional.ofNullable(
-      orgSilServiceEntityClient.findById(orgSilServiceId, accessToken)
+      orgSilServiceEntityClient.findById(String.valueOf(orgSilServiceId), accessToken)
     );
   }
 }

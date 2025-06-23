@@ -84,5 +84,5 @@ public class AuthorizationService {
       .filter(o -> organizationIpaCode.equals(o.getOrganizationIpaCode()) && !CollectionUtils.isEmpty(o.getRoles()))
       .findFirst();
   }
-
+  
 }
