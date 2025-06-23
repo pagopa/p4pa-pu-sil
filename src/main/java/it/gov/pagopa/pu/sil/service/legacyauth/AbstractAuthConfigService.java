@@ -17,7 +17,4 @@ public abstract class AbstractAuthConfigService<T extends OrgSilServiceRequestBo
     }
     throw new IllegalArgumentException("AuthConfig is not of type " + clazz.getSimpleName());
   }
-
-  @Override
-  public abstract R doAuthentication(T config);
 }
