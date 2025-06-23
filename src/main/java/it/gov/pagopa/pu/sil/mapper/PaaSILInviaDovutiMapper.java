@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -48,7 +48,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
     //unmarshall "dovuti"
     try {
       Dovuti dovutiObj = jaxbTransformService.unmarshalling(request.getDovuti(), Dovuti.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd");
-      return dovutiMapper(RegistrySilEventType.paaSILInviaDovuti, dovutiObj, organization, accessToken);
+      return dovutiMapper(RegistryEventType.paaSILInviaDovuti, dovutiObj, organization, accessToken);
     } catch (ApplicationException unmarshallingException) {
       String errorMessage = "XML non conforme: \n" +
         jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, request.getDovuti());

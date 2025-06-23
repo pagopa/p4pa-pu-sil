@@ -4,10 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.UtilitiesTest;
-import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.event.producer.dto.RegistryEventDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlusso;
@@ -61,28 +62,28 @@ class RegistryProducerServiceTest {
     // Given
     UserInfo loggedUser = podamFactory.manufacturePojo(UserInfo.class);
     String orgFiscalCode = loggedUser.getOrganizations().getFirst().getOrganizationFiscalCode();
-    RegistrySilEventType eventType = podamFactory.manufacturePojo(RegistrySilEventType.class);
+    RegistryEventType eventType = podamFactory.manufacturePojo(RegistryEventType.class);
     RegistryEventSubType subType = podamFactory.manufacturePojo(RegistryEventSubType.class);
     String requestorId = "requestorId";
     String grantorId = "grantorId";
     String iuv = "iuv";
-    String nav = "nav";
-    SilOutcome outcome;
+    String nav = "3iuv";
+    RegistryOutcome outcome;
     Object body;
     String serializedBody = switch (bodyType) {
       case "null" -> {
         body = null;
-        outcome = SilOutcome.OK;
+        outcome = RegistryOutcome.OK;
         yield null;
       }
       case "string" -> {
         body = "string body";
-        outcome = SilOutcome.KO;
+        outcome = RegistryOutcome.KO;
         yield (String) body;
       }
       case "object" -> {
         body = podamFactory.manufacturePojo(PaaSILAutorizzaImportFlusso.class);
-        outcome = podamFactory.manufacturePojo(SilOutcome.class);
+        outcome = podamFactory.manufacturePojo(RegistryOutcome.class);
         yield objectMapper.writeValueAsString(body);
       }
       default ->
@@ -91,8 +92,15 @@ class RegistryProducerServiceTest {
     String traceId = "TRACEID";
     UtilitiesTest.setTraceId(traceId);
 
+    RegistryContextData registryContextData = RegistryContextData.builder()
+      .orgFiscalCode(orgFiscalCode)
+      .loggedUser(loggedUser)
+      .eventType(eventType)
+      .iuv(iuv)
+      .build();
+
     // When
-    registryProducerService.notifySilEvent(loggedUser, orgFiscalCode, eventType, subType, requestorId, grantorId, iuv, nav, outcome, body);
+    registryProducerService.notifySilEvent(registryContextData, subType, requestorId, grantorId, outcome, body);
 
     // Then
     Mockito.verify(streamBridge, Mockito.times(1)).send(
@@ -108,15 +116,15 @@ class RegistryProducerServiceTest {
         Assertions.assertEquals("pu-sil", payload.getRegistryOrigin());
         Assertions.assertEquals("REGISTRY_SIL", payload.getRegistryType());
 
-        Assertions.assertEquals(eventType.name(), payload.getEventType());
-        Assertions.assertEquals(subType.name(), payload.getEventSubType());
+        Assertions.assertEquals(eventType, payload.getEventType());
+        Assertions.assertEquals(subType, payload.getEventSubType());
         Assertions.assertEquals(loggedUser.getBrokerFiscalCode(), payload.getBrokerFiscalCode());
         Assertions.assertEquals(loggedUser.getOrganizations().getFirst().getOrganizationFiscalCode(), payload.getOrgFiscalCode());
         Assertions.assertEquals(iuv, payload.getIuv());
         Assertions.assertEquals(nav, payload.getNav());
         Assertions.assertEquals(requestorId, payload.getRequestorId());
         Assertions.assertEquals(grantorId, payload.getGrantorId());
-        Assertions.assertEquals(outcome.name(), payload.getOutcome());
+        Assertions.assertEquals(outcome, payload.getOutcome());
         Assertions.assertEquals(serializedBody, payload.getBody());
         Assertions.assertTrue(OffsetDateTime.now().toEpochSecond() - payload.getDateTime().toEpochSecond() < 5);
 

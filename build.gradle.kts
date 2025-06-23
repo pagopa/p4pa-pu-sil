@@ -154,10 +154,11 @@ tasks.register("dependenciesBuild") {
     "openApiGeneratePROCESSEXECUTION",
     "openApiGenerateDEBTPOSITIONS",
     "openApiGenerateORGANIZATION",
+    "openApiGenerateREGISTRIES",
     "openApiGenerateNodeCheckout",
-    "openApiGenerateAmountUpdatesLegacy",
+    "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
-    "jaxbJavaGenPuForOrganizationReconciliation"
+    "jaxbJavaGenPuForOrganizationReconciliation",
   )
 }
 
@@ -359,15 +360,15 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   library.set("resttemplate")
 }
 
-tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateAmountUpdatesLegacy") {
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateActualizationLegacy") {
   group = "openapi"
   description = "description"
 
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/amount-updates-legacy.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.amountupdates.legacy.controller.generated")
-  modelPackage.set("it.gov.pagopa.amountupdates.legacy.dto.generated")
+  apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
+  modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
@@ -399,5 +400,29 @@ jaxb {
       schema = file("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.wsdl")
       bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.xjb")
     }
+  }
+
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateREGISTRIES") {
+    group = "openapi"
+    description = "description"
+
+    generatorName.set("java")
+    remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-registries/refs/heads/$targetEnv/openapi/generated.openapi.json")
+    outputDir.set("$projectDir/build/generated")
+    apiPackage.set("it.gov.pagopa.pu.registries.controller.generated")
+    modelPackage.set("it.gov.pagopa.pu.registries.dto.generated")
+    configOptions.set(mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    ))
+    library.set("resttemplate")
   }
 }
