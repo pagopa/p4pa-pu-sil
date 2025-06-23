@@ -1,13 +1,12 @@
 package it.gov.pagopa.pu.sil.event.producer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.event.producer.dto.RegistryEventDTO;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,16 +47,15 @@ public class RegistryProducerService {
     }
   }
 
-  public void notifySilEvent(UserInfo loggedUser, String orgFiscalCode,
-                             RegistrySilEventType eventType, RegistryEventSubType subType,
+  public void notifySilEvent(RegistryContextData contextData, RegistryEventSubType subType,
                              String requestorId, String grantorId,
-                             String iuv, String nav, SilOutcome outcome, Object body) {
-    UserOrganizationRoles userOrg = loggedUser.getOrganizations().stream()
-      .filter(x -> StringUtils.equals(x.getOrganizationFiscalCode(), orgFiscalCode))
+                             RegistryOutcome outcome, Object body) {
+    UserOrganizationRoles userOrg = contextData.getLoggedUser().getOrganizations().stream()
+      .filter(x -> StringUtils.equals(x.getOrganizationFiscalCode(), contextData.getOrgFiscalCode()))
       .findFirst()
-      .orElseThrow(() -> new ApplicationException("invalid user for organization " + orgFiscalCode));
+      .orElseThrow(() -> new ApplicationException("invalid user for organization " + contextData.getOrgFiscalCode()));
 
-    String registryId = String.join("-", eventType.name(), String.valueOf(System.currentTimeMillis()), UUID.randomUUID().toString());
+    String registryId = String.join("-", contextData.getEventType().toString(), String.valueOf(System.currentTimeMillis()), UUID.randomUUID().toString());
     String traceId = Utilities.getTraceId();
 
     String bodyString = null;
@@ -74,15 +72,15 @@ public class RegistryProducerService {
           .registryOrigin("pu-sil")
           .registryType("REGISTRY_SIL")
           .dateTime(OffsetDateTime.now())
-          .eventType(eventType.name())
-          .eventSubType(subType.name())
-          .brokerFiscalCode(loggedUser.getBrokerFiscalCode())
+          .eventType(contextData.getEventType())
+          .eventSubType(subType)
+          .brokerFiscalCode(contextData.getLoggedUser().getBrokerFiscalCode())
           .orgFiscalCode(userOrg.getOrganizationFiscalCode())
-          .iuv(iuv)
-          .nav(nav)
+          .iuv(contextData.getIuv())
+          .nav(Utilities.iuv2Nav(contextData.getIuv()))
           .requestorId(requestorId)
           .grantorId(grantorId)
-          .outcome(outcome.name())
+          .outcome(outcome)
           .body(bodyString)
           .build()
         )

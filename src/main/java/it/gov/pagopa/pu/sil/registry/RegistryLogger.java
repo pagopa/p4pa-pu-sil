@@ -1,12 +1,9 @@
 package it.gov.pagopa.pu.sil.registry;
 
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
-import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -25,7 +22,6 @@ public class RegistryLogger {
 
   public static final String SKIP_XML_BODY_KEY = "skipXmlBody";
   public static final String XML_BODY_KEY = "xmlBody";
-  public static final String IUV_SEPARATOR = ",";
 
   private final JAXBTransformService jaxbTransformService;
 
@@ -36,29 +32,30 @@ public class RegistryLogger {
     this.registryProducerService = registryProducerService;
   }
 
-  public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String orgSilServiceName,
-                          Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler) {
-    return this.execute(orgFiscalCode, eventType, iuv, request, loggedUser, orgSilServiceName, requestHandler, exceptionHandler, null, null);
+  public <I, O> O execute(RegistryContextData contextData, I request,
+                          Supplier<Triple<O, String, RegistryOutcome>> requestHandler, Function<Exception, O> exceptionHandler) {
+    return this.execute(contextData, request, requestHandler, exceptionHandler, null, null);
   }
 
-  public <I, O> O execute(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser, String orgSilServiceName,
-                          Supplier<Triple<O, String, SilOutcome>> requestHandler, Function<Exception, O> exceptionHandler,
+  public <I, O> O execute(RegistryContextData contextData, I request,
+                          Supplier<Triple<O, String, RegistryOutcome>> requestHandler, Function<Exception, O> exceptionHandler,
                           Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
-    produceReqRegistryEvent(orgFiscalCode, eventType, iuv, request, loggedUser, orgSilServiceName, registryBodyRequestExtraInfoRetriever);
-    Triple<O, String, SilOutcome> response2outcome = Triple.of(null, null, SilOutcome.KO);
+    produceReqRegistryEvent(contextData, request, registryBodyRequestExtraInfoRetriever);
+    Triple<O, String, RegistryOutcome> response2outcome = Triple.of(null, null, RegistryOutcome.KO);
     try {
       response2outcome = requestHandler.get();
     } catch (Exception e) {
-      response2outcome = Triple.of(exceptionHandler.apply(e), null, SilOutcome.KO);
+      response2outcome = Triple.of(exceptionHandler.apply(e), null, RegistryOutcome.KO);
     } finally {
-      produceRespRegistryEvent(orgFiscalCode, eventType, StringUtils.firstNonBlank(response2outcome.getMiddle(), iuv),
-        response2outcome.getLeft(), response2outcome.getRight(), loggedUser, orgSilServiceName, registryBodyResponseExtraInfoExtractor);
+      contextData.setIuv(StringUtils.firstNonBlank(response2outcome.getMiddle(), contextData.getIuv()));
+      produceRespRegistryEvent(contextData,
+        response2outcome.getLeft(), response2outcome.getRight(), registryBodyResponseExtraInfoExtractor);
     }
     return response2outcome.getLeft();
   }
 
-  private <I> void produceReqRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, I request, UserInfo loggedUser,
-                                           String orgSilServiceName, Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever) {
+  private <I> void produceReqRegistryEvent(RegistryContextData contextData, I request,
+                                           Supplier<Map<String, Object>> registryBodyRequestExtraInfoRetriever) {
     try {
       Object body = null;
       if (registryBodyRequestExtraInfoRetriever != null) {
@@ -66,22 +63,24 @@ public class RegistryLogger {
         if (bodyMap.containsKey(SKIP_XML_BODY_KEY)) {
           bodyMap.remove(SKIP_XML_BODY_KEY);
         } else if (request != null) {
+          //noinspection unchecked: it will necessarily be the right class
           bodyMap.put(XML_BODY_KEY, jaxbTransformService.marshalling(request, (Class<I>) request.getClass()));
         }
         body = bodyMap;
       } else if (request != null) {
+        //noinspection unchecked: it will necessarily be the right class
         body = jaxbTransformService.marshalling(request, (Class<I>) request.getClass());
       }
-      produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, orgSilServiceName, RegistryEventSubType.REQ, SilOutcome.OK);
+      produceRegistryEvent(contextData, body, RegistryEventSubType.REQ, RegistryOutcome.OK);
     } catch (Exception e) {
-      log.error("Error producing request registry event for orgFiscalCode: {}, eventType: {}, iuv: {}", orgFiscalCode, eventType, iuv, e);
+      log.error("Error producing request registry event for orgFiscalCode: {}, eventType: {}, iuv: {}", contextData.getOrgFiscalCode(), contextData.getEventType(), contextData.getIuv(), e);
       // In case of error in producing the request event, we do not throw an exception to avoid breaking the flow
       // but we log the error and continue with the response event.
     }
   }
 
-  private <O> void produceRespRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, O response, SilOutcome outcome,
-                                            UserInfo loggedUser, String orgSilServiceName, Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
+  private <O> void produceRespRegistryEvent(RegistryContextData contextData, O response, RegistryOutcome outcome,
+                                            Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
     try {
       Object body = null;
       if (registryBodyResponseExtraInfoExtractor != null) {
@@ -89,46 +88,44 @@ public class RegistryLogger {
         if (bodyMap.containsKey(SKIP_XML_BODY_KEY)) {
           bodyMap.remove(SKIP_XML_BODY_KEY);
         } else if (response != null) {
+          //noinspection unchecked: it will necessarily be the right class
           bodyMap.put(XML_BODY_KEY, jaxbTransformService.marshalling(response, (Class<O>) response.getClass()));
         }
         body = bodyMap;
       } else if (response != null) {
+        //noinspection unchecked: it will necessarily be the right class
         body = jaxbTransformService.marshalling(response, (Class<O>) response.getClass());
       }
-      produceRegistryEvent(orgFiscalCode, eventType, iuv, body, loggedUser, orgSilServiceName, RegistryEventSubType.RESP, outcome);
+      produceRegistryEvent(contextData, body, RegistryEventSubType.RESP, outcome);
     } catch (Exception e) {
-      log.error("Error producing response registry event for orgFiscalCode: {}, eventType: {}, iuv: {}", orgFiscalCode, eventType, iuv, e);
+      log.error("Error producing response registry event for orgFiscalCode: {}, eventType: {}, iuv: {}", contextData.getOrgFiscalCode(), contextData.getEventType(), contextData.getIuv(), e);
       // In case of error in producing the response event, we do not throw an exception to avoid breaking the flow
       // but we log the error.
     }
   }
 
-  private void produceRegistryEvent(String orgFiscalCode, RegistrySilEventType eventType, String iuv, Object body,
-                                    UserInfo loggedUser, String orgSilServiceName, RegistryEventSubType eventSubType, SilOutcome outcome) {
+  private void produceRegistryEvent(RegistryContextData contextData, Object body,
+                                    RegistryEventSubType eventSubType, RegistryOutcome outcome) {
     String requestorId;
     String grantorId;
-    if (eventType.isExposedByPU() && RegistryEventSubType.REQ.equals(eventSubType)) {
-      requestorId = loggedUser.getUserId();
+    if (contextData.getEventType().isExposedByPU() && RegistryEventSubType.REQ.equals(eventSubType)) {
+      requestorId = contextData.getLoggedUser().getUserId();
       grantorId = PU_ID;
-    } else if (eventType.isExposedByPU() && RegistryEventSubType.RESP.equals(eventSubType)) {
+    } else if (contextData.getEventType().isExposedByPU() && RegistryEventSubType.RESP.equals(eventSubType)) {
       requestorId = PU_ID;
-      grantorId = loggedUser.getUserId();
+      grantorId = contextData.getLoggedUser().getUserId();
     } else if (RegistryEventSubType.REQ.equals(eventSubType)) {
       requestorId = PU_ID;
-      grantorId = orgSilServiceName;
+      grantorId = contextData.getOrgSilServiceName();
     } else {
-      requestorId = orgSilServiceName;
+      requestorId = contextData.getOrgSilServiceName();
       grantorId = PU_ID;
     }
     registryProducerService.notifySilEvent(
-      loggedUser,
-      orgFiscalCode,
-      eventType,
+      contextData,
       eventSubType,
       requestorId,
       grantorId,
-      iuv,
-      Utilities.iuv2Nav(iuv),
       outcome,
       body);
   }

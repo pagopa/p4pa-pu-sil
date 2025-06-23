@@ -1,20 +1,25 @@
 package it.gov.pagopa.pu.sil.registry;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.enums.RegistryEventSubType;
-import it.gov.pagopa.pu.sil.enums.RegistrySilEventType;
-import it.gov.pagopa.pu.sil.enums.SilOutcome;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -22,7 +27,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RegistryLoggerTest {
+public class RegistryLoggerTest {
 
   @Mock
   private JAXBTransformService jaxbTransformService;
@@ -35,6 +40,8 @@ class RegistryLoggerTest {
 
   private UserInfo mockUserInfo;
 
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
+
   @BeforeEach
   void setUp() {
     mockUserInfo = new UserInfo();
@@ -44,59 +51,56 @@ class RegistryLoggerTest {
   @Test
   void testProduceReqRegistryEvent() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     String blIuv = "businessLogicIUV";
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(null, blIuv, SilOutcome.OK), e -> null);
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(null, blIuv, RegistryOutcome.OK), e -> null);
 
     // Then
     assertNull(actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq("mockUserId"),
-      eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      eq(xmlRequest));
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      xmlRequest);
 
+    contextData.setIuv(blIuv);
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
+      eq(contextData),
+      eq(RegistryEventSubType.RESP),
       eq(RegistryLogger.PU_ID),
       eq("mockUserId"),
-      eq(blIuv),
-      any(),
-      eq(SilOutcome.OK),
-      any());
+      eq(RegistryOutcome.OK),
+      isNull());
   }
 
   @Test
   void testProduceReqRegistryEventWithExtraInfo() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(null, null, SilOutcome.OK), e -> null, () -> {
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(null, null, RegistryOutcome.OK), e -> null, () -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
       }, null);
@@ -105,45 +109,39 @@ class RegistryLoggerTest {
     assertNull(actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
+      eq(contextData),
+      eq(RegistryEventSubType.REQ),
       eq("mockUserId"),
       eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
+      eq(RegistryOutcome.OK),
       argThat(o -> (o instanceof Map<?,?> m) &&
         m.containsKey("extraInfoKey") && "extraInfoValue".equals(m.get("extraInfoKey")) &&
         m.containsKey(RegistryLogger.XML_BODY_KEY) && xmlRequest.equals(m.get(RegistryLogger.XML_BODY_KEY)))
     );
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
+      eq(contextData),
+      eq(RegistryEventSubType.RESP),
       eq(RegistryLogger.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any()
+      eq(RegistryOutcome.OK),
+      isNull()
     );
   }
 
   @Test
   void testProduceReqRegistryEventWithExtraInfoSkipXmlBody() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     Object request = new Object();
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(null, null, SilOutcome.OK), e -> null, () -> {
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(null, null, RegistryOutcome.OK), e -> null, () -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue", RegistryLogger.SKIP_XML_BODY_KEY, true);
       }, null);
@@ -152,96 +150,87 @@ class RegistryLoggerTest {
     assertNull(actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
+      eq(contextData),
+      eq(RegistryEventSubType.REQ),
       eq("mockUserId"),
       eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
+      eq(RegistryOutcome.OK),
       argThat(o -> (o instanceof Map<?,?> m) &&
         m.containsKey("extraInfoKey") && "extraInfoValue".equals(m.get("extraInfoKey")) &&
         !m.containsKey(RegistryLogger.XML_BODY_KEY) )
     );
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
+      eq(contextData),
+      eq(RegistryEventSubType.RESP),
       eq(RegistryLogger.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any()
+      eq(RegistryOutcome.OK),
+      isNull()
     );
   }
 
   @Test
   void testProduceRespRegistryEvent() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     String blIuv = "businessLogicIUV";
+    String xmlRequest = "<xml>mockRequest</xml>";
     String xmlResponse = "<xml>mockResponse</xml>";
     Object request = new Object();
     Object response = new Object();
-    when(jaxbTransformService.marshalling(eq(request), any())).thenReturn("<xml>mockRequest</xml>");
+    when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
     when(jaxbTransformService.marshalling(eq(response), any())).thenReturn(xmlResponse);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(response, blIuv, SilOutcome.OK), e -> null);
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(response, blIuv, RegistryOutcome.OK), e -> null);
 
     // Then
     assertEquals(response, actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq("mockUserId"),
-      eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any()
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      xmlRequest
     );
 
+    contextData.setIuv(blIuv);
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
-      eq(RegistryLogger.PU_ID),
-      eq("mockUserId"),
-      eq(blIuv),
-      any(),
-      eq(SilOutcome.OK),
-      eq(xmlResponse)
+      contextData,
+      RegistryEventSubType.RESP,
+      RegistryLogger.PU_ID,
+      "mockUserId",
+      RegistryOutcome.OK,
+      xmlResponse
     );
   }
 
   @Test
   void testProduceRespRegistryEventWithExtraInfo() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
+    String xmlRequest = "<xml>mockRequest</xml>";
     String xmlResponse = "<xml>mockResponse</xml>";
     Object request = new Object();
     Object response = new Object();
-    when(jaxbTransformService.marshalling(eq(request), any())).thenReturn("<xml>mockRequest</xml>");
+    when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
     when(jaxbTransformService.marshalling(eq(response), any())).thenReturn(xmlResponse);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(response, null, RegistryOutcome.OK), e -> null, null, r -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue");
       });
@@ -250,28 +239,20 @@ class RegistryLoggerTest {
     assertEquals(response, actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq("mockUserId"),
-      eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any()
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      xmlRequest
     );
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
+      eq(contextData),
       eq(RegistryEventSubType.RESP),
       eq(RegistryLogger.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
+      eq(RegistryOutcome.OK),
       argThat(o -> (o instanceof Map<?,?> m) &&
         m.containsKey("extraInfoKey") && "extraInfoValue".equals(m.get("extraInfoKey")) &&
         m.containsKey(RegistryLogger.XML_BODY_KEY) && xmlResponse.equals(m.get(RegistryLogger.XML_BODY_KEY)))
@@ -281,16 +262,19 @@ class RegistryLoggerTest {
   @Test
   void testProduceRespRegistryEventWithExtraInfoSkipXmlBody() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     Object request = new Object();
     Object response = "responseString";
-    when(jaxbTransformService.marshalling(eq(request), any())).thenReturn("<xml>mockRequest</xml>");
+    String xmlRequest = "<xml>mockRequest</xml>";
+    when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(response, null, SilOutcome.OK), e -> null, null, r -> {
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(response, null, RegistryOutcome.OK), e -> null, null, r -> {
         // Simulate extra info retrieval
         return Map.of("extraInfoKey", "extraInfoValue:"+r, RegistryLogger.SKIP_XML_BODY_KEY, true);
       });
@@ -299,28 +283,20 @@ class RegistryLoggerTest {
     assertEquals(response, actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq("mockUserId"),
-      eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any()
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      xmlRequest
     );
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
+      eq(contextData),
+      eq(RegistryEventSubType.RESP),
       eq(RegistryLogger.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
+      eq(RegistryOutcome.OK),
       argThat(o -> (o instanceof Map<?,?> m) &&
         m.containsKey("extraInfoKey") && ("extraInfoValue:"+response).equals(m.get("extraInfoKey")) &&
         !m.containsKey(RegistryLogger.XML_BODY_KEY))
@@ -330,9 +306,11 @@ class RegistryLoggerTest {
   @Test
   void testExecuteWithException() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     Object fallbackResponse = new Object();
@@ -341,7 +319,7 @@ class RegistryLoggerTest {
     when(jaxbTransformService.marshalling(eq(fallbackResponse), any())).thenReturn(xmlFallbackResponse);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
+    Object actualResponse = registryLogger.execute(contextData, request,
       () -> {
         throw new RuntimeException("Mock Exception");
       }, e -> fallbackResponse);
@@ -350,115 +328,137 @@ class RegistryLoggerTest {
     assertEquals(fallbackResponse, actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq("mockUserId"),
-      eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      eq(xmlRequest));
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      xmlRequest);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
-      eq(RegistryLogger.PU_ID),
-      eq("mockUserId"),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.KO),
-      argThat(xmlFallbackResponse::equals));
+      contextData,
+      RegistryEventSubType.RESP,
+      RegistryLogger.PU_ID,
+      "mockUserId",
+      RegistryOutcome.KO,
+      xmlFallbackResponse);
   }
 
   @Test
   void testNotifySilEventException() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.paaSILImportaDovuto;
-    String iuv = "mockIUV";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.paaSILImportaDovuto);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     Object response = new Object();
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
     doThrow(new RuntimeException("simulated exception")).when(registryProducerService).notifySilEvent(
-      any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+      any(), any(), any(), any(), any(), any());
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, "mockOrgSilServiceName",
-      () -> Triple.of(response, null, SilOutcome.OK), e -> null);
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(response, null, RegistryOutcome.OK), e -> null);
 
     // Then
     assertEquals(response, actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq("mockUserId"),
-      eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      eq(xmlRequest));
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      xmlRequest);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
+      eq(contextData),
+      eq(RegistryEventSubType.RESP),
       eq(RegistryLogger.PU_ID),
       eq("mockUserId"),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any());
+      eq(RegistryOutcome.OK),
+      isNull());
   }
 
   @Test
   void testProduceReqRegistryClientEvent() {
     // Given
-    String orgFiscalCode = "mockFiscalCode";
-    RegistrySilEventType eventType = RegistrySilEventType.attualizzazioneImporti;
-    String iuv = "mockIUV";
-    String orgSilServiceName = "mockOrgSilServiceName";
+    RegistryContextData contextData = podamFactory.manufacturePojo(RegistryContextData.class);
+    contextData.setEventType(RegistryEventType.attualizzazioneImporti);
+    contextData.setLoggedUser(mockUserInfo);
+    contextData.setOrgSilServiceName("mockOrgSilServiceName");
+
     String xmlRequest = "<xml>mockRequest</xml>";
     Object request = new Object();
     when(jaxbTransformService.marshalling(eq(request), any())).thenReturn(xmlRequest);
 
     // When
-    Object actualResponse = registryLogger.execute(orgFiscalCode, eventType, iuv, request, mockUserInfo, orgSilServiceName,
-      () -> Triple.of(null, null, SilOutcome.OK), e -> null);
+    Object actualResponse = registryLogger.execute(contextData, request,
+      () -> Triple.of(null, null, RegistryOutcome.OK), e -> null);
 
     // Then
     assertNull(actualResponse);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.REQ)),
-      eq(RegistryLogger.PU_ID),
-      eq(orgSilServiceName),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      eq(xmlRequest));
+      contextData,
+      RegistryEventSubType.REQ,
+      RegistryLogger.PU_ID,
+      "mockOrgSilServiceName",
+      RegistryOutcome.OK,
+      xmlRequest);
 
     verify(registryProducerService).notifySilEvent(
-      eq(mockUserInfo),
-      eq(orgFiscalCode),
-      eq(eventType),
-      argThat(e -> e.equals(RegistryEventSubType.RESP)),
-      eq(orgSilServiceName),
+      eq(contextData),
+      eq(RegistryEventSubType.RESP),
+      eq(contextData.getOrgSilServiceName()),
       eq(RegistryLogger.PU_ID),
-      eq(iuv),
-      any(),
-      eq(SilOutcome.OK),
-      any());
+      eq(RegistryOutcome.OK),
+      isNull());
+  }
+
+  public static void configureRegistryLoggerMock(RegistryLogger registryLoggerMock, RegistryContextData contextData, Object request, boolean withExtraInfo) {
+    Object[] result = new Object[1];
+    Exception[] exception = new Exception[1];
+    ArgumentMatcher<Supplier<Triple<Object, String, RegistryOutcome>>> requestHandler = i -> {
+      try {
+        result[0] = i.get().getLeft();
+      } catch (Exception e) {
+        exception[0] = e;
+      }
+      return true;
+    };
+    ArgumentMatcher<Function<Exception, Object>> exceptionHandler = i -> {
+      if (exception[0] != null) {
+        result[0] = i.apply(exception[0]);
+      }
+      return true;
+    };
+
+    if(withExtraInfo) {
+      Mockito.when(registryLoggerMock.execute(
+        Mockito.eq(contextData),
+        Mockito.same(request),
+        Mockito.argThat(requestHandler),
+        Mockito.argThat(exceptionHandler),
+        Mockito.argThat(requestExtraInfoRetriever -> {
+          requestExtraInfoRetriever.get();
+          return true;
+        }),
+        Mockito.argThat(responseExtraInfoExtractor  -> {
+          responseExtraInfoExtractor.apply(result[0]);
+          return true;
+        })
+      )).thenAnswer(i -> result[0]);
+    } else {
+      Mockito.when(registryLoggerMock.execute(
+        Mockito.eq(contextData),
+        Mockito.same(request),
+        Mockito.argThat(requestHandler),
+        Mockito.argThat(exceptionHandler)
+      )).thenAnswer(i -> result[0]);
+    }
   }
 }
