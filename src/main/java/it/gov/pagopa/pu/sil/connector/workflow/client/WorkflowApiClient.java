@@ -21,13 +21,9 @@ public class WorkflowApiClient {
     try {
       return workflowApisHolder.getWorkflowApi(accessToken).waitWorkflowCompletion(workflowId, maxAttempts, retryDelayMs);
     } catch (HttpClientErrorException e) {
-      if (e.getStatusCode().is5xxServerError()) {
-        throw e;
-      } else {
-        return "WORKFLOW_" + (e.getStatusCode() instanceof HttpStatus status
-          ? status.name()
-          : String.valueOf(e.getStatusCode().value()));
-      }
+      return "WORKFLOW_" + (e.getStatusCode() instanceof HttpStatus status
+        ? status.name()
+        : String.valueOf(e.getStatusCode().value()));
     }
   }
 }

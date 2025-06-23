@@ -52,23 +52,6 @@ class WorflowApiClientTest {
   }
 
   @Test
-  void given500ErrorWhenWaitWorkflowCompletionThenException() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    String workflowId = "1234";
-
-    Mockito.when(workflowApisHolderMock.getWorkflowApi(accessToken)).thenReturn(workflowApiMock);
-    HttpClientErrorException expectedException = HttpClientErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", null, null, null);
-    Mockito.when(workflowApiMock.waitWorkflowCompletion(workflowId, 1, 1000)).thenThrow(expectedException);
-
-    // When
-    HttpClientErrorException result = Assertions.assertThrows(HttpClientErrorException.class, ()->workflowApiClient.waitWorkflowCompletion(workflowId, 1, 1000, accessToken));
-
-    // Then
-    Assertions.assertSame(expectedException, result);
-  }
-
-  @Test
   void givenInvalidStateWhenWaitWorkflowCompletionThenErrorStatus() {
     // Given
     String accessToken = "ACCESSTOKEN";
