@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
+import it.gov.pagopa.pu.organization.dto.generated.SilServiceAuthConfig;
 
-public class AuthConfigChain<T extends OrgSilServiceRequestBodyAuthConfig, R> {
+public class AuthConfigChain<T extends SilServiceAuthConfig, R> {
     private final T config;
     private final AbstractAuthConfigService<T, R> service;
 

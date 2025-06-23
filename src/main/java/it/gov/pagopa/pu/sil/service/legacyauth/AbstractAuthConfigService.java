@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
+import it.gov.pagopa.pu.organization.dto.generated.SilServiceAuthConfig;
 
-public abstract class AbstractAuthConfigService<T extends OrgSilServiceRequestBodyAuthConfig, R> {
+public abstract class AbstractAuthConfigService<T extends SilServiceAuthConfig, R> {
   private final Class<T> clazz;
 
   protected AbstractAuthConfigService(Class<T> clazz) {
@@ -11,7 +11,7 @@ public abstract class AbstractAuthConfigService<T extends OrgSilServiceRequestBo
   }
 
   public AuthConfigChain<T, R> getAuthConfig(OrgSilService orgSilService) {
-    OrgSilServiceRequestBodyAuthConfig config = orgSilService.getAuthConfig();
+    SilServiceAuthConfig config = orgSilService.getAuthConfig();
     if (clazz.isInstance(config)) {
       return new AuthConfigChain<>(clazz.cast(config), this);
     }
