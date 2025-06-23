@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.service.legacyauth;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
 
-public abstract class AbstractAuthConfigService<T extends OrgSilServiceRequestBodyAuthConfig, R> {
+public abstract class AbstractAuthConfigService<T extends OrgSilServiceRequestBodyAuthConfig, R> implements Authenticator<T, R> {
   private final Class<T> clazz;
 
   protected AbstractAuthConfigService(Class<T> clazz) {
@@ -18,5 +18,6 @@ public abstract class AbstractAuthConfigService<T extends OrgSilServiceRequestBo
     throw new IllegalArgumentException("AuthConfig is not of type " + clazz.getSimpleName());
   }
 
+  @Override
   public abstract R doAuthentication(T config);
 }

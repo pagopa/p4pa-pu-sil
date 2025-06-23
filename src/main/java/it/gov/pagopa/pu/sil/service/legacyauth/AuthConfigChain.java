@@ -4,9 +4,9 @@ import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthC
 
 public class AuthConfigChain<T extends OrgSilServiceRequestBodyAuthConfig, R> {
     private final T config;
-    private final AbstractAuthConfigService<T, R> service;
+    private final Authenticator<T, R> service;
 
-    public AuthConfigChain(T config, AbstractAuthConfigService<T, R> service) {
+    public AuthConfigChain(T config, Authenticator<T, R> service) {
         this.config = config;
         this.service = service;
     }
@@ -15,4 +15,3 @@ public class AuthConfigChain<T extends OrgSilServiceRequestBodyAuthConfig, R> {
         return service.doAuthentication(config);
     }
 }
-
