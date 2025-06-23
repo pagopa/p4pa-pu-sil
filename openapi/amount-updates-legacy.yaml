@@ -147,16 +147,21 @@ components:
           description: Identificativo univoco notifica collegato all'avviso (non usato per l'integrazione con PU)
         speseNotifica:
           type: integer
-          description: spese di notifica in eurocent assegnate da PN alla notifica collegata al numero avviso fornito dal chiamante
+          format: int64
           minimum: 0
+          description: spese di notifica in eurocent assegnate da PN alla notifica collegata al numero avviso fornito dal chiamante
         dataVisualizzazione:
           type: string
+          format: date-time
           description: data di visualizzazione ISO 8601 della notifica da parte del destinatario (non usato per l'integrazione con PU)
         importoPosizione:
-          description: importo aggiornato in eurocent, comprensivo delle spese di notifica, dell'avviso fornito dal chiamante
+          type: integer
           minimum: 0
+          format: int64
+          description: importo aggiornato in eurocent, comprensivo delle spese di notifica, dell'avviso fornito dal chiamante
         dataPerfezionamentoDecorrenzaTermini:
           type: string
+          format: date-time
           description: data ISO 8601 di perfezionamento per decorrenza termini (non usato per l'integrazione con PU)
         bilancio:
           type: string
