@@ -209,6 +209,7 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILInviaDovuti");
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
@@ -219,7 +220,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILInviaDovutiService.paaSILInviaDovuti(userInfo, orgIpaCode, request),
+      () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaDovutiRisposta(),
         PaaSILInviaDovutiRisposta::setFault,

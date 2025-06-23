@@ -19,7 +19,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 abstract class AbstractImmediatePaymentsMapper {
@@ -29,7 +32,7 @@ abstract class AbstractImmediatePaymentsMapper {
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
 
-  protected Triple<List<DebtPositionDTO>, SilFaults, String> dovutiMapper(RegistryEventType operationType, Dovuti dovutiObj, Organization organization, String accessToken){
+  protected Triple<List<DebtPositionDTO>, SilFaults, String> dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization organization, String accessToken){
     if(!RegistryEventType.paaSILInviaDovuti.equals(operationType) &&
       !RegistryEventType.paaSILInviaCarrelloDovuti.equals(operationType)){
       throw new ApplicationException("invalid operation type: " + operationType);
@@ -47,8 +50,6 @@ abstract class AbstractImmediatePaymentsMapper {
     if (debtorResult.getMiddle() != null) {
       return Triple.of(null, debtorResult.getMiddle(), debtorResult.getRight());
     }
-
-    String cartId = UUID.randomUUID().toString();
 
     List<DebtPositionDTO> debtPositions = new ArrayList<>();
     int idx = 1;
@@ -119,6 +120,8 @@ abstract class AbstractImmediatePaymentsMapper {
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
     paymentOption.setDescription(versamento.getCausaleVersamento());
     paymentOption.setTotalAmountCents(amount);
+    //TODO: since first transfer of the installment is not passed, as per P4ADEV-2407, there is currently no way
+    // to set stamp-related data. This needs to be fixed in the future, when the stamp handling will be defined.
     paymentOption.setInstallments(List.of(
       InstallmentDTO.builder()
         .status(InstallmentStatus.UNPAID)

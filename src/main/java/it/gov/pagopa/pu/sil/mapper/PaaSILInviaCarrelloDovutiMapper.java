@@ -51,7 +51,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     this.taxonomyService = taxonomyService;
   }
 
-  public Triple<List<DebtPositionDTO>, SilFaults, String> mapRequestToDebtPositionsOrFault(PaaSILInviaCarrelloDovuti request, UserInfo userInfo, String orgIpaCode, String accessToken) {
+  public Triple<List<DebtPositionDTO>, SilFaults, String> mapRequestToDebtPositionsOrFault(PaaSILInviaCarrelloDovuti request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken) {
 
     //validate organization
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
@@ -93,7 +93,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     List<DebtPositionDTO> debtPositionList = new ArrayList<>();
     for (Dovuti dovutiObj : dovutiList) {
       Triple<List<DebtPositionDTO>, SilFaults, String> result = dovutiMapper(
-        RegistryEventType.paaSILInviaCarrelloDovuti, dovutiObj, organization, accessToken);
+        RegistryEventType.paaSILInviaCarrelloDovuti, cartId, dovutiObj, organization, accessToken);
       if (result.getMiddle() != null) {
         return Triple.of(null, result.getMiddle(), result.getRight());
       } else {

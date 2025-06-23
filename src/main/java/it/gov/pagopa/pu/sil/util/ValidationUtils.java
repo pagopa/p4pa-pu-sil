@@ -8,6 +8,8 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.CtAccertamento;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -96,6 +98,18 @@ public class ValidationUtils {
 
   public static boolean isValidIban(final String iban) {
     return iban != null && ITALIAN_IBAN_PATTERN.matcher(iban).matches();
+  }
+
+  public static boolean isValidUri(final String uri) {
+    if (StringUtils.isBlank(uri)) {
+      return false;
+    }
+    try {
+      new URI(uri);
+      return true;
+    } catch (URISyntaxException e) {
+      return false;
+    }
   }
 
 }

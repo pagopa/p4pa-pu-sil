@@ -246,4 +246,17 @@ class ValidationUtilsTest {
     assertFalse(ValidationUtils.isValidIban(input));
   }
 
+  @ParameterizedTest
+  @ValueSource(strings = {"http://example.com", "https://example.com/path?query=1", "ftp://ftp.example.com"})
+  void isValidUri_ValidUri_ReturnsTrue(String uri) {
+    assertTrue(ValidationUtils.isValidUri(uri));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"http://", "://missing.scheme.com"})
+  @NullAndEmptySource
+  void isValidUri_InvalidUri_ReturnsFalse(String uri) {
+    assertFalse(ValidationUtils.isValidUri(uri));
+  }
+
 }

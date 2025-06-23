@@ -82,7 +82,7 @@ class PaaSILInviaDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, "CART", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
 
     assertNotNull(result);
     assertNull(result.getLeft());
@@ -103,7 +103,7 @@ class PaaSILInviaDovutiMapperTest {
 
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, "CART", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
 
     assertNotNull(result);
     assertNull(result.getLeft());
@@ -119,7 +119,7 @@ class PaaSILInviaDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, "CART", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
 
     assertNotNull(result);
     assertNull(result.getLeft());
@@ -137,7 +137,7 @@ class PaaSILInviaDovutiMapperTest {
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(Triple.of(null, SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Error"));
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, "CART", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
 
     assertNotNull(result);
     assertNull(result.getLeft());
@@ -165,7 +165,7 @@ class PaaSILInviaDovutiMapperTest {
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(Triple.of(debtor, null, null));
     when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(podamFactory.manufacturePojo(DebtPositionTypeOrg.class));
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, "CART", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
 
     assertNotNull(result);
     assertNotNull(result.getLeft());

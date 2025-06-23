@@ -20,10 +20,12 @@ public enum SilFaults {
   PAA_ENTE_SECONDARIO_NON_VALIDO("Ente secondario non valido"),
   PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO("Numero massimo dovuti nel carrello superato"),
   PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI("Errore recupero dovuti enti secondari"),
+  PAA_URL_NON_VALIDA("Url risposta pagamento non valida"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
   PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido");
+
 
   private final String description;
 

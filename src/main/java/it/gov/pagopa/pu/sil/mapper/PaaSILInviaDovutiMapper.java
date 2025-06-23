@@ -35,7 +35,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
     this.organizationService = organizationService;
   }
 
-  public Triple<List<DebtPositionDTO>, SilFaults, String> mapRequestToDebtPositionsOrFault(PaaSILInviaDovuti request, UserInfo userInfo, String orgIpaCode, String accessToken) {
+  public Triple<List<DebtPositionDTO>, SilFaults, String> mapRequestToDebtPositionsOrFault(PaaSILInviaDovuti request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken) {
 
     //validate organization
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
@@ -48,7 +48,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
     //unmarshall "dovuti"
     try {
       Dovuti dovutiObj = jaxbTransformService.unmarshalling(request.getDovuti(), Dovuti.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd");
-      return dovutiMapper(RegistryEventType.paaSILInviaDovuti, dovutiObj, organization, accessToken);
+      return dovutiMapper(RegistryEventType.paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
     } catch (ApplicationException unmarshallingException) {
       String errorMessage = "XML non conforme: \n" +
         jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, request.getDovuti());
