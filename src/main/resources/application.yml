@@ -159,6 +159,11 @@ rest:
       max-attempts: "\${PAGOPA_NODE_CHECKOUT_MAX_ATTEMPTS:3}" # It's counting also the first attempt
       wait-time-millis: "\${PAGOPA_NODE_CHECKOUT_WAIT_TIME_MILLIS:500}"
       print-body-when-error: "\${PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR:true}"
+  workflow-hub:
+    base-url: "\${WORKFLOW_HUB_BASE_URL:http://localhost:8082}/workflowhub"
+    max-attempts: "\${WORKFLOW_HUB_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${WORKFLOW_HUB_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR:true}"
 
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"

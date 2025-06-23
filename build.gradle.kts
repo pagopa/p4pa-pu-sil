@@ -154,6 +154,7 @@ tasks.register("dependenciesBuild") {
     "openApiGeneratePROCESSEXECUTION",
     "openApiGenerateDEBTPOSITIONS",
     "openApiGenerateORGANIZATION",
+    "openApiGenerateWORKFLOWHUB",
     "openApiGenerateNodeCheckout",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation"
@@ -340,6 +341,45 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   invokerPackage.set("it.gov.pagopa.pu.organization.generated")
   apiPackage.set("it.gov.pagopa.pu.organization.client.generated")
   modelPackage.set("it.gov.pagopa.pu.organization.dto.generated")
+  configOptions.set(
+    mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "serializableModel" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    )
+  )
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateWORKFLOWHUB") {
+  group = "AutomaticallyGeneratedCode"
+  description = "openapi"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-workflow-hub/refs/heads/$targetEnv/openapi/p4pa-workflow-hub.openapi.yaml")
+  outputDir.set("$projectDir/build/generated")
+  invokerPackage.set("it.gov.pagopa.pu.workflowhub.generated")
+  apiPackage.set("it.gov.pagopa.pu.workflowhub.controller.generated")
+  modelPackage.set("it.gov.pagopa.pu.workflowhub.dto.generated")
+  typeMappings.set(
+    mapOf(
+      "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
+      "IngestionFlowFileType" to "String",
+      "WfExecutionConfig" to "com.fasterxml.jackson.databind.JsonNode",
+      "ExportFileType" to "String",
+      "WorkflowTypeOrg" to "String",
+      "ScheduleEnum" to "String",
+      "WorkflowExecutionStatus" to "String"
+    )
+  )
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
