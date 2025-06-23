@@ -96,6 +96,8 @@ See [log configured pattern](/src/main/resources/logback-spring.xml).
   * To get payment pdf notice;
 * [p4pa-send-notification](https://github.com/pagopa/p4pa-send-notification):
   * To send notification using PagoPa SEND service;
+* [p4pa-workflow-hub](https://github.com/pagopa/p4pa-workflow-hub):
+  * To get workflow execution status;
 
 ### 🌍 External
 * SIL - organization exposed services:
@@ -184,6 +186,10 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | PAGOPA_PAYMENTS_MAX_ATTEMPTS             | PagoPaPayments API max attempts                     | 3       |
 | PAGOPA_PAYMENTS_WAIT_TIME_MILLIS         | PagoPaPayments retry waiting time (milliseconds)    | 500     |
 | PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR    | To print body when an error occurs                  | true    |
+| WORKFLOW_HUB_BASE_URL                    | Workflow-Hub microservice URL                       |         |
+| WORKFLOW_HUB_MAX_ATTEMPTS                | Workflow-Hub API max attempts                       | 3       |
+| WORKFLOW_HUB_WAIT_TIME_MILLIS            | Workflow-Hub retry waiting time (milliseconds)      | 500     |
+| WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR       | To print body when an error occurs                  | true    |
 
 ##### 🌍 External services
 | ENV                                        | DESCRIPTION                                       | DEFAULT |
