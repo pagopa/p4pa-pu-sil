@@ -341,13 +341,15 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlusso");
 
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
+      .loggedUser(userInfo)
+      .build();
+
     return registryLogger.execute(
-      AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode),
-      RegistrySilEventType.paaSILPrenotaExportFlusso,
-      null,
+      contextData,
       request,
-      userInfo,
-      null,
       () -> {
         Long result = paaSILPrenotaExportFlussoService.paaSILPrenotaExportFlusso(
           userInfo,
@@ -357,11 +359,9 @@ public class PuForOrganizationPaymentsEndpoint {
         );
         PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
         response.setRequestToken(String.valueOf(result));
-        return Triple.of(response, null, SilOutcome.OK);
+        return Triple.of(response, null, RegistryOutcome.OK);
       },
-      this::handleExportFileRequestValidationException,
-      null,
-      null
+      this::handleExportFileRequestValidationException
     );
   }
 
