@@ -41,7 +41,7 @@ class WorkflowApisHolderTest extends BaseApiHolderTest {
   void whenDebtPositionApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> workflowApisHolder.getWorkflowApi(accessToken)
-        .waitWorkflowCompletion("1234", null, null),
+        .waitWorkflowCompletion("1234", 1, 1000),
       new ParameterizedTypeReference<>() {
       },
       workflowApisHolder::unload);
