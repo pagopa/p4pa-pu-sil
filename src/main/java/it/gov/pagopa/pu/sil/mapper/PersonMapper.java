@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.debtpositions.dto.generated.EntityTypeEnum;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
@@ -42,7 +42,7 @@ public class PersonMapper {
 
     return PersonDTO.builder()
       .fiscalCode(soggettoPagatore.getIdentificativoUnivocoPagatore().getCodiceIdentificativoUnivoco())
-      .entityType(EntityTypeEnum.fromValue(soggettoPagatore.getIdentificativoUnivocoPagatore().getTipoIdentificativoUnivoco().value()))
+      .entityType(PersonEntityType.fromValue(soggettoPagatore.getIdentificativoUnivocoPagatore().getTipoIdentificativoUnivoco().value()))
       .fullName(soggettoPagatore.getAnagraficaPagatore())
       .email(soggettoPagatore.getEMailPagatore())
       .address(soggettoPagatore.getIndirizzoPagatore())
