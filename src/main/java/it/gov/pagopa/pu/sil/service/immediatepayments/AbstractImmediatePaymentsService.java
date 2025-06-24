@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class AbstractImmediatePaymentsService<Req, Resp> {
+public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
   protected final CheckoutService checkoutService;
   protected final CreateDebtPositionService createDebtPositionService;
   protected final CartRequestMapper cartRequestMapper;
@@ -35,13 +35,13 @@ public abstract class AbstractImmediatePaymentsService<Req, Resp> {
     this.cartRequestMapper = cartRequestMapper;
   }
 
-  protected abstract List<DebtPositionDTO> mapRequestToDebtPositions(Req request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken);
+  protected abstract List<DebtPositionDTO> mapRequestToDebtPositions(REQ request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken);
 
-  protected abstract Resp mapToResponse(String outcome, String checkoutUrl, String sessionId);
+  protected abstract RESP mapToResponse(String outcome, String checkoutUrl, String sessionId);
 
-  protected abstract String getCallbackUrl(Req request);
+  protected abstract String getCallbackUrl(REQ request);
 
-  public Triple<Resp, String, RegistryOutcome> processRequest(Req request, String orgIpaCode, UserInfo userInfo, String accessToken) {
+  public Triple<RESP, String, RegistryOutcome> processRequest(REQ request, String orgIpaCode, UserInfo userInfo, String accessToken) {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
@@ -80,7 +80,7 @@ public abstract class AbstractImmediatePaymentsService<Req, Resp> {
     //invoke carts API to trigger the payment on Checkout
     String checkoutUrl = checkoutService.checkoutCart(cartRequest);
 
-    Resp response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
+    RESP response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
     return Triple.of(response, iuvs, RegistryOutcome.OK);
   }
 }
