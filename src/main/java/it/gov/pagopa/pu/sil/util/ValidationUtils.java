@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.util;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.debtpositions.dto.generated.EntityTypeEnum;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtAccertamento;
 import org.apache.commons.lang3.StringUtils;
@@ -67,7 +67,7 @@ public class ValidationUtils {
   public static boolean verifyValidAnonymousDebtor(DebtPositionTypeOrg debtPositionTypeOrg, PersonDTO personDTO) {
     return debtPositionTypeOrg!=null && personDTO!=null && (
       StringUtils.equals(personDTO.getFiscalCode(), Constants.ANONYMOUS_FISCAL_CODE) &&
-      EntityTypeEnum.F.equals(personDTO.getEntityType()) &&
+      PersonEntityType.F.equals(personDTO.getEntityType()) &&
       Boolean.TRUE.equals(debtPositionTypeOrg.getFlagAnonymousFiscalCode()) ||
       !StringUtils.equals(personDTO.getFiscalCode(), Constants.ANONYMOUS_FISCAL_CODE));
   }
