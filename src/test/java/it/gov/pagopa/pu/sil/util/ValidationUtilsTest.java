@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.util;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.debtpositions.dto.generated.EntityTypeEnum;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtAccertamento;
 import org.junit.jupiter.api.Test;
@@ -130,7 +130,7 @@ class ValidationUtilsTest {
 
     PersonDTO personDTO = new PersonDTO();
     personDTO.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
-    personDTO.setEntityType(EntityTypeEnum.F);
+    personDTO.setEntityType(PersonEntityType.F);
 
     assertTrue(ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, personDTO));
   }
@@ -142,7 +142,7 @@ class ValidationUtilsTest {
 
     PersonDTO personDTO = new PersonDTO();
     personDTO.setFiscalCode("RSSMRA85M01H501Z");
-    personDTO.setEntityType(EntityTypeEnum.F);
+    personDTO.setEntityType(PersonEntityType.F);
 
     assertTrue(ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, personDTO));
   }
@@ -154,7 +154,7 @@ class ValidationUtilsTest {
 
     PersonDTO personDTO = new PersonDTO();
     personDTO.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
-    personDTO.setEntityType(EntityTypeEnum.G);
+    personDTO.setEntityType(PersonEntityType.G);
 
     assertFalse(ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, personDTO));
   }
@@ -163,7 +163,7 @@ class ValidationUtilsTest {
   void verifyValidAnonymousDebtor_NullDebtPositionTypeOrg_ReturnsFalse() {
     PersonDTO personDTO = new PersonDTO();
     personDTO.setFiscalCode("RSSMRA85M01H501Z");
-    personDTO.setEntityType(EntityTypeEnum.F);
+    personDTO.setEntityType(PersonEntityType.F);
 
     assertFalse(ValidationUtils.verifyValidAnonymousDebtor(null, personDTO));
   }
@@ -244,6 +244,19 @@ class ValidationUtilsTest {
   @NullAndEmptySource
   void isValidIban_InvalidInputs_ReturnsFalse(String input) {
     assertFalse(ValidationUtils.isValidIban(input));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"http://example.com", "https://example.com/path?query=1", "ftp://ftp.example.com"})
+  void isValidUri_ValidUri_ReturnsTrue(String uri) {
+    assertTrue(ValidationUtils.isValidUri(uri));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"http://", "://missing.scheme.com"})
+  @NullAndEmptySource
+  void isValidUri_InvalidUri_ReturnsFalse(String uri) {
+    assertFalse(ValidationUtils.isValidUri(uri));
   }
 
 }
