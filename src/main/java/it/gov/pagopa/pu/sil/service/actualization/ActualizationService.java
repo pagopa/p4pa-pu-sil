@@ -8,8 +8,6 @@ import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.BalanceService;
-import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
