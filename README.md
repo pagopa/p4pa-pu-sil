@@ -222,9 +222,10 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | KAFKA_REGISTRIES_PRODUCER_BATCH_SIZE               | Producer batch size                               | 16384                      |
 
 #### 💼 Business logic
-| ENV                        | DESCRIPTION                                                                                | DEFAULT |
-|----------------------------|--------------------------------------------------------------------------------------------|---------|
-| PUBLIC_BASE_URL_FILESHARE  | Public base URL towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare) service |         |
+| ENV                                     | DESCRIPTION                                                                                | DEFAULT |
+|-----------------------------------------|--------------------------------------------------------------------------------------------|---------|
+| PUBLIC_BASE_URL_FILESHARE               | Public base URL towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare) service |         |  
+| DEFAULT_AUTH_EXPIRATION_TIMEOUT_SECONDS | default expiration for legay auth in seconds                                              | 300     |
 
 ## 🛠️ Getting Started
 

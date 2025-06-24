@@ -133,8 +133,6 @@ rest:
     max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${AUTH_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${AUTH_PRINT_BODY_WHEN_ERROR:true}"
-    expiration-timeout-seconds:
-      default: "\${DEFAULT_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}"
     post-token:
       client_secret: "\${AUTH_CLIENT_SECRET:clientsecret}"
   debt-position:
@@ -172,6 +170,9 @@ rest:
     max-attempts: "\${NOTIFICATION_PRICE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${NOTIFICATION_PRICE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR:true}"
+
+legacy-auth:
+  default-expiration-seconds: "\${DEFAULT_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}"
 
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
