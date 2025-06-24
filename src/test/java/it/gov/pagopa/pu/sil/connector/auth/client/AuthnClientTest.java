@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.auth.client;
 
 import it.gov.pagopa.pu.auth.controller.generated.AuthnApi;
-import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
@@ -70,30 +69,5 @@ class AuthnClientTest {
     InvalidAccessTokenException exception = Assertions.assertThrows(InvalidAccessTokenException.class, () -> authnClient.getUserInfo(accessToken));
 
     assertEquals(bodyMessage, exception.getMessage());
-  }
-
-  @Test
-  void whenGetOperatorInfoThenInvokeWithAccessToken(){
-    // Given
-    AccessToken expectedResult = new AccessToken();
-
-    String clientId = "clientId";
-    String grantType = "grantType";
-    String scope = "scope";
-    String subjectToken = "subjectToken";
-    String subjectIssuer = "subjectIssuer";
-    String subjectTokenType = "subjectTokenType";
-    String clientSecret = "clientSecret";
-
-    Mockito.when(authApisHolderMock.getAuthnApi(null))
-      .thenReturn(authnApiMock);
-    Mockito.when(authnApiMock.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret))
-      .thenReturn(expectedResult);
-
-    // When
-    AccessToken result = authnClient.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
-
-    // Then
-    Assertions.assertSame(expectedResult, result);
   }
 }
