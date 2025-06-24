@@ -48,7 +48,7 @@ public class PuSilExceptionHandler {
     return handleException(ex, request, httpStatus, errorCode);
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
+  @ExceptionHandler({IllegalArgumentException.class, InvalidValueException.class})
   public ResponseEntity<PuSilErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
   }
