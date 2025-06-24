@@ -235,6 +235,31 @@ class AuthorizationServiceTest {
     // Then
     Assertions.assertEquals(expectedId, result);
   }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, CF_1, 1",
+    "USERID, CF_2, 2",
+    "USERID, CF_3, null",
+    "null, CF_1, null",
+    "USERID, null, null"
+  }, nullValues={"null"})
+  void testGetOrganizationIdFromOrgFiscalCode(String userId, String organizationFiscalCode, Long expectedId) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    Long result = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, organizationFiscalCode);
+
+    // Then
+    Assertions.assertEquals(expectedId, result);
+  }
 }
-
-
