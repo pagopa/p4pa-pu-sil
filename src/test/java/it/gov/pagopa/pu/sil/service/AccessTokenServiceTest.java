@@ -65,7 +65,7 @@ class AccessTokenServiceTest {
     configureAndInvoke(expectedResult);
 
     // Then
-    Mockito.verify(authAccessTokenFacadeMock, Mockito.times(2))
+    Mockito.verify(authAccessTokenFacadeMock, Mockito.times(1))
       .retrieveAccessToken(Mockito.any(), Mockito.any());
   }
 
