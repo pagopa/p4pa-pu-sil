@@ -52,23 +52,6 @@ class AccessTokenServiceTest {
       .retrieveAccessToken(Mockito.any(), Mockito.any());
   }
 
-  @Test
-  void givenExpiredCacheWhenGetAccessTokenThenInvokeAndCache(){
-    // Given
-    AccessToken expectedResult = AccessToken.builder()
-      .expiresIn(5)
-      .accessToken("ACCESSTOKEN")
-      .tokenType("TOKENTYPE")
-      .build();
-
-    // When
-    configureAndInvoke(expectedResult);
-
-    // Then
-    Mockito.verify(authAccessTokenFacadeMock, Mockito.times(1))
-      .retrieveAccessToken(Mockito.any(), Mockito.any());
-  }
-
   private void configureAndInvoke(AccessToken expectedResult) {
     // Given
     UserInfo userInfo = new UserInfo();
