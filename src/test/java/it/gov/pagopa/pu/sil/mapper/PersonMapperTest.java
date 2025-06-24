@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.debtpositions.dto.generated.EntityTypeEnum;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
@@ -60,7 +60,7 @@ class PersonMapperTest {
     debtPositionTypeOrg.setFlagAnonymousFiscalCode(false);
     PersonDTO debtor = new PersonDTO();
     debtor.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
-    debtor.setEntityType(EntityTypeEnum.F);
+    debtor.setEntityType(PersonEntityType.F);
 
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
 
@@ -75,7 +75,7 @@ class PersonMapperTest {
     debtPositionTypeOrg.setFlagAnonymousFiscalCode(true);
     PersonDTO debtor = new PersonDTO();
     debtor.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
-    debtor.setEntityType(EntityTypeEnum.G);
+    debtor.setEntityType(PersonEntityType.G);
 
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
 
@@ -89,7 +89,7 @@ class PersonMapperTest {
     debtPositionTypeOrg.setFlagAnonymousFiscalCode(true);
     PersonDTO debtor = new PersonDTO();
     debtor.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
-    debtor.setEntityType(EntityTypeEnum.F);
+    debtor.setEntityType(PersonEntityType.F);
 
     Assertions.assertDoesNotThrow(() -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
   }
@@ -100,7 +100,7 @@ class PersonMapperTest {
     debtPositionTypeOrg.setFlagAnonymousFiscalCode(false);
     PersonDTO debtor = new PersonDTO();
     debtor.setFiscalCode("NON ANONYMOUS");
-    debtor.setEntityType(EntityTypeEnum.F);
+    debtor.setEntityType(PersonEntityType.F);
 
     Assertions.assertDoesNotThrow(() -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
   }

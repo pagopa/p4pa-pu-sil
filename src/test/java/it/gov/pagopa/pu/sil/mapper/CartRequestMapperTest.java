@@ -37,7 +37,7 @@ class CartRequestMapperTest {
     installment.setRemittanceInformation("Payment description");
     installment.setTransfers(List.of(transfer));
     installment.setDebtor(PersonDTO.builder()
-      .entityType(EntityTypeEnum.G)
+      .entityType(PersonEntityType.G)
       .fiscalCode("12345678901")
       .fullName("John Doe")
       .email("validEmail@example.com")
