@@ -4,12 +4,12 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import lombok.Getter;
 
 @Getter
-public class ExportFileRequestValidationException extends RuntimeException {
+public class ExportFileServiceException extends RuntimeException {
 
   private final SilFaults fault;
 
-  public ExportFileRequestValidationException(SilFaults fault) {
-    super(fault.description());
+  public ExportFileServiceException(SilFaults fault, String message) {
+    super(message);
     this.fault = fault;
   }
 }

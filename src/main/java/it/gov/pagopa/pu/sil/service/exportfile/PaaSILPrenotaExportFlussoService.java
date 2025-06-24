@@ -5,19 +5,14 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ExportFileRequestValidationException;
+import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
-import it.veneto.regione.pagamenti.ente.PaaSILPrenotaExportFlusso;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -28,21 +23,21 @@ public class PaaSILPrenotaExportFlussoService {
 
   private final ExportFileService exportFileService;
   private final DebtPositionService debtPositionService;
-  private final ValidationService validationService;
 
   public PaaSILPrenotaExportFlussoService(ExportFileService exportFileService,
-                                          DebtPositionService debtPositionService,
-                                          ValidationService validationService) {
+                                          DebtPositionService debtPositionService) {
     this.exportFileService = exportFileService;
     this.debtPositionService = debtPositionService;
-    this.validationService = validationService;
   }
 
   public Long paaSILPrenotaExportFlusso(
     UserInfo userInfo,
     String accessToken,
     String orgIpaCode,
-    PaaSILPrenotaExportFlusso request) {
+    String fileVersion,
+    OffsetDateTime from,
+    OffsetDateTime to,
+    Long debtPositionTypeOrgId) {
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
 
@@ -53,68 +48,21 @@ public class PaaSILPrenotaExportFlussoService {
 
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
-    Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
+    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
+      organizationId, debtPositionTypeOrgId.toString(), accessToken);
 
-    String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato)
-      .orElseThrow(() -> new ExportFileRequestValidationException(SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA));
-
-    OffsetDateTime from = optRequest.flatMap(r -> Optional.ofNullable(r.getDateFrom()))
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
-      .orElseThrow(() -> new ExportFileRequestValidationException(SilFaults.PAA_DATE_FROM_NON_VALIDO));
-
-    OffsetDateTime to = optRequest.flatMap(r -> Optional.ofNullable(r.getDateTo()))
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
-      .orElseThrow(() -> new ExportFileRequestValidationException(SilFaults.PAA_DATE_TO_NON_VALIDO));
-
-    if (to.isBefore(from)) {
-      throw new ExportFileRequestValidationException(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO);
+    if (debtPositionTypeOrg == null) {
+      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgId);
+    } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
+      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgId);
     }
-
-    Long debtPositionTypeOrgId = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
-      .map(debtPositionTypeOrgCode -> {
-        DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
-          organizationId, debtPositionTypeOrgCode, accessToken);
-
-        Pair<SilFaults, String> fault = validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, debtPositionTypeOrgCode);
-
-        if (fault != null) {
-          log.error("Validation failed for debt position type: {}", fault.getRight());
-          throw new ExportFileRequestValidationException(fault.getLeft());
-        }
-
-        return debtPositionTypeOrgCode;
-      })
-      .map(Long::valueOf)
-      .orElseThrow(() -> new ExportFileRequestValidationException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO));
 
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgId);
 
-    Long exportFileId;
-    try {
-      exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
-      log.debug("Export file created with ID: {}", exportFileId);
-    } catch (HttpClientErrorException.BadRequest br) {
-      throw resolveException(br);
-    }
+    Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
+    log.debug("Export file created with ID: {}", exportFileId);
 
     return exportFileId;
-  }
-
-  private RuntimeException resolveException(HttpClientErrorException.BadRequest br) {
-    RuntimeException ex = br;
-    ProcessExecutionsErrorDTO error = br.getResponseBodyAs(ProcessExecutionsErrorDTO.class);
-    if (error != null) {
-      ex = switch (error.getCode()) {
-        case
-          ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
-          new ExportFileRequestValidationException(SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA);
-        case
-          ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
-          new ExportFileRequestValidationException(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO);
-        default -> br;
-      };
-    }
-    return ex;
   }
 
   private PaidExportFileRequestDTO mapToExportRequest(Long organizationId,
