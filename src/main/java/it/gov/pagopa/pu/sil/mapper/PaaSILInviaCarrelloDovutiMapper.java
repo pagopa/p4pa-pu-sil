@@ -50,7 +50,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     this.taxonomyService = taxonomyService;
   }
 
-  public List<DebtPositionDTO> mapRequestToDebtPositionsOrFault(PaaSILInviaCarrelloDovuti request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken) {
+  public List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken) {
 
     //validate organization
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);

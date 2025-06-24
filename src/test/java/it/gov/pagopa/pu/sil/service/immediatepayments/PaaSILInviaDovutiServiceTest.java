@@ -75,7 +75,7 @@ class PaaSILInviaDovutiServiceTest {
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
     //when
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
@@ -87,7 +87,7 @@ class PaaSILInviaDovutiServiceTest {
     request.setEnteSILInviaRispostaPagamentoUrl("http://");
 
     //when
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, response.getFault());
@@ -100,7 +100,7 @@ class PaaSILInviaDovutiServiceTest {
       .thenThrow(new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "mapper error"));
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
@@ -119,7 +119,7 @@ class PaaSILInviaDovutiServiceTest {
       .thenThrow(new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "system error"));
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
@@ -141,7 +141,7 @@ class PaaSILInviaDovutiServiceTest {
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, exception.getFault());
@@ -176,7 +176,7 @@ class PaaSILInviaDovutiServiceTest {
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN);
+    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN);
 
     //verify
     Assertions.assertNotNull(response);
