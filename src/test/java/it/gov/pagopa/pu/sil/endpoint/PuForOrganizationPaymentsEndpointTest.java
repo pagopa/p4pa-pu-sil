@@ -280,7 +280,6 @@ class PuForOrganizationPaymentsEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    Long expectedToken = 12345L;
 
     Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
@@ -309,7 +308,6 @@ class PuForOrganizationPaymentsEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    Long expectedToken = 12345L;
 
     Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
