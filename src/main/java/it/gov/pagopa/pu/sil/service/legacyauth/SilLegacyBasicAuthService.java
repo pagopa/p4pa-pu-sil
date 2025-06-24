@@ -14,7 +14,7 @@ public class SilLegacyBasicAuthService {
   private final LegacyBasicAuthService legacyBasicAuthService;
 
   public SilLegacyBasicAuthService(
-    @Value("legacy-auth.default-expiration-seconds") Integer expirationTimeInSeconds,
+    @Value("${legacy-auth.default-expiration-seconds}") Integer expirationTimeInSeconds,
     LegacyBasicAuthService legacyBasicAuthService) {
       this.expirationTimeInSeconds = expirationTimeInSeconds;
       this.legacyBasicAuthService = legacyBasicAuthService;
