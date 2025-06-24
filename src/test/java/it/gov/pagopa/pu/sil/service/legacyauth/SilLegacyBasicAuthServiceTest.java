@@ -27,20 +27,29 @@ class SilLegacyBasicAuthServiceTest {
   }
 
   @Test
-  void authenticate_shouldCallLegacyBasicAuthServiceAndReturnToken() {
-    SilServiceLegacyBasicAuthConfig config = mock(SilServiceLegacyBasicAuthConfig.class);
+  void whenCallLegacyBasicAuthServiceThenReturnToken() {
     byte[] user = "user".getBytes();
     byte[] psw = "psw".getBytes();
     String authUrl = "http://auth.url";
-    when(config.getUser()).thenReturn(user);
-    when(config.getPsw()).thenReturn(psw);
-    when(config.getAuthUrl()).thenReturn(authUrl);
-    Token expectedToken = mock(Token.class);
-    when(legacyBasicAuthService.login(any(Credentials.class), eq(authUrl))).thenReturn(expectedToken);
+    SilServiceLegacyBasicAuthConfig config = new SilServiceLegacyBasicAuthConfig()
+      .user(user)
+      .psw(psw)
+      .authUrl(authUrl);
+    Credentials credentials = Credentials.builder()
+      .username(String.valueOf(user))
+      .password(String.valueOf(psw))
+      .build();
+
+    Token expectedToken = new Token()
+      .token("accessToken")
+      .esito(Token.EsitoEnum.OK);
+
+    when(legacyBasicAuthService.login(credentials, authUrl)).thenReturn(expectedToken);
 
     AccessToken result = service.authenticate(config);
+
     assertSame(expectedToken.getToken(), result.getAccessToken());
     assertEquals(EXPIRATION_TIME, result.getExpiresIn());
-    verify(legacyBasicAuthService).login(any(Credentials.class), eq(authUrl));
+    verify(legacyBasicAuthService).login(credentials, authUrl);
   }
 }

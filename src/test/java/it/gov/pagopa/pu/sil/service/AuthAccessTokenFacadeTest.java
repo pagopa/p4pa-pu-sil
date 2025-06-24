@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.service;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
-import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
+import it.gov.pagopa.pu.sil.connector.auth.service.AuthnService;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AuthAccessTokenFacadeTest {
 
   @Mock
-  private AuthnClient authnClient;
+  private AuthnService authnService;
   @Mock
   private SilLegacyAuthFacadeService silLegacyAuthFacadeService;
   @Mock
@@ -35,7 +35,7 @@ class AuthAccessTokenFacadeTest {
   @BeforeEach
   void setUp() {
     authAccessTokenFacade = new AuthAccessTokenFacade(
-      authnClient, silLegacyAuthFacadeService, "dummySecret");
+      authnService, silLegacyAuthFacadeService, "dummySecret");
   }
 
   @ParameterizedTest
@@ -50,18 +50,18 @@ class AuthAccessTokenFacadeTest {
       assertEquals(accessToken, result);
 
       verify(silLegacyAuthFacadeService).authenticate(any());
-      verify(authnClient, never()).postToken(any(), any(), any(), any(), any(), any(), any());
+      verify(authnService, never()).postToken(any(), any(), any(), any(), any(), any(), any());
     } else {
       try (MockedStatic<AuthorizationService> utilities = mockStatic(AuthorizationService.class)) {
         when(orgSilService.getOrganizationId()).thenReturn(123L);
         utilities.when(() -> AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, 123L)).thenReturn("IPA_CODE");
         String expectedClientId = "piattaforma-unitaria_IPA_CODE";
-        when(authnClient.postToken(eq(expectedClientId), any(), any(), any(), any(), any(), any())).thenReturn(accessToken);
+        when(authnService.postToken(eq(expectedClientId), any(), any(), any(), any(), any(), any())).thenReturn(accessToken);
 
         AccessToken result = authAccessTokenFacade.retrieveAccessToken(orgSilService, userInfo);
         assertEquals(accessToken, result);
 
-        verify(authnClient).postToken(eq(expectedClientId), any(), any(), any(), any(), any(), any());
+        verify(authnService).postToken(eq(expectedClientId), any(), any(), any(), any(), any(), any());
         verify(silLegacyAuthFacadeService, never()).authenticate(any());
       }
     }

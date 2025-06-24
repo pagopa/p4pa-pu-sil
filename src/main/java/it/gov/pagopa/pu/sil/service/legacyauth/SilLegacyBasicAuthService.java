@@ -32,6 +32,7 @@ public class SilLegacyBasicAuthService {
     return AccessToken.builder()
       .accessToken(token.getToken())
       .expiresIn(expirationTimeInSeconds)
+      .tokenType("Bearer")
       .build();
   }
 }
