@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConf
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.sil.dto.LegacyTokenDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,8 +37,8 @@ class SilLegacyBasicAuthServiceTest {
     Token expectedToken = mock(Token.class);
     when(legacyBasicAuthService.login(any(Credentials.class), eq(authUrl))).thenReturn(expectedToken);
 
-    Token result = service.authenticate(config);
-    assertSame(expectedToken, result);
+    LegacyTokenDTO result = service.authenticate(config);
+    assertSame(expectedToken.getToken(), result.getToken());
     verify(legacyBasicAuthService).login(any(Credentials.class), eq(authUrl));
   }
 }

@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.service.legacyauth;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
-import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.sil.dto.LegacyTokenDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,9 +30,9 @@ class SilLegacyAuthFacadeServiceTest {
   @Test
   void authenticate_withBasicAuthConfig_delegatesToBasicAuthService() {
     SilServiceLegacyBasicAuthConfig config = mock(SilServiceLegacyBasicAuthConfig.class);
-    Token expectedToken = mock(Token.class);
+    LegacyTokenDTO expectedToken = mock(LegacyTokenDTO.class);
     when(basicAuthServiceMock.authenticate(config)).thenReturn(expectedToken);
-    Token result = facadeService.authenticate(config);
+    LegacyTokenDTO result = facadeService.authenticate(config);
     assertSame(expectedToken, result);
     verify(basicAuthServiceMock).authenticate(config);
     verifyNoInteractions(jwtAuthServiceMock);
@@ -41,10 +41,10 @@ class SilLegacyAuthFacadeServiceTest {
   @Test
   void authenticate_withJwtAuthConfig_delegatesToJwtAuthService() {
     SilServiceLegacyJwtAuthConfig config = mock(SilServiceLegacyJwtAuthConfig.class);
-    Object expectedResult = new Object();
-    when(jwtAuthServiceMock.authenticate(config)).thenReturn(expectedResult);
-    Object result = facadeService.authenticate(config);
-    assertSame(expectedResult, result);
+    LegacyTokenDTO expectedToken = mock(LegacyTokenDTO.class);
+    when(jwtAuthServiceMock.authenticate(config)).thenReturn(expectedToken);
+    LegacyTokenDTO result = facadeService.authenticate(config);
+    assertSame(expectedToken, result);
     verify(jwtAuthServiceMock).authenticate(config);
     verifyNoInteractions(basicAuthServiceMock);
   }
