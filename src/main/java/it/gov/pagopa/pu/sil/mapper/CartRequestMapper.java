@@ -5,9 +5,9 @@ import it.gov.pagopa.nodo.checkout.dto.generated.CartRequestReturnUrls;
 import it.gov.pagopa.nodo.checkout.dto.generated.PaymentNotice;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -16,8 +16,20 @@ import java.util.List;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class CartRequestMapper {
+
+  private final String defaultCallbackUrlOk;
+  private final String defaultCallbackUrlKo;
+  private final String defaultCallbackUrlCancel;
+
+  public CartRequestMapper(@Value("${checkout.default-callback-url.ok}") String defaultCallbackUrlOk,
+                           @Value("${checkout.default-callback-url.ko}") String defaultCallbackUrlKo,
+                           @Value("${checkout.default-callback-url.cancel}") String defaultCallbackUrlCancel) {
+    this.defaultCallbackUrlOk = defaultCallbackUrlOk;
+    this.defaultCallbackUrlKo = defaultCallbackUrlKo;
+    this.defaultCallbackUrlCancel = defaultCallbackUrlCancel;
+  }
+
 
   public CartRequest mapDebtPositionsToCartRequest(List<DebtPositionDTO> debtPositions,
                                                    String cartId, String requestCallbackUrl) {
@@ -39,10 +51,11 @@ public class CartRequestMapper {
       .flatMap(installment -> installment.getTransfers().stream())
       .allMatch(transfer -> StringUtils.isNotBlank(transfer.getPostalIban()));
 
-    URI callbackUri;
+    URI callbackUriOk, callbackUriKo, callbackUriCancel;
     try {
-      //TODO handle case where callback URL is not provided P4ADEV-3220
-      callbackUri = new URI(StringUtils.firstNonBlank(requestCallbackUrl, "http://TODO.com"));
+      callbackUriOk = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlOk));
+      callbackUriKo = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlKo));
+      callbackUriCancel = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlCancel));
     } catch (URISyntaxException use) {
       throw new ApplicationException(use);
     }
@@ -52,9 +65,9 @@ public class CartRequestMapper {
       .emailNotice(debtPositions.getFirst().getPaymentOptions().getFirst().getInstallments().getFirst().getDebtor().getEmail())
       .paymentNotices(paymentNotices)
       .returnUrls(CartRequestReturnUrls.builder()
-        .returnOkUrl(callbackUri)
-        .returnErrorUrl(callbackUri)
-        .returnCancelUrl(callbackUri)
+        .returnOkUrl(callbackUriOk)
+        .returnErrorUrl(callbackUriKo)
+        .returnCancelUrl(callbackUriCancel)
         .build())
       .allCCP(allCCP)
       .build();
