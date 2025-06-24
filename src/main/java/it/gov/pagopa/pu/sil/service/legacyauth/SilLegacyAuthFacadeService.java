@@ -16,12 +16,10 @@ public class SilLegacyAuthFacadeService {
   }
 
   public <T> T authenticate(OrgSilServiceRequestBodyAuthConfig authConfig) {
-    if (authConfig instanceof SilServiceLegacyBasicAuthConfig) {
-      return (T) basicAuthService.authenticate((SilServiceLegacyBasicAuthConfig) authConfig);
-    } else if (authConfig instanceof SilServiceLegacyJwtAuthConfig) {
-      return (T) jwtAuthService.authenticate((SilServiceLegacyJwtAuthConfig) authConfig);
-    } else {
-      throw new IllegalArgumentException("Unsupported auth config type: " + authConfig.getClass().getSimpleName());
-    }
+    return switch (authConfig) {
+      case SilServiceLegacyBasicAuthConfig legacyBasicAuth -> (T) basicAuthService.authenticate(legacyBasicAuth);
+      case SilServiceLegacyJwtAuthConfig legacyJwtAuth -> (T) jwtAuthService.authenticate(legacyJwtAuth);
+      default -> throw new IllegalArgumentException("Unsupported auth config type: " + authConfig.getClass().getSimpleName());
+    };
   }
 }
