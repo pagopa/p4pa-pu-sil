@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
-import it.gov.pagopa.pu.sil.dto.LegacyTokenDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,11 +18,12 @@ import static org.mockito.Mockito.*;
 class SilLegacyBasicAuthServiceTest {
   @Mock
   private LegacyBasicAuthService legacyBasicAuthService;
+  private static final Integer EXPIRATION_TIME = 300;
   private SilLegacyBasicAuthService service;
 
   @BeforeEach
   void setUp() {
-    service = new SilLegacyBasicAuthService(legacyBasicAuthService);
+    service = new SilLegacyBasicAuthService(EXPIRATION_TIME, legacyBasicAuthService);
   }
 
   @Test
@@ -37,8 +38,9 @@ class SilLegacyBasicAuthServiceTest {
     Token expectedToken = mock(Token.class);
     when(legacyBasicAuthService.login(any(Credentials.class), eq(authUrl))).thenReturn(expectedToken);
 
-    LegacyTokenDTO result = service.authenticate(config);
-    assertSame(expectedToken.getToken(), result.getToken());
+    AccessToken result = service.authenticate(config);
+    assertSame(expectedToken.getToken(), result.getAccessToken());
+    assertEquals(EXPIRATION_TIME, result.getExpiresIn());
     verify(legacyBasicAuthService).login(any(Credentials.class), eq(authUrl));
   }
 }

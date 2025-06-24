@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.auth.client;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
@@ -26,4 +27,10 @@ public class AuthnClient {
     }
   }
 
+  public AccessToken postToken(String clientId, String grantType, String scope,
+                               String subjectToken, String subjectIssuer,
+                               String subjectTokenType, String clientSecret) {
+    return authApisHolder.getAuthnApi(null)
+      .postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
+  }
 }

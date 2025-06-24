@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
-import it.gov.pagopa.pu.sil.dto.LegacyTokenDTO;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,7 +16,7 @@ public class SilLegacyAuthFacadeService {
     this.jwtAuthService = jwtAuthService;
   }
 
-  public LegacyTokenDTO authenticate(OrgSilServiceRequestBodyAuthConfig authConfig) {
+  public AccessToken authenticate(OrgSilServiceRequestBodyAuthConfig authConfig) {
     return switch (authConfig) {
       case SilServiceLegacyBasicAuthConfig legacyBasicAuth -> basicAuthService.authenticate(legacyBasicAuth);
       case SilServiceLegacyJwtAuthConfig legacyJwtAuth -> jwtAuthService.authenticate(legacyJwtAuth);
