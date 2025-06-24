@@ -8,9 +8,10 @@ import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
-import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -25,8 +26,6 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.DovutiEntiSecondari;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -51,23 +50,20 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     this.taxonomyService = taxonomyService;
   }
 
-  public Triple<List<DebtPositionDTO>, SilFaults, String> mapRequestToDebtPositionsOrFault(PaaSILInviaCarrelloDovuti request, UserInfo userInfo, String orgIpaCode, String accessToken) {
+  public List<DebtPositionDTO> mapRequestToDebtPositionsOrFault(PaaSILInviaCarrelloDovuti request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken) {
 
     //validate organization
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      return Triple.of(null, SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
 
     //validate "dovuti"
-    Pair<SilFaults, String> fault = Optional.ofNullable(validationService.validatePrimaryDebtPositionOrganization(request, orgIpaCode))
-      //validate "dovuti secondari"
-      .orElseGet(() -> validationService.validateSecondaryDebtPositionCount(request, request.getListaDovuti().getElementoListaDovutis().size()));
-    if (fault != null) {
-      return Triple.of(null, fault.getLeft(), fault.getRight());
-    }
+    validationService.validatePrimaryDebtPositionOrganization(request, orgIpaCode);
+    //validate "dovuti secondari"
+    validationService.validateSecondaryDebtPositionCount(request, request.getListaDovuti().getElementoListaDovutis().size());
 
     //unmarshall "dovuti"
     List<Dovuti> dovutiList = new ArrayList<>();
@@ -80,37 +76,27 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
         String errorMessage = "XML dovuti [" + idx + "] non conforme: \n" +
           jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, elem.getDovuti());
         log.error("error unmarshalling PaaSILInviaCarrelloDovuti [dovuti {}]: [{}]", idx, errorMessage, unmarshallingException);
-        return Triple.of(null, SilFaults.PAA_XML_NON_VALIDO, errorMessage);
+        throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
       }
     }
 
     //check max number of debt positions in the cart
     if (dovutiList.size() > Constants.MAX_CART_SIZE) {
-      return Triple.of(null, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: " +
+      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: " +
         dovutiList.size() + "/" + Constants.MAX_CART_SIZE);
     }
 
-    List<DebtPositionDTO> debtPositionList = new ArrayList<>();
-    for (Dovuti dovutiObj : dovutiList) {
-      Triple<List<DebtPositionDTO>, SilFaults, String> result = dovutiMapper(
-        RegistryEventType.paaSILInviaCarrelloDovuti, dovutiObj, organization, accessToken);
-      if (result.getMiddle() != null) {
-        return Triple.of(null, result.getMiddle(), result.getRight());
-      } else {
-        debtPositionList.addAll(result.getLeft());
-      }
-    }
+    List<DebtPositionDTO> debtPositionList = dovutiList.stream()
+      .flatMap(d -> dovutiMapper(RegistryEventType.paaSILInviaCarrelloDovuti, cartId, d, organization, accessToken).stream())
+      .toList();
 
-    fault = handleSecondaryTransfer(debtPositionList, dovutiList, request.getListaDovutiEntiSecondari(), accessToken);
-    if (fault != null) {
-      return Triple.of(null, fault.getLeft(), fault.getRight());
-    }
+    handleSecondaryTransfer(debtPositionList, dovutiList, request.getListaDovutiEntiSecondari(), accessToken);
 
-    return Triple.of(debtPositionList, null, null);
+    return debtPositionList;
   }
 
-  private Pair<SilFaults, String> handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList, List<Dovuti> dovutiList,
-                                                          ListaDovutiEntiSecondari dovutiSecondariList, String accessToken) {
+  private void handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList, List<Dovuti> dovutiList,
+                                       ListaDovutiEntiSecondari dovutiSecondariList, String accessToken) {
     //unmarshall "dovuti secondari" (if present)
     final CtDatiVersamentoDovutiEntiSecondari secondaryTransferData;
     if (dovutiSecondariList != null && !CollectionUtils.isEmpty(dovutiSecondariList.getElementoListaDovutiEntiSecondaris())) {
@@ -122,30 +108,25 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
         String errorMessage = "XML dovuti enti secondari non conforme: \n" +
           jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, xmlDovutiSecondari);
         log.error("error unmarshalling PaaSILInviaCarrelloDovuti dovutEntiSecondari: [{}]", errorMessage, unmarshallingException);
-        return Pair.of(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
+        throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
       }
     } else {
       secondaryTransferData = null;
     }
 
     if (secondaryTransferData != null) {
-      return Optional.ofNullable(validationService.validateSecondaryDebtPositionData(secondaryTransferData, debtPositionList.size()))
-        .orElseGet(() -> fillSecondaryTransferData(debtPositionList.getFirst(), secondaryTransferData,
-          dovutiList.getFirst().getDatiVersamento().getDatiSingoloVersamentos().getFirst().getIdentificativoTipoDovuto(), accessToken));
+      validationService.validateSecondaryDebtPositionData(secondaryTransferData, debtPositionList.size());
+      fillSecondaryTransferData(debtPositionList.getFirst(), secondaryTransferData,
+        dovutiList.getFirst().getDatiVersamento().getDatiSingoloVersamentos().getFirst().getIdentificativoTipoDovuto(), accessToken);
     }
-
-    return null;
   }
 
-  private Pair<SilFaults, String> fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData,
-                                                            String debtPositionTypeOrgCode, String accessToken) {
+  private void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData,
+                                         String debtPositionTypeOrgCode, String accessToken) {
 
-    Triple<String, SilFaults, String> category = retrieveAndValidateSecondaryTransferCategory(
+    String category = retrieveAndValidateSecondaryTransferCategory(
       secondaryTransferData.getDatiSpecificiRiscossione(), debtPosition.getOrganizationId(),
       debtPositionTypeOrgCode, accessToken);
-    if (category.getMiddle() != null) {
-      return Pair.of(category.getMiddle(), category.getRight());
-    }
 
     long secondaryAmount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(secondaryTransferData.getImportoSingoloVersamento());
     TransferDTO secondaryTransfer = TransferDTO.builder()
@@ -155,23 +136,21 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
       .amountCents(secondaryAmount)
       .remittanceInformation(secondaryTransferData.getCausaleVersamento())
       .iban(secondaryTransferData.getIbanAccreditoBeneficiario())
-      .category(category.getLeft())
+      .category(category)
       .build();
 
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
     InstallmentDTO installment = paymentOption.getInstallments().getFirst();
     if (installment.getTransfers() != null) {
-      return Pair.of(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI,
+      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI,
         "Non è possibile inserire pagamenti multibeneficiario con più di un trasferimento secondario");
     }
     installment.setTransfers(List.of(secondaryTransfer));
     installment.setAmountCents(installment.getAmountCents() + secondaryAmount);
     paymentOption.setTotalAmountCents(installment.getAmountCents());
-
-    return null;
   }
 
-  private Triple<String, SilFaults, String> retrieveAndValidateSecondaryTransferCategory(String legacyPaymentMetadata, Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
+  private String retrieveAndValidateSecondaryTransferCategory(String legacyPaymentMetadata, Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
     String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(legacyPaymentMetadata);
     if (category == null) {
       // Retrieve the category from the DebtPositionTypeOrg using the debtPositionTypeOrgId
@@ -181,14 +160,14 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
       category = debtPositionType.getTaxonomyCode();
     }
     if (StringUtils.isBlank(category)) {
-      return Triple.of(null, SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico non presente o non valido per l'ente secondario: " + category);
+      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico non presente o non valido per l'ente secondario: " + category);
     }
     Optional<Taxonomy> taxonomy = taxonomyService.getTaxonomyByTaxonomyCode(category, accessToken);
     if (taxonomy.isEmpty()) {
-      return Triple.of(null, SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico dei dati specifici riscossione dell'Ente Secondario non presente in archivio [" + category + "]");
+      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico dei dati specifici riscossione dell'Ente Secondario non presente in archivio [" + category + "]");
     }
 
-    return Triple.of(category, null, null);
+    return category;
   }
 
 

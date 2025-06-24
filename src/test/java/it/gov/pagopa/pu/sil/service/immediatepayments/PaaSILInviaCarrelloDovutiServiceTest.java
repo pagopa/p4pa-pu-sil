@@ -4,6 +4,7 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
@@ -53,15 +54,9 @@ class PaaSILInviaCarrelloDovutiServiceTest {
     PaaSILInviaCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILInviaCarrelloDovuti.class);
 
     //when
-    Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> response = paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request);
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request));
 
     //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.name(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
   }
 }

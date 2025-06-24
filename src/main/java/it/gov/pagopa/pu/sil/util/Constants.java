@@ -21,5 +21,9 @@ public class Constants {
   public static final String SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI = "SIL_ICD-";
 
   public static final int MAX_CART_SIZE = 5;
+
+  public static final String WORKFLOW_STATUS_COMPLETED_VALUE = "WORKFLOW_EXECUTION_STATUS_COMPLETED";
+
+  public static final String SESSION_ID_SEPARATOR = "-";
 }
 
