@@ -6,13 +6,12 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDT
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ExportFileRequestValidationException;
+import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
+import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILPrenotaExportFlusso;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,9 +20,9 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 import uk.co.jemos.podam.api.PodamFactory;
+
+import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -36,8 +35,6 @@ class PaaSILPrenotaExportFlussoServiceTest {
   private ExportFileService exportFileServiceMock;
   @Mock
   private DebtPositionService debtPositionServiceMock;
-  @Mock
-  private ValidationService validationServiceMock;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
@@ -47,8 +44,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
   void setUp() {
     service = new PaaSILPrenotaExportFlussoService(
       exportFileServiceMock,
-      debtPositionServiceMock,
-      validationServiceMock
+      debtPositionServiceMock
     );
   }
 
@@ -56,8 +52,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
   void tearDown() {
     Mockito.verifyNoMoreInteractions(
       exportFileServiceMock,
-      debtPositionServiceMock,
-      validationServiceMock
+      debtPositionServiceMock
     );
   }
 
@@ -67,24 +62,28 @@ class PaaSILPrenotaExportFlussoServiceTest {
     userInfo.setUserId("userId1");
     String orgIpaCode = "ORG1";
     String accessToken = "token1";
+    String fileVersion = "1.0";
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = OffsetDateTime.now();
+    Long debtPositionTypeOrgId = 1L;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
-
-      PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
 
       assertThrows(UnauthorizedException.class, () ->
         service.paaSILPrenotaExportFlusso(
           userInfo,
           accessToken,
           orgIpaCode,
-          request
+          fileVersion,
+          from,
+          to,
+          debtPositionTypeOrgId
         )
       );
       verifyNoInteractions(
         exportFileServiceMock,
-        debtPositionServiceMock,
-        validationServiceMock);
+        debtPositionServiceMock);
     }
   }
 
@@ -95,6 +94,10 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String orgIpaCode = "ORG2";
     Long organizationId = 123L;
     String accessToken = "token2";
+    String fileVersion = "1.0";
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = OffsetDateTime.now();
+    Long debtPositionTypeOrgId = 1L;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -102,9 +105,8 @@ class PaaSILPrenotaExportFlussoServiceTest {
 
       when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken))).thenReturn(456L);
       when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
-        .thenReturn(new DebtPositionTypeOrg());
-      when(validationServiceMock.validateDebtPositionTypeOrg(any(), any()))
-        .thenReturn(null);
+        .thenReturn(new DebtPositionTypeOrg().flagActive(true));
+
 
       PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojoWithFullData(PaaSILPrenotaExportFlusso.class);
       request.setIdentificativoTipoDovuto(String.valueOf(1L));
@@ -113,7 +115,10 @@ class PaaSILPrenotaExportFlussoServiceTest {
         userInfo,
         accessToken,
         orgIpaCode,
-        request
+        fileVersion,
+        from,
+        to,
+        debtPositionTypeOrgId
       );
 
       assertNotNull(result);
@@ -128,6 +133,10 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String orgIpaCode = "ORG3";
     Long organizationId = 789L;
     String accessToken = "token3";
+    String fileVersion = "1.0";
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = OffsetDateTime.now();
+    Long debtPositionTypeOrgId = 1L;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), isNull())).thenReturn(true);
@@ -135,9 +144,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
 
       when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken))).thenReturn(999L);
       when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
-        .thenReturn(new DebtPositionTypeOrg());
-      when(validationServiceMock.validateDebtPositionTypeOrg(any(), any()))
-        .thenReturn(null);
+        .thenReturn(new DebtPositionTypeOrg().flagActive(true));
 
       PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojoWithFullData(PaaSILPrenotaExportFlusso.class);
       request.setIdentificativoTipoDovuto(String.valueOf(1L));
@@ -146,7 +153,10 @@ class PaaSILPrenotaExportFlussoServiceTest {
         userInfo,
         accessToken,
         orgIpaCode,
-        request
+        fileVersion,
+        from,
+        to,
+        debtPositionTypeOrgId
       );
 
       assertNotNull(result);
@@ -162,25 +172,27 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String orgIpaCode = "ORG4";
     Long organizationId = 123L;
     String accessToken = "token4";
+    String fileVersion = "1.0";
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = OffsetDateTime.now();
+    Long debtPositionTypeOrgId = 1L;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode))).thenReturn(organizationId);
 
       when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
-        .thenReturn(new DebtPositionTypeOrg());
-      when(validationServiceMock.validateDebtPositionTypeOrg(any(), any()))
-        .thenReturn(Pair.of(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Invalid debt position type"));
+        .thenReturn(null);
 
-      PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojoWithFullData(PaaSILPrenotaExportFlusso.class);
-      request.setIdentificativoTipoDovuto(String.valueOf(1L));
-
-      ExportFileRequestValidationException exception = assertThrows(ExportFileRequestValidationException.class, () ->
+      ExportFileServiceException exception = assertThrows(ExportFileServiceException.class, () ->
         service.paaSILPrenotaExportFlusso(
           userInfo,
           accessToken,
           orgIpaCode,
-          request
+          fileVersion,
+          from,
+          to,
+          debtPositionTypeOrgId
         )
       );
 
@@ -191,75 +203,42 @@ class PaaSILPrenotaExportFlussoServiceTest {
   }
 
   @Test
-  void givenUserIsAdminAndDateFromIsNullWhenPaaSILPrenotaExportFlussoThenException() {
+  void givenUserIsAdminAndInvalidDateIntervalExceptionWhenPaaSILPrenotaExportFlussoThenException() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("admin5");
     String orgIpaCode = "ORG5";
     Long organizationId = 123L;
     String accessToken = "token5";
+    String fileVersion = "1.0";
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = OffsetDateTime.now();
+    Long debtPositionTypeOrgId = 1L;
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode))).thenReturn(organizationId);
 
-      PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojoWithFullData(PaaSILPrenotaExportFlusso.class);
-      request.setDateFrom(null);
-      request.setIdentificativoTipoDovuto(String.valueOf(1L));
-
-      ExportFileRequestValidationException exception = assertThrows(ExportFileRequestValidationException.class, () ->
-        service.paaSILPrenotaExportFlusso(
-          userInfo,
-          accessToken,
-          orgIpaCode,
-          request
-        )
-      );
-
-      assertEquals(SilFaults.PAA_DATE_FROM_NON_VALIDO, exception.getFault());
-
-      verifyNoInteractions(exportFileServiceMock,
-        debtPositionServiceMock,
-        validationServiceMock);
-    }
-  }
-
-  @Test
-  void givenUserIsAdminAndInvalidDateIntervalExceptionWhenPaaSILPrenotaExportFlussoThenException() {
-    UserInfo userInfo = new UserInfo();
-    userInfo.setUserId("admin6");
-    String orgIpaCode = "ORG6";
-    Long organizationId = 123L;
-    String accessToken = "token6";
-
-    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
-      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
-      authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode))).thenReturn(organizationId);
-
-      ProcessExecutionsErrorDTO error = new ProcessExecutionsErrorDTO()
-        .code(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE);
-      HttpClientErrorException errorException = HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "Bad Request", null, null, null);
-      errorException.setBodyConvertFunction((t) -> error);
+      ExportFileClientException errorException = new ExportFileClientException(
+        ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "");
 
       when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken)))
         .thenThrow(errorException);
       when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
-        .thenReturn(new DebtPositionTypeOrg());
-      when(validationServiceMock.validateDebtPositionTypeOrg(any(), any()))
-        .thenReturn(null);
+        .thenReturn(new DebtPositionTypeOrg().flagActive(true));
 
-      PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojoWithFullData(PaaSILPrenotaExportFlusso.class);
-      request.setIdentificativoTipoDovuto(String.valueOf(1L));
-
-      ExportFileRequestValidationException exception = assertThrows(ExportFileRequestValidationException.class, () ->
+      ExportFileClientException exception = assertThrows(ExportFileClientException.class, () ->
         service.paaSILPrenotaExportFlusso(
           userInfo,
           accessToken,
           orgIpaCode,
-          request
+          fileVersion,
+          from,
+          to,
+          debtPositionTypeOrgId
         )
       );
 
-      assertEquals(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO, exception.getFault());
+      assertEquals(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
     }
   }
 

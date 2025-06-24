@@ -2,11 +2,13 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
-import it.gov.pagopa.pu.sil.exception.ExportFileRequestValidationException;
+import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
+import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -34,6 +36,9 @@ import org.springframework.ws.server.endpoint.annotation.RequestPayload;
 import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
+
+import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Endpoint
 @Slf4j
@@ -347,6 +352,19 @@ public class PuForOrganizationPaymentsEndpoint {
       .loggedUser(userInfo)
       .build();
 
+    Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
+
+    String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato).orElse(null);
+
+    OffsetDateTime from = optRequest.flatMap(r -> Optional.ofNullable(r.getDateFrom()))
+      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime()).orElse(null);
+
+    OffsetDateTime to = optRequest.flatMap(r -> Optional.ofNullable(r.getDateTo()))
+      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime()).orElse(null);
+
+    Long debtPositionTypeOrgId = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
+      .map(Long::valueOf).orElse(null);
+
     return registryLogger.execute(
       contextData,
       request,
@@ -355,7 +373,10 @@ public class PuForOrganizationPaymentsEndpoint {
           userInfo,
           accessToken,
           orgIpaCode,
-          request
+          fileVersion,
+          from,
+          to,
+          debtPositionTypeOrgId
         );
         PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
         response.setRequestToken(String.valueOf(result));
@@ -366,11 +387,24 @@ public class PuForOrganizationPaymentsEndpoint {
   }
 
   private PaaSILPrenotaExportFlussoRisposta handleExportFileRequestValidationException(Exception e) {
-    if (e instanceof ExportFileRequestValidationException ee) {
+    if (e instanceof ExportFileClientException ce) {
+      SilFaults fault = switch (ce.getCode()) {
+        case ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION -> SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA;
+        case ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE -> SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO;
+        default -> SilFaults.PAA_SYSTEM_ERROR;
+      };
+
       return FaultUtils.setFaultOnResponse(
         new PaaSILPrenotaExportFlussoRisposta(),
-        ee.getFault(),
-        ee.getMessage()
+        fault,
+        fault.description()
+      );
+    }
+    if (e instanceof ExportFileServiceException se) {
+      return FaultUtils.setFaultOnResponse(
+        new PaaSILPrenotaExportFlussoRisposta(),
+        se.getFault(),
+        se.getFault().description() + ": " + se.getMessage()
       );
     }
     return FaultUtils.unauthorizedOrSystemExceptionHandler(
