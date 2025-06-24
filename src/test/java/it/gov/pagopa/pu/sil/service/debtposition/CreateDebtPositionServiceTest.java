@@ -4,8 +4,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.workflow.service.WorkflowService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,7 +17,6 @@ import java.util.List;
 
 import static it.gov.pagopa.pu.sil.util.Constants.WORKFLOW_STATUS_COMPLETED_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -47,13 +47,11 @@ class CreateDebtPositionServiceTest {
       .thenReturn(WORKFLOW_STATUS_COMPLETED_VALUE);
 
     // Act
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = createDebtPositionService.createSyncedDebtPositions(
+    List<DebtPositionDTO> result = createDebtPositionService.createSyncedDebtPositions(
       List.of(debtPosition1, debtPosition2), "accessToken");
 
     // Assert
-    assertEquals(2, result.getLeft().size());
-    assertNull(result.getMiddle());
-    assertNull(result.getRight());
+    assertEquals(2, result.size());
   }
 
   @Test
@@ -74,12 +72,11 @@ class CreateDebtPositionServiceTest {
       .thenReturn("FAILED");
 
     // Act
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = createDebtPositionService.createSyncedDebtPositions(
-      List.of(debtPosition1, debtPosition2), "accessToken");
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> createDebtPositionService.createSyncedDebtPositions(
+      List.of(debtPosition1, debtPosition2), "accessToken"));
 
     // Assert
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, result.getMiddle());
-    assertEquals("errore sincronizzando le posizioni debitorie", result.getRight());
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+    assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
   }
 }

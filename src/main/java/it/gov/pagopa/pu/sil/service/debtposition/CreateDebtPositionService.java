@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.workflow.service.WorkflowService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class CreateDebtPositionService {
   private final DebtPositionService debtPositionService;
   private final WorkflowService workflowService;
 
-  public Triple<List<DebtPositionDTO>, SilFaults, String> createSyncedDebtPositions(List<DebtPositionDTO> debtPositionsToCreate, String accessToken) {
+  public List<DebtPositionDTO> createSyncedDebtPositions(List<DebtPositionDTO> debtPositionsToCreate, String accessToken) {
     //create debt positions
     List<Pair<DebtPositionDTO, String>> debtPositions = debtPositionsToCreate.stream()
       .map(dp -> debtPositionService.createDebtPosition(dp, accessToken))
@@ -51,11 +52,11 @@ public class CreateDebtPositionService {
           .map(triple -> String.format("DebtPositionId: %s, WorkflowId: %s, Result: %s",
             triple.getLeft().getDebtPositionId(), triple.getMiddle(), triple.getRight()))
           .collect(Collectors.joining(" ; ")));
-      return Triple.of(null, SilFaults.PAA_SYSTEM_ERROR, "errore sincronizzando le posizioni debitorie");
+      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore sincronizzando le posizioni debitorie");
     }
 
-    return Triple.of(debtPositions.stream()
+    return debtPositions.stream()
       .map(Pair::getLeft)
-      .toList(), null, null);
+      .toList();
   }
 }

@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
@@ -107,20 +108,15 @@ class PaaSILInviaDovutiServiceTest {
   @Test
   void givenMapperFaultWhenPaaSILInviaDovutiThenFault() {
     //given
-    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositionsOrFault(eq(request), any(), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
-      .thenReturn(Triple.of(null, SilFaults.PAA_ENTE_NON_VALIDO, "mapper error"));
+    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), any(), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
+      .thenThrow(new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "mapper error"));
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
+    Assertions.assertEquals("mapper error", exception.getDescription());
   }
 
   @Test
@@ -129,22 +125,17 @@ class PaaSILInviaDovutiServiceTest {
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
 
-    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositionsOrFault(eq(request), any(), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
-      .thenReturn(Triple.of(debtPositionDTOList, null, null));
+    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), any(), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
+      .thenReturn(debtPositionDTOList);
     when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
-      .thenReturn(Triple.of(null, SilFaults.PAA_SYSTEM_ERROR, "system error"));
+      .thenThrow(new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "system error"));
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
-    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+    Assertions.assertEquals("system error", exception.getDescription());
   }
 
   @Test
@@ -155,24 +146,18 @@ class PaaSILInviaDovutiServiceTest {
 
     AtomicReference<String> cartId = new AtomicReference<>();
 
-    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositionsOrFault(eq(request), argThat(c -> {cartId.set(c); return true;}), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
-      .thenReturn(Triple.of(debtPositionDTOList, null, null));
-    when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
-      .thenReturn(Triple.of(debtPositionDTOList, null, null));
+    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), argThat(c -> {cartId.set(c); return true;}), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
+      .thenReturn(debtPositionDTOList);
+    when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN)).thenReturn(debtPositionDTOList);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
-      .thenReturn(Triple.of(null, SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
+      .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
-    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA.code(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, exception.getFault());
+    Assertions.assertEquals("invalid url", exception.getDescription());
   }
 
   @Test
@@ -194,12 +179,12 @@ class PaaSILInviaDovutiServiceTest {
       .map(String::valueOf)
       .collect(Collectors.joining(Constants.SESSION_ID_SEPARATOR));
 
-    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositionsOrFault(eq(request), argThat(c -> {cartId.set(c); return true;}), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
-      .thenReturn(Triple.of(debtPositionDTOList, null, null));
+    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), argThat(c -> {cartId.set(c); return true;}), eq(userInfo), eq(orgIpaCode), eq(TOKEN)))
+      .thenReturn(debtPositionDTOList);
     when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
-      .thenReturn(Triple.of(debtPositionDTOList, null, null));
+      .thenReturn(debtPositionDTOList);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
-      .thenReturn(Triple.of(cartRequest, null, null));
+      .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");
 
     //when

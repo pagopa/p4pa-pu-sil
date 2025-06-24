@@ -4,12 +4,10 @@ import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequestReturnUrls;
 import it.gov.pagopa.nodo.checkout.dto.generated.PaymentNotice;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -21,8 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CartRequestMapper {
 
-  public Triple<CartRequest, SilFaults, String> mapDebtPositionsToCartRequest(List<DebtPositionDTO> debtPositions,
-                                                                              String cartId, String requestCallbackUrl) {
+  public CartRequest mapDebtPositionsToCartRequest(List<DebtPositionDTO> debtPositions,
+                                                   String cartId, String requestCallbackUrl) {
     List<PaymentNotice> paymentNotices = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())
       .flatMap(option -> option.getInstallments().stream())
@@ -49,17 +47,16 @@ public class CartRequestMapper {
       throw new ApplicationException(use);
     }
 
-    return Triple.of(CartRequest.builder()
-        .idCart(cartId)
-        .emailNotice(debtPositions.getFirst().getPaymentOptions().getFirst().getInstallments().getFirst().getDebtor().getEmail())
-        .paymentNotices(paymentNotices)
-        .returnUrls(CartRequestReturnUrls.builder()
-          .returnOkUrl(callbackUri)
-          .returnErrorUrl(callbackUri)
-          .returnCancelUrl(callbackUri)
-          .build())
-        .allCCP(allCCP)
-        .build()
-      , null, null);
+    return CartRequest.builder()
+      .idCart(cartId)
+      .emailNotice(debtPositions.getFirst().getPaymentOptions().getFirst().getInstallments().getFirst().getDebtor().getEmail())
+      .paymentNotices(paymentNotices)
+      .returnUrls(CartRequestReturnUrls.builder()
+        .returnOkUrl(callbackUri)
+        .returnErrorUrl(callbackUri)
+        .returnCancelUrl(callbackUri)
+        .build())
+      .allCCP(allCCP)
+      .build();
   }
 }

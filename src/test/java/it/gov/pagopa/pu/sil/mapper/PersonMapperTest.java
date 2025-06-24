@@ -4,14 +4,14 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.debtpositions.dto.generated.EntityTypeEnum;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +21,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Locale;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(MockitoExtension.class)
 class PersonMapperTest {
@@ -35,7 +36,7 @@ class PersonMapperTest {
   private CtSoggettoPagatore soggettoPagatore;
 
   @BeforeEach
-  void setup(){
+  void setup() {
     soggettoPagatore = new CtSoggettoPagatore();
     soggettoPagatore.setNazionePagatore(Locale.ITALY.getCountry());
     soggettoPagatore.setIndirizzoPagatore("Via Roma");
@@ -61,11 +62,10 @@ class PersonMapperTest {
     debtor.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
     debtor.setEntityType(EntityTypeEnum.F);
 
-    Pair<SilFaults, String> result = personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
 
-    assertNotNull(result);
-    assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, result.getLeft());
-    assertEquals("Debitore anonimo non supportato per il tipo dovuto: CODE oppure non configurato correttamente", result.getRight());
+    assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, exception.getFault());
+    assertEquals("Debitore anonimo non supportato per il tipo dovuto: CODE oppure non configurato correttamente", exception.getDescription());
   }
 
   @Test
@@ -77,11 +77,10 @@ class PersonMapperTest {
     debtor.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
     debtor.setEntityType(EntityTypeEnum.G);
 
-    Pair<SilFaults, String> result = personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
 
-    assertNotNull(result);
-    assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, result.getLeft());
-    assertEquals("Debitore anonimo non supportato per il tipo dovuto: CODE oppure non configurato correttamente", result.getRight());
+    assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, exception.getFault());
+    assertEquals("Debitore anonimo non supportato per il tipo dovuto: CODE oppure non configurato correttamente", exception.getDescription());
   }
 
   @Test
@@ -92,9 +91,7 @@ class PersonMapperTest {
     debtor.setFiscalCode(Constants.ANONYMOUS_FISCAL_CODE);
     debtor.setEntityType(EntityTypeEnum.F);
 
-    Pair<SilFaults, String> result = personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
-
-    assertNull(result);
+    Assertions.assertDoesNotThrow(() -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
   }
 
   @Test
@@ -105,80 +102,65 @@ class PersonMapperTest {
     debtor.setFiscalCode("NON ANONYMOUS");
     debtor.setEntityType(EntityTypeEnum.F);
 
-    Pair<SilFaults, String> result = personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
-
-    assertNull(result);
+    Assertions.assertDoesNotThrow(() -> personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor));
   }
   //endregion
 
   //region: getAndValidateDebtor
   @Test
   void getAndValidateDebtor_NullSoggettoPagatore_ReturnsError() {
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(null);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(null));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Soggetto pagatore non presente", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Soggetto pagatore non presente", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_InvalidEmail_ReturnsError() {
     soggettoPagatore.setEMailPagatore("invalid-email");
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Email pagatore non valida: invalid-email", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Email pagatore non valida: invalid-email", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_MissingNazioneWithAddressFields_ReturnsError() {
     soggettoPagatore.setNazionePagatore(null);
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Indirizzo pagatore non valido: nazione mancante", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Indirizzo pagatore non valido: nazione mancante", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_MissingMandatoryFields_ReturnsError() {
     soggettoPagatore.setIndirizzoPagatore(null);
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertTrue(result.getRight().contains("mancante un campo tra indirizzo, civico, cap, località, provincia"));
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Indirizzo pagatore non valido: mancante un campo tra indirizzo, civico, cap, località, provincia", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_InvalidNazione_ReturnsError() {
     soggettoPagatore.setNazionePagatore("INVALID");
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Nazione non valida: INVALID", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Nazione non valida: INVALID", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_ValidData_ReturnsPersonDTO() {
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    PersonDTO result = personMapper.getAndValidateDebtor(soggettoPagatore);
 
     assertNotNull(result);
-    assertNotNull(result.getLeft());
-    assertNull(result.getMiddle());
-    assertNull(result.getRight());
-    TestUtils.checkNotNullFields(result.getLeft());
+    TestUtils.checkNotNullFields(result);
   }
 
   @Test
@@ -186,48 +168,40 @@ class PersonMapperTest {
     soggettoPagatore.setNazionePagatore("US");
     soggettoPagatore.setProvinciaPagatore("RM");
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Provincia non valida: RM (la provincia è prevista solo per la nazione IT)", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Provincia non valida: RM (la provincia è prevista solo per la nazione IT)", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_InvalidProvinceFormat_ReturnsError() {
     soggettoPagatore.setProvinciaPagatore("INVALID");
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Provincia non valida: INVALID", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Provincia non valida: INVALID", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_InvalidPostalCode_ReturnsError() {
     soggettoPagatore.setCapPagatore("INVALID");
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("CAP non valido: INVALID", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("CAP non valido: INVALID", exception.getDescription());
   }
 
   @Test
   void getAndValidateDebtor_InvalidCivicNumber_ReturnsError() {
     soggettoPagatore.setCivicoPagatore("INVALID_TOOOOO_LONG");
 
-    Triple<PersonDTO, SilFaults, String> result = personMapper.getAndValidateDebtor(soggettoPagatore);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Numero civico non valido: INVALID_TOOOOO_LONG", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("Numero civico non valido: INVALID_TOOOOO_LONG", exception.getDescription());
   }
   //endregion
 }

@@ -2,10 +2,8 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,16 +59,15 @@ class CartRequestMapperTest {
     int num = fullDebtPositionDTO.getPaymentOptions().stream().mapToInt(po -> po.getInstallments().size()).sum();
 
     // Act
-    Triple<CartRequest, SilFaults, String> result = cartRequestMapper.mapDebtPositionsToCartRequest(
+    CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
       List.of(fullDebtPositionDTO), cartId, callbackUrl);
 
     // Assert
     assertNotNull(result);
-    assertNotNull(result.getLeft());
-    assertEquals(cartId, result.getLeft().getIdCart());
-    assertEquals(fullDebtPositionDTO.getPaymentOptions().getFirst().getInstallments().getFirst().getDebtor().getEmail(), result.getLeft().getEmailNotice());
-    assertEquals(num, result.getLeft().getPaymentNotices().size());
-    TestUtils.checkNotNullFields(result.getLeft());
+    assertEquals(cartId, result.getIdCart());
+    assertEquals(fullDebtPositionDTO.getPaymentOptions().getFirst().getInstallments().getFirst().getDebtor().getEmail(), result.getEmailNotice());
+    assertEquals(num, result.getPaymentNotices().size());
+    TestUtils.checkNotNullFields(result);
   }
 
   @Test
@@ -79,14 +76,13 @@ class CartRequestMapperTest {
     String cartId = "cart123";
 
     // Act
-    Triple<CartRequest, SilFaults, String> result = cartRequestMapper.mapDebtPositionsToCartRequest(
+    CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
       List.of(debtPosition), cartId, null);
 
     // Assert
     assertNotNull(result);
-    assertNotNull(result.getLeft());
-    assertEquals("http://TODO.com", result.getLeft().getReturnUrls().getReturnOkUrl().toString());
-    TestUtils.checkNotNullFields(result.getLeft());
+    assertEquals("http://TODO.com", result.getReturnUrls().getReturnOkUrl().toString());
+    TestUtils.checkNotNullFields(result);
   }
 
   @Test
@@ -108,12 +104,12 @@ class CartRequestMapperTest {
     String callbackUrl = "http://valid-url.com";
 
     // Act
-    Triple<CartRequest, SilFaults, String> result = cartRequestMapper.mapDebtPositionsToCartRequest(
+    CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
       List.of(debtPosition), cartId, callbackUrl);
 
     // Assert
-    assertEquals(Boolean.TRUE, result.getLeft().getAllCCP());
-    TestUtils.checkNotNullFields(result.getLeft());
+    assertEquals(Boolean.TRUE, result.getAllCCP());
+    TestUtils.checkNotNullFields(result);
   }
 
   @Test
@@ -124,12 +120,12 @@ class CartRequestMapperTest {
     debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst().setPostalIban(null);
 
     // Act
-    Triple<CartRequest, SilFaults, String> result = cartRequestMapper.mapDebtPositionsToCartRequest(
+    CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
       List.of(debtPosition), cartId, callbackUrl);
 
     // Assert
-    assertNotEquals(Boolean.TRUE, result.getLeft().getAllCCP());
-    TestUtils.checkNotNullFields(result.getLeft());
+    assertNotEquals(Boolean.TRUE, result.getAllCCP());
+    TestUtils.checkNotNullFields(result);
   }
 
 }

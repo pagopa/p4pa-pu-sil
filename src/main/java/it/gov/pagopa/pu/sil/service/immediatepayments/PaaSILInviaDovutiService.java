@@ -54,20 +54,10 @@ public class PaaSILInviaDovutiService {
     String cartId = UUID.randomUUID().toString();
 
     //map request to debt positions and validate it
-    Triple<List<DebtPositionDTO>, SilFaults, String> mappedRequest = paaSILInviaDovutiMapper.mapRequestToDebtPositionsOrFault(request, cartId, userInfo, orgIpaCode, accessToken);
-    if (mappedRequest.getMiddle() != null) {
-      log.error("Error mapping request to debt position [{}]: {}", mappedRequest.getMiddle(), mappedRequest.getRight());
-      return setFaultResponse(mappedRequest.getMiddle(), mappedRequest.getRight());
-    }
+    List<DebtPositionDTO> mappedRequest = paaSILInviaDovutiMapper.mapRequestToDebtPositions(request, cartId, userInfo, orgIpaCode, accessToken);
 
     //create debt positions
-    Triple<List<DebtPositionDTO>, SilFaults, String> createdDebtPositions = createDebtPositionService.createSyncedDebtPositions(mappedRequest.getLeft(), accessToken);
-    if (createdDebtPositions.getMiddle() != null) {
-      log.error("Error creating debt positions [{}]: {}", createdDebtPositions.getMiddle(), createdDebtPositions.getRight());
-      return setFaultResponse(createdDebtPositions.getMiddle(), createdDebtPositions.getRight());
-    }
-
-    List<DebtPositionDTO> debtPositions = createdDebtPositions.getLeft();
+    List<DebtPositionDTO> debtPositions = createDebtPositionService.createSyncedDebtPositions(mappedRequest, accessToken);
 
     String iuvs = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())
@@ -82,15 +72,10 @@ public class PaaSILInviaDovutiService {
       .collect(Collectors.joining(Constants.SESSION_ID_SEPARATOR));
 
     //map debt positions to cart request
-    Triple<CartRequest, SilFaults, String> cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(
-      debtPositions, cartId, request.getEnteSILInviaRispostaPagamentoUrl());
-    if (cartRequest.getMiddle() != null) {
-      log.error("Error mapping debt positions to cartRequest [{}]: {}", cartRequest.getMiddle(), cartRequest.getRight());
-      return setFaultResponse(cartRequest.getMiddle(), cartRequest.getRight());
-    }
+    CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(debtPositions, cartId, request.getEnteSILInviaRispostaPagamentoUrl());
 
     //invoke carts API to trigger the payment on Checkout
-    String checkoutUrl = checkoutService.checkoutCart(cartRequest.getLeft());
+    String checkoutUrl = checkoutService.checkoutCart(cartRequest);
 
     PaaSILInviaDovutiRisposta response = new PaaSILInviaDovutiRisposta();
     response.setEsito(RegistryOutcome.OK.getValue());
