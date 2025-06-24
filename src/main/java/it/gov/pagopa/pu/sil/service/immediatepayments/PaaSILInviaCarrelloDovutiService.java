@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Utilities;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ public class PaaSILInviaCarrelloDovutiService {
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call paaSILInviaCarrelloDovuti for organization {}", clientId, orgIpaCode);
-      return setFaultResponse(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
+      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
     }
 
     //TODO P4ADEV-3076: unmarshall the request
@@ -36,9 +36,4 @@ public class PaaSILInviaCarrelloDovutiService {
     return Triple.of(response, iuv, RegistryOutcome.OK);
   }
 
-  private Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> setFaultResponse(SilFaults fault, String description) {
-    PaaSILInviaCarrelloDovutiRisposta response = new PaaSILInviaCarrelloDovutiRisposta();
-    response.setEsito(RegistryOutcome.KO.getValue());
-    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, RegistryOutcome.KO);
-  }
 }

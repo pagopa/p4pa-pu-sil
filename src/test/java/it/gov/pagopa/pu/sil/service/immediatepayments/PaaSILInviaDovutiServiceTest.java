@@ -75,16 +75,10 @@ class PaaSILInviaDovutiServiceTest {
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN);
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
   }
 
   @Test
@@ -93,16 +87,10 @@ class PaaSILInviaDovutiServiceTest {
     request.setEnteSILInviaRispostaPagamentoUrl("http://");
 
     //when
-    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> response = paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN);
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertNotNull(response);
-    Assertions.assertEquals(RegistryOutcome.KO, response.getRight());
-    Assertions.assertNotNull(response.getLeft());
-    Assertions.assertNotNull(response.getLeft().getFault());
-    Assertions.assertEquals(RegistryOutcome.KO.getValue(), response.getLeft().getEsito());
-    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA.code(), response.getLeft().getFault().getFaultCode());
-    Assertions.assertNull(response.getMiddle());
+    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, response.getFault());
   }
 
   @Test

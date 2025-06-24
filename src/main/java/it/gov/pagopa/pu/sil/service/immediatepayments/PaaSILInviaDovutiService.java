@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -14,7 +15,6 @@ import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import lombok.RequiredArgsConstructor;
@@ -43,12 +43,12 @@ public class PaaSILInviaDovutiService {
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call paaSILInviaDovuti for organization {}", clientId, orgIpaCode);
-      return setFaultResponse(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
+      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
     }
 
     //validate callback URL
     if (StringUtils.isNotBlank(request.getEnteSILInviaRispostaPagamentoUrl()) && !ValidationUtils.isValidUri(request.getEnteSILInviaRispostaPagamentoUrl())) {
-      return setFaultResponse(SilFaults.PAA_URL_NON_VALIDA, "URL di callback non valida");
+      throw new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "URL di callback non valida");
     }
 
     String cartId = UUID.randomUUID().toString();
@@ -83,11 +83,5 @@ public class PaaSILInviaDovutiService {
     response.setIdSession(sessionId);
     response.setRedirect(1); // 1 means redirect to the checkout URL
     return Triple.of(response, iuvs, RegistryOutcome.OK);
-  }
-
-  private Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> setFaultResponse(SilFaults fault, String description) {
-    PaaSILInviaDovutiRisposta response = new PaaSILInviaDovutiRisposta();
-    response.setEsito(RegistryOutcome.KO.getValue());
-    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, RegistryOutcome.KO);
   }
 }
