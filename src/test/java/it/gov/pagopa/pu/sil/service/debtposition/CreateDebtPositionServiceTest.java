@@ -72,8 +72,9 @@ class CreateDebtPositionServiceTest {
       .thenReturn("FAILED");
 
     // Act
+    List<DebtPositionDTO> debtPositionDTOList = List.of(debtPosition1, debtPosition2);
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> createDebtPositionService.createSyncedDebtPositions(
-      List.of(debtPosition1, debtPosition2), "accessToken"));
+      debtPositionDTOList, "accessToken"));
 
     // Assert
     assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
