@@ -60,6 +60,14 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
+    if(loggedUser == null || organizationId == null) {
+      return null;
+    }
+    return getUserOrganizationRoles(organizationId, loggedUser).map(UserOrganizationRoles::getOrganizationFiscalCode)
+      .orElse(null);
+  }
+
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
     if(loggedUser == null || organizationIpaCode == null) {
       return null;

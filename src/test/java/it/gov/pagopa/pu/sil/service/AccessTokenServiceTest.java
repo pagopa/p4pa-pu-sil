@@ -53,6 +53,8 @@ class AccessTokenServiceTest {
   @Test
   void givenLoggedUserAccessTokenWhenGetAccessTokenThenReturnToken() {
     // Given
+
+    String token = "ACCESSTOKEN";
     AccessToken expectedResult = AccessToken.builder()
       .expiresIn(10)
       .accessToken("ACCESSTOKEN")
@@ -60,17 +62,14 @@ class AccessTokenServiceTest {
       .build();
 
     OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
-    AccessToken result = service.getAccessToken(orgSilService, expectedResult);
+    AccessToken result = service.getAccessToken(orgSilService, token);
 
     Assertions.assertSame(expectedResult, result);
   }
 
   private void configureAndInvoke(AccessToken expectedResult) {
     // Given
-    AccessToken accessToken = new AccessToken()
-        .accessToken("ACCESSTOKEN")
-        .tokenType("TOKENTYPE")
-        .expiresIn(10);
+    String token = "ACCESSTOKEN";
     SilServiceLegacyBasicAuthConfig config = mock(SilServiceLegacyBasicAuthConfig.class);
     OrgSilService orgSilService = new OrgSilService()
       .orgSilServiceId(1L)
@@ -80,8 +79,8 @@ class AccessTokenServiceTest {
       .thenReturn(expectedResult);
 
     // When
-    AccessToken result1 = service.getAccessToken(orgSilService, accessToken);
-    AccessToken result2 = service.getAccessToken(orgSilService, accessToken);
+    AccessToken result1 = service.getAccessToken(orgSilService, token);
+    AccessToken result2 = service.getAccessToken(orgSilService, token);
 
     // Then
     Assertions.assertSame(expectedResult, result1);

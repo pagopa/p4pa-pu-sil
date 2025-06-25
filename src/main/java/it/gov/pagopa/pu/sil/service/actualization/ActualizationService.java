@@ -27,19 +27,14 @@ public class ActualizationService {
     this.accessTokenService = accessTokenService;
   }
 
-  public AmountUpdatesDTO actualize(Long orgSilServiceId,
-                                    String orgFiscalCode, String nav,
+  public AmountUpdatesDTO actualize(Long orgSilServiceId, String nav,
                                     UserInfo loggedUser, String accessToken) {
-    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(loggedUser, orgFiscalCode);
-    AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser);
     OrgSilService orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
       .orElseThrow(() -> new IllegalArgumentException("Organization service not found"));
+    AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
+    String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
-    AccessToken loggedUserAccessToken = new AccessToken()
-      .accessToken(accessToken)
-      .tokenType("Bearer");
-
-    AccessToken actualAccessToken = accessTokenService.getAccessToken(orgSilService, loggedUserAccessToken);
+    AccessToken actualAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
 
     AmountUpdatesDTO amountUpdatesDTO = legacyActualizationService.actualization(
       actualAccessToken.getAccessToken(),

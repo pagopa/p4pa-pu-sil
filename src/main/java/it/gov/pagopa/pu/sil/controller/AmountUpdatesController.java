@@ -18,9 +18,9 @@ public class AmountUpdatesController implements AmountUpdatesApi {
   }
 
   @Override
-  public ResponseEntity<AmountUpdatesDTO> getAmountUpdates(Long orgSilServiceId, String orgFiscalCode, String nav) {
-    log.info("Requested getAmountUpdates for orgSilServiceId: {}, orgFiscalCode: {}, nav: {}", orgSilServiceId, orgFiscalCode, nav);
-    return ResponseEntity.ok(actualizationService.actualize(orgSilServiceId, orgFiscalCode, nav,
+  public ResponseEntity<AmountUpdatesDTO> getAmountUpdates(Long orgSilServiceId, String nav) {
+    log.info("Requested getAmountUpdates for orgSilServiceId: {}, nav: {}", orgSilServiceId, nav);
+    return ResponseEntity.ok(actualizationService.actualize(orgSilServiceId, nav,
       SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken()));
   }
 }

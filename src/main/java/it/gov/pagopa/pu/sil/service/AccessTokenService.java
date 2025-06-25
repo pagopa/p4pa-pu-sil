@@ -22,10 +22,12 @@ public class AccessTokenService {
     this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public AccessToken getAccessToken(OrgSilService orgSilService, AccessToken loggedUserAccessToken) {
+  public AccessToken getAccessToken(OrgSilService orgSilService, String loggedUserAccessToken) {
     if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
-      return loggedUserAccessToken;
+      return AccessToken.builder()
+        .accessToken(loggedUserAccessToken)
+        .build();
     }
     return orgSilServiceId2legacyAccessTokensMap.compute(orgSilService.getOrgSilServiceId(), (k, v) -> {
       if (v == null || LocalDateTime.now().isAfter(v.getLeft())) {

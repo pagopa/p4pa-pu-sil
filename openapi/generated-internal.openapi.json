@@ -32,13 +32,6 @@
             "format" : "int64"
           }
         }, {
-          "name" : "orgFiscalCode",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "type" : "string"
-          }
-        }, {
           "name" : "nav",
           "in" : "query",
           "required" : true,
