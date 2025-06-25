@@ -70,5 +70,4 @@ class AuthnClientTest {
 
     assertEquals(bodyMessage, exception.getMessage());
   }
-
 }

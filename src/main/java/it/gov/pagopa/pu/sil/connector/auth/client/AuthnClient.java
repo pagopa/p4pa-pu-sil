@@ -25,5 +25,4 @@ public class AuthnClient {
       throw new InvalidAccessTokenException(e.getResponseBodyAsString());
     }
   }
-
 }
