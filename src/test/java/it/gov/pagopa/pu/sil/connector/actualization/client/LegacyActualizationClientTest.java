@@ -12,7 +12,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,7 +63,7 @@ class LegacyActualizationClientTest {
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
       .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-      .thenThrow(HttpClientErrorException.class);
+      .thenThrow(Exception.class);
 
     // When
     PagamentoAggiornato result = client.actualization(token, serviceUrl, pagamento);

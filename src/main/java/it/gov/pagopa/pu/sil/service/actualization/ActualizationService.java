@@ -35,10 +35,10 @@ public class ActualizationService {
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
     String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
-    String actualAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
+    String silAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
 
     AmountUpdatesDTO amountUpdatesDTO = legacyActualizationService.actualization(
-      actualAccessToken,
+      silAccessToken,
       orgSilService.getServiceUrl(),
       Pagamento.builder()
         .importoPosizione(Pagamento.ImportoPosizioneEnum.S)

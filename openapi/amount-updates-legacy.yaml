@@ -73,7 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: 'PuSilErrorDTO'
       security:
         - token_auth: []
 components:
@@ -180,16 +180,6 @@ components:
         dettaglio:
           type: string
           description: descrizione errore
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-      required:
-        - code
-        - message
   securitySchemes:
     token_auth:
       type: http

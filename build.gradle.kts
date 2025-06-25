@@ -371,6 +371,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
   modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
+  typeMappings.set(mapOf(
+    "PuSilErrorDTO" to "it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO"
+  ))
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
