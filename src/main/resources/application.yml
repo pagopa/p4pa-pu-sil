@@ -169,6 +169,9 @@ rest:
     wait-time-millis: "\${NOTIFICATION_PRICE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR:true}"
 
+legacy-auth:
+  default-expiration-seconds: "\${DEFAULT_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}"
+
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
 
