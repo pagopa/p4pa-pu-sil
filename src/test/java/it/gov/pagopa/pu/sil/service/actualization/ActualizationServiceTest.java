@@ -58,7 +58,7 @@ class ActualizationServiceTest {
     AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
       .errorCode(null);
 
-    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken);
+    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
@@ -90,7 +90,7 @@ class ActualizationServiceTest {
     AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
       .errorCode("001");
 
-    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken);
+    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
@@ -122,7 +122,7 @@ class ActualizationServiceTest {
     AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
       .errorCode("004");
 
-    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken);
+    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 

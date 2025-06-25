@@ -42,7 +42,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Token"
   /notification-price:
     post:
       summary: Ritorna a PU l'importo aggiornato.
@@ -57,7 +57,7 @@ paths:
         required: true
       responses:
         '200':
-          description: Successful operation
+          description: Successful operation or business error
           content:
             application/json:
               schema:
@@ -132,9 +132,6 @@ components:
           pattern: \d{18}
     PagamentoAggiornato:
       type: object
-      required:
-        - numeroAvviso
-        - importoPosizione
       properties:
         numeroAvviso:
           type: string
@@ -167,6 +164,22 @@ components:
           type: string
           description: |-
             Array JSON di oggetti contenenti i seguenti campi: capitolo, accertamento, ufficio, importo. Se la somma degli importi dei capitoli di bilancio non è coerente con l'importo complessivo del dovuto, o se la struttura di bilancio non è formalmente corretta IL PAGAMENTO VIENE BLOCCATO SU PU
+        stato:
+          type: string
+          description: http code of response
+        codice:
+          type: string
+          description: |
+            002 = codice avviso sconosciuto: questo codice si ottiene qualora il chiamante abbia fornito un numeroAvviso non presente, presso il Gestionale, come attributo di alcuna notifica gestita per l’ente mittente.
+            003 = avviso non ancora notificato: questo codice si ottiene qualora il chiamante abbia fornito un numeroAvviso di cui non siano presenti nessuna delle due date (dataVisualizzazione e dataPerfezionamentoDecorrenzaTermini entrambe <valore vuoto>). Indica che la notifica non è ancora arrivata a perfezionamento per presa visione o decorrenza termini.
+            004 = avviso non pagabile (pagato o ritirato): questo codice si ottiene qualora il numeroAvviso non risulti pagabile
+          enum:
+            - '002'
+            - '003'
+            - '004'
+        dettaglio:
+          type: string
+          description: descrizione errore
     Error:
       type: object
       properties:

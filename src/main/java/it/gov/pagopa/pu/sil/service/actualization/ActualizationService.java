@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service.actualization;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
+import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
@@ -34,10 +35,10 @@ public class ActualizationService {
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
     String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
-    AccessToken actualAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
+    String actualAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
 
     AmountUpdatesDTO amountUpdatesDTO = legacyActualizationService.actualization(
-      actualAccessToken.getAccessToken(),
+      actualAccessToken,
       orgSilService.getServiceUrl(),
       Pagamento.builder()
         .importoPosizione(Pagamento.ImportoPosizioneEnum.S)
@@ -47,7 +48,7 @@ public class ActualizationService {
     );
 
     if (amountUpdatesDTO.getErrorCode() != null) {
-      boolean isBlocking = "004".equals(amountUpdatesDTO.getErrorCode());
+      boolean isBlocking = PagamentoAggiornato.CodiceEnum._004.getValue().equals(amountUpdatesDTO.getErrorCode());
       amountUpdatesDTO.isBlockingError(isBlocking);
       log.error("{} for orgSilServiceId: {}, orgFiscalCode: {}, nav: {}. Error code: {} - Error message: {}",
         isBlocking ? "Debt position not payable" : "Error during actualization",

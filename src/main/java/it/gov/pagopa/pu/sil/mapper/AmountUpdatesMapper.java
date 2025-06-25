@@ -7,14 +7,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class AmountUpdatesMapper {
   public AmountUpdatesDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
-    return AmountUpdatesDTO.builder()
-        .nav(pagamentoAggiornato.getNumeroAvviso())
-        .iun(pagamentoAggiornato.getIun())
-        .notificationFee(pagamentoAggiornato.getSpeseNotifica())
-        .displayDate(pagamentoAggiornato.getDataVisualizzazione())
-        .updatedAmount(pagamentoAggiornato.getImportoPosizione())
-        .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
-        .balance(pagamentoAggiornato.getBilancio())
+    if (pagamentoAggiornato == null) {
+      return AmountUpdatesDTO.builder()
+        .outcome(AmountUpdatesDTO.OutcomeEnum.KO)
+        .isBlockingError(false)
         .build();
+    }
+    return AmountUpdatesDTO.builder()
+      .outcome(AmountUpdatesDTO.OutcomeEnum.OK)
+      .nav(pagamentoAggiornato.getNumeroAvviso())
+      .iun(pagamentoAggiornato.getIun())
+      .notificationFee(pagamentoAggiornato.getSpeseNotifica())
+      .displayDate(pagamentoAggiornato.getDataVisualizzazione())
+      .updatedAmount(pagamentoAggiornato.getImportoPosizione())
+      .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
+      .balance(pagamentoAggiornato.getBilancio())
+      .errorCode(pagamentoAggiornato.getCodice().getValue())
+      .errorDescription(pagamentoAggiornato.getDettaglio())
+      .build();
   }
 }

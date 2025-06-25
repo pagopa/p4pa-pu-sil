@@ -5,6 +5,7 @@ import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @Component
@@ -16,7 +17,12 @@ public class LegacyActualizationClient {
   }
 
   public PagamentoAggiornato actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
-    return actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl)
-        .attualizzazione(pagamento);
+    try {
+      return actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl)
+          .attualizzazione(pagamento);
+    } catch (HttpClientErrorException e) {
+      log.info("Cannot update amount", e);
+      return null;
+    }
   }
 }

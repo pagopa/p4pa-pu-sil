@@ -17,7 +17,6 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class AccessTokenServiceTest {
-  private static final Integer DEFAULT_EXPIRATION_TIME_IN_SECONDS = 10;
 
   @Mock
   private SilLegacyAuthFacadeService silLegacyAuthFacadeServiceMock;
@@ -26,7 +25,7 @@ class AccessTokenServiceTest {
 
   @BeforeEach
   void init(){
-    service = new AccessTokenService(DEFAULT_EXPIRATION_TIME_IN_SECONDS, silLegacyAuthFacadeServiceMock);
+    service = new AccessTokenService(silLegacyAuthFacadeServiceMock);
   }
 
   @AfterEach
@@ -55,16 +54,11 @@ class AccessTokenServiceTest {
   void givenLoggedUserAccessTokenWhenGetAccessTokenThenReturnToken() {
     // Given
     String token = "ACCESSTOKEN";
-    AccessToken expectedResult = AccessToken.builder()
-      .expiresIn(10)
-      .accessToken(token)
-      .tokenType("TOKENTYPE")
-      .build();
 
     OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
-    AccessToken result = service.getAccessToken(orgSilService, token);
+    String result = service.getAccessToken(orgSilService, token);
 
-    Assertions.assertSame(expectedResult, result);
+    Assertions.assertSame(token, result);
   }
 
   private void configureAndInvoke(AccessToken expectedResult) {
@@ -79,11 +73,11 @@ class AccessTokenServiceTest {
       .thenReturn(expectedResult);
 
     // When
-    AccessToken result1 = service.getAccessToken(orgSilService, token);
-    AccessToken result2 = service.getAccessToken(orgSilService, token);
+    String result1 = service.getAccessToken(orgSilService, token);
+    String result2 = service.getAccessToken(orgSilService, token);
 
     // Then
-    Assertions.assertSame(expectedResult, result1);
-    Assertions.assertSame(expectedResult, result2);
+    Assertions.assertSame(expectedResult.getAccessToken(), result1);
+    Assertions.assertSame(expectedResult.getAccessToken(), result2);
   }
 }

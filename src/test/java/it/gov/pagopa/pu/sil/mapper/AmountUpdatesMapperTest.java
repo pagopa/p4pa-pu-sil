@@ -20,6 +20,8 @@ class AmountUpdatesMapperTest {
         pagamento.setImportoPosizione(5000L);
         pagamento.setDataPerfezionamentoDecorrenzaTermini(now.plusDays(1));
         pagamento.setBilancio("BILANCIO-JSON");
+        pagamento.setCodice(PagamentoAggiornato.CodiceEnum._004);
+        pagamento.setDettaglio("Some error description");
 
         AmountUpdatesDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(pagamento);
 
@@ -31,5 +33,15 @@ class AmountUpdatesMapperTest {
         assertEquals(5000L, dto.getUpdatedAmount());
         assertEquals(now.plusDays(1), dto.getCompletionDeadlineDate());
         assertEquals("BILANCIO-JSON", dto.getBalance());
+        assertEquals("004", dto.getErrorCode());
+        assertEquals("Some error description", dto.getErrorDescription());
+    }
+
+    @Test
+    void testPagamentoAggiornato2AmountUpdatesDTONullInput() {
+        AmountUpdatesDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(null);
+        assertNotNull(dto);
+        assertEquals(AmountUpdatesDTO.OutcomeEnum.KO, dto.getOutcome());
+        assertFalse(dto.getIsBlockingError());
     }
 }
