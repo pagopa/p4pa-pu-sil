@@ -308,7 +308,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     PaaSILVerificaAvvisoRisposta expectedResponse = new PaaSILVerificaAvvisoRisposta();
 
-    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
@@ -316,7 +316,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // Then
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(expectedResponse, result);
+    Assertions. assertEquals(expectedResponse, result);
   }
 
   @Test
@@ -327,7 +327,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Description"));
 
     // When
