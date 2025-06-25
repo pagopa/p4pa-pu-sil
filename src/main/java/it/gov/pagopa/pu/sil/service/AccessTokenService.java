@@ -24,7 +24,7 @@ public class AccessTokenService {
 
   public AccessToken getAccessToken(OrgSilService orgSilService, AccessToken loggedUserAccessToken) {
     if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
-      log.debug("Using current access token {} for orgSilServiceId: {}", loggedUserAccessToken, orgSilService.getOrgSilServiceId());
+      log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
     }
     return orgSilServiceId2legacyAccessTokensMap.compute(orgSilService.getOrgSilServiceId(), (k, v) -> {
