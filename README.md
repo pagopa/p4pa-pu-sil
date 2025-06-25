@@ -222,12 +222,13 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | KAFKA_REGISTRIES_PRODUCER_BATCH_SIZE               | Producer batch size                               | 16384                      |
 
 #### 💼 Business logic
-| ENV                                  | DESCRIPTION                                                                                                                                                                                                    | DEFAULT |
-|--------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| PUBLIC_BASE_URL_FILESHARE            | Public base URL towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare) service                                                                                                                     |         |
-| CHECKOUT_DEFAULT_CALLBACK_URL_OK     | Absolute url to default callback url for OK case on [checkout service](https://developer.pagopa.it/pago-pa/guides/sanp/ente-creditore/modalita-dintegrazione/integrazione-touch-point-dellec-con-checkout)     |         |
-| CHECKOUT_DEFAULT_CALLBACK_URL_KO     | Absolute url to default callback url for ERROR case on [checkout service](https://developer.pagopa.it/pago-pa/guides/sanp/ente-creditore/modalita-dintegrazione/integrazione-touch-point-dellec-con-checkout)  |         |
-| CHECKOUT_DEFAULT_CALLBACK_URL_CANCEL | Absolute url to default callback url for CANCEL case on [checkout service](https://developer.pagopa.it/pago-pa/guides/sanp/ente-creditore/modalita-dintegrazione/integrazione-touch-point-dellec-con-checkout) |         |
+| ENV                                     | DESCRIPTION                                                                                                                                                                                                    | DEFAULT |
+|-----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| PUBLIC_BASE_URL_FILESHARE               | Public base URL towards [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare) service                                                                                                                     |         |
+| CHECKOUT_DEFAULT_CALLBACK_URL_OK        | Absolute url to default callback url for OK case on [checkout service](https://developer.pagopa.it/pago-pa/guides/sanp/ente-creditore/modalita-dintegrazione/integrazione-touch-point-dellec-con-checkout)     |         |
+| CHECKOUT_DEFAULT_CALLBACK_URL_KO        | Absolute url to default callback url for ERROR case on [checkout service](https://developer.pagopa.it/pago-pa/guides/sanp/ente-creditore/modalita-dintegrazione/integrazione-touch-point-dellec-con-checkout)  |         |
+| CHECKOUT_DEFAULT_CALLBACK_URL_CANCEL    | Absolute url to default callback url for CANCEL case on [checkout service](https://developer.pagopa.it/pago-pa/guides/sanp/ente-creditore/modalita-dintegrazione/integrazione-touch-point-dellec-con-checkout) |         |
+| DEFAULT_AUTH_EXPIRATION_TIMEOUT_SECONDS | default expiration for legay auth in seconds                                                                                                                                                                   | 300     |
 
 ## 🛠️ Getting Started
 
