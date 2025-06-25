@@ -52,14 +52,11 @@ public class ActualizationService {
     );
 
     if (amountUpdatesDTO.getErrorCode() != null) {
-      log.error("Error during actualization for orgSilServiceId: {}, orgFiscalCode: {}, nav: {}. Error code: {} - Error message: {}",
+      boolean isBlocking = "004".equals(amountUpdatesDTO.getErrorCode());
+      amountUpdatesDTO.isBlockingError(isBlocking);
+      log.error("{} for orgSilServiceId: {}, orgFiscalCode: {}, nav: {}. Error code: {} - Error message: {}",
+        isBlocking ? "Debt position not payable" : "Error during actualization",
         orgSilServiceId, orgFiscalCode, nav, amountUpdatesDTO.getErrorCode(), amountUpdatesDTO.getErrorDescription());
-      amountUpdatesDTO.isBlockingError(false);
-    }
-    if (amountUpdatesDTO.getErrorCode().equals("004")) {
-      log.error("Debt position not payable for for orgSilServiceId: {}, orgFiscalCode: {}, nav: {}. Error code: {} - Error message: {}",
-        orgSilServiceId, orgFiscalCode, nav, amountUpdatesDTO.getErrorCode(), amountUpdatesDTO.getErrorDescription());
-      amountUpdatesDTO.isBlockingError(true);
     }
     return amountUpdatesDTO;
   }
