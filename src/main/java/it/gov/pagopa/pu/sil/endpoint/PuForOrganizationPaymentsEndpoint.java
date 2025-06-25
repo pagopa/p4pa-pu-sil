@@ -20,7 +20,6 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
-import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
@@ -28,7 +27,6 @@ import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -43,7 +41,6 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 
 @Endpoint
-@RequiredArgsConstructor
 @Slf4j
 public class PuForOrganizationPaymentsEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/ente/";
@@ -62,10 +59,30 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
   private final RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
 
-  private final PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
-
   private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
 
+  @SuppressWarnings("java:S107")
+  public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
+                                           PaaSILImportaDovutoService paaSILImportaDovutoService,
+                                           IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
+                                           IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService,
+                                           RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto,
+                                           PaaSILInviaDovutiService paaSILInviaDovutiService,
+                                           RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovuti,
+                                           PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService,
+                                           RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti,
+                                           PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService) {
+    this.registryLogger = registryLogger;
+    this.paaSILImportaDovutoService = paaSILImportaDovutoService;
+    this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
+    this.ingestionFlowFileProcessingStatusService = ingestionFlowFileProcessingStatusService;
+    this.registryExtraInfoHandlerPaaSILImportaDovuto = registryExtraInfoHandlerPaaSILImportaDovuto;
+    this.paaSILInviaDovutiService = paaSILInviaDovutiService;
+    this.registryExtraInfoHandlerPaaSILInviaDovuti = registryExtraInfoHandlerPaaSILInviaDovuti;
+    this.paaSILInviaCarrelloDovutiService = paaSILInviaCarrelloDovutiService;
+    this.registryExtraInfoHandlerPaaSILInviaCarrelloDovuti = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
+    this.paaSILPrenotaExportFlussoService = paaSILPrenotaExportFlussoService;
+  }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStatoImportFlusso")
   @ResponsePayload
@@ -260,34 +277,6 @@ public class PuForOrganizationPaymentsEndpoint {
       () -> registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILInviaCarrelloDovuti::extractResponseExtraInfo
     );
-  }
-
-  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILVerificaAvviso")
-  @ResponsePayload
-  public PaaSILVerificaAvvisoRisposta paaSILVerificaAvviso(
-    @RequestPayload PaaSILVerificaAvviso request,
-    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
-      IntestazionePPT.class,
-      IntestazionePPT::getCodIpaEnte,
-      "paaSILVerificaAvviso");
-    UserInfo userInfo = SecurityUtils.getLoggedUser();
-    String accessToken = SecurityUtils.getAccessToken();
-
-    PaaSILVerificaAvvisoRisposta response;
-    try {
-      response = paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, accessToken);
-    }catch(Exception e){
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
-        new PaaSILVerificaAvvisoRisposta(),
-        PaaSILVerificaAvvisoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
-    }
-
-    return response;
   }
 
 

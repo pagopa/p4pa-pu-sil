@@ -87,7 +87,7 @@ class PaaSILInviaDovutiServiceTest {
   }
 
   @Test
-  void givenNotAuthorizedUserWhenPaaSILInviaDovutiThenError() {
+  void givenNotAuthorizedUserWhenPaaSILInviaCarrelloDovutiServiceThenError() {
     //given
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
@@ -101,7 +101,7 @@ class PaaSILInviaDovutiServiceTest {
   @ParameterizedTest
   @ValueSource(strings = {"not_active_ipa"})
   @NullSource
-  void givenInvalidOrganizationWhenPaaSILInviaDovutiThenError(String testCase) {
+  void givenInvalidAuthorizationWhenPaaSILInviaDovutiServiceThenError(String testCase) {
     if(testCase==null){
       org = null;
     } else {
