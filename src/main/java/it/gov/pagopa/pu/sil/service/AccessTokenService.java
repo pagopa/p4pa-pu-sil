@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,18 +15,24 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class AccessTokenService {
+  private final Integer defaultExpirationTimeInSeconds;
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
   private final Map<Long, Pair<LocalDateTime, AccessToken>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
-  public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
-    this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
+  public AccessTokenService(
+    @Value("${legacy-auth.default-expiration-seconds}") Integer defaultExpirationTimeInSeconds,
+    SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
+      this.defaultExpirationTimeInSeconds = defaultExpirationTimeInSeconds;
+      this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
   public AccessToken getAccessToken(OrgSilService orgSilService, String loggedUserAccessToken) {
     if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return AccessToken.builder()
+        .tokenType("Bearer")
+        .expiresIn(defaultExpirationTimeInSeconds)
         .accessToken(loggedUserAccessToken)
         .build();
     }

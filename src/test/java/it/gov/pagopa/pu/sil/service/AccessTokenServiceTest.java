@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class AccessTokenServiceTest {
+  private static final Integer DEFAULT_EXPIRATION_TIME_IN_SECONDS = 10;
 
   @Mock
   private SilLegacyAuthFacadeService silLegacyAuthFacadeServiceMock;
@@ -25,7 +26,7 @@ class AccessTokenServiceTest {
 
   @BeforeEach
   void init(){
-    service = new AccessTokenService(silLegacyAuthFacadeServiceMock);
+    service = new AccessTokenService(DEFAULT_EXPIRATION_TIME_IN_SECONDS, silLegacyAuthFacadeServiceMock);
   }
 
   @AfterEach
@@ -55,7 +56,9 @@ class AccessTokenServiceTest {
     // Given
     String token = "ACCESSTOKEN";
     AccessToken expectedResult = AccessToken.builder()
+      .expiresIn(10)
       .accessToken(token)
+      .tokenType("TOKENTYPE")
       .build();
 
     OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
