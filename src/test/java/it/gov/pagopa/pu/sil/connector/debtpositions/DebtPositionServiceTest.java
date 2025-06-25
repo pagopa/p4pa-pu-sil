@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionServiceTest {
@@ -84,6 +87,21 @@ class DebtPositionServiceTest {
 
     //when
     DebtPositionType result = service.getDebtPositionTypeById(debtPositionTypeId, accessToken);
+
+    //then
+    Assertions.assertEquals(expectedResult, result);
+  }
+
+  @Test
+  void whenGetInstallmentsByOrganizationIdAndNavThenReturnListOfInstallmentDTO() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    List<InstallmentDTO> expectedResult = List.of(new InstallmentDTO());
+
+    Mockito.when(clientMock.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken)).thenReturn(expectedResult);
+
+    //when
+    List<InstallmentDTO> result = service.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken);
 
     //then
     Assertions.assertEquals(expectedResult, result);
