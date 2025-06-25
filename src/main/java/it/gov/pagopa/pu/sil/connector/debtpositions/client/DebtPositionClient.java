@@ -1,13 +1,13 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -51,6 +51,12 @@ public class DebtPositionClient {
     return debtPositionsApisHolder
       .getDebtPositionApi(accessToken)
       .createDebtPositionWithHttpInfo(debtPositionDTO, false);
+  }
+
+  public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
+    return debtPositionsApisHolder
+      .getInstallmentApi(accessToken)
+      .getInstallmentsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin);
   }
 
 }

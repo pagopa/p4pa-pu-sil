@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
 
 public interface DebtPositionService {
   DebtPositionTypeOrg getDebtPositionTypeOrgByOrgIdAndType(Long organizationId, String debtPositionTypeOrgCode, String accessToken);
@@ -17,4 +17,15 @@ public interface DebtPositionService {
    * @return a pair containing the created DebtPositionDTO and the workflow ID from the response headers
    */
   Pair<DebtPositionDTO, String> createDebtPosition(DebtPositionDTO debtPositionDTO, String accessToken);
+
+  /**
+   * Retrieves a list of InstallmentDTOs based on organization ID, NAV, and debt position origins.
+   *
+   * @param organizationId the ID of the organization
+   * @param nav the NAV (Navigation) identifier
+   * @param debtPositionOrigin the list of debt position origins to filter by
+   * @param accessToken the access token for authentication
+   * @return a list of InstallmentDTOs matching the criteria
+   */
+  List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
 }
