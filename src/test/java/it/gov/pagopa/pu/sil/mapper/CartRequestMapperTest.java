@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ class CartRequestMapperTest {
   private CartRequestMapper cartRequestMapper;
 
   private DebtPositionDTO debtPosition = null;
+  private Organization org = null;
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
@@ -54,6 +56,10 @@ class CartRequestMapperTest {
 
     debtPosition = new DebtPositionDTO();
     debtPosition.setPaymentOptions(List.of(paymentOption));
+
+    org = new Organization();
+    org.setOrgFiscalCode("12345678901");
+    org.setOrgName("orgName");
   }
 
   @Test
@@ -66,7 +72,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(fullDebtPositionDTO), cartId, callbackUrl);
+      List.of(fullDebtPositionDTO), org, cartId, callbackUrl);
 
     // Assert
     assertNotNull(result);
@@ -86,7 +92,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, null);
+      List.of(debtPosition), org, cartId, null);
 
     // Assert
     assertNotNull(result);
@@ -105,7 +111,7 @@ class CartRequestMapperTest {
 
     // Act & Assert
     assertThrows(ApplicationException.class, () -> cartRequestMapper.mapDebtPositionsToCartRequest(
-      debtPositions, cartId, invalidCallbackUrl));
+      debtPositions, org, cartId, invalidCallbackUrl));
   }
 
   @Test
@@ -116,7 +122,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, callbackUrl);
+      List.of(debtPosition), org, cartId, callbackUrl);
 
     // Assert
     assertEquals(Boolean.TRUE, result.getAllCCP());
@@ -132,7 +138,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, callbackUrl);
+      List.of(debtPosition), org, cartId, callbackUrl);
 
     // Assert
     assertNotEquals(Boolean.TRUE, result.getAllCCP());

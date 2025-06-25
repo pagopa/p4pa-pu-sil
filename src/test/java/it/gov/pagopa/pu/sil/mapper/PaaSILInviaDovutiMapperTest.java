@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -22,9 +21,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -32,7 +28,6 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -45,9 +40,6 @@ class PaaSILInviaDovutiMapperTest {
 
   @Mock
   private JAXBTransformService jaxbTransformServiceMock;
-
-  @Mock
-  private OrganizationService organizationServiceMock;
 
   @Mock
   private DebtPositionService debtPositionServiceMock;
@@ -81,31 +73,11 @@ class PaaSILInviaDovutiMapperTest {
   void mapRequestToDebtPositions_UnmarshallingFailure_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("XML non conforme"));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"not_active_ipa"})
-  @NullSource
-  void mapRequestToDebtPositions_InvalidOrganization_ReturnsError(String orgIpaCode) {
-    PaaSILInviaDovuti request = new PaaSILInviaDovuti();
-    if(orgIpaCode==null){
-      org = null;
-    } else {
-      org.setStatus(OrganizationStatus.DRAFT);
-    }
-
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
-
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
-    assertEquals("L'ente non è valido o non è abilitato", exception.getDescription());
   }
 
   @Test
@@ -114,9 +86,8 @@ class PaaSILInviaDovutiMapperTest {
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento("IUV");
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
     assertEquals("L'inserimento dello IUV è deprecato", exception.getDescription());
@@ -130,10 +101,9 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
     assertEquals("error", exception.getDescription());
@@ -155,11 +125,10 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(podamFactory.manufacturePojo(DebtPositionTypeOrg.class));
-    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, "CART", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN);
 
     assertNotNull(result);
     assertEquals(1, result.size());

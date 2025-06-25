@@ -4,7 +4,10 @@ import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
+import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -28,14 +31,19 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
   protected final CheckoutService checkoutService;
   protected final CreateDebtPositionService createDebtPositionService;
   protected final CartRequestMapper cartRequestMapper;
+  protected final OrganizationService organizationService;
 
-  protected AbstractImmediatePaymentsService(CheckoutService checkoutService, CreateDebtPositionService createDebtPositionService, CartRequestMapper cartRequestMapper) {
+  protected AbstractImmediatePaymentsService(CheckoutService checkoutService,
+                                             CreateDebtPositionService createDebtPositionService,
+                                             OrganizationService organizationService,
+                                             CartRequestMapper cartRequestMapper) {
     this.checkoutService = checkoutService;
     this.createDebtPositionService = createDebtPositionService;
     this.cartRequestMapper = cartRequestMapper;
+    this.organizationService = organizationService;
   }
 
-  protected abstract List<DebtPositionDTO> mapRequestToDebtPositions(REQ request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken);
+  protected abstract List<DebtPositionDTO> mapRequestToDebtPositions(REQ request, Organization org, String cartId, String accessToken);
 
   protected abstract RESP mapToResponse(String outcome, String checkoutUrl, String sessionId);
 
@@ -48,6 +56,12 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
       log.error("ClientId [{}] not authorized to call {} for organization {}", request.getClass().getSimpleName(), clientId, orgIpaCode);
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
     }
+    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
+    Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
+      .orElse(null);
+    if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
+      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+    }
 
     //validate callback URL
     if (StringUtils.isNotBlank(getCallbackUrl(request)) && !ValidationUtils.isValidUri(getCallbackUrl(request))) {
@@ -57,7 +71,7 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
     String cartId = UUID.randomUUID().toString();
 
     //map request to debt positions and validate it
-    List<DebtPositionDTO> mappedRequest = mapRequestToDebtPositions(request, cartId, userInfo, orgIpaCode, accessToken);
+    List<DebtPositionDTO> mappedRequest = mapRequestToDebtPositions(request, organization, cartId, accessToken);
 
     //create debt positions
     List<DebtPositionDTO> debtPositions = createDebtPositionService.createSyncedDebtPositions(mappedRequest, accessToken);
@@ -68,14 +82,16 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
       .map(InstallmentDTO::getIuv)
       .collect(Collectors.joining(Utilities.IUV_SEPARATOR));
 
-    //sessionId is a concatenation of all debt position IDs, used to track the session
+    //sessionId is a concatenation of all installment IDs, used to track the session
     String sessionId = debtPositions.stream()
-      .map(DebtPositionDTO::getDebtPositionId)
+      .flatMap(dp -> dp.getPaymentOptions().stream())
+      .flatMap(option -> option.getInstallments().stream())
+      .map(InstallmentDTO::getInstallmentId)
       .map(String::valueOf)
       .collect(Collectors.joining(Constants.SESSION_ID_SEPARATOR));
 
     //map debt positions to cart request
-    CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(debtPositions, cartId, getCallbackUrl(request));
+    CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(debtPositions, organization, cartId, getCallbackUrl(request));
 
     //invoke carts API to trigger the payment on Checkout
     String checkoutUrl = checkoutService.checkoutCart(cartRequest);
