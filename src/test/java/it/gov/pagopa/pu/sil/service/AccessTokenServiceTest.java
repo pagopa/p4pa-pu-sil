@@ -53,12 +53,9 @@ class AccessTokenServiceTest {
   @Test
   void givenLoggedUserAccessTokenWhenGetAccessTokenThenReturnToken() {
     // Given
-
     String token = "ACCESSTOKEN";
     AccessToken expectedResult = AccessToken.builder()
-      .expiresIn(10)
-      .accessToken("ACCESSTOKEN")
-      .tokenType("TOKENTYPE")
+      .accessToken(token)
       .build();
 
     OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
