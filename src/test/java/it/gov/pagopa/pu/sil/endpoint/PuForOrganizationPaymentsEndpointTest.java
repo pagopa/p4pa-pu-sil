@@ -16,9 +16,13 @@ import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
@@ -56,7 +60,15 @@ class PuForOrganizationPaymentsEndpointTest {
   @Mock
   private PaaSILImportaDovutoService paaSILImportaDovutoServiceMock;
   @Mock
+  private PaaSILInviaDovutiService paaSILInviaDovutiServiceMock;
+  @Mock
+  private PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiServiceMock;
+  @Mock
   private RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoServiceMock;
+  @Mock
+  private RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovutiMock;
+  @Mock
+  private RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock;
   @Mock
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
@@ -212,7 +224,74 @@ class PuForOrganizationPaymentsEndpointTest {
     Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractRequestExtraInfo(request, header);
     Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractResponseExtraInfo(result);
   }
+  // endregion
 
+  // region PaaSILInviaDovuti
+  @Test
+  void givenValidRequestWhenPaaSILInviaDovutiThenOk() throws Exception {
+    // Given
+    PaaSILInviaDovuti request = podamFactory.manufacturePojo(PaaSILInviaDovuti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> expectedResponse = Triple.of(
+      new PaaSILInviaDovutiRisposta(),
+      "iuv",
+      RegistryOutcome.OK
+    );
+
+    Mockito.when(paaSILInviaDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+      .thenReturn(expectedResponse);
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.paaSILInviaDovuti)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request, true);
+
+    // When
+    PaaSILInviaDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILInviaDovuti(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractRequestExtraInfo(request, header);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractResponseExtraInfo(result);
+  }
+  // endregion
+
+  // region PaaSILInviaCarrelloDovuti
+  @Test
+  void givenValidRequestWhenPaaSILInviaCarrelloDovutiThenOk() throws Exception {
+    // Given
+    PaaSILInviaCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILInviaCarrelloDovuti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> expectedResponse = Triple.of(
+      new PaaSILInviaCarrelloDovutiRisposta(),
+      "iuv",
+      RegistryOutcome.OK
+    );
+
+    Mockito.when(paaSILInviaCarrelloDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+      .thenReturn(expectedResponse);
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.paaSILInviaCarrelloDovuti)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request, true);
+
+    // When
+    PaaSILInviaCarrelloDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILInviaCarrelloDovuti(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractRequestExtraInfo(request, header);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractResponseExtraInfo(result);
+  }
   // endregion
 
   // region PaaSILChiediAvvisiPendenti
