@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class AccessTokenServiceTest {
@@ -68,8 +71,11 @@ class AccessTokenServiceTest {
         .accessToken("ACCESSTOKEN")
         .tokenType("TOKENTYPE")
         .expiresIn(10);
-
-    OrgSilService orgSilService = new OrgSilService().flagLegacy(true);
+    SilServiceLegacyBasicAuthConfig config = mock(SilServiceLegacyBasicAuthConfig.class);
+    OrgSilService orgSilService = new OrgSilService()
+      .orgSilServiceId(1L)
+      .authConfig(config)
+      .flagLegacy(true);
     Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(orgSilService.getAuthConfig()))
       .thenReturn(expectedResult);
 
