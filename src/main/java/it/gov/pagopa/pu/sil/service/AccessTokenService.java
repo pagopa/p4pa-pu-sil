@@ -16,20 +16,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AccessTokenService {
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
-  private final Map<Long, Pair<LocalDateTime, AccessToken>> clientId2accessTokensMap = new ConcurrentHashMap<>();
+  private final Map<Long, Pair<LocalDateTime, AccessToken>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
   public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
     this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
   public AccessToken getAccessToken(OrgSilService orgSilService, AccessToken loggedUserAccessToken) {
-    if (orgSilService.getFlagLegacy().equals(Boolean.FALSE)) {
-      log.info("Using current access token {} for orgSilServiceId: {}", loggedUserAccessToken, orgSilService.getOrgSilServiceId());
+    if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
+      log.debug("Using current access token {} for orgSilServiceId: {}", loggedUserAccessToken, orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
     }
-    return clientId2accessTokensMap.compute(orgSilService.getOrgSilServiceId(), (k, v) -> {
+    return orgSilServiceId2legacyAccessTokensMap.compute(orgSilService.getOrgSilServiceId(), (k, v) -> {
       if (v == null || LocalDateTime.now().isAfter(v.getLeft())) {
-        log.info("retrieve legacy authentication for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
+        log.info("retrieve {} authentication  for orgSilServiceId: {}",
+          orgSilService.getAuthConfig().getClass().getSimpleName(),
+          orgSilService.getOrgSilServiceId());
         LocalDateTime tokenRequestDateTime = LocalDateTime.now();
         AccessToken accessToken = silLegacyAuthFacadeService.authenticate(orgSilService.getAuthConfig());
         LocalDateTime expiration = tokenRequestDateTime.plusSeconds(accessToken.getExpiresIn() - 5L);
