@@ -1,10 +1,11 @@
 package it.gov.pagopa.pu.sil.service.actualization;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
-import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.service.AccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.MockedStatic;
@@ -27,12 +29,14 @@ class ActualizationServiceTest {
   private OrgSilServiceComponent orgSilServiceComponentMock;
   @Mock
   private LegacyActualizationService legacyActualizationServiceMock;
+  @Mock
+  private AccessTokenService accessTokenServiceMock;
 
   private ActualizationService service;
 
   @BeforeEach
   void setUp() {
-    service = new ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock);
+    service = new ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock, accessTokenServiceMock);
   }
 
   @Test
@@ -41,22 +45,24 @@ class ActualizationServiceTest {
     String orgFiscalCode = "FISCALCODE";
     String nav = "NAV123";
     UserInfo loggedUser = Mockito.mock(UserInfo.class);
-    String accessToken = "token";
     Long organizationId = 2L;
+    AccessToken accessToken = new AccessToken()
+      .accessToken("token")
+      .tokenType("Bearer");
     OrgSilService orgSilService = new OrgSilService()
       .flagLegacy(true)
       .serviceUrl("http://service.url");
-    Mockito.when(orgSilService.getServiceUrl()).thenReturn("http://service.url");
     AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
       .errorCode(null);
 
-    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, accessToken)).thenReturn(Optional.of(orgSilService));
+    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, accessToken)).thenReturn(accessToken);
+    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.getOrganizationIdFromOrgFiscalCode(loggedUser, orgFiscalCode)).thenReturn(organizationId);
-      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenReturn(null);
-      AmountUpdatesDTO result = service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken);
+      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);
+      AmountUpdatesDTO result = service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken.getAccessToken());
       assertEquals(amountUpdatesDTO, result);
       assertNull(result.getErrorCode());
     }
@@ -68,22 +74,24 @@ class ActualizationServiceTest {
     String orgFiscalCode = "FISCALCODE";
     String nav = "NAV123";
     UserInfo loggedUser = Mockito.mock(UserInfo.class);
-    String accessToken = "token";
+    AccessToken accessToken = new AccessToken()
+      .accessToken("token")
+      .tokenType("Bearer");
     Long organizationId = 2L;
     OrgSilService orgSilService = new OrgSilService()
       .flagLegacy(true)
       .serviceUrl("http://service.url");
-    Mockito.when(orgSilService.getServiceUrl()).thenReturn("http://service.url");
     AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
       .errorCode("001");
 
-    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, accessToken)).thenReturn(Optional.of(orgSilService));
+    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, accessToken)).thenReturn(accessToken);
+    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.getOrganizationIdFromOrgFiscalCode(loggedUser, orgFiscalCode)).thenReturn(organizationId);
-      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenReturn(null);
-      AmountUpdatesDTO result = service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken);
+      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);
+      AmountUpdatesDTO result = service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken.getAccessToken());
       assertEquals(amountUpdatesDTO, result);
       assertFalse(result.getIsBlockingError());
     }
@@ -95,21 +103,24 @@ class ActualizationServiceTest {
     String orgFiscalCode = "FISCALCODE";
     String nav = "NAV123";
     UserInfo loggedUser = Mockito.mock(UserInfo.class);
-    String accessToken = "token";
+    AccessToken accessToken = new AccessToken()
+      .accessToken("token")
+      .tokenType("Bearer");
     Long organizationId = 2L;
     OrgSilService orgSilService = new OrgSilService()
       .flagLegacy(true)
       .serviceUrl("http://service.url");
-    Mockito.when(orgSilService.getServiceUrl()).thenReturn("http://service.url");
     AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
       .errorCode("004");
-    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, accessToken)).thenReturn(Optional.of(orgSilService));
+
+    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, accessToken)).thenReturn(accessToken);
+    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.getOrganizationIdFromOrgFiscalCode(loggedUser, orgFiscalCode)).thenReturn(organizationId);
-      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenReturn(null);
-      AmountUpdatesDTO result = service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken);
+      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);
+      AmountUpdatesDTO result = service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken.getAccessToken());
       assertEquals(amountUpdatesDTO, result);
       assertTrue(result.getIsBlockingError());
     }
@@ -128,11 +139,10 @@ class ActualizationServiceTest {
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.getOrganizationIdFromOrgFiscalCode(loggedUser, orgFiscalCode)).thenReturn(organizationId);
-      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenReturn(null);
+      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);
       Assertions.assertThrows(IllegalArgumentException.class, () ->
         service.actualize(orgSilServiceId, orgFiscalCode, nav, loggedUser, accessToken)
       );
     }
   }
-
 }

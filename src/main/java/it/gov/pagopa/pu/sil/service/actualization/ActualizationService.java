@@ -1,12 +1,13 @@
 package it.gov.pagopa.pu.sil.service.actualization;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
-import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.service.AccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,14 @@ import org.springframework.stereotype.Service;
 public class ActualizationService {
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyActualizationService legacyActualizationService;
+  private final AccessTokenService accessTokenService;
 
   public ActualizationService(OrgSilServiceComponent orgSilServiceComponent,
-                              LegacyActualizationService legacyActualizationService) {
+                              LegacyActualizationService legacyActualizationService,
+                              AccessTokenService accessTokenService) {
     this.orgSilServiceComponent = orgSilServiceComponent;
     this.legacyActualizationService = legacyActualizationService;
+    this.accessTokenService = accessTokenService;
   }
 
   public AmountUpdatesDTO actualize(Long orgSilServiceId,
@@ -31,10 +35,14 @@ public class ActualizationService {
     OrgSilService orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
       .orElseThrow(() -> new IllegalArgumentException("Organization service not found"));
 
-    Token token = new Token();
+    AccessToken loggedUserAccessToken = new AccessToken()
+      .accessToken(accessToken)
+      .tokenType("Bearer");
+
+    AccessToken actualAccessToken = accessTokenService.getAccessToken(orgSilService, loggedUserAccessToken);
 
     AmountUpdatesDTO amountUpdatesDTO = legacyActualizationService.actualization(
-      token.getToken(),
+      actualAccessToken.getAccessToken(),
       orgSilService.getServiceUrl(),
       Pagamento.builder()
         .importoPosizione(Pagamento.ImportoPosizioneEnum.S)
