@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,18 +18,18 @@ import static org.mockito.Mockito.mock;
 class AccessTokenServiceTest {
 
   @Mock
-  private AuthAccessTokenFacade authAccessTokenFacadeMock;
+  private SilLegacyAuthFacadeService silLegacyAuthFacadeServiceMock;
 
   private AccessTokenService service;
 
   @BeforeEach
   void init(){
-    service = new AccessTokenService(authAccessTokenFacadeMock);
+    service = new AccessTokenService(silLegacyAuthFacadeServiceMock);
   }
 
   @AfterEach
   void verifyNoMoreInteractions(){
-    Mockito.verifyNoMoreInteractions(authAccessTokenFacadeMock);
+    Mockito.verifyNoMoreInteractions(silLegacyAuthFacadeServiceMock);
   }
 
   @Test
@@ -44,8 +45,23 @@ class AccessTokenServiceTest {
     configureAndInvoke(expectedResult);
 
     // Then
-    Mockito.verify(authAccessTokenFacadeMock, Mockito.times(1))
-      .retrieveAccessToken(Mockito.any(), Mockito.any());
+    Mockito.verify(silLegacyAuthFacadeServiceMock, Mockito.times(1))
+      .authenticate(Mockito.any());
+  }
+
+  @Test
+  void givenLoggedUserAccessTokenWhenGetAccessTokenThenReturnToken() {
+    // Given
+    AccessToken expectedResult = AccessToken.builder()
+      .expiresIn(10)
+      .accessToken("ACCESSTOKEN")
+      .tokenType("TOKENTYPE")
+      .build();
+
+    OrgSilService orgSilService = mock(OrgSilService.class).flagLegacy(false);
+    AccessToken result = service.getAccessToken(orgSilService, expectedResult);
+
+    Assertions.assertSame(expectedResult, result);
   }
 
   private void configureAndInvoke(AccessToken expectedResult) {
@@ -55,8 +71,8 @@ class AccessTokenServiceTest {
         .tokenType("TOKENTYPE")
         .expiresIn(10);
 
-    OrgSilService orgSilService = mock(OrgSilService.class);
-    Mockito.when(authAccessTokenFacadeMock.retrieveAccessToken(orgSilService, accessToken))
+    OrgSilService orgSilService = mock(OrgSilService.class).flagLegacy(true);
+    Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(orgSilService.getAuthConfig()))
       .thenReturn(expectedResult);
 
     // When
