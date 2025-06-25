@@ -87,7 +87,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   @Test
-  void givenNotAuthorizedUserWhenPaaSILInviaCarrelloDovutiServiceThenError() {
+  void givenNotAuthorizedUserWhenPaaSILInviaCarrelloDovutiThenError() {
     //given
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
@@ -101,7 +101,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   @ParameterizedTest
   @ValueSource(strings = {"not_active_ipa"})
   @NullSource
-  void givenInvalidAuthorizationWhenPaaSILInviaCarrelloDovutiServiceThenError(String testCase) {
+  void givenInvalidOrganizationWhenPaaSILInviaCarrelloDovutiThenError(String testCase) {
     if(testCase==null){
       org = null;
     } else {
@@ -116,7 +116,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   @Test
-  void givenInvalidUrlWhenPaaSILInviaDovutiThenFault() {
+  void givenInvalidUrlWhenPaaSILInviaCarrelloDovutiThenFault() {
     //given
     request.setEnteSILInviaRispostaPagamentoUrl("http://");
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
@@ -129,7 +129,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   @Test
-  void givenMapperFaultWhenPaaSILInviaDovutiThenFault() {
+  void givenMapperFaultWhenPaaSILInviaCarrelloDovutiThenFault() {
     //given
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaCarrelloDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), any(), eq(TOKEN)))
@@ -144,7 +144,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   @Test
-  void givenCreateDebtPositionFaultWhenPaaSILInviaDovutiThenFault() {
+  void givenCreateDebtPositionFaultWhenPaaSILInviaCarrelloDovutiThenFault() {
     //given
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
@@ -164,7 +164,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   @Test
-  void givenMapCartRequestFaultWhenPaaSILInviaDovutiThenFault() {
+  void givenMapCartRequestFaultWhenPaaSILInviaCarrelloDovutiThenFault() {
     //given
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
@@ -187,7 +187,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   @Test
-  void givenValidRequestWhenPaaSILInviaDovutiThenOk() {
+  void givenValidRequestWhenPaaSILInviaCarrelloDovutiThenOk() {
     //given
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
