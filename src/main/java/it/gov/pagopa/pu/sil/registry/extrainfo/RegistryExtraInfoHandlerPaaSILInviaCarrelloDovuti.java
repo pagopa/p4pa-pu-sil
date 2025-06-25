@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti {
+public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti extends AbstractFaultAwareExtraInfoHandler<PaaSILInviaCarrelloDovutiRisposta> {
+
   public Map<String, Object> extractRequestExtraInfo(PaaSILInviaCarrelloDovuti request, SoapHeaderElement header) {
     Map<String, Object> body = new HashMap<>();
     body.put("enteSILInviaRispostaPagamentoUrl", request.getEnteSILInviaRispostaPagamentoUrl());
@@ -37,7 +38,8 @@ public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti {
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaCarrelloDovutiRisposta response) {
+  @Override
+  public Map<String, Object> extractResponseExtraInfoOutcomeOk(PaaSILInviaCarrelloDovutiRisposta response) {
     Map<String, Object> body = new HashMap<>();
     if(response.getIdSessionCarrello()!=null){
       body.put("idSession", response.getIdSessionCarrello());

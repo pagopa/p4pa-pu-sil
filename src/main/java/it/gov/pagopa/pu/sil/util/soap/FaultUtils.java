@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
@@ -81,6 +82,14 @@ public class FaultUtils {
           responseObj,
           unauthorizedFault,
           ue.getMessage(),
+          faultBeanSupplier,
+          faultSetter
+        );
+      } else if (e instanceof SilFaultException sfe) {
+        return setFaultOnResponse(
+          responseObj,
+          sfe.getFault(),
+          sfe.getDescription(),
           faultBeanSupplier,
           faultSetter
         );
