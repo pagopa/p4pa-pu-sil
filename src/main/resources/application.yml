@@ -178,6 +178,12 @@ public-base-url:
 springdoc:
   writer-with-default-pretty-printer: true
 
+checkout:
+  default-callback-url:
+    ok: "\${CHECKOUT_DEFAULT_CALLBACK_URL_OK:http://localhost:8080/checkout/ok}"
+    ko: "\${CHECKOUT_DEFAULT_CALLBACK_URL_KO:http://localhost:8080/checkout/ko}"
+    cancel: "\${CHECKOUT_DEFAULT_CALLBACK_URL_CANCEL:http://localhost:8080/checkout/cancel}"
+
 cache:
   debtPositionTypeOrg:
     size: "\${CACHE_DEBTPOSITION_TYPE_ORG_SIZE:1000}"

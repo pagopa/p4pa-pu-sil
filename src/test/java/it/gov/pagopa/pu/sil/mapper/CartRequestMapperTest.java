@@ -26,6 +26,12 @@ class CartRequestMapperTest {
 
   @BeforeEach
   void setUp() {
+    cartRequestMapper = new CartRequestMapper(
+      "http://ok.TEST.com",
+      "http://ko.TEST.com",
+      "http://cancel.TEST.com"
+    );
+
     TransferDTO transfer = new TransferDTO();
     transfer.setOrgFiscalCode("12345678901");
     transfer.setOrgName("OrgName");
@@ -67,6 +73,9 @@ class CartRequestMapperTest {
     assertEquals(cartId, result.getIdCart());
     assertEquals(fullDebtPositionDTO.getPaymentOptions().getFirst().getInstallments().getFirst().getDebtor().getEmail(), result.getEmailNotice());
     assertEquals(num, result.getPaymentNotices().size());
+    assertEquals(callbackUrl, result.getReturnUrls().getReturnOkUrl().toString());
+    assertEquals(callbackUrl, result.getReturnUrls().getReturnErrorUrl().toString());
+    assertEquals(callbackUrl, result.getReturnUrls().getReturnCancelUrl().toString());
     TestUtils.checkNotNullFields(result);
   }
 
@@ -81,7 +90,9 @@ class CartRequestMapperTest {
 
     // Assert
     assertNotNull(result);
-    assertEquals("http://TODO.com", result.getReturnUrls().getReturnOkUrl().toString());
+    assertEquals("http://ok.TEST.com", result.getReturnUrls().getReturnOkUrl().toString());
+    assertEquals("http://ko.TEST.com", result.getReturnUrls().getReturnErrorUrl().toString());
+    assertEquals("http://cancel.TEST.com", result.getReturnUrls().getReturnCancelUrl().toString());
     TestUtils.checkNotNullFields(result);
   }
 

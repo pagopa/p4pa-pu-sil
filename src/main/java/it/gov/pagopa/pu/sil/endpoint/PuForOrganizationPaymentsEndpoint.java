@@ -231,7 +231,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, accessToken),
+      () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaDovutiRisposta(),
         PaaSILInviaDovutiRisposta::setFault,
@@ -254,6 +254,7 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILInviaCarrelloDovuti");
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
@@ -265,7 +266,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request),
+      () -> paaSILInviaCarrelloDovutiService.processRequest(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaCarrelloDovutiRisposta(),
         PaaSILInviaCarrelloDovutiRisposta::setFault,
