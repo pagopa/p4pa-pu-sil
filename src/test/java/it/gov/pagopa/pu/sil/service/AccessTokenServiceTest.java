@@ -12,8 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.mockito.Mockito.mock;
-
 @ExtendWith(MockitoExtension.class)
 class AccessTokenServiceTest {
 
@@ -58,7 +56,7 @@ class AccessTokenServiceTest {
       .tokenType("TOKENTYPE")
       .build();
 
-    OrgSilService orgSilService = mock(OrgSilService.class).flagLegacy(false);
+    OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
     AccessToken result = service.getAccessToken(orgSilService, expectedResult);
 
     Assertions.assertSame(expectedResult, result);
@@ -71,7 +69,7 @@ class AccessTokenServiceTest {
         .tokenType("TOKENTYPE")
         .expiresIn(10);
 
-    OrgSilService orgSilService = mock(OrgSilService.class).flagLegacy(true);
+    OrgSilService orgSilService = new OrgSilService().flagLegacy(true);
     Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(orgSilService.getAuthConfig()))
       .thenReturn(expectedResult);
 
