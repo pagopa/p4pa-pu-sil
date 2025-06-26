@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,16 +55,19 @@ class LegacyActualizationClientTest {
   }
 
   @Test
-  void whenActualizationThenHttpClientErrorExceptionThenNull(){
+  void whenActualizationThenRestClientResponseException(){
     //Given
     String serviceUrl = "http://example.com/service";
     String token = "accessToken";
     Pagamento pagamento = new Pagamento();
 
+    RestClientResponseException ex = new RestClientResponseException(
+      "Error occurred", 400, "Bad Request", null, null, null);
+
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
       .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-      .thenThrow(RestClientException.class);
+      .thenThrow(ex);
 
     // When Then
     assertThrows(ActualizationException.class, () ->
