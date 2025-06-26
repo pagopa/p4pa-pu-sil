@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,9 +45,9 @@ class LegacyActualizationClientTest {
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
 
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
-           .thenReturn(amountUpdatesLegacyApiClientMock);
+      .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-           .thenReturn(expectedPagamentoAggiornato);
+      .thenReturn(expectedPagamentoAggiornato);
     // When
     PagamentoAggiornato result = client.actualization(token, serviceUrl, pagamento);
 
@@ -63,7 +65,7 @@ class LegacyActualizationClientTest {
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
       .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-      .thenThrow(Exception.class);
+      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When
     PagamentoAggiornato result = client.actualization(token, serviceUrl, pagamento);
