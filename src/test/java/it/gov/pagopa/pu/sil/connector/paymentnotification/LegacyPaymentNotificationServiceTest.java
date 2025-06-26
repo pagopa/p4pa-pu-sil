@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyPaymentNotificationServiceTest {
@@ -37,6 +38,9 @@ class LegacyPaymentNotificationServiceTest {
     PaymentNotification paymentNotification = new PaymentNotification()
       .esito("OK")
       .rt("RT123");
+
+    when(legacyPaymentNotificationClientMock.notifyPayment(accessToken, serviceUrl, paymentNotification))
+      .thenReturn(true);
 
     // When
     boolean notified = legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification);

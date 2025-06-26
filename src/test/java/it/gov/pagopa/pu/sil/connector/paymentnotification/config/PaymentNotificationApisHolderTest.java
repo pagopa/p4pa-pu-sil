@@ -31,8 +31,11 @@ class PaymentNotificationApisHolderTest extends BaseApiHolderTest {
   @Test
   void whenGetPaymentNotificationApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> apisHolder.getPaymentNotificationLegacyApi(accessToken, "http://example.com")
-        .paymentNotificationWithHttpInfo(new PaymentNotification("RT123", "OK")),
+      accessToken -> {
+        apisHolder.getPaymentNotificationLegacyApi(accessToken, "http://example.com")
+          .paymentNotificationWithHttpInfo(new PaymentNotification("RT123", "OK"));
+        return voidMock;
+      },
       new ParameterizedTypeReference<>() {},
       () -> {},
       AUTH_TYPE.NO_AUTH);
