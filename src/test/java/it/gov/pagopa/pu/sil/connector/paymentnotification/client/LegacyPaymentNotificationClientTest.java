@@ -39,7 +39,9 @@ class LegacyPaymentNotificationClientTest {
     // Given
     String serviceUrl = "http://example.com/service";
     String accessToken = "accessToken";
-    PaymentNotification paymentNotification = new PaymentNotification();
+    PaymentNotification paymentNotification = new PaymentNotification()
+      .rt("RT123")
+      .esito("OK");
     ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
 
     Mockito.when(paymentNotificationApisHolderMock.getPaymentNotificationLegacyApi(accessToken, serviceUrl))
