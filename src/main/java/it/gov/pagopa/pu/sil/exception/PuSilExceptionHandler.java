@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import it.gov.pagopa.actualization.legacy.dto.generated.Error;
 import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
