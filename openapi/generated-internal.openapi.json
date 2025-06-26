@@ -12,8 +12,112 @@
   "security" : [ {
     "BearerAuth" : [ ]
   } ],
-  "paths" : { },
+  "tags" : [ {
+    "name" : "notifyPayment",
+    "description" : "the notifyPayment API"
+  } ],
+  "paths" : {
+    "/internal/orgSilService/{orgSilServiceId}/notify-payment" : {
+      "get" : {
+        "tags" : [ "notifyPayment" ],
+        "summary" : "notifyPayment",
+        "description" : "notifies the payment details executed",
+        "operationId" : "notifyPayment",
+        "parameters" : [ {
+          "name" : "orgSilServiceId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "nav",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotifyPaymentDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotifyPaymentDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotifyPaymentDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Notification not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotifyPaymentDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotifyPaymentDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    }
+  },
   "components" : {
+    "schemas" : {
+      "NotifyPaymentDTO" : {
+        "type" : "object",
+        "properties" : {
+          "outcome" : {
+            "$ref" : "#/components/schemas/OutcomeEnum"
+          },
+          "faultCode" : {
+            "type" : "string"
+          },
+          "faultDescription" : {
+            "type" : "string"
+          }
+        }
+      },
+      "OutcomeEnum" : {
+        "type" : "string",
+        "enum" : [ "OK", "KO" ]
+      }
+    },
     "securitySchemes" : {
       "BearerAuth" : {
         "type" : "http",
