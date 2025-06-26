@@ -10,8 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyPaymentNotificationClientTest {
@@ -38,14 +40,17 @@ class LegacyPaymentNotificationClientTest {
     String serviceUrl = "http://example.com/service";
     String accessToken = "accessToken";
     PaymentNotification paymentNotification = new PaymentNotification();
+    ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
 
     Mockito.when(paymentNotificationApisHolderMock.getPaymentNotificationLegacyApi(accessToken, serviceUrl))
       .thenReturn(paymentNotificationLegacyApiClientMock);
-    Mockito.doNothing().when(paymentNotificationLegacyApiClientMock)
-      .paymentNotification(paymentNotification);
+    Mockito.when(paymentNotificationLegacyApiClientMock.paymentNotificationWithHttpInfo(paymentNotification))
+      .thenReturn(responseEntity);
 
-    // When  Then
-    assertDoesNotThrow(() ->
-      client.notifyPayment(accessToken, serviceUrl, paymentNotification));
+    // When
+    boolean result = client.notifyPayment(accessToken, serviceUrl, paymentNotification);
+
+    // Then
+    assertEquals(responseEntity.getStatusCode().is2xxSuccessful(), result);
   }
 }

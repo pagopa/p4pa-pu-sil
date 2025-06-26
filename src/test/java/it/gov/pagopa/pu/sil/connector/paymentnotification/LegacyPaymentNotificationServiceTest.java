@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyPaymentNotificationServiceTest {
@@ -36,9 +36,9 @@ class LegacyPaymentNotificationServiceTest {
     String serviceUrl = "http://example.com/service";
     PaymentNotification paymentNotification = new PaymentNotification();
 
-    // When Then
-    assertDoesNotThrow(() ->
-      legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification)
-    );
+    // When
+    boolean notified = legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification);
+    // Then
+    assertTrue(notified);
   }
 }
