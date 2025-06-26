@@ -4,6 +4,8 @@ import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class AmountUpdatesMapper {
   public AmountUpdatesDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
@@ -16,9 +18,14 @@ public class AmountUpdatesMapper {
       .updatedAmount(pagamentoAggiornato.getImportoPosizione())
       .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
       .balance(pagamentoAggiornato.getBilancio())
-      .errorCode(pagamentoAggiornato.getCodice().getValue())
+      .errorCode(Optional.ofNullable(pagamentoAggiornato.getCodice()).map(PagamentoAggiornato.CodiceEnum::getValue).orElse(null))
       .errorDescription(pagamentoAggiornato.getDettaglio())
-      .build();
+      .isBlockingError(PagamentoAggiornato.CodiceEnum._004.getValue().equals(
+        Optional.ofNullable(pagamentoAggiornato.getCodice())
+          .map(PagamentoAggiornato.CodiceEnum::getValue)
+          .orElse(null)
+        )
+      ).build();
   }
 
   public AmountUpdatesDTO mapToKoAmountUpdatesDTO() {

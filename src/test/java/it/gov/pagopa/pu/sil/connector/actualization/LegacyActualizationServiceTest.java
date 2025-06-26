@@ -4,6 +4,8 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyActualizationClient;
 import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
+import it.gov.pagopa.pu.sil.exception.ActualizationException;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,7 +65,7 @@ class LegacyActualizationServiceTest {
     AmountUpdatesDTO koAmountUpdatesDTO = new AmountUpdatesDTO();
 
     Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
-           .thenThrow(Exception.class);
+           .thenThrow(new ActualizationException(PuSilErrorDTO.CodeEnum.GENERIC_ERROR, "Something went wrong"));
     Mockito.when(amountUpdatesMapperMock.mapToKoAmountUpdatesDTO())
             .thenReturn(koAmountUpdatesDTO);
 

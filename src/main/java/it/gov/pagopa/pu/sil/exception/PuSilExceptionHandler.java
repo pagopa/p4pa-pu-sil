@@ -60,20 +60,17 @@ public class PuSilExceptionHandler {
 
   @ExceptionHandler(ActualizationException.class)
   public ResponseEntity<PuSilErrorDTO> handleActualizationException(ActualizationException ex, HttpServletRequest request) {
-    PuSilErrorDTO.CodeEnum codeEnum = PuSilErrorDTO.CodeEnum.GENERIC_ERROR;
     HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    if (HttpStatus.NOT_FOUND.toString().equals(ex.getCode())) {
-      codeEnum = PuSilErrorDTO.CodeEnum.NOT_FOUND;
+    if (HttpStatus.NOT_FOUND.toString().equals(ex.getCode().getValue())) {
       httpStatus = HttpStatus.NOT_FOUND;
-    } else if (HttpStatus.BAD_REQUEST.toString().equals(ex.getCode())) {
-      codeEnum = PuSilErrorDTO.CodeEnum.BAD_REQUEST;
+    } else if (HttpStatus.BAD_REQUEST.toString().equals(ex.getCode().getValue())) {
       httpStatus = HttpStatus.BAD_REQUEST;
     }
     logException(ex, request, httpStatus);
 
     return ResponseEntity
       .status(httpStatus)
-      .body(new PuSilErrorDTO(codeEnum, ex.getMessage()));
+      .body(new PuSilErrorDTO(ex.getCode(), ex.getMessage()));
   }
 
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {

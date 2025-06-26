@@ -1,8 +1,6 @@
 package it.gov.pagopa.pu.sil.service.actualization;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
-import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
-import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
@@ -37,7 +35,7 @@ public class ActualizationService {
 
     String silAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
 
-    AmountUpdatesDTO amountUpdatesDTO = legacyActualizationService.actualization(
+    return legacyActualizationService.actualization(
       silAccessToken,
       orgSilService.getServiceUrl(),
       Pagamento.builder()
@@ -46,14 +44,5 @@ public class ActualizationService {
         .cfEnteCreditore(orgFiscalCode)
         .build()
     );
-
-    if (amountUpdatesDTO.getErrorCode() != null) {
-      boolean isBlocking = PagamentoAggiornato.CodiceEnum._004.getValue().equals(amountUpdatesDTO.getErrorCode());
-      amountUpdatesDTO.isBlockingError(isBlocking);
-      log.error("{} for orgSilServiceId: {}, orgFiscalCode: {}, nav: {}. Error code: {} - Error message: {}",
-        isBlocking ? "Debt position not payable" : "Error during actualization",
-        orgSilServiceId, orgFiscalCode, nav, amountUpdatesDTO.getErrorCode(), amountUpdatesDTO.getErrorDescription());
-    }
-    return amountUpdatesDTO;
   }
 }

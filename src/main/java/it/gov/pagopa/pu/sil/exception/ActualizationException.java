@@ -1,14 +1,16 @@
 package it.gov.pagopa.pu.sil.exception;
 
-public class ActualizationException extends RuntimeException {
-  private final String code;
+import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
 
-  public ActualizationException(String code, String message) {
+public class ActualizationException extends RuntimeException {
+  private final PuSilErrorDTO.CodeEnum code;
+
+  public ActualizationException(PuSilErrorDTO.CodeEnum code, String message) {
     super(message);
     this.code = code;
   }
 
-  public String getCode() {
+  public PuSilErrorDTO.CodeEnum getCode() {
     return code;
   }
 }
