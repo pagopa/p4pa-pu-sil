@@ -34,7 +34,9 @@ class LegacyPaymentNotificationServiceTest {
     // Given
     String accessToken = "accessToken";
     String serviceUrl = "http://example.com/service";
-    PaymentNotification paymentNotification = new PaymentNotification();
+    PaymentNotification paymentNotification = new PaymentNotification()
+      .esito("OK")
+      .rt("RT123");
 
     // When
     boolean notified = legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification);
