@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doThrow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.sil.config.json.JsonConfig;
+import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -21,6 +22,8 @@ import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -205,5 +208,20 @@ class PuSilExceptionHandlerTest {
         .andExpect(MockMvcResultMatchers.status().isNotFound())
         .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
         .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+      "GENERIC_ERROR,Generic error,500,GENERIC_ERROR",
+      "NOT_FOUND,Not found,404,NOT_FOUND",
+      "BAD_REQUEST,Bad request,400,BAD_REQUEST"
+    })
+    void handleActualizationExceptionParameterized(String code, String message, int expectedStatus, String expectedCode) throws Exception {
+      doThrow(new ActualizationException(PuSilErrorDTO.CodeEnum.valueOf(code), message)).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+      performRequest(DATA, MediaType.APPLICATION_JSON)
+        .andExpect(MockMvcResultMatchers.status().is(expectedStatus))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(expectedCode))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(message));
     }
 }

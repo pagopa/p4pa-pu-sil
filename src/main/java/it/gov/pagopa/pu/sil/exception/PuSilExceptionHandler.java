@@ -61,9 +61,9 @@ public class PuSilExceptionHandler {
   @ExceptionHandler(ActualizationException.class)
   public ResponseEntity<PuSilErrorDTO> handleActualizationException(ActualizationException ex, HttpServletRequest request) {
     HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    if (HttpStatus.NOT_FOUND.toString().equals(ex.getCode().getValue())) {
+    if (HttpStatus.NOT_FOUND.name().equals(ex.getCode().getValue())) {
       httpStatus = HttpStatus.NOT_FOUND;
-    } else if (HttpStatus.BAD_REQUEST.toString().equals(ex.getCode().getValue())) {
+    } else if (HttpStatus.BAD_REQUEST.name().equals(ex.getCode().getValue())) {
       httpStatus = HttpStatus.BAD_REQUEST;
     }
     logException(ex, request, httpStatus);
