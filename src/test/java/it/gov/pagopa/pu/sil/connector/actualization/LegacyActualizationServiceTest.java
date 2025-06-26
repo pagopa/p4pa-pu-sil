@@ -53,4 +53,23 @@ class LegacyActualizationServiceTest {
     // Then
     assertSame(expectedAmountUpdatesDTO, result);
   }
+
+  @Test
+  void whenActualizationThrowsExceptionThenReturnKoAmountUpdatesDTO() {
+    // Given
+    String accessToken = "accessToken";
+    String serviceUrl = "http://example.com/service";
+    Pagamento pagamento = new Pagamento();
+    AmountUpdatesDTO koAmountUpdatesDTO = new AmountUpdatesDTO();
+
+    Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
+           .thenThrow(Exception.class);
+    Mockito.when(amountUpdatesMapperMock.mapToKoAmountUpdatesDTO())
+            .thenReturn(koAmountUpdatesDTO);
+
+    // When
+    AmountUpdatesDTO result = legacyActualizationService.actualization(accessToken, serviceUrl, pagamento);
+    // Then
+    assertSame(koAmountUpdatesDTO, result);
+  }
 }

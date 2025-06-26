@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import it.gov.pagopa.actualization.legacy.dto.generated.Error;
 import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +57,24 @@ public class PuSilExceptionHandler {
   @ExceptionHandler({RuntimeException.class})
   public ResponseEntity<PuSilErrorDTO> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
+  }
+
+  @ExceptionHandler(ActualizationException.class)
+  public ResponseEntity<PuSilErrorDTO> handleActualizationException(ActualizationException ex, HttpServletRequest request) {
+    PuSilErrorDTO.CodeEnum codeEnum = PuSilErrorDTO.CodeEnum.GENERIC_ERROR;
+    HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+    if (HttpStatus.NOT_FOUND.toString().equals(ex.getCode())) {
+      codeEnum = PuSilErrorDTO.CodeEnum.NOT_FOUND;
+      httpStatus = HttpStatus.NOT_FOUND;
+    } else if (HttpStatus.BAD_REQUEST.toString().equals(ex.getCode())) {
+      codeEnum = PuSilErrorDTO.CodeEnum.BAD_REQUEST;
+      httpStatus = HttpStatus.BAD_REQUEST;
+    }
+    logException(ex, request, httpStatus);
+
+    return ResponseEntity
+      .status(httpStatus)
+      .body(new PuSilErrorDTO(codeEnum, ex.getMessage()));
   }
 
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {

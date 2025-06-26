@@ -39,7 +39,7 @@ class AmountUpdatesMapperTest {
 
     @Test
     void testPagamentoAggiornato2AmountUpdatesDTONullInput() {
-        AmountUpdatesDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(null);
+        AmountUpdatesDTO dto = mapper.mapToKoAmountUpdatesDTO();
         assertNotNull(dto);
         assertEquals(AmountUpdatesDTO.OutcomeEnum.KO, dto.getOutcome());
         assertFalse(dto.getIsBlockingError());

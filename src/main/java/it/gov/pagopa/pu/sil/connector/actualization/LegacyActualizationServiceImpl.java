@@ -20,7 +20,11 @@ public class LegacyActualizationServiceImpl implements LegacyActualizationServic
 
   @Override
   public AmountUpdatesDTO actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
-    PagamentoAggiornato actualization = legacyActualizationClient.actualization(accessToken, serviceUrl, pagamento);
-    return amountUpdatesMapper.pagamentoAggiornato2AmountUpdatesDTO(actualization);
+    try {
+      PagamentoAggiornato actualization = legacyActualizationClient.actualization(accessToken, serviceUrl, pagamento);
+      return amountUpdatesMapper.pagamentoAggiornato2AmountUpdatesDTO(actualization);
+    } catch (Exception e) {
+      return amountUpdatesMapper.mapToKoAmountUpdatesDTO();
+    }
   }
 }

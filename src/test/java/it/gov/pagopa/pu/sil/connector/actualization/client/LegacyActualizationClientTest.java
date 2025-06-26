@@ -4,6 +4,7 @@ import it.gov.pagopa.actualization.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
+import it.gov.pagopa.pu.sil.exception.ActualizationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -65,7 +64,7 @@ class LegacyActualizationClientTest {
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
       .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenThrow(ActualizationException.class);
 
     // When
     PagamentoAggiornato result = client.actualization(token, serviceUrl, pagamento);
