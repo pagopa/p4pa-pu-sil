@@ -33,7 +33,7 @@ class PaymentNotificationApisHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> {
         apisHolder.getPaymentNotificationLegacyApi(accessToken, "http://example.com")
-          .paymentNotificationWithHttpInfo(new PaymentNotification("RT123", "OK"));
+          .paymentNotification(new PaymentNotification("RT123", "OK"));
         return voidMock;
       },
       new ParameterizedTypeReference<>() {},

@@ -10,8 +10,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.Mockito.doNothing;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyPaymentNotificationServiceTest {
@@ -39,12 +39,11 @@ class LegacyPaymentNotificationServiceTest {
       .esito("OK")
       .rt("RT123");
 
-    when(legacyPaymentNotificationClientMock.notifyPayment(accessToken, serviceUrl, paymentNotification))
-      .thenReturn(true);
+    doNothing().when(legacyPaymentNotificationClientMock).notifyPayment(accessToken, serviceUrl, paymentNotification);
 
-    // When
-    boolean notified = legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification);
-    // Then
-    assertTrue(notified);
+    // When Then
+    assertDoesNotThrow(() ->
+        legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification)
+    );
   }
 }

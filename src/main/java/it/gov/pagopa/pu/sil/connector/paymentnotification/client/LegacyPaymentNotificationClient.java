@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.sil.connector.paymentnotification.config.PaymentNotifica
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 
 @Slf4j
 @Component
@@ -15,10 +16,9 @@ public class LegacyPaymentNotificationClient {
     this.paymentNotificationApisHolder = paymentNotificationApisHolder;
   }
 
-  public boolean notifyPayment(String accessToken, String serviceUrl, PaymentNotification paymentNotification) {
+  public void notifyPayment(String accessToken, String serviceUrl, PaymentNotification paymentNotification) {
     log.info("Sending payment notification to service URL: {}", serviceUrl);
-    ResponseEntity<Void> voidResponseEntity = paymentNotificationApisHolder.getPaymentNotificationLegacyApi(accessToken, serviceUrl)
-      .paymentNotificationWithHttpInfo(paymentNotification);
-    return voidResponseEntity.getStatusCode().is2xxSuccessful();
+    paymentNotificationApisHolder.getPaymentNotificationLegacyApi(accessToken, serviceUrl)
+      .paymentNotification(paymentNotification);
   }
 }

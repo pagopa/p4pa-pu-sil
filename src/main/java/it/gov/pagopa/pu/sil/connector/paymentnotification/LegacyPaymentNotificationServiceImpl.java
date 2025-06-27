@@ -13,7 +13,7 @@ public class LegacyPaymentNotificationServiceImpl implements LegacyPaymentNotifi
   }
 
   @Override
-  public boolean notifyPayment(String accessToken, String serviceUrl, PaymentNotification paymentNotification) {
-    return legacyPaymentNotificationClient.notifyPayment(accessToken, serviceUrl, paymentNotification);
+  public void notifyPayment(String accessToken, String serviceUrl, PaymentNotification paymentNotification) {
+    legacyPaymentNotificationClient.notifyPayment(accessToken, serviceUrl, paymentNotification);
   }
 }
