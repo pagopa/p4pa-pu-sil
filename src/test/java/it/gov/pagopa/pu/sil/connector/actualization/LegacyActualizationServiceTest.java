@@ -97,17 +97,4 @@ class LegacyActualizationServiceTest {
            .thenReturn(pagamentoAggiornato);
     assertThrows(PaymentInvalidStatusException.class, () -> legacyActualizationService.actualization(accessToken, serviceUrl, pagamento));
   }
-
-  @Test
-  void whenUnknownCodiceThenThrowActualizationException() {
-    String accessToken = "accessToken";
-    String serviceUrl = "http://example.com/service";
-    Pagamento pagamento = new Pagamento();
-    PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
-    pagamentoAggiornato.setCodice(CodiceEnum.valueOf("_999"));
-    pagamentoAggiornato.setDettaglio("Unknown error");
-    Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
-           .thenReturn(pagamentoAggiornato);
-    assertThrows(IllegalArgumentException.class, () -> legacyActualizationService.actualization(accessToken, serviceUrl, pagamento));
-  }
 }

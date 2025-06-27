@@ -39,8 +39,6 @@ public class LegacyActualizationServiceImpl implements LegacyActualizationServic
           throw new PaymentNotNotifiedException(message);
         case CodiceEnum._004:
           throw new PaymentInvalidStatusException(message);
-        default:
-          throw new IllegalArgumentException("Generic error");
       }
     }
     return amountUpdatesMapper.pagamentoAggiornato2AmountUpdatesDTO(actualization);
