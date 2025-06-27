@@ -58,19 +58,19 @@ public class PuSilExceptionHandler {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
   }
 
-  @ExceptionHandler(ActualizationException.class)
-  public ResponseEntity<PuSilErrorDTO> handleActualizationException(ActualizationException ex, HttpServletRequest request) {
-    HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    if (HttpStatus.NOT_FOUND.name().equals(ex.getCode().getValue())) {
-      httpStatus = HttpStatus.NOT_FOUND;
-    } else if (HttpStatus.BAD_REQUEST.name().equals(ex.getCode().getValue())) {
-      httpStatus = HttpStatus.BAD_REQUEST;
-    }
-    logException(ex, request, httpStatus);
+  @ExceptionHandler(PaymentNotFoundException.class)
+  public ResponseEntity<PuSilErrorDTO> handlePaymentNotFoundException(PaymentNotFoundException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.NOT_FOUND);
+  }
 
-    return ResponseEntity
-      .status(httpStatus)
-      .body(new PuSilErrorDTO(ex.getCode(), ex.getMessage()));
+  @ExceptionHandler(PaymentNotNotifiedException.class)
+  public ResponseEntity<PuSilErrorDTO> handlePaymentNotNotifiedException(PaymentNotNotifiedException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.PRECONDITION_FAILED, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(PaymentInvalidStatusException.class)
+  public ResponseEntity<PuSilErrorDTO> handlePaymentInvalidStatusException(PaymentInvalidStatusException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
   }
 
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {

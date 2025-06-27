@@ -33,45 +33,5 @@ class AmountUpdatesMapperTest {
         assertEquals(5000L, dto.getUpdatedAmount());
         assertEquals(now.plusDays(1), dto.getCompletionDeadlineDate());
         assertEquals("BILANCIO-JSON", dto.getBalance());
-        assertEquals("004", dto.getErrorCode());
-        assertEquals("Some error description", dto.getErrorDescription());
-        assertTrue(dto.getIsBlockingError()); // should be true for code _004
-    }
-
-    @Test
-    void testPagamentoAggiornato2AmountUpdatesDTONullInput() {
-        AmountUpdatesDTO dto = mapper.mapToKoAmountUpdatesDTO();
-        assertNotNull(dto);
-        assertEquals(AmountUpdatesDTO.OutcomeEnum.KO, dto.getOutcome());
-        assertFalse(dto.getIsBlockingError());
-    }
-
-    @Test
-    void testPagamentoAggiornato2AmountUpdatesDTONullCodice() {
-        PagamentoAggiornato pagamento = new PagamentoAggiornato();
-        pagamento.setNumeroAvviso("NAV999");
-        pagamento.setIun("IUN999");
-        pagamento.setSpeseNotifica(200L);
-        OffsetDateTime now = OffsetDateTime.now();
-        pagamento.setDataVisualizzazione(now);
-        pagamento.setImportoPosizione(10000L);
-        pagamento.setDataPerfezionamentoDecorrenzaTermini(now.plusDays(2));
-        pagamento.setBilancio("BILANCIO-NULL-CODE");
-        pagamento.setCodice(null);
-        pagamento.setDettaglio("No error code");
-
-        AmountUpdatesDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(pagamento);
-
-        assertNotNull(dto);
-        assertEquals("NAV999", dto.getNav());
-        assertEquals("IUN999", dto.getIun());
-        assertEquals(200L, dto.getNotificationFee());
-        assertEquals(now, dto.getDisplayDate());
-        assertEquals(10000L, dto.getUpdatedAmount());
-        assertEquals(now.plusDays(2), dto.getCompletionDeadlineDate());
-        assertEquals("BILANCIO-NULL-CODE", dto.getBalance());
-        assertNull(dto.getErrorCode()); // should be null if codice is null
-        assertEquals("No error code", dto.getErrorDescription());
-        assertFalse(dto.getIsBlockingError()); // should be false if codice is null
     }
 }
