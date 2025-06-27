@@ -193,9 +193,6 @@
       "AmountUpdatesDTO" : {
         "type" : "object",
         "properties" : {
-          "outcome" : {
-            "$ref" : "#/components/schemas/OutcomeEnum"
-          },
           "updatedAmount" : {
             "type" : "integer",
             "format" : "int64",
@@ -241,10 +238,6 @@
             "description" : "ISO 8601 date of completion due to expiry of deadline"
           }
         }
-      },
-      "OutcomeEnum" : {
-        "type" : "string",
-        "enum" : [ "OK", "KO" ]
       }
     },
     "securitySchemes" : {

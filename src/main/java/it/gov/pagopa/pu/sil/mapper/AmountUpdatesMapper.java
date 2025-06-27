@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 public class AmountUpdatesMapper {
   public AmountUpdatesDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
     return AmountUpdatesDTO.builder()
-      .outcome(AmountUpdatesDTO.OutcomeEnum.OK)
       .nav(pagamentoAggiornato.getNumeroAvviso())
       .iun(pagamentoAggiornato.getIun())
       .notificationFee(pagamentoAggiornato.getSpeseNotifica())

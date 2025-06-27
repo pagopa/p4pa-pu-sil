@@ -184,11 +184,6 @@ components:
     AmountUpdatesDTO:
       type: object
       properties:
-        outcome:
-          type: string
-          enum:
-            - OK
-            - KO
         updatedAmount:
           type: integer
           format: int64
