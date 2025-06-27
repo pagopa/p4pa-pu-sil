@@ -157,6 +157,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateREGISTRIES",
     "openApiGenerateWORKFLOWHUB",
     "openApiGenerateNodeCheckout",
+    "openApiGenerateLegacyPaymentNofication",
     "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation",
@@ -452,6 +453,30 @@ jaxb {
     outputDir.set("$projectDir/build/generated")
     apiPackage.set("it.gov.pagopa.pu.registries.controller.generated")
     modelPackage.set("it.gov.pagopa.pu.registries.dto.generated")
+    configOptions.set(mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    ))
+    library.set("resttemplate")
+  }
+
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyPaymentNofication") {
+    group = "openapi"
+    description = "description"
+
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/payment-notification-legacy.yaml")
+    outputDir.set("$projectDir/build/generated")
+    apiPackage.set("it.gov.pagopa.paymentnotification.legacy.controller.generated")
+    modelPackage.set("it.gov.pagopa.paymentnotification.legacy.dto.generated")
     configOptions.set(mapOf(
       "swaggerAnnotations" to "false",
       "openApiNullable" to "false",
