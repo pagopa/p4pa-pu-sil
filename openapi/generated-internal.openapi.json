@@ -13,16 +13,16 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
-    "name" : "AmountUpdates",
-    "description" : "the AmountUpdates API"
+    "name" : "notifyPayment",
+    "description" : "the notifyPayment API"
   } ],
   "paths" : {
-    "/internal/orgSilService/{orgSilServiceId}/amount-updates" : {
+    "/internal/orgSilService/{orgSilServiceId}/notify-payment" : {
       "get" : {
-        "tags" : [ "AmountUpdates" ],
-        "summary" : "get amount updates",
-        "description" : "get amount updates",
-        "operationId" : "getAmountUpdates",
+        "tags" : [ "notifyPayment" ],
+        "summary" : "notifyPayment",
+        "description" : "notifies the payment details executed",
+        "operationId" : "notifyPayment",
         "parameters" : [ {
           "name" : "orgSilServiceId",
           "in" : "path",
@@ -41,21 +41,14 @@
         } ],
         "responses" : {
           "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
-                }
-              }
-            }
+            "description" : "OK"
           },
           "400" : {
             "description" : "Invalid request",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -65,7 +58,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -75,7 +68,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -85,7 +78,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -99,61 +92,21 @@
   },
   "components" : {
     "schemas" : {
-      "AmountUpdatesDTO" : {
+      "CodeEnum" : {
+        "type" : "string",
+        "enum" : [ "NOT_FOUND", "BAD_REQUEST", "GENERIC_ERROR" ]
+      },
+      "PuSilErrorDTO" : {
         "type" : "object",
         "properties" : {
-          "outcome" : {
-            "$ref" : "#/components/schemas/OutcomeEnum"
+          "code" : {
+            "$ref" : "#/components/schemas/CodeEnum"
           },
-          "updatedAmount" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "updated amount (in euro cents), if the invocation was successful"
-          },
-          "balance" : {
-            "type" : "string",
-            "description" : "updated balance envelope string, if service active, if successful invocation and balance envelope returned from discounting service"
-          },
-          "errorCode" : {
-            "type" : "string",
-            "description" : "Error code in case of KO outcome"
-          },
-          "errorDescription" : {
-            "type" : "string",
-            "description" : "Error description in case of KO outcome"
-          },
-          "isBlockingError" : {
-            "type" : "boolean",
-            "description" : "Indicates if the error is blocking or not and whether the error is blocking for payment purposes"
-          },
-          "nav" : {
-            "type" : "string",
-            "description" : "Debt Position unique number"
-          },
-          "iun" : {
-            "type" : "string",
-            "description" : "Unique identifier of the notification"
-          },
-          "notificationFee" : {
-            "type" : "integer",
-            "format" : "int64",
-            "description" : "Notification fee amount (in euro cents)"
-          },
-          "displayDate" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "date of ISO 8601 display of the notification by the recipient"
-          },
-          "completionDeadlineDate" : {
-            "type" : "string",
-            "format" : "date-time",
-            "description" : "ISO 8601 date of completion due to expiry of deadline"
+          "message" : {
+            "type" : "string"
           }
-        }
-      },
-      "OutcomeEnum" : {
-        "type" : "string",
-        "enum" : [ "OK", "KO" ]
+        },
+        "required" : [ "code", "message" ]
       }
     },
     "securitySchemes" : {

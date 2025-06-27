@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,8 @@ class CartRequestMapperTest {
   private CartRequestMapper cartRequestMapper;
 
   private DebtPositionDTO debtPosition = null;
+  private InstallmentDTO installment = null;
+  private Organization org = null;
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
@@ -37,7 +40,7 @@ class CartRequestMapperTest {
     transfer.setOrgName("OrgName");
     transfer.setPostalIban("IT60X0542811101000000123456");
 
-    InstallmentDTO installment = new InstallmentDTO();
+    installment = new InstallmentDTO();
     installment.setNav("12345");
     installment.setAmountCents(1000L);
     installment.setRemittanceInformation("Payment description");
@@ -54,7 +57,13 @@ class CartRequestMapperTest {
 
     debtPosition = new DebtPositionDTO();
     debtPosition.setPaymentOptions(List.of(paymentOption));
+
+    org = new Organization();
+    org.setOrgFiscalCode("12345678901");
+    org.setOrgName("orgName");
   }
+
+  //region: mapDebtPositionsToCartRequest
 
   @Test
   void testMapDebtPositionsToCartRequest_ValidInput() {
@@ -66,7 +75,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(fullDebtPositionDTO), cartId, callbackUrl);
+      List.of(fullDebtPositionDTO), org, cartId, callbackUrl);
 
     // Assert
     assertNotNull(result);
@@ -86,7 +95,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, null);
+      List.of(debtPosition), org, cartId, null);
 
     // Assert
     assertNotNull(result);
@@ -105,7 +114,7 @@ class CartRequestMapperTest {
 
     // Act & Assert
     assertThrows(ApplicationException.class, () -> cartRequestMapper.mapDebtPositionsToCartRequest(
-      debtPositions, cartId, invalidCallbackUrl));
+      debtPositions, org, cartId, invalidCallbackUrl));
   }
 
   @Test
@@ -116,7 +125,7 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, callbackUrl);
+      List.of(debtPosition), org, cartId, callbackUrl);
 
     // Assert
     assertEquals(Boolean.TRUE, result.getAllCCP());
@@ -132,11 +141,97 @@ class CartRequestMapperTest {
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
-      List.of(debtPosition), cartId, callbackUrl);
+      List.of(debtPosition), org, cartId, callbackUrl);
 
     // Assert
     assertNotEquals(Boolean.TRUE, result.getAllCCP());
     TestUtils.checkNotNullFields(result);
   }
+
+  //endregion
+
+  //region: mapInstallmentToCartRequest
+
+  @Test
+  void mapInstallmentToCartRequest_ValidInput() {
+    // Arrange
+    String cartId = "cart123";
+    String callbackUrl = "http://valid-url.com";
+
+    // Act
+    CartRequest result = cartRequestMapper.mapInstallmentToCartRequest(
+      installment, org, cartId, callbackUrl);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals(cartId, result.getIdCart());
+    assertEquals(installment.getDebtor().getEmail(), result.getEmailNotice());
+    assertEquals(1, result.getPaymentNotices().size());
+    assertEquals(callbackUrl, result.getReturnUrls().getReturnOkUrl().toString());
+    assertEquals(callbackUrl, result.getReturnUrls().getReturnErrorUrl().toString());
+    assertEquals(callbackUrl, result.getReturnUrls().getReturnCancelUrl().toString());
+    TestUtils.checkNotNullFields(result);
+  }
+
+  @Test
+  void mapInstallmentToCartRequest_NullCallbackUrl() {
+    // Arrange
+    String cartId = "cart123";
+
+    // Act
+    CartRequest result = cartRequestMapper.mapInstallmentToCartRequest(
+      installment, org, cartId, null);
+
+    // Assert
+    assertNotNull(result);
+    assertEquals("http://ok.TEST.com", result.getReturnUrls().getReturnOkUrl().toString());
+    assertEquals("http://ko.TEST.com", result.getReturnUrls().getReturnErrorUrl().toString());
+    assertEquals("http://cancel.TEST.com", result.getReturnUrls().getReturnCancelUrl().toString());
+    TestUtils.checkNotNullFields(result);
+  }
+
+  @Test
+  void mapInstallmentToCartRequest_InvalidCallbackUrl() {
+    // Arrange
+    String cartId = "cart123";
+    String invalidCallbackUrl = "http://";
+
+    // Act & Assert
+    assertThrows(ApplicationException.class, () -> cartRequestMapper.mapInstallmentToCartRequest(
+      installment, org, cartId, invalidCallbackUrl));
+  }
+
+  @Test
+  void mapInstallmentToCartRequest_AllCCPTrue() {
+    // Arrange
+    String cartId = "cart123";
+    String callbackUrl = "http://valid-url.com";
+
+    // Act
+    CartRequest result = cartRequestMapper.mapInstallmentToCartRequest(
+      installment, org, cartId, callbackUrl);
+
+    // Assert
+    assertEquals(Boolean.TRUE, result.getAllCCP());
+    TestUtils.checkNotNullFields(result);
+  }
+
+  @Test
+  void mapInstallmentToCartRequest_AllCCPFalse() {
+    // Arrange
+    String cartId = "cart123";
+    String callbackUrl = "http://valid-url.com";
+    installment.getTransfers().getFirst().setPostalIban(null);
+
+    // Act
+    CartRequest result = cartRequestMapper.mapInstallmentToCartRequest(
+      installment, org, cartId, callbackUrl);
+
+    // Assert
+    assertNotEquals(Boolean.TRUE, result.getAllCCP());
+    TestUtils.checkNotNullFields(result);
+  }
+
+  //endregion
 
 }

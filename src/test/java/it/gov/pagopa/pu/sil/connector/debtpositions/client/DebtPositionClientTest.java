@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionClientTest {
@@ -123,6 +126,23 @@ class DebtPositionClientTest {
 
     //when
     DebtPositionType result = client.getDebtPositionTypeById(debtPositionTypeId, accessToken);
+
+    //then
+    Assertions.assertEquals(expectedResult, result);
+  }
+
+  @Test
+  void whenGetInstallmentsByOrganizationIdAndNavThenInvokeApi() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    List<InstallmentDTO> expectedResult = List.of(new InstallmentDTO());
+
+    Mockito.when(apisHolderMock.getInstallmentApi(accessToken))
+      .thenReturn(installmentApiMock);
+    Mockito.when(installmentApiMock.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null)).thenReturn(expectedResult);
+
+    //when
+    List<InstallmentDTO> result = client.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken);
 
     //then
     Assertions.assertEquals(expectedResult, result);

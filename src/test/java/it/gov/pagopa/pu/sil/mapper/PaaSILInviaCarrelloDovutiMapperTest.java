@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
@@ -48,9 +47,6 @@ class PaaSILInviaCarrelloDovutiMapperTest {
   private JAXBTransformService jaxbTransformServiceMock;
 
   @Mock
-  private OrganizationService organizationServiceMock;
-
-  @Mock
   private DebtPositionService debtPositionServiceMock;
 
   @Mock
@@ -88,9 +84,8 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     request.getListaDovuti().getElementoListaDovutis().add(new ElementoListaDovuti());
     request.getListaDovuti().getElementoListaDovutis().getFirst().setDovuti(new byte[]{});
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("XML dovuti [1] non conforme"));
@@ -99,10 +94,9 @@ class PaaSILInviaCarrelloDovutiMapperTest {
   @Test
   void mapRequestToDebtPositions_InvalidPrimaryEnte_ReturnsError() {
     PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
     doThrow(new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "error")).when(validationServiceMock).validatePrimaryDebtPositionOrganization(request, ORG_IPA_CODE);
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
     assertEquals("error", exception.getDescription());
@@ -114,10 +108,9 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     request.setListaDovuti(new ListaDovuti());
     request.getListaDovuti().getElementoListaDovutis().add(new ElementoListaDovuti());
     request.getListaDovuti().getElementoListaDovutis().getFirst().setDovuti(new byte[]{});
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
     doThrow(new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "error")).when(validationServiceMock).validateSecondaryDebtPositionCount(request, 1);
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
     assertEquals("error", exception.getDescription());
@@ -132,31 +125,11 @@ class PaaSILInviaCarrelloDovutiMapperTest {
       elem.setDovuti(new byte[]{});
       request.getListaDovuti().getElementoListaDovutis().add(elem);
     }
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, exception.getFault());
     assertEquals("Numero massimo dovuti nel carrello superato: 8/5", exception.getDescription());
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"not_active_ipa"})
-  @NullSource
-  void mapRequestToDebtPositions_InvalidOrganization_ReturnsError(String orgIpaCode) {
-    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
-    if(orgIpaCode==null){
-      org = null;
-    } else {
-      org.setStatus(OrganizationStatus.DRAFT);
-    }
-
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
-
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
-    assertEquals("L'ente non è valido o non è abilitato", exception.getDescription());
   }
 
   @Test
@@ -168,9 +141,8 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento("IUV");
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
     assertEquals("L'inserimento dello IUV è deprecato", exception.getDescription());
@@ -186,10 +158,10 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
-    doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+   doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
+
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
     assertEquals("error", exception.getDescription());
@@ -230,7 +202,6 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any())).thenReturn(dovutiEntiSecondari);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
@@ -241,7 +212,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     when(taxonomyServiceMock.getTaxonomyByTaxonomyCode(expectedCategory, ACCESS_TOKEN)).thenReturn(Optional.of(new Taxonomy()));
 
     //when
-    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
 
     //then
     assertNotNull(result);
@@ -310,7 +281,6 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any())).thenReturn(dovutiEntiSecondari);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
@@ -321,7 +291,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     }
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("Codice tassonomico"));
@@ -355,13 +325,12 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any())).thenThrow(new ApplicationException("error unmarshalling secondary"));
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, "CART_ID", userInfo, ORG_IPA_CODE, ACCESS_TOKEN));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("XML dovuti enti secondari non conforme"));

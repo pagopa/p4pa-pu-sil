@@ -1,18 +1,14 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Constants;
@@ -37,31 +33,20 @@ import java.util.Optional;
 @Slf4j
 public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMapper {
 
-  private final OrganizationService organizationService;
   private final TaxonomyService taxonomyService;
 
   public PaaSILInviaCarrelloDovutiMapper(JAXBTransformService jaxbTransformService,
-                                         OrganizationService organizationService,
                                          DebtPositionService debtPositionService,
                                          PersonMapper personMapper,
-                                         ValidationService validationService, TaxonomyService taxonomyService) {
+                                         ValidationService validationService,
+                                         TaxonomyService taxonomyService) {
     super(jaxbTransformService, debtPositionService, validationService, personMapper);
-    this.organizationService = organizationService;
     this.taxonomyService = taxonomyService;
   }
 
-  public List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, String cartId, UserInfo userInfo, String orgIpaCode, String accessToken) {
-
-    //validate organization
-    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
-    Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
-      .orElse(null);
-    if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
-    }
-
+  public List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization organization, String cartId, String accessToken) {
     //validate "dovuti"
-    validationService.validatePrimaryDebtPositionOrganization(request, orgIpaCode);
+    validationService.validatePrimaryDebtPositionOrganization(request, organization.getIpaCode());
     //validate "dovuti secondari"
     validationService.validateSecondaryDebtPositionCount(request, request.getListaDovuti().getElementoListaDovutis().size());
 
