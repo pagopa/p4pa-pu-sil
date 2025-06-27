@@ -130,7 +130,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -140,17 +140,37 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
           },
           "404" : {
-            "description" : "Notification not found",
+            "description" : "Not found",
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          },
+          "412" : {
+            "description" : "Precondition Failed",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Conflict",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -160,7 +180,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }

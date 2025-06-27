@@ -125,12 +125,40 @@ paths:
                 $ref: '#/components/schemas/AmountUpdatesDTO'
         '400':
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '404':
-          description: Notification not found
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '412':
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
   /internal/orgSilService/{orgSilServiceId}/notify-payment:
     get:
       tags:
