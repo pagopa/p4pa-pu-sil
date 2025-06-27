@@ -160,12 +160,28 @@ paths:
           description: OK
         '400':
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '404':
           description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
 security:
   - BearerAuth: []
 components:
@@ -212,19 +228,6 @@ components:
           type: string
           format: date-time
           description: ISO 8601 date of completion due to expiry of deadline
-    NotifyPaymentDTO:
-      type: object
-      properties:
-        outcome:
-          type: string
-          enum:
-            - OK
-            - KO
-        faultCode:
-          type: string
-        faultDescription:
-          type:
-            string
     PuSilErrorDTO:
       type: object
       required:
