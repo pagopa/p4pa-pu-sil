@@ -156,46 +156,46 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | DEFAULT_REST_TIMEOUT_READ_MILLIS                  | Default read timeout (milliseconds)       | 120000  |
 
 ##### 🧩 Microservices
-| ENV                                      | DESCRIPTION                                         | DEFAULT |
-|------------------------------------------|-----------------------------------------------------|---------|
-| AUTH_BASE_URL                            | Auth microservice URL                               |         |
-| AUTH_MAX_ATTEMPTS                        | Auth API max attempts                               | 3       |
-| AUTH_WAIT_TIME_MILLIS                    | Auth retry waiting time (milliseconds)              | 500     |
-| AUTH_PRINT_BODY_WHEN_ERROR               | To print body when an error occurs                  | true    |
-| DEBT_POSITION_BASE_URL                   | DebtPosition microservice URL                       |         |
-| DEBT_POSITION_MAX_ATTEMPTS               | DebtPosition API max attempts                       | 3       |
-| DEBT_POSITION_WAIT_TIME_MILLIS           | DebtPosition retry waiting time (milliseconds)      | 500     |
-| DEBT_POSITION_PRINT_BODY_WHEN_ERROR      | To print body when an error occurs                  | true    |
-| ORGANIZATION_BASE_URL                    | Organization microservice URL                       |         |
-| ORGANIZATION_MAX_ATTEMPTS                | Organization API max attempts                       | 3       |
-| ORGANIZATION_WAIT_TIME_MILLIS            | Organization retry waiting time (milliseconds)      | 500     |
-| ORGANIZATION_PRINT_BODY_WHEN_ERROR       | To print body when an error occurs                  | true    |
-| SEND_NOTIFICATION_BASE_URL               | SendNotification microservice URL                   |         |
-| SEND_NOTIFICATION_MAX_ATTEMPTS           | SendNotification API max attempts                   | 3       |
-| SEND_NOTIFICATION_WAIT_TIME_MILLIS       | SendNotification retry waiting time (milliseconds)  | 500     |
-| SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR  | To print body when an error occurs                  | true    |
-| PROCESS_EXECUTIONS_BASE_URL              | ProcessExecutions microservice URL                  |         |
-| PROCESS_EXECUTIONS_MAX_ATTEMPTS          | ProcessExecutions API max attempts                  | 3       |
-| PROCESS_EXECUTIONS_WAIT_TIME_MILLIS      | ProcessExecutions retry waiting time (milliseconds) | 500     |
-| PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                  | true    |
-| CLASSIFICATION_BASE_URL                  | Classification microservice URL                     |         |
-| CLASSIFICATION_MAX_ATTEMPTS              | Classification API max attempts                     | 3       |
-| CLASSIFICATION_WAIT_TIME_MILLIS          | Classification retry waiting time (milliseconds)    | 500     |
-| CLASSIFICATION_PRINT_BODY_WHEN_ERROR     | To print body when an error occurs                  | true    |
-| PAGOPA_PAYMENTS_BASE_URL                 | PagoPaPayments microservice URL                     |         |
-| PAGOPA_PAYMENTS_MAX_ATTEMPTS             | PagoPaPayments API max attempts                     | 3       |
-| PAGOPA_PAYMENTS_WAIT_TIME_MILLIS         | PagoPaPayments retry waiting time (milliseconds)    | 500     |
-| PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR    | To print body when an error occurs                  | true    |
-| WORKFLOW_HUB_BASE_URL                    | Workflow-Hub microservice URL                       |         |
-| WORKFLOW_HUB_MAX_ATTEMPTS                | Workflow-Hub API max attempts                       | 3       |
-| WORKFLOW_HUB_WAIT_TIME_MILLIS            | Workflow-Hub retry waiting time (milliseconds)      | 500     |
-| WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR       | To print body when an error occurs                  | true    |
-| NOTIFICATION_PRICE_MAX_ATTEMPTS           | Actualization API max attempts                      | 3       |
-| NOTIFICATION_PRICE_WAIT_TIME_MILLIS       | Actualization retry waiting time (milliseconds)     | 500     |
-| NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR  | To print body when an error occurs                  | true    |
-| PAYMENT_NOTIFICATION_MAX_ATTEMPTS         | Actualization API max attempts                      | 3       |
-| PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS     | Actualization retry waiting time (milliseconds)     | 500     |
-| PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR| To print body when an error occurs                  | true    |
+| ENV                                        | DESCRIPTION                                            | DEFAULT |
+|--------------------------------------------|--------------------------------------------------------|---------|
+| AUTH_BASE_URL                              | Auth microservice URL                                  |         |
+| AUTH_MAX_ATTEMPTS                          | Auth API max attempts                                  | 3       |
+| AUTH_WAIT_TIME_MILLIS                      | Auth retry waiting time (milliseconds)                 | 500     |
+| AUTH_PRINT_BODY_WHEN_ERROR                 | To print body when an error occurs                     | true    |
+| DEBT_POSITION_BASE_URL                     | DebtPosition microservice URL                          |         |
+| DEBT_POSITION_MAX_ATTEMPTS                 | DebtPosition API max attempts                          | 3       |
+| DEBT_POSITION_WAIT_TIME_MILLIS             | DebtPosition retry waiting time (milliseconds)         | 500     |
+| DEBT_POSITION_PRINT_BODY_WHEN_ERROR        | To print body when an error occurs                     | true    |
+| ORGANIZATION_BASE_URL                      | Organization microservice URL                          |         |
+| ORGANIZATION_MAX_ATTEMPTS                  | Organization API max attempts                          | 3       |
+| ORGANIZATION_WAIT_TIME_MILLIS              | Organization retry waiting time (milliseconds)         | 500     |
+| ORGANIZATION_PRINT_BODY_WHEN_ERROR         | To print body when an error occurs                     | true    |
+| SEND_NOTIFICATION_BASE_URL                 | SendNotification microservice URL                      |         |
+| SEND_NOTIFICATION_MAX_ATTEMPTS             | SendNotification API max attempts                      | 3       |
+| SEND_NOTIFICATION_WAIT_TIME_MILLIS         | SendNotification retry waiting time (milliseconds)     | 500     |
+| SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR    | To print body when an error occurs                     | true    |
+| PROCESS_EXECUTIONS_BASE_URL                | ProcessExecutions microservice URL                     |         |
+| PROCESS_EXECUTIONS_MAX_ATTEMPTS            | ProcessExecutions API max attempts                     | 3       |
+| PROCESS_EXECUTIONS_WAIT_TIME_MILLIS        | ProcessExecutions retry waiting time (milliseconds)    | 500     |
+| PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR   | To print body when an error occurs                     | true    |
+| CLASSIFICATION_BASE_URL                    | Classification microservice URL                        |         |
+| CLASSIFICATION_MAX_ATTEMPTS                | Classification API max attempts                        | 3       |
+| CLASSIFICATION_WAIT_TIME_MILLIS            | Classification retry waiting time (milliseconds)       | 500     |
+| CLASSIFICATION_PRINT_BODY_WHEN_ERROR       | To print body when an error occurs                     | true    |
+| PAGOPA_PAYMENTS_BASE_URL                   | PagoPaPayments microservice URL                        |         |
+| PAGOPA_PAYMENTS_MAX_ATTEMPTS               | PagoPaPayments API max attempts                        | 3       |
+| PAGOPA_PAYMENTS_WAIT_TIME_MILLIS           | PagoPaPayments retry waiting time (milliseconds)       | 500     |
+| PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR      | To print body when an error occurs                     | true    |
+| WORKFLOW_HUB_BASE_URL                      | Workflow-Hub microservice URL                          |         |
+| WORKFLOW_HUB_MAX_ATTEMPTS                  | Workflow-Hub API max attempts                          | 3       |
+| WORKFLOW_HUB_WAIT_TIME_MILLIS              | Workflow-Hub retry waiting time (milliseconds)         | 500     |
+| WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR         | To print body when an error occurs                     | true    |
+| NOTIFICATION_PRICE_MAX_ATTEMPTS            | Actualization API max attempts                         | 3       |
+| NOTIFICATION_PRICE_WAIT_TIME_MILLIS        | Actualization retry waiting time (milliseconds)        | 500     |
+| NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR   | To print body when an error occurs                     | true    |
+| PAYMENT_NOTIFICATION_MAX_ATTEMPTS          | Payment notification API max attempts                  | 3       |
+| PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS      | Payment notification retry waiting time (milliseconds) | 500     |
+| PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                     | true    |
 
 
 ##### 🌍 External services
