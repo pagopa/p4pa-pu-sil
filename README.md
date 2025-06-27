@@ -190,21 +190,20 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | WORKFLOW_HUB_MAX_ATTEMPTS                  | Workflow-Hub API max attempts                          | 3       |
 | WORKFLOW_HUB_WAIT_TIME_MILLIS              | Workflow-Hub retry waiting time (milliseconds)         | 500     |
 | WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR         | To print body when an error occurs                     | true    |
+
+##### 🌍 External services
+| ENV                                        | DESCRIPTION                                            | DEFAULT |
+|--------------------------------------------|--------------------------------------------------------|---------|
+| PAGOPA_NODE_CHECKOUT_BASE_URL              | PagoPA checkout service URL                            |         |
+| PAGOPA_NODE_CHECKOUT_MAX_ATTEMPTS          | PagoPA checkout API max attempts                       | 3       |
+| PAGOPA_NODE_CHECKOUT_WAIT_TIME_MILLIS      | PagoPA checkout retry waiting time (milliseconds)      | 500     |
+| PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                     | true    |
 | NOTIFICATION_PRICE_MAX_ATTEMPTS            | Actualization API max attempts                         | 3       |
 | NOTIFICATION_PRICE_WAIT_TIME_MILLIS        | Actualization retry waiting time (milliseconds)        | 500     |
 | NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR   | To print body when an error occurs                     | true    |
 | PAYMENT_NOTIFICATION_MAX_ATTEMPTS          | Payment notification API max attempts                  | 3       |
 | PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS      | Payment notification retry waiting time (milliseconds) | 500     |
 | PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                     | true    |
-
-
-##### 🌍 External services
-| ENV                                        | DESCRIPTION                                       | DEFAULT |
-|--------------------------------------------|---------------------------------------------------|---------|
-| PAGOPA_NODE_CHECKOUT_BASE_URL              | PagoPA checkout service URL                       |         |
-| PAGOPA_NODE_CHECKOUT_MAX_ATTEMPTS          | PagoPA checkout API max attempts                  | 3       |
-| PAGOPA_NODE_CHECKOUT_WAIT_TIME_MILLIS      | PagoPA checkout retry waiting time (milliseconds) | 500     |
-| PAGOPA_NODE_CHECKOUT_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                | true    |
 
 ##### 🌀 KAFKA
 | ENV                                              | DESCRIPTION                                                        | DEFAULT   |
