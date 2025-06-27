@@ -13,6 +13,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -80,6 +81,7 @@ public class PuSilExceptionHandler {
 
     return ResponseEntity
       .status(httpStatus)
+      .contentType(MediaType.APPLICATION_JSON)
       .body(new PuSilErrorDTO(errorEnum, message));
   }
 
