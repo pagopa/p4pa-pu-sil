@@ -42,9 +42,9 @@ class LegacyActualizationClientTest {
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
 
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
-           .thenReturn(amountUpdatesLegacyApiClientMock);
+      .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-           .thenReturn(expectedPagamentoAggiornato);
+      .thenReturn(expectedPagamentoAggiornato);
     // When
     PagamentoAggiornato result = client.actualization(token, serviceUrl, pagamento);
 
