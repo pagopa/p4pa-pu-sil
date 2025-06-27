@@ -264,8 +264,11 @@
           "paProtocolNumber" : {
             "type" : "string"
           },
-          "recipient" : {
-            "$ref" : "#/components/schemas/Recipient"
+          "recipients" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/Recipient"
+            }
           },
           "documents" : {
             "type" : "array",
@@ -322,6 +325,17 @@
           }
         }
       },
+      "NotificationDigitalAddress" : {
+        "type" : "object",
+        "properties" : {
+          "type" : {
+            "$ref" : "#/components/schemas/TypeEnum"
+          },
+          "address" : {
+            "type" : "string"
+          }
+        }
+      },
       "NotificationFeePolicyEnum" : {
         "type" : "string",
         "enum" : [ "FLAT_RATE", "DELIVERY_MODE" ]
@@ -374,6 +388,9 @@
           "physicalAddress" : {
             "$ref" : "#/components/schemas/Address"
           },
+          "digitalDomicile" : {
+            "$ref" : "#/components/schemas/NotificationDigitalAddress"
+          },
           "payments" : {
             "type" : "array",
             "items" : {
@@ -385,6 +402,10 @@
       "RecipientTypeEnum" : {
         "type" : "string",
         "enum" : [ "PF", "PG" ]
+      },
+      "TypeEnum" : {
+        "type" : "string",
+        "enum" : [ "PEC" ]
       },
       "NotificationStatus" : {
         "type" : "string",

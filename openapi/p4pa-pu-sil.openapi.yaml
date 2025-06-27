@@ -136,6 +136,52 @@ paths:
           description: Notification not found
         '500':
           description: Internal server error
+  /internal/orgSilService/{orgSilServiceId}/notify-payment:
+    get:
+      tags:
+        - notifyPayment
+      summary: notifyPayment
+      description: notifies the payment details executed
+      operationId: notifyPayment
+      parameters:
+        - name: orgSilServiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: nav
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
 security:
   - BearerAuth: []
 components:
