@@ -32,7 +32,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/PaymentNotificationError"
       security:
         - token_auth: []
 components:
@@ -52,15 +52,20 @@ components:
       required:
         - rt
         - esito
-    Error:
+    PaymentNotificationError:
       type: object
-      properties:
-        faultCode:
-          type: string
-        faultDescription:
-          type: string
       required:
-        - faultCode
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - NOT_FOUND
+            - BAD_REQUEST
+            - GENERIC_ERROR
+        message:
+          type: string
   securitySchemes:
     token_auth:
       type: http
