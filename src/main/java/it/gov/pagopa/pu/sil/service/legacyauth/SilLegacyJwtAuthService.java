@@ -1,13 +1,48 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
+import com.auth0.jwt.HeaderParams;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.algorithms.Algorithm;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class SilLegacyJwtAuthService {
+  public static final String ACCESS_TOKEN_TYPE = "at+JWT";
+
+  private final Integer expirationTimeInSeconds;
+
+  public SilLegacyJwtAuthService(
+    @Value("${legacy-auth.default-expiration-seconds}") Integer expirationTimeInSeconds) {
+    this.expirationTimeInSeconds = expirationTimeInSeconds;
+  }
+
   public AccessToken authenticate(SilServiceLegacyJwtAuthConfig config) {
-    // TODO: Implement JWT authentication logic in the future
-    throw new UnsupportedOperationException("JWT authentication not implemented yet");
+    Algorithm algorithm = Algorithm.HMAC512(config.getSigningKey());
+
+    Map<String, Object> headerClaims = new HashMap<>();
+    headerClaims.put(HeaderParams.KEY_ID, config.getKid());
+    headerClaims.put("typ", ACCESS_TOKEN_TYPE);
+    headerClaims.put("alg", config.getAlgorithm());
+    String tokenType = "bearer";
+    JWTCreator.Builder jwtBuilder = JWT.create()
+      .withHeader(headerClaims)
+      .withClaim("typ", tokenType)
+      .withIssuer(config.getIssuer())
+      .withJWTId(UUID.randomUUID().toString())
+      .withSubject(config.getSubject())
+      .withIssuedAt(Instant.now())
+      .withExpiresAt(Instant.now().plusSeconds(expirationTimeInSeconds));
+    String token = jwtBuilder
+      .sign(algorithm);
+    return new AccessToken(token, tokenType, expirationTimeInSeconds);
   }
 }
