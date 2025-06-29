@@ -4,6 +4,8 @@
 aopalliance:aopalliance:1.0=compileClasspath
 ch.qos.logback:logback-classic:1.5.18=compileClasspath
 ch.qos.logback:logback-core:1.5.18=compileClasspath
+com.auth0:java-jwt:4.5.0=compileClasspath
+com.auth0:jwks-rsa:0.22.1=compileClasspath
 com.fasterxml.jackson.core:jackson-annotations:2.19.1=compileClasspath
 com.fasterxml.jackson.core:jackson-core:2.19.1=compileClasspath
 com.fasterxml.jackson.core:jackson-databind:2.19.1=compileClasspath

@@ -52,6 +52,8 @@ val activationVersion = "2.1.3"
 val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.1"
 val caffeineVersion = "3.2.1"
+val javaJwtVersion = "4.5.0"
+val jwksRsaVersion = "0.22.1"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -72,6 +74,10 @@ dependencies {
   implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+
+  // validation token jwt
+  implementation("com.auth0:java-jwt:${javaJwtVersion}")
+  implementation("com.auth0:jwks-rsa:${jwksRsaVersion}")
 
   //webservice soap
   implementation("wsdl4j:wsdl4j:$wsdl4jVersion")
