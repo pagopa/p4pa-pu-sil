@@ -375,8 +375,8 @@ public class PuForOrganizationPaymentsEndpoint {
     OffsetDateTime to = optRequest.flatMap(r -> Optional.ofNullable(r.getDateTo()))
       .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime()).orElse(null);
 
-    Long debtPositionTypeOrgId = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
-      .map(Long::valueOf).orElse(null);
+    String debtPositionTypeOrgCode = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
+      .orElse(null);
 
     return registryLogger.execute(
       contextData,
@@ -389,7 +389,7 @@ public class PuForOrganizationPaymentsEndpoint {
           fileVersion,
           from,
           to,
-          debtPositionTypeOrgId
+          debtPositionTypeOrgCode
         );
         PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
         response.setRequestToken(String.valueOf(result));

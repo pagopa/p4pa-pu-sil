@@ -37,7 +37,7 @@ public class PaaSILPrenotaExportFlussoService {
     String fileVersion,
     OffsetDateTime from,
     OffsetDateTime to,
-    Long debtPositionTypeOrgId) {
+    String debtPositionTypeOrgCode) {
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
 
@@ -49,15 +49,15 @@ public class PaaSILPrenotaExportFlussoService {
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
-      organizationId, debtPositionTypeOrgId.toString(), accessToken);
+      organizationId, debtPositionTypeOrgCode, accessToken);
 
     if (debtPositionTypeOrg == null) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgId);
+      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
     } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgId);
+      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgCode);
     }
 
-    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgId);
+    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId());
 
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
