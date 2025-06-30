@@ -28,6 +28,8 @@ public enum SilFaults {
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
+  PIVOT_VERSIONE_TRACCIATO_NON_VALIDA("Versione tracciato non valida"),
+  PIVOT_INTERVALLO_DATE_NON_VALIDO("L'intervallo data inizio e data fine non è valido"),
   PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido");
 
 
