@@ -2,6 +2,8 @@ package it.gov.pagopa.pu.sil.service.exportfile;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -40,10 +42,25 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService {
       organizationId, request.getIdUnivocoDovuto(), accessToken);
 
     if (debtPositionTypeOrg == null) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + request.getIdUnivocoDovuto());
+      throw new ExportFileServiceException(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + request.getIdUnivocoDovuto());
     } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + request.getIdUnivocoDovuto());
+      throw new ExportFileServiceException(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + request.getIdUnivocoDovuto());
     }
-    return 1L;
+    ClassificationsExportFileRequestDTO requestDTO = mapToExportFileRequest(request, organizationId);
+
+    Long exportFileId = exportFileService.createClassificationsExportFile(requestDTO, accessToken);
+    log.debug("Export file created with ID: {}", exportFileId);
+
+    return exportFileId;
+  }
+
+  private ClassificationsExportFileRequestDTO mapToExportFileRequest(
+      PivotSILPrenotaExportFlussoRiconciliazione request,
+      Long organizationId) {
+      return new ClassificationsExportFileRequestDTO()
+        .organizationId(organizationId)
+        .exportFileType(ClassificationsExportFileRequestDTO.ExportFileTypeEnum.CLASSIFICATIONS)
+        .fileVersion(request.getVersioneTracciato())
+        .filterFields(new ClassificationsExportFileFilter());
   }
 }
