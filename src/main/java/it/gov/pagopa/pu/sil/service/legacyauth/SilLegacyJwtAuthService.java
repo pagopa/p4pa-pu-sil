@@ -21,7 +21,7 @@ public class SilLegacyJwtAuthService {
   private final Integer expirationTimeInSeconds;
 
   public SilLegacyJwtAuthService(
-    @Value("${legacy-auth.default-expiration-seconds}") Integer expirationTimeInSeconds) {
+    @Value("${legacy-auth.jwt-legacy-expiration-seconds}") Integer expirationTimeInSeconds) {
     this.expirationTimeInSeconds = expirationTimeInSeconds;
   }
 
