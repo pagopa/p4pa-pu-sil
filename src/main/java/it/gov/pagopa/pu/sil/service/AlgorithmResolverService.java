@@ -7,13 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyFactory;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
 
 @Slf4j
 @Component
 public class AlgorithmResolverService {
   private static final String RSA = "RSA";
-  private static final String ECDSA = "ECDSA";
+  private static final String ECDSA = "EC";
 
   public Algorithm resolveAlgorithm(JwtAlgorithm algorithm, byte[] signingKey) {
     if (algorithm == null) {
@@ -32,11 +32,11 @@ public class AlgorithmResolverService {
     };
   }
 
-  private static <T> T signingKey2PrivateKey(String algorithm, byte[] signingKey) {
+  private <T> T signingKey2PrivateKey(String algorithm, byte[] signingKey) {
     try {
-      X509EncodedKeySpec privateKeyX509 = new X509EncodedKeySpec(signingKey);
+      PKCS8EncodedKeySpec encodedKeySpec = new PKCS8EncodedKeySpec(signingKey);
       KeyFactory kf = KeyFactory.getInstance(algorithm);
-      return (T) kf.generatePrivate(privateKeyX509);
+      return (T) kf.generatePrivate(encodedKeySpec);
     } catch (Exception e) {
       throw new SigningKeyException("Unable to generate private key for algorithm: %s".formatted(algorithm));
     }
