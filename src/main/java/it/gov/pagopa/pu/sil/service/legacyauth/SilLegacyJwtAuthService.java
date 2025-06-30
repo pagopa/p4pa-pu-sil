@@ -52,7 +52,7 @@ public class SilLegacyJwtAuthService {
     if (algorithm == null) {
       throw new IllegalArgumentException("Algorithm must not be null");
     }
-    switch (algorithm) {
+    return switch (algorithm) {
       case JwtAlgorithm.HS256 -> Algorithm.HMAC256(signingKey);
       case JwtAlgorithm.HS384 -> Algorithm.HMAC384(signingKey);
       case JwtAlgorithm.HS512 -> Algorithm.HMAC512(signingKey);
@@ -60,7 +60,6 @@ public class SilLegacyJwtAuthService {
         throw new UnsupportedOperationException("RSA algorithms require a public/private key pair. Not implemented in this method.");
       case JwtAlgorithm.ES256, JwtAlgorithm.ES384, JwtAlgorithm.ES512 ->
         throw new UnsupportedOperationException("EC algorithms require a public/private key pair. Not implemented in this method.");
-    }
-    return null;
+    };
   }
 }
