@@ -61,7 +61,7 @@ class SilLegacyJwtAuthServiceTest {
     String decodedHeader = new String(Base64.getDecoder().decode(decodedAccessToken.getHeader()));
     String decodedPayload = new String(Base64.getDecoder().decode(decodedAccessToken.getPayload()));
 
-    Assertions.assertEquals(String.format("{\"kid\":\"KEY_ID\",\"typ\":\"at+JWT\",\"alg\":\"%s\"}", algorithm), decodedHeader);
+    Assertions.assertEquals(String.format("{\"kid\":\"KEY_ID\",\"typ\":\"at+JWT\",\"alg\":\"%s\"}", jwtAlgorithm.getValue()), decodedHeader);
     Assertions.assertEquals(Long.valueOf(EXPIRATION_TIME_IN_SECONDS), (decodedAccessToken.getExpiresAtAsInstant().toEpochMilli() - decodedAccessToken.getIssuedAtAsInstant().toEpochMilli()) / 1_000);
     Assertions.assertTrue(Pattern.compile("\\{\"typ\":\"bearer\",\"iss\":\"ISSUER\",\"jti\":\"[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\",\"sub\":\"SUBJECT\",\"iat\":[0-9]+,\"exp\":[0-9]+}")
       .matcher(decodedPayload).matches(), "Payload not matches requested pattern: " + decodedPayload);
