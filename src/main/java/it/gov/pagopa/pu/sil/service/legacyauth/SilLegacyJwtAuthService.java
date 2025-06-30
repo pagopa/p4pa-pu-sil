@@ -26,6 +26,7 @@ public class SilLegacyJwtAuthService {
   }
 
   public AccessToken authenticate(SilServiceLegacyJwtAuthConfig config) {
+    // TODO: fix config.signingKey value! actually you are reading a byte[] because it's a ciphered String, it should expected to have a Base64 String instead!
     Algorithm algorithm = Algorithm.HMAC512(config.getSigningKey());
 
     Map<String, Object> headerClaims = new HashMap<>();
