@@ -53,7 +53,7 @@ val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.1"
 val caffeineVersion = "3.2.1"
 val javaJwtVersion = "4.5.0"
-val jwksRsaVersion = "0.22.1"
+val jwksRsaVersion = "0.22.2"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -186,7 +186,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   description = "description"
 
   generatorName.set("spring")
-  inputSpec.set("$rootDir/openapi/p4pa-pu-sil.openapi.yaml")
+  inputSpec.set(file("$rootDir/openapi/p4pa-pu-sil.openapi.yaml").toURI().toString())
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.sil.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.sil.dto.generated")
