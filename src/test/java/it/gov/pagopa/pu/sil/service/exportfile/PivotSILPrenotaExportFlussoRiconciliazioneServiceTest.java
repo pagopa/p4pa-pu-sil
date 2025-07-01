@@ -149,6 +149,37 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
   }
 
   @Test
+  void givenUserIsAdminAndDebtPositionNotEnabledWhenDoReservationThenException() {
+    UserInfo userInfo = new UserInfo();
+    userInfo.setUserId("admin4");
+    String orgIpaCode = "ORG4";
+    Long organizationId = 123L;
+    String accessToken = "token4";
+    PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+
+    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
+      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
+      authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode))).thenReturn(organizationId);
+
+      when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
+        .thenReturn(new DebtPositionTypeOrg().flagActive(false));
+
+      ExportFileServiceException exception = assertThrows(ExportFileServiceException.class, () ->
+        service.doReservation(
+          userInfo,
+          accessToken,
+          orgIpaCode,
+          request
+        )
+      );
+
+      assertEquals(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, exception.getFault());
+
+      verifyNoInteractions(exportFileServiceMock);
+    }
+  }
+
+  @Test
   void givenUserIsAdminAndInvalidDateIntervalExceptionWhenDoReservationThenException() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("admin5");
