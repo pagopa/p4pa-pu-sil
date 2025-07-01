@@ -15,6 +15,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
+import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -34,6 +35,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +54,8 @@ class PuForOrganizationReconciliationEndpointTest {
   private IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationServiceMock;
   @Mock
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
+  @Mock
+  private PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneServiceMock;
 
   @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
@@ -75,7 +81,8 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.verifyNoMoreInteractions(
       registryLoggerMock,
       ingestionFlowFileAuthorizationServiceMock,
-      ingestionFlowFileProcessingStatusServiceMock);
+      ingestionFlowFileProcessingStatusServiceMock,
+      pivotSILPrenotaExportFlussoRiconciliazioneServiceMock);
   }
 
   @AfterEach
@@ -296,6 +303,45 @@ class PuForOrganizationReconciliationEndpointTest {
 
   // endregion
 
+  //region pivotSILPrenotaExportFlussoRiconciliazione
+  @Test
+  void givenValidRequestWhenPivotSILPrenotaExportFlussoRiconciliazioneThenResponseContainsExpectedTokenAndDateTo() throws Exception {
+    // Given
+    GregorianCalendar fromCal = new GregorianCalendar(2023, 0, 1); // Jan 1, 2023
+    GregorianCalendar toCal = new GregorianCalendar(2023, 11, 31); // Dec 31, 2023
+    XMLGregorianCalendar fromXml = DatatypeFactory.newInstance().newXMLGregorianCalendar(fromCal);
+    XMLGregorianCalendar toXml = DatatypeFactory.newInstance().newXMLGregorianCalendar(toCal);
+    PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+    request.setDataUltimoAggiornamentoDa(fromXml);
+    request.setDataUltimoAggiornamentoA(toXml);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Long expectedToken = 12345L;
+
+    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request)
+    )).thenReturn(Pair.of(expectedToken, request.getDataUltimoAggiornamentoA()));
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request);
+
+    // When
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+    Assertions.assertEquals(toXml, response.getDataA());
+  }
+  // endregion
+
   //region pivotSILChiediPagatiRiconciliati
   @Test
   void givenAnyWhenPivotSILChiediPagatiRiconciliatiThenFault() throws Exception {
@@ -321,6 +367,7 @@ class PuForOrganizationReconciliationEndpointTest {
             SilFaults.PIVOT_SYSTEM_ERROR.code(),
             puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRT);
   }
+
   //endregion
 
   private interface TestFunction<T, R> {

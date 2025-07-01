@@ -32,6 +32,7 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -240,14 +241,15 @@ public class PuForOrganizationReconciliationEndpoint {
       contextData,
       request,
       () -> {
-        Long result = pivotSILPrenotaExportFlussoRiconciliazioneService.doReservation(
+        Pair<Long, XMLGregorianCalendar> result = pivotSILPrenotaExportFlussoRiconciliazioneService.doReservation(
           userInfo,
           accessToken,
           orgIpaCode,
           request
         );
         PivotSILPrenotaExportFlussoRiconciliazioneRisposta response = new PivotSILPrenotaExportFlussoRiconciliazioneRisposta();
-        response.setRequestToken(String.valueOf(result));
+        response.setRequestToken(String.valueOf(result.getLeft()));
+        response.setDataA(result.getRight());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
       exportFileExceptionHandler(PivotSILPrenotaExportFlussoRiconciliazioneRisposta::new)
@@ -344,8 +346,8 @@ public class PuForOrganizationReconciliationEndpoint {
         response.get(),
         T::setFault,
         FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR
       ).apply(e);
     };
   }

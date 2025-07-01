@@ -12,6 +12,21 @@ import java.util.Date;
 import java.util.stream.Stream;
 
 class ConversionUtilsTest {
+    static Stream<Arguments> stringEuroAmountToCentsAmountProvider() {
+        return Stream.of(
+            Arguments.of("123.45", 12345L),
+            Arguments.of("0.00", 0L),
+            Arguments.of(null, null),
+            Arguments.of("123,45", 12345L), // Comma as decimal separator
+            Arguments.of("123,456", 12346L) // Rounding up
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("stringEuroAmountToCentsAmountProvider")
+    void testStringEuroAmount2CentsAmount(String euroAmount, Long expected) {
+        assertEquals(expected, ConversionUtils.stringEuroAmountToCentsAmount(euroAmount));
+    }
 
     static Stream<Arguments> centsAmountToBigDecimalEuroAmountProvider() {
         return Stream.of(
