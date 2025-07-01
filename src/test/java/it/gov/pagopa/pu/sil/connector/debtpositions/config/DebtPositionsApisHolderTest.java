@@ -64,4 +64,31 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
       apisHolder::unload);
   }
 
+  @Test
+  void whenGetDebtPositionTypeEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getDebtPositionTypeEntityControllerApi(accessToken)
+        .crudGetDebtpositiontype("1"),
+      new ParameterizedTypeReference<>() {},
+      apisHolder::unload);
+  }
+
+  @Test
+  void whenGetDebtPositionApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getDebtPositionApi(accessToken)
+        .getDebtPositionByInstallmentId(1L),
+      new ParameterizedTypeReference<>() {},
+      apisHolder::unload);
+  }
+
+  @Test
+  void whenGetReceiptApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getReceiptApi(accessToken)
+        .getReceipt(1L),
+      new ParameterizedTypeReference<>() {},
+      apisHolder::unload);
+  }
+
 }

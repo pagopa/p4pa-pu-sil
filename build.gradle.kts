@@ -84,8 +84,8 @@ dependencies {
   jaxb("com.sun.xml.bind:jaxb-core:$jaxbVersion")
   jaxb("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
   jaxb("jakarta.activation:jakarta.activation-api:$activationVersion")
-  jaxbext("org.jvnet.jaxb:jaxb-plugin-annotate:3.0.2")
-  jaxbext("org.slf4j:slf4j-simple:2.0.16") // see https://github.com/IntershopCommunicationsAG/jaxb-gradle-plugin/issues/37
+  jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:2.1")
+  jaxbext("org.jvnet.jaxb:jaxb-plugins:4.0.0")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -156,10 +156,12 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateORGANIZATION",
     "openApiGenerateREGISTRIES",
     "openApiGenerateWORKFLOWHUB",
+    "openApiGenerateFILESHARE",
     "openApiGenerateNodeCheckout",
     "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation",
+    "jaxbJavaGenReceiptPagopa",
   )
 }
 
@@ -441,6 +443,16 @@ jaxb {
       schema = file("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.wsdl")
       bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.xjb")
     }
+    javaGen {
+      register("ReceiptPagopa") {
+        extension = true
+        args = listOf("-xmlschema", "-Xsimplify")
+        outputDir = file("$projectDir/build/generated/jaxb/java")
+        schema = file("src/main/resources/receipt/wsdl/xsd/paForNode.xsd")
+        bindings =
+          layout.files("src/main/resources/receipt/wsdl/xsd/paForNode.xjb")
+      }
+    }
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateREGISTRIES") {
@@ -460,6 +472,34 @@ jaxb {
       "useJakartaEe" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    ))
+    library.set("resttemplate")
+  }
+
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
+    group = "openapi"
+    description = "description"
+
+    generatorName.set("java")
+    remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-fileshare/refs/heads/$targetEnv/openapi/p4pa-fileshare.openapi.yaml")
+    outputDir.set("$projectDir/build/generated")
+    apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
+    modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
+    typeMappings.set(mapOf(
+      "StartNotificationResponse" to "String"
+    ))
+    configOptions.set(mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "useAbstractionForFiles" to "true",
       "generateConstructorWithAllArgs" to "true",
       "generatedConstructorWithRequiredArgs" to "true",
       "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"

@@ -59,4 +59,10 @@ public class Utilities {
       .isEqual(now.toLocalDate());
     return now.toLocalDate().plusDays(isSameDay ? 0 : 1);
   }
+
+  public static boolean isNaturalPerson(String fiscalCode) {
+    return fiscalCode != null && (fiscalCode.length() == 16 || fiscalCode.equals(Constants.ANONYMOUS_FISCAL_CODE));
+  }
+
+
 }

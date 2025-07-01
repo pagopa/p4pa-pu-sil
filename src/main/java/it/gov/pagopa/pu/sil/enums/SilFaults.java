@@ -25,6 +25,8 @@ public enum SilFaults {
   PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO("Numero massimo dovuti nel carrello superato"),
   PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI("Errore recupero dovuti enti secondari"),
   PAA_URL_NON_VALIDA("Url risposta pagamento non valida"),
+  PAA_ID_SESSION_NON_VALIDO("ID session non valido"),
+  PAA_PAGAMENTO_NON_INIZIATO("Pagamento non effettuato"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
