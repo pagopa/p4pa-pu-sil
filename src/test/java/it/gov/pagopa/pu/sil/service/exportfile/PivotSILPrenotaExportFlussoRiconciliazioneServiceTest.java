@@ -113,7 +113,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
       assertNotNull(result);
       assertEquals(456L, result.getLeft());
       assertEquals(request.getDataUltimoAggiornamentoA(), result.getRight());
-      verify(exportFileServiceMock).createPaidExportFile(any(), eq(accessToken));
+      verify(exportFileServiceMock).createClassificationsExportFile(any(), eq(accessToken));
     }
   }
 
