@@ -170,7 +170,6 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation",
-    "jaxbJavaGenReceiptPagopa",
   )
 }
 
@@ -451,16 +450,6 @@ jaxb {
       outputDir = file("$projectDir/build/generated/jaxb/java")
       schema = file("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.wsdl")
       bindings = layout.files("$rootDir/src/main/resources/soap/wsdl/reconciliation/puForOrganization-reconciliation.xjb")
-    }
-    javaGen {
-      register("ReceiptPagopa") {
-        extension = true
-        args = listOf("-xmlschema", "-Xsimplify")
-        outputDir = file("$projectDir/build/generated/jaxb/java")
-        schema = file("src/main/resources/receipt/wsdl/xsd/paForNode.xsd")
-        bindings =
-          layout.files("src/main/resources/receipt/wsdl/xsd/paForNode.xjb")
-      }
     }
   }
 
