@@ -4,6 +4,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import it.gov.pagopa.pu.organization.dto.generated.JwtAlgorithm;
 import it.gov.pagopa.pu.sil.util.CertUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -18,13 +19,13 @@ public class AlgorithmResolverService {
   private static final String RSA = "RSA";
   private static final String ECDSA = "EC";
 
-  private final ConcurrentMap<JwtAlgorithm, Algorithm> algorithmCache = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Pair<JwtAlgorithm, String>, Algorithm> algorithmCache = new ConcurrentHashMap<>();
 
   public Algorithm resolveAlgorithm(JwtAlgorithm algorithm, String privateKey) {
     if (algorithm == null) {
       throw new IllegalArgumentException("Algorithm must not be null");
     }
-    return algorithmCache.compute(algorithm, (k, v) -> {
+    return algorithmCache.compute(Pair.of(algorithm, privateKey), (k, v) -> {
       try {
         return switch (algorithm) {
           case JwtAlgorithm.HS256 -> Algorithm.HMAC256(privateKey);
