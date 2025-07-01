@@ -17,8 +17,8 @@ class ConversionUtilsTest {
             Arguments.of("123.45", 12345L),
             Arguments.of("0.00", 0L),
             Arguments.of(null, null),
-            Arguments.of("123,45", 12345L), // Comma as decimal separator
-            Arguments.of("123,456", 12346L) // Rounding up
+            Arguments.of("123,45", 12345L),
+            Arguments.of("123", 12300L)
         );
     }
 

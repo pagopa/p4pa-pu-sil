@@ -48,6 +48,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
 
   @BeforeEach
   void setUp() {
+    classificationsExportFileRequestMapper = new ClassificationsExportFileRequestMapper();
     service = new PivotSILPrenotaExportFlussoRiconciliazioneService(exportFileServiceMock, debtPositionServiceMock, classificationsExportFileRequestMapper);
   }
 
