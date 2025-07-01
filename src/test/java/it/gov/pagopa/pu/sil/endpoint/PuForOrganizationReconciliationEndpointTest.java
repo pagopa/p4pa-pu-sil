@@ -5,8 +5,12 @@ import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
+import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
+import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
@@ -339,6 +343,80 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(toXml, response.getDataA());
+  }
+
+  @Test
+  void givenInvalidFileVersionWhenPivotSILPrenotaExportFlussoRiconciliazioneThenFault() throws Exception {
+    PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+    ).thenThrow(new it.gov.pagopa.pu.sil.exception.ExportFileClientException(
+      CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request);
+
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA.code(), response.getFault().getFaultCode());
+  }
+
+  @Test
+  void givenInvalidTimeRangeWhenPivotSILPrenotaExportFlussoRiconciliazioneThenFault() throws Exception {
+    PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
+        .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenThrow(new ExportFileClientException(
+      CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request);
+
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
+
+  @Test
+  void givenGenericExceptionWhenPivotSILPrenotaExportFlussoRiconciliazioneThenSystemErrorFault() throws Exception {
+    PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+    ).thenThrow(new RuntimeException("Unexpected error"));
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request);
+
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
   }
   // endregion
 
