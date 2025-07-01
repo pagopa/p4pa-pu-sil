@@ -46,8 +46,9 @@ class SilLegacyJwtAuthServiceTest {
       .issuer("ISSUER")
       .algorithm(jwtAlgorithm)
       .signingKey(signingKey);
+    String encodedToString = Base64.getEncoder().encodeToString(authConfig.getSigningKey());
 
-    when(algorithmResolverServiceMock.resolveAlgorithm(authConfig.getAlgorithm(), signingKey))
+    when(algorithmResolverServiceMock.resolveAlgorithm(authConfig.getAlgorithm(), encodedToString))
       .thenReturn(algorithm);
 
     // When

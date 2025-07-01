@@ -54,6 +54,7 @@ val xmlSchemaVersion = "2.3.1"
 val caffeineVersion = "3.2.1"
 val javaJwtVersion = "4.5.0"
 val jwksRsaVersion = "0.22.2"
+val bouncycastleVersion = "1.81"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -78,6 +79,7 @@ dependencies {
   // validation token jwt
   implementation("com.auth0:java-jwt:${javaJwtVersion}")
   implementation("com.auth0:jwks-rsa:${jwksRsaVersion}")
+  implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
 
   //webservice soap
   implementation("wsdl4j:wsdl4j:$wsdl4jVersion")

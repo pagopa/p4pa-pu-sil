@@ -7,10 +7,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
+import java.util.Base64;
 
 class AlgorithmResolverServiceTest {
 
@@ -23,12 +23,9 @@ class AlgorithmResolverServiceTest {
     "HS512",
   })
   void givenHMACThenReturnAlgorithm(String algorithm) {
-    // Given
-    byte[] signingKey = "signingKey".getBytes(StandardCharsets.UTF_8);
-
     // When  Then
     Assertions.assertDoesNotThrow(
-      () -> service.resolveAlgorithm(JwtAlgorithm.valueOf(algorithm), signingKey));
+        () -> service.resolveAlgorithm(JwtAlgorithm.valueOf(algorithm), "signingKey"));
   }
 
   @ParameterizedTest
@@ -40,10 +37,10 @@ class AlgorithmResolverServiceTest {
   void givenECDSAThenReturnAlgorithm(String algorithm, Integer size) throws Exception {
     // Given
     byte[] signingKey = keyGenerator("EC", size);
-
+    String keyValue = Base64.getEncoder().encodeToString(signingKey);
     // When  Then
     Assertions.assertDoesNotThrow(
-      () -> service.resolveAlgorithm(JwtAlgorithm.valueOf(algorithm), signingKey));
+      () -> service.resolveAlgorithm(JwtAlgorithm.valueOf(algorithm), keyValue));
   }
 
   @ParameterizedTest
@@ -55,20 +52,17 @@ class AlgorithmResolverServiceTest {
   void givenRSAThenReturnAlgorithm(String algorithm) throws Exception {
     // Given
     byte[] signingKey = keyGenerator("RSA", 2048);
-
+    String keyValue = Base64.getEncoder().encodeToString(signingKey);
     // When  Then
     Assertions.assertDoesNotThrow(
-      () -> service.resolveAlgorithm(JwtAlgorithm.valueOf(algorithm), signingKey));
+        () -> service.resolveAlgorithm(JwtAlgorithm.valueOf(algorithm), keyValue));
   }
 
   @Test
   void givenNoAlgorithmIllegalArgumentExceptionException() {
-    // Given
-    byte[] signingKey = "signingKey".getBytes(StandardCharsets.UTF_8);
-
     // When Then
     Assertions.assertThrows(IllegalArgumentException.class,
-      () ->service.resolveAlgorithm(null, signingKey));
+      () ->service.resolveAlgorithm(null, "signingKey"));
   }
 
   private static byte[] keyGenerator(String algorithm, Integer size) throws Exception {

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -31,7 +32,8 @@ public class SilLegacyJwtAuthService {
 
   public AccessToken authenticate(SilServiceLegacyJwtAuthConfig config) {
     // TODO: fix config.signingKey value! actually you are reading a byte[] because it's a ciphered String, it should expected to have a Base64 String instead!
-    Algorithm algorithm = algorithmResolverService.resolveAlgorithm(config.getAlgorithm(), config.getSigningKey());
+    String encodedToString = Base64.getEncoder().encodeToString(config.getSigningKey());
+    Algorithm algorithm = algorithmResolverService.resolveAlgorithm(config.getAlgorithm(), encodedToString);
 
     Map<String, Object> headerClaims = new HashMap<>();
     headerClaims.put(HeaderParams.KEY_ID, config.getKid());

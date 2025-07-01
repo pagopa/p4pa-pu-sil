@@ -74,6 +74,7 @@ org.apache.tomcat.embed:tomcat-embed-core:10.1.42=compileClasspath
 org.apache.tomcat.embed:tomcat-embed-el:10.1.42=compileClasspath
 org.apache.tomcat.embed:tomcat-embed-websocket:10.1.42=compileClasspath
 org.apache.ws.xmlschema:xmlschema-core:2.3.1=compileClasspath
+org.bouncycastle:bcprov-jdk18on:1.81=compileClasspath
 org.checkerframework:checker-qual:3.33.0=compileClasspath
 org.hibernate.validator:hibernate-validator:8.0.2.Final=compileClasspath
 org.jboss.logging:jboss-logging:3.6.1.Final=compileClasspath
