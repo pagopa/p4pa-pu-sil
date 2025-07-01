@@ -111,11 +111,6 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: orgFiscalCode
-          in: query
-          required: true
-          schema:
-            type: string
         - name: nav
           in: query
           required: true
@@ -130,12 +125,86 @@ paths:
                 $ref: '#/components/schemas/AmountUpdatesDTO'
         '400':
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '404':
-          description: Notification not found
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '412':
+          description: Precondition Failed
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+  /internal/orgSilService/{orgSilServiceId}/notify-payment:
+    get:
+      tags:
+        - notifyPayment
+      summary: notifyPayment
+      description: notifies the payment details executed
+      operationId: notifyPayment
+      parameters:
+        - name: orgSilServiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: nav
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: 'PuSilErrorDTO'
 security:
   - BearerAuth: []
 components:
@@ -143,11 +212,6 @@ components:
     AmountUpdatesDTO:
       type: object
       properties:
-        outcome:
-          type: string
-          enum:
-            - OK
-            - KO
         updatedAmount:
           type: integer
           format: int64

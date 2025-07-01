@@ -16,13 +16,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AccessTokenService {
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
-  private final Map<Long, Pair<LocalDateTime, AccessToken>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
+  private final Map<Long, Pair<LocalDateTime, String>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
   public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
-    this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
+      this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public AccessToken getAccessToken(OrgSilService orgSilService, AccessToken loggedUserAccessToken) {
+  public String getAccessToken(OrgSilService orgSilService, String loggedUserAccessToken) {
     if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
@@ -35,7 +35,7 @@ public class AccessTokenService {
         LocalDateTime tokenRequestDateTime = LocalDateTime.now();
         AccessToken accessToken = silLegacyAuthFacadeService.authenticate(orgSilService.getAuthConfig());
         LocalDateTime expiration = tokenRequestDateTime.plusSeconds(accessToken.getExpiresIn() - 5L);
-        return Pair.of(expiration, accessToken);
+        return Pair.of(expiration, accessToken.getAccessToken());
       } else {
         return v;
       }

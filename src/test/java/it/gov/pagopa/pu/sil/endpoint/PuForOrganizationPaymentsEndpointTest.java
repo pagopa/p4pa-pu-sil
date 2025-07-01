@@ -373,7 +373,7 @@ class PuForOrganizationPaymentsEndpointTest {
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThenResponseContainsExpectedToken() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
-    request.setIdentificativoTipoDovuto("1");
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
@@ -402,7 +402,7 @@ class PuForOrganizationPaymentsEndpointTest {
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
-    request.setIdentificativoTipoDovuto("1");
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
@@ -430,7 +430,7 @@ class PuForOrganizationPaymentsEndpointTest {
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThrowsServiceExceptionThenResponseContainsExpectedFaultCode() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
-    request.setIdentificativoTipoDovuto("1");
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);

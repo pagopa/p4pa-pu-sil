@@ -13,6 +13,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -58,6 +59,21 @@ public class PuSilExceptionHandler {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
   }
 
+  @ExceptionHandler(PaymentNotFoundException.class)
+  public ResponseEntity<PuSilErrorDTO> handlePaymentNotFoundException(PaymentNotFoundException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.NOT_FOUND);
+  }
+
+  @ExceptionHandler(PaymentNotNotifiedException.class)
+  public ResponseEntity<PuSilErrorDTO> handlePaymentNotNotifiedException(PaymentNotNotifiedException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.PRECONDITION_FAILED, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(PaymentInvalidStatusException.class)
+  public ResponseEntity<PuSilErrorDTO> handlePaymentInvalidStatusException(PaymentInvalidStatusException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+  }
+
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {
     logException(ex, request, httpStatus);
 
@@ -65,6 +81,7 @@ public class PuSilExceptionHandler {
 
     return ResponseEntity
       .status(httpStatus)
+      .contentType(MediaType.APPLICATION_JSON)
       .body(new PuSilErrorDTO(errorEnum, message));
   }
 

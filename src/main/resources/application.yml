@@ -168,9 +168,14 @@ rest:
     max-attempts: "\${NOTIFICATION_PRICE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${NOTIFICATION_PRICE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR:true}"
+  payment-notification:
+    max-attempts: "\${PAYMENT_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
 
 legacy-auth:
-  default-expiration-seconds: "\${DEFAULT_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}"
+  basic-legacy-expiration-seconds: "\${BASIC_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}" # 5 minutes
+  jwt-legacy-expiration-seconds: "${JWT_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:3600}" # 1 hour
 
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"

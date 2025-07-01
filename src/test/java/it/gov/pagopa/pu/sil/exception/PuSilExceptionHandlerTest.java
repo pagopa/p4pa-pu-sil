@@ -206,4 +206,34 @@ class PuSilExceptionHandlerTest {
         .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
         .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }
+
+    @Test
+    void handlePaymentNotFoundException() throws Exception {
+      doThrow(new PaymentNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+      performRequest(DATA, MediaType.APPLICATION_JSON)
+        .andExpect(MockMvcResultMatchers.status().isNotFound())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
+
+    @Test
+    void handlePaymentNotNotifiedException() throws Exception {
+      doThrow(new PaymentNotNotifiedException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+      performRequest(DATA, MediaType.APPLICATION_JSON)
+        .andExpect(MockMvcResultMatchers.status().isPreconditionFailed())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
+
+    @Test
+    void handlePaymentInvalidStatusException() throws Exception {
+      doThrow(new PaymentInvalidStatusException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+      performRequest(DATA, MediaType.APPLICATION_JSON)
+        .andExpect(MockMvcResultMatchers.status().isConflict())
+        .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
 }

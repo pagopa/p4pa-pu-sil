@@ -20,6 +20,8 @@ class AmountUpdatesMapperTest {
         pagamento.setImportoPosizione(5000L);
         pagamento.setDataPerfezionamentoDecorrenzaTermini(now.plusDays(1));
         pagamento.setBilancio("BILANCIO-JSON");
+        pagamento.setCodice(PagamentoAggiornato.CodiceEnum._004);
+        pagamento.setDettaglio("Some error description");
 
         AmountUpdatesDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(pagamento);
 

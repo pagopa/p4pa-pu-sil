@@ -17,6 +17,6 @@ public class LegacyActualizationClient {
 
   public PagamentoAggiornato actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
     return actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl)
-        .attualizzazione(pagamento);
+      .attualizzazione(pagamento);
   }
 }

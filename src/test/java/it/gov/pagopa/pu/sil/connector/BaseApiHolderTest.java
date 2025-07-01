@@ -70,6 +70,7 @@ public abstract class BaseApiHolderTest {
           : Integer.class.equals(apiReturnedType.getType()) ? (T)Integer.valueOf(0)
           : Long.class.equals(apiReturnedType.getType()) ? (T)Long.valueOf(0L)
             : apiReturnedType.getType().getTypeName().startsWith(List.class.getName()) ? (T)List.of()
+            : apiReturnedType.getType().getTypeName().startsWith(ResponseEntity.class.getName()) ? (T)ResponseEntity.ok()
             : Void.class.equals(apiReturnedType.getType()) ? (T)voidMock
             : (T)Mockito.mock(Class.forName(apiReturnedType.getType().getTypeName()));
 

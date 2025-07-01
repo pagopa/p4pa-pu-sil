@@ -8,13 +8,13 @@ import org.springframework.stereotype.Component;
 public class AmountUpdatesMapper {
   public AmountUpdatesDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
     return AmountUpdatesDTO.builder()
-        .nav(pagamentoAggiornato.getNumeroAvviso())
-        .iun(pagamentoAggiornato.getIun())
-        .notificationFee(pagamentoAggiornato.getSpeseNotifica())
-        .displayDate(pagamentoAggiornato.getDataVisualizzazione())
-        .updatedAmount(pagamentoAggiornato.getImportoPosizione())
-        .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
-        .balance(pagamentoAggiornato.getBilancio())
-        .build();
+      .nav(pagamentoAggiornato.getNumeroAvviso())
+      .iun(pagamentoAggiornato.getIun())
+      .notificationFee(pagamentoAggiornato.getSpeseNotifica())
+      .displayDate(pagamentoAggiornato.getDataVisualizzazione())
+      .updatedAmount(pagamentoAggiornato.getImportoPosizione())
+      .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
+      .balance(pagamentoAggiornato.getBilancio())
+      .build();
   }
 }
