@@ -25,5 +25,7 @@ public class Constants {
   public static final String WORKFLOW_STATUS_COMPLETED_VALUE = "WORKFLOW_EXECUTION_STATUS_COMPLETED";
 
   public static final String SESSION_ID_SEPARATOR = "-";
+
+  public static final String LEGACY_PAYMENT_OUTCOME_CODE_OK = "0";
 }
 

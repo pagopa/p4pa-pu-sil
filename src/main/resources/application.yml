@@ -138,6 +138,11 @@ rest:
     max-attempts: "\${DEBT_POSITION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${DEBT_POSITION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${DEBT_POSITION_PRINT_BODY_WHEN_ERROR:true}"
+  fileshare:
+    base-url: "\${FILESHARE_BASE_URL:}"
+    max-attempts: "\${FILE_SHARE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${FILE_SHARE_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${FILE_SHARE_PRINT_BODY_WHEN_ERROR:true}"
   organization:
     base-url: "\${ORGANIZATION_BASE_URL:http://localhost:8081}"
     max-attempts: "\${ORGANIZATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
