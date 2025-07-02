@@ -351,12 +351,6 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlusso");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .loggedUser(userInfo)
-      .build();
-
     Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
 
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato).orElse(null);
@@ -370,10 +364,8 @@ public class PuForOrganizationPaymentsEndpoint {
     String debtPositionTypeOrgCode = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
       .orElse(null);
 
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
+    PaaSILPrenotaExportFlussoRisposta response;
+    try {
         Long result = paaSILPrenotaExportFlussoService.paaSILPrenotaExportFlusso(
           userInfo,
           accessToken,
@@ -383,12 +375,12 @@ public class PuForOrganizationPaymentsEndpoint {
           to,
           debtPositionTypeOrgCode
         );
-        PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
+        response = new PaaSILPrenotaExportFlussoRisposta();
         response.setRequestToken(String.valueOf(result));
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      this::handleExportFileRequestValidationException
-    );
+    } catch (Exception e) {
+      response = handleExportFileRequestValidationException(e);
+    }
+    return response;
   }
 
   private PaaSILPrenotaExportFlussoRisposta handleExportFileRequestValidationException(Exception e) {

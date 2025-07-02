@@ -145,7 +145,7 @@ class PuForOrganizationReconciliationEndpointTest {
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
-      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(INVALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
 
     // When

@@ -400,13 +400,6 @@ class PuForOrganizationPaymentsEndpointTest {
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenReturn(expectedToken);
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
-
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
 
@@ -428,13 +421,6 @@ class PuForOrganizationPaymentsEndpointTest {
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
-
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
 
@@ -455,13 +441,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenThrow(new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
