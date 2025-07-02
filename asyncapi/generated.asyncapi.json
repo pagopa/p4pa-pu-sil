@@ -94,7 +94,7 @@
             "brokerFiscalCode": "string",
             "dateTime": "2015-07-20T15:49:04-07:00",
             "eventSubType": "REQ",
-            "eventType": "paaSILAutorizzaImportFlusso",
+            "eventType": "PTDP_paaSILAutorizzaImportFlusso",
             "grantorId": "string",
             "iuv": "string",
             "nav": "string",
@@ -123,30 +123,18 @@
         "title": "RegistryEventType",
         "type": "string",
         "enum": [
-          "paaSILAutorizzaImportFlusso",
-          "paaSILChiediStatoImportFlusso",
-          "paaSILImportaDovuto",
-          "paaSILPrenotaExportFlusso",
-          "paaSILPrenotaExportFlussoIncrementaleConRicevuta",
-          "paaSILChiediStatoExportFlusso",
-          "paaSILInviaDovuti",
-          "paaSILVerificaAvviso",
-          "paaSILChiediPagati",
-          "paaSILChiediPagatiConRicevuta",
-          "paaSILInviaCarrelloDovuti",
-          "paaSILChiediEsitoCarrelloDovuti",
-          "pivotSILAutorizzaImportFlusso",
-          "pivotSILChiediStatoImportFlusso",
-          "pivotSILAutorizzaImportFlussoTesoreria",
-          "pivotSILChiediStatoImportFlussoTesoreria",
-          "pivotSILPrenotaExportFlussoRiconciliazione",
-          "pivotSILChiediStatoExportFlussoRiconciliazione",
-          "pivotSILChiediAccertamento",
-          "attualizzazioneImporti",
-          "notificaPagamento"
+          "PTDP_paaSILAutorizzaImportFlusso",
+          "PTDP_paaSILImportaDovuto",
+          "PTDP_paaSILInviaDovuti",
+          "PTDP_paaSILVerificaAvviso",
+          "PTDP_paaSILInviaCarrelloDovuti",
+          "PTPR_pivotSILAutorizzaImportFlusso",
+          "PTPR_pivotSILAutorizzaImportFlussoTesoreria",
+          "SIL_attualizzazioneImporti",
+          "SIL_notificaPagamento"
         ],
         "examples": [
-          "\"paaSILAutorizzaImportFlusso\""
+          "\"PTDP_paaSILAutorizzaImportFlusso\""
         ]
       },
       "RegistryOutcome": {

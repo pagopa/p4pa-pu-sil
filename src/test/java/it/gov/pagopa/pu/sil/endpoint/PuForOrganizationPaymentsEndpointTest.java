@@ -148,13 +148,6 @@ class PuForOrganizationPaymentsEndpointTest {
       Mockito.eq(request), Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILChiediStatoImportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
-
     // When
     PaaSILChiediStatoImportFlussoRisposta response =
       puForOrganizationPaymentsEndpoint.paaSILChiediStatoImportFlusso(request, header);
@@ -185,7 +178,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILAutorizzaImportFlusso)
+      .eventType(RegistryEventType.PTDP_paaSILAutorizzaImportFlusso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, false);
@@ -220,7 +213,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILImportaDovuto)
+      .eventType(RegistryEventType.PTDP_paaSILImportaDovuto)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, true);
@@ -254,7 +247,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILInviaDovuti)
+      .eventType(RegistryEventType.PTDP_paaSILInviaDovuti)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, true);
@@ -288,7 +281,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILInviaCarrelloDovuti)
+      .eventType(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, true);
@@ -316,6 +309,13 @@ class PuForOrganizationPaymentsEndpointTest {
     Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
+
     // When
     PaaSILVerificaAvvisoRisposta result = puForOrganizationPaymentsEndpoint.paaSILVerificaAvviso(request, header);
 
@@ -334,6 +334,13 @@ class PuForOrganizationPaymentsEndpointTest {
 
     Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Description"));
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 
     // When
     PaaSILVerificaAvvisoRisposta result = puForOrganizationPaymentsEndpoint.paaSILVerificaAvviso(request, header);

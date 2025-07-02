@@ -72,7 +72,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_JSON() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -115,7 +115,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_XML() {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String xmlRequest = "<xml>mockRequest</xml>";
@@ -158,7 +158,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_exposedByPuFalse() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.attualizzazioneImporti);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.SIL_attualizzazioneImporti);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -201,7 +201,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_exceptionDuringSerialization() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     Object request = "ORIGINALREQUEST";
@@ -242,7 +242,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_NoResponsePayload() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String payload = "PAYLOAD";
@@ -284,7 +284,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEventWithExtraInfo() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -338,7 +338,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_withEmptyExtraInfo() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -385,7 +385,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_withEmptyExtraInfo_noResponse() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -429,7 +429,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_withExtraInfo_skipXmlBody() {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     Object request = new Object();
@@ -479,7 +479,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_withExtraInfo_noResponsePayload() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -528,7 +528,7 @@ public class RegistryLoggerTest {
   @Test
   void testProduceRegistryEvent_withJustRequestExtraInfo() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";
@@ -577,7 +577,7 @@ public class RegistryLoggerTest {
   @Test
   void testExecuteWithException() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String requestPayload = "REQUESTPAYLOAD";
     Object request = new Object();
@@ -618,7 +618,7 @@ public class RegistryLoggerTest {
   @Test
   void testExecuteWithException_handlerReThrowIt() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String requestPayload = "REQUESTPAYLOAD";
     Object request = new Object();
@@ -661,7 +661,7 @@ public class RegistryLoggerTest {
   @Test
   void testExecuteWithException_noExceptionHandler() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String requestPayload = "REQUESTPAYLOAD";
     Object request = new Object();
@@ -701,7 +701,7 @@ public class RegistryLoggerTest {
   @Test
   void testExecuteWithException_noExceptionHandler_RestClientResponseException() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String requestPayload = "REQUESTPAYLOAD";
     Object request = new Object();
@@ -745,7 +745,7 @@ public class RegistryLoggerTest {
   @Test
   void testExceptionDuringEventProducer() throws JsonProcessingException {
     // Given
-    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.paaSILImportaDovuto);
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
 
     String blIuv = "businessLogicIUV";
     String requestPayload = "REQUEST_PAYLOAD";

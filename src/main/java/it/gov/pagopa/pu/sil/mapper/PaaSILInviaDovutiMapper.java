@@ -38,7 +38,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
       log.error("error unmarshalling PaaSILInviaDovuti: [{}]", errorMessage, unmarshallingException);
       throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
     }
-    return dovutiMapper(RegistryEventType.paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
+    return dovutiMapper(RegistryEventType.PTDP_paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
 
   }
 

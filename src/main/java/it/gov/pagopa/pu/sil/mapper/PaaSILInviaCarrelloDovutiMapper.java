@@ -72,7 +72,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     }
 
     List<DebtPositionDTO> debtPositionList = dovutiList.stream()
-      .flatMap(d -> dovutiMapper(RegistryEventType.paaSILInviaCarrelloDovuti, cartId, d, organization, accessToken).stream())
+      .flatMap(d -> dovutiMapper(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti, cartId, d, organization, accessToken).stream())
       .toList();
 
     handleSecondaryTransfer(debtPositionList, dovutiList, request.getListaDovutiEntiSecondari(), accessToken);
