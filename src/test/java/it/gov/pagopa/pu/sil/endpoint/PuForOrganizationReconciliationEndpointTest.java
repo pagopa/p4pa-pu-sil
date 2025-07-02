@@ -39,6 +39,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -94,7 +95,7 @@ class PuForOrganizationReconciliationEndpointTest {
   }
 
   private void configureRegistryLoggerMock(RegistryContextData contextData, Object request) {
-    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, false);
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, false, false);
   }
 
   //region pivotSILChiediStatoImportFlussoTesoreria
@@ -309,8 +310,8 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenValidRequestWhenPivotSILPrenotaExportFlussoRiconciliazioneThenResponseContainsExpectedTokenAndDateTo() throws Exception {
     // Given
-    GregorianCalendar fromCal = new GregorianCalendar(2023, 0, 1); // Jan 1, 2023
-    GregorianCalendar toCal = new GregorianCalendar(2023, 11, 31); // Dec 31, 2023
+    GregorianCalendar fromCal = new GregorianCalendar(2023, Calendar.JANUARY, 1); // Jan 1, 2023
+    GregorianCalendar toCal = new GregorianCalendar(2023, Calendar.DECEMBER, 31); // Dec 31, 2023
     XMLGregorianCalendar fromXml = DatatypeFactory.newInstance().newXMLGregorianCalendar(fromCal);
     XMLGregorianCalendar toXml = DatatypeFactory.newInstance().newXMLGregorianCalendar(toCal);
     PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
