@@ -25,11 +25,16 @@ public enum SilFaults {
   PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO("Numero massimo dovuti nel carrello superato"),
   PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI("Errore recupero dovuti enti secondari"),
   PAA_URL_NON_VALIDA("Url risposta pagamento non valida"),
+  PAA_ID_SESSION_NON_VALIDO("ID session non valido"),
+  PAA_PAGAMENTO_NON_INIZIATO("Pagamento non effettuato"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
+  PIVOT_VERSIONE_TRACCIATO_NON_VALIDA("Versione tracciato non valida"),
+  PIVOT_INTERVALLO_DATE_NON_VALIDO("L'intervallo data inizio e data fine non è valido"),
+  PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO("Identificativo tipo dovuto non valido"),
+  PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO("Identificativo tipo dovuto non abilitato"),
   PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido");
-
 
   private final String description;
 

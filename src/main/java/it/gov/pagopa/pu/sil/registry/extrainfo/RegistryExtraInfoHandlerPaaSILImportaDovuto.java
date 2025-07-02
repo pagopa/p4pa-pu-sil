@@ -29,11 +29,11 @@ public class RegistryExtraInfoHandlerPaaSILImportaDovuto {
         .map(d -> new String(d, StandardCharsets.UTF_8))
         .toList());
     }
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
 
   public Map<String, Object> extractResponseExtraInfo(PaaSILImportaDovutoRisposta response) {
-    return Map.of(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    return Map.of(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
   }
 }

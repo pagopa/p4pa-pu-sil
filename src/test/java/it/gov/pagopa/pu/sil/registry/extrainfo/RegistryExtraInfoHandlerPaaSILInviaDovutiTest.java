@@ -41,7 +41,7 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
 
     assertNotNull(result);
     assertEquals(3, result.size());
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
     assertEquals(request.getEnteSILInviaRispostaPagamentoUrl(), result.get("enteSILInviaRispostaPagamentoUrl"));
     assertEquals(dovutiType.equals("exists") ? new String(request.getDovuti(), StandardCharsets.UTF_8) : null, result.get("dovuti"));
   }
@@ -77,7 +77,7 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
     Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaDovuti.extractResponseExtraInfo(response);
 
     assertNotNull(result);
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
     assertEquals(expectedSize, result.size());
     assertEquals(response.getUrl(), result.get("url"));
     assertEquals(response.getIdSession(), result.get("idSession"));

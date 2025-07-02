@@ -65,7 +65,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
-    Long debtPositionTypeOrgId = 1L;
+    String debtPositionTypeOrgCode = "code";
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
@@ -78,7 +78,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
           fileVersion,
           from,
           to,
-          debtPositionTypeOrgId
+          debtPositionTypeOrgCode
         )
       );
       verifyNoInteractions(
@@ -97,7 +97,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
-    Long debtPositionTypeOrgId = 1L;
+    String debtPositionTypeOrgCode = "code";
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -118,7 +118,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
         fileVersion,
         from,
         to,
-        debtPositionTypeOrgId
+        debtPositionTypeOrgCode
       );
 
       assertNotNull(result);
@@ -136,7 +136,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
-    Long debtPositionTypeOrgId = 1L;
+    String debtPositionTypeOrgCode = "code";
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), isNull())).thenReturn(true);
@@ -156,7 +156,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
         fileVersion,
         from,
         to,
-        debtPositionTypeOrgId
+        debtPositionTypeOrgCode
       );
 
       assertNotNull(result);
@@ -175,7 +175,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
-    Long debtPositionTypeOrgId = 1L;
+    String debtPositionTypeOrgCode = "code";
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -192,7 +192,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
           fileVersion,
           from,
           to,
-          debtPositionTypeOrgId
+          debtPositionTypeOrgCode
         )
       );
 
@@ -212,7 +212,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
-    Long debtPositionTypeOrgId = 1L;
+    String debtPositionTypeOrgCode = "code";
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -234,7 +234,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
           fileVersion,
           from,
           to,
-          debtPositionTypeOrgId
+          debtPositionTypeOrgCode
         )
       );
 

@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.sil.util.Utilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.MDC;
@@ -63,6 +64,19 @@ public class UtilitiesTest {
 
     // Then
     Assertions.assertTrue(result.getMessage().startsWith("Invalid NAV format: "));
+  }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "12345678901, false",
+    "TSTTNT80A01H501O, true",
+    "ANONIMO, true",
+    "null, false",
+    "  , false"
+  }, nullValues={"null"})
+  void testIsNaturalPerson(String fiscalCode, String expectedResult) {
+    boolean result = Utilities.isNaturalPerson(fiscalCode);
+    Assertions.assertEquals(Boolean.parseBoolean(expectedResult), result);
   }
 
   public static void setTraceId(String traceId) {
