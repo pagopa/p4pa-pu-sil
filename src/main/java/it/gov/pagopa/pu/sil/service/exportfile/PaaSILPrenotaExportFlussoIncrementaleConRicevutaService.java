@@ -15,24 +15,26 @@ import java.time.OffsetDateTime;
 
 @Slf4j
 @Service
-public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservationService {
+public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService extends AbstractExportFileReservationService {
 
   private final ExportFileService exportFileService;
 
-  public PaaSILPrenotaExportFlussoService(ExportFileService exportFileService,
-                                          DebtPositionService debtPositionService) {
+  public PaaSILPrenotaExportFlussoIncrementaleConRicevutaService(ExportFileService exportFileService,
+                                                                 DebtPositionService debtPositionService) {
     super(debtPositionService);
     this.exportFileService = exportFileService;
   }
 
-  public Long paaSILPrenotaExportFlusso(
+  @SuppressWarnings("java:S107")
+  public Long doReservation(
     UserInfo userInfo,
     String accessToken,
     String orgIpaCode,
     String fileVersion,
     OffsetDateTime from,
     OffsetDateTime to,
-    String debtPositionTypeOrgCode) {
+    String debtPositionTypeOrgCode,
+    boolean incremental) {
 
     checkAdminRole(orgIpaCode, userInfo);
     Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
@@ -44,7 +46,7 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
       SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO
     );
 
-    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId());
+    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId(), incremental);
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
     return exportFileId;
@@ -54,15 +56,26 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
                                                       String fileVersion,
                                                       OffsetDateTime from,
                                                       OffsetDateTime to,
-                                                      Long debtPositionTypeOrgId) {
-    return new PaidExportFileRequestDTO()
+                                                      Long debtPositionTypeOrgId,
+                                                      boolean incremental) {
+    PaidExportFileRequestDTO ret = new PaidExportFileRequestDTO()
       .organizationId(organizationId)
       .exportFileType(PaidExportFileRequestDTO.ExportFileTypeEnum.PAID)
-      .fileVersion(fileVersion)
-      .filterFields(new PaidExportFileFilter()
+      .fileVersion(fileVersion);
+
+    if (incremental) {
+      ret.filterFields(new PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
+          .from(from)
+          .to(to))
+        .debtPositionTypeOrgId(debtPositionTypeOrgId));
+    } else {
+      ret.filterFields(new PaidExportFileFilter()
         .paymentDateTime(new OffsetDateTimeIntervalFilter()
           .from(from)
           .to(to))
         .debtPositionTypeOrgId(debtPositionTypeOrgId));
+    }
+    return ret;
   }
 }
