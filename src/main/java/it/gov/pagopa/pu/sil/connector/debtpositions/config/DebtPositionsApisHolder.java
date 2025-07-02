@@ -22,6 +22,8 @@ public class DebtPositionsApisHolder {
 
   private final DebtPositionApi debtPositionApi;
 
+  private final ReceiptApi receiptApi;
+
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
   public DebtPositionsApisHolder(
@@ -43,6 +45,7 @@ public class DebtPositionsApisHolder {
     this.debtPositionTypeEntityControllerApi = new DebtPositionTypeEntityControllerApi(apiClient);
     this.installmentNoPiiSearchControllerApi = new InstallmentNoPiiSearchControllerApi(apiClient);
     this.debtPositionApi = new DebtPositionApi(apiClient);
+    this.receiptApi = new ReceiptApi(apiClient);
   }
 
   @PreDestroy
@@ -68,6 +71,10 @@ public class DebtPositionsApisHolder {
 
   public DebtPositionApi getDebtPositionApi(String accessToken) {
     return getApi(accessToken, debtPositionApi);
+  }
+
+  public ReceiptApi getReceiptApi(String accessToken) {
+    return getApi(accessToken, receiptApi);
   }
 
   private <T extends BaseApi> T getApi(String accessToken, T api) {

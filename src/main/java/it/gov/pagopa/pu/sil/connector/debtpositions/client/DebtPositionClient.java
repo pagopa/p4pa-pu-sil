@@ -59,4 +59,38 @@ public class DebtPositionClient {
       .getInstallmentsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin);
   }
 
+  public DebtPositionDTO getDebtPositionByInstallmentId(Long installmentId, String accessToken) {
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionApi(accessToken)
+        .getDebtPositionByInstallmentId(installmentId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DebtPositionDTO having installmentId[{}]", installmentId, e);
+      return null;
+    }
+  }
+
+  public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIuv(Long organizationId, String iuv, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
+    return debtPositionsApisHolder
+      .getDebtPositionApi(accessToken)
+      .getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin);
+  }
+
+  public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIud(Long organizationId, String iud, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
+    return debtPositionsApisHolder
+      .getDebtPositionApi(accessToken)
+      .getDebtPositionsByOrganizationIdAndIud(organizationId, iud, debtPositionOrigin);
+  }
+
+  public ReceiptDTO getReceiptById(Long receiptId, String accessToken) {
+    try {
+      return debtPositionsApisHolder
+        .getReceiptApi(accessToken)
+        .getReceipt(receiptId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find ReceiptDTO having receiptId[{}]", receiptId, e);
+      return null;
+    }
+  }
+
 }
