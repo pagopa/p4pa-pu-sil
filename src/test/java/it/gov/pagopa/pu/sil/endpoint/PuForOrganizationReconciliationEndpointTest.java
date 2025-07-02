@@ -121,13 +121,6 @@ class PuForOrganizationReconciliationEndpointTest {
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILChiediStatoImportFlussoTesoreria)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
-
     // When
     PivotSILChiediStatoImportFlussoTesoreriaRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlussoTesoreria(request, header);
@@ -155,13 +148,6 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILChiediStatoImportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
 
     // When
     PivotSILChiediStatoImportFlussoRisposta response =
@@ -191,7 +177,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlusso)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlusso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -227,7 +213,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlussoTesoreria)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlussoTesoreria)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -258,7 +244,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlussoTesoreria)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlussoTesoreria)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -289,7 +275,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlussoTesoreria)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlussoTesoreria)
       .orgFiscalCode(INVALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);

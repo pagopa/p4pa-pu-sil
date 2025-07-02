@@ -79,38 +79,29 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILChiediStatoImportFlusso");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILChiediStatoImportFlusso)
-      .loggedUser(userInfo)
-      .build();
-
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
+    try {
+      PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         request,
         userInfo,
         accessToken,
         orgIpaCode,
         Long.valueOf(request.getRequestToken()),
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-        PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
-        response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
-        response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
-        response.setUrlFileIUV(processingStatusDTO.getUrlImported());
-        response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
+      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
+      response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
+      response.setUrlFileIUV(processingStatusDTO.getUrlImported());
+      response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
+      return response;
+    } catch (Exception e) {
+      return FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediStatoImportFlussoRisposta(),
         PaaSILChiediStatoImportFlussoRisposta::setFault,
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR
-      )
-    );
+      ).apply(e);
+    }
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")
@@ -127,7 +118,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILAutorizzaImportFlusso)
+      .eventType(RegistryEventType.PTDP_paaSILAutorizzaImportFlusso)
       .loggedUser(userInfo)
       .build();
 
@@ -171,7 +162,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILImportaDovuto)
+      .eventType(RegistryEventType.PTDP_paaSILImportaDovuto)
       .loggedUser(userInfo)
       .build();
 
@@ -207,7 +198,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILInviaDovuti)
+      .eventType(RegistryEventType.PTDP_paaSILInviaDovuti)
       .loggedUser(userInfo)
       .build();
 
@@ -241,7 +232,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILInviaCarrelloDovuti)
+      .eventType(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti)
       .loggedUser(userInfo)
       .build();
 
@@ -274,20 +265,26 @@ public class PuForOrganizationPaymentsEndpoint {
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
 
-    PaaSILVerificaAvvisoRisposta response;
-    try {
-      response = paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, accessToken);
-    }catch(Exception e){
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
+      .loggedUser(userInfo)
+      .build();
+
+    return registryLogger.execute(
+      contextData,
+      request,
+      () -> Triple.of(
+        paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, accessToken),
+        null,
+        RegistryOutcome.OK),
+      FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILVerificaAvvisoRisposta(),
         PaaSILVerificaAvvisoRisposta::setFault,
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
-    }
-
-    return response;
+      ));
   }
 
 
@@ -359,12 +356,6 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlusso");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .loggedUser(userInfo)
-      .build();
-
     Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
 
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato).orElse(null);
@@ -378,32 +369,33 @@ public class PuForOrganizationPaymentsEndpoint {
     String debtPositionTypeOrgCode = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
       .orElse(null);
 
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        Long result = paaSILPrenotaExportFlussoService.paaSILPrenotaExportFlusso(
-          userInfo,
-          accessToken,
-          orgIpaCode,
-          fileVersion,
-          from,
-          to,
-          debtPositionTypeOrgCode
-        );
-        PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
-        response.setRequestToken(String.valueOf(result));
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      this::handleExportFileRequestValidationException
-    );
+    try {
+      Long result = paaSILPrenotaExportFlussoService.paaSILPrenotaExportFlusso(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        fileVersion,
+        from,
+        to,
+        debtPositionTypeOrgCode
+      );
+      PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
+      response.setRequestToken(String.valueOf(result));
+      return response;
+    } catch (Exception e) {
+      return handleExportFileRequestValidationException(e);
+    }
   }
 
   private PaaSILPrenotaExportFlussoRisposta handleExportFileRequestValidationException(Exception e) {
     if (e instanceof ExportFileClientException ce) {
       SilFaults fault = switch (ce.getCode()) {
-        case ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION -> SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA;
-        case ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE -> SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO;
+        case
+          ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
+          SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA;
+        case
+          ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
+          SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO;
         default -> SilFaults.PAA_SYSTEM_ERROR;
       };
 

@@ -32,8 +32,8 @@ abstract class AbstractImmediatePaymentsMapper {
   protected final PersonMapper personMapper;
 
   protected List<DebtPositionDTO> dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization organization, String accessToken){
-    if(!RegistryEventType.paaSILInviaDovuti.equals(operationType) &&
-      !RegistryEventType.paaSILInviaCarrelloDovuti.equals(operationType)){
+    if(!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
+      !RegistryEventType.PTDP_paaSILInviaCarrelloDovuti.equals(operationType)){
       throw new ApplicationException("invalid operation type: " + operationType);
     }
     if (StringUtils.isNotBlank(dovutiObj.getDatiVersamento().getIdentificativoUnivocoVersamento())) {
@@ -99,7 +99,7 @@ abstract class AbstractImmediatePaymentsMapper {
 
     Long amount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(versamento.getImportoSingoloVersamento());
 
-    String sourceFlowName = operationType.equals(RegistryEventType.paaSILInviaCarrelloDovuti) ?
+    String sourceFlowName = operationType.equals(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti) ?
       Constants.SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI + cartId :
       Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + cartId;
 
