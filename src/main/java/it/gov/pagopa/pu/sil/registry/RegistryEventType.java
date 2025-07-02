@@ -7,27 +7,17 @@ import lombok.Getter;
 public enum RegistryEventType {
 
   //API "opzione 1" backward compatible with MyPay - MyPivot
-  paaSILAutorizzaImportFlusso(true),
-  paaSILChiediStatoImportFlusso(true),
-  paaSILImportaDovuto(true),
-  paaSILPrenotaExportFlusso(true),
-  paaSILPrenotaExportFlussoIncrementaleConRicevuta(true),
-  paaSILChiediStatoExportFlusso(true),
-  paaSILInviaDovuti(true),
-  paaSILVerificaAvviso(true),
-  paaSILChiediPagati(true),
-  paaSILChiediPagatiConRicevuta(true),
-  paaSILInviaCarrelloDovuti(true),
-  paaSILChiediEsitoCarrelloDovuti(true),
-  pivotSILAutorizzaImportFlusso(true),
-  pivotSILChiediStatoImportFlusso(true),
-  pivotSILAutorizzaImportFlussoTesoreria(true),
-  pivotSILChiediStatoImportFlussoTesoreria(true),
-  pivotSILPrenotaExportFlussoRiconciliazione(true),
-  pivotSILChiediStatoExportFlussoRiconciliazione(true),
-  pivotSILChiediAccertamento(true),
-  attualizzazioneImporti(false),
-  notificaPagamento(false);
+  PTDP_paaSILAutorizzaImportFlusso(true),
+  PTDP_paaSILImportaDovuto(true),
+  PTDP_paaSILInviaDovuti(true),
+  PTDP_paaSILVerificaAvviso(true),
+  PTDP_paaSILInviaCarrelloDovuti(true),
+
+  PTPR_pivotSILAutorizzaImportFlusso(true),
+  PTPR_pivotSILAutorizzaImportFlussoTesoreria(true),
+
+  SIL_attualizzazioneImporti(false),
+  SIL_notificaPagamento(false);
 
   private final boolean exposedByPU;
 

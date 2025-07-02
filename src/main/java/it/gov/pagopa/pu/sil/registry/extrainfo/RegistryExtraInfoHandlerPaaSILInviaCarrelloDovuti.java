@@ -34,7 +34,7 @@ public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti extends AbstractF
         .map(d -> new String(d, StandardCharsets.UTF_8))
         .toList()));
 
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
 
@@ -47,7 +47,7 @@ public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti extends AbstractF
     if(response.getUrl()!=null){
       body.put("url", response.getUrl());
     }
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
 }

@@ -16,7 +16,7 @@ public abstract class AbstractFaultAwareExtraInfoHandler<T extends Risposta> {
       extraInfo.put("faultString", response.getFault().getFaultString());
       extraInfo.put("id", response.getFault().getId());
       extraInfo.put("serial", response.getFault().getSerial());
-      extraInfo.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+      extraInfo.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
       return extraInfo;
     } else {
       return extractResponseExtraInfoOutcomeOk(response);

@@ -39,6 +39,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -94,7 +95,7 @@ class PuForOrganizationReconciliationEndpointTest {
   }
 
   private void configureRegistryLoggerMock(RegistryContextData contextData, Object request) {
-    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, false);
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, false, false);
   }
 
   //region pivotSILChiediStatoImportFlussoTesoreria
@@ -119,13 +120,6 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILChiediStatoImportFlussoTesoreria)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
 
     // When
     PivotSILChiediStatoImportFlussoTesoreriaRisposta response =
@@ -155,13 +149,6 @@ class PuForOrganizationReconciliationEndpointTest {
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILChiediStatoImportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
-
     // When
     PivotSILChiediStatoImportFlussoRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlusso(request, header);
@@ -190,7 +177,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlusso)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlusso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -226,7 +213,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlussoTesoreria)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlussoTesoreria)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -257,7 +244,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlussoTesoreria)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlussoTesoreria)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -288,7 +275,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILAutorizzaImportFlussoTesoreria)
+      .eventType(RegistryEventType.PTPR_pivotSILAutorizzaImportFlussoTesoreria)
       .orgFiscalCode(INVALID_ORGANIZATION_FISCAL_CODE)
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request);
@@ -309,8 +296,8 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenValidRequestWhenPivotSILPrenotaExportFlussoRiconciliazioneThenResponseContainsExpectedTokenAndDateTo() throws Exception {
     // Given
-    GregorianCalendar fromCal = new GregorianCalendar(2023, 0, 1); // Jan 1, 2023
-    GregorianCalendar toCal = new GregorianCalendar(2023, 11, 31); // Dec 31, 2023
+    GregorianCalendar fromCal = new GregorianCalendar(2023, Calendar.JANUARY, 1); // Jan 1, 2023
+    GregorianCalendar toCal = new GregorianCalendar(2023, Calendar.DECEMBER, 31); // Dec 31, 2023
     XMLGregorianCalendar fromXml = DatatypeFactory.newInstance().newXMLGregorianCalendar(fromCal);
     XMLGregorianCalendar toXml = DatatypeFactory.newInstance().newXMLGregorianCalendar(toCal);
     PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
