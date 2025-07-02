@@ -120,7 +120,7 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   private void configureRegistryLoggerMock(RegistryContextData contextData, Object request, boolean withExtraInfo) {
-    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, withExtraInfo);
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, withExtraInfo, withExtraInfo);
   }
 
   // region PaaSILChiediStatoImportFlusso
