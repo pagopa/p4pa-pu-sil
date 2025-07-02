@@ -32,7 +32,6 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -69,36 +68,29 @@ public class PuForOrganizationReconciliationEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "pivotSILChiediStatoImportFlussoTesoreria");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.pivotSILChiediStatoImportFlussoTesoreria)
-      .loggedUser(userInfo)
-      .build();
-
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        IngestionFlowFile ingestionFlowFile = ingestionFlowFileProcessingStatusService.getIngestionFlowFile(
-          userInfo,
-          accessToken,
-          orgIpaCode,
-          Long.valueOf(request.getRequestToken()),
-          IngestionFlowFileTypeEnum.TREASURY_OPI,
-          IngestionFlowFileTypeEnum.TREASURY_CSV,
-          IngestionFlowFileTypeEnum.TREASURY_XLS,
-          IngestionFlowFileTypeEnum.TREASURY_POSTE);
-        PivotSILChiediStatoImportFlussoTesoreriaRisposta response = new PivotSILChiediStatoImportFlussoTesoreriaRisposta();
-        response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()));
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
-        new PivotSILChiediStatoImportFlussoTesoreriaRisposta(),
-        PivotSILChiediStatoImportFlussoTesoreriaRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR)
-    );
+    PivotSILChiediStatoImportFlussoTesoreriaRisposta response;
+    try {
+      IngestionFlowFile ingestionFlowFile = ingestionFlowFileProcessingStatusService.getIngestionFlowFile(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        Long.valueOf(request.getRequestToken()),
+        IngestionFlowFileTypeEnum.TREASURY_OPI,
+        IngestionFlowFileTypeEnum.TREASURY_CSV,
+        IngestionFlowFileTypeEnum.TREASURY_XLS,
+        IngestionFlowFileTypeEnum.TREASURY_POSTE);
+      response = new PivotSILChiediStatoImportFlussoTesoreriaRisposta();
+      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()));
+    } catch (Exception e) {
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+          new PivotSILChiediStatoImportFlussoTesoreriaRisposta(),
+          PivotSILChiediStatoImportFlussoTesoreriaRisposta::setFault,
+          FaultBean::new,
+          SilFaults.PIVOT_ENTE_NON_VALIDO,
+          SilFaults.PIVOT_SYSTEM_ERROR)
+        .apply(e);
+    }
+    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediStatoImportFlusso")
@@ -113,33 +105,26 @@ public class PuForOrganizationReconciliationEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "pivotSILChiediStatoImportFlusso");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.pivotSILChiediStatoImportFlusso)
-      .loggedUser(userInfo)
-      .build();
-
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        IngestionFlowFile ingestionFlowFile = ingestionFlowFileProcessingStatusService.getIngestionFlowFile(
-          userInfo,
-          accessToken,
-          orgIpaCode,
-          Long.valueOf(request.getRequestToken()),
+    PivotSILChiediStatoImportFlussoRisposta response;
+    try {
+      IngestionFlowFile ingestionFlowFile = ingestionFlowFileProcessingStatusService.getIngestionFlowFile(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        Long.valueOf(request.getRequestToken()),
           IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
-        PivotSILChiediStatoImportFlussoRisposta response = new PivotSILChiediStatoImportFlussoRisposta();
+        response = new PivotSILChiediStatoImportFlussoRisposta();
         response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()));
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
-        new PivotSILChiediStatoImportFlussoRisposta(),
-        PivotSILChiediStatoImportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR)
-    );
+    } catch (Exception e) {
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+          new PivotSILChiediStatoImportFlussoRisposta(),
+          PivotSILChiediStatoImportFlussoRisposta::setFault,
+          FaultBean::new,
+          SilFaults.PIVOT_ENTE_NON_VALIDO,
+          SilFaults.PIVOT_SYSTEM_ERROR)
+        .apply(e);
+    }
+    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILAutorizzaImportFlussoTesoreria")
