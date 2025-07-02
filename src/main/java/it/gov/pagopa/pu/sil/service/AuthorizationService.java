@@ -52,6 +52,22 @@ public class AuthorizationService {
     }
   }
 
+  public static String getOrgIpaCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
+    if(loggedUser == null || organizationId == null) {
+      return null;
+    }
+    return getUserOrganizationRoles(organizationId, loggedUser).map(UserOrganizationRoles::getOrganizationIpaCode)
+      .orElse(null);
+  }
+
+  public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
+    if(loggedUser == null || organizationId == null) {
+      return null;
+    }
+    return getUserOrganizationRoles(organizationId, loggedUser).map(UserOrganizationRoles::getOrganizationFiscalCode)
+      .orElse(null);
+  }
+
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
     if(loggedUser == null || organizationIpaCode == null) {
       return null;
@@ -65,6 +81,15 @@ public class AuthorizationService {
       return null;
     }
     return getUserOrganizationRoles(organizationIpaCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
+      .orElse(null);
+  }
+
+  public static Long getOrganizationIdFromOrgFiscalCode(UserInfo loggedUser, String organizationFiscalCode) {
+    if(loggedUser == null || organizationFiscalCode == null) {
+      return null;
+    }
+
+    return getUserOrganizationRolesFromOrgFiscalCode(organizationFiscalCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
       .orElse(null);
   }
 
@@ -85,4 +110,9 @@ public class AuthorizationService {
       .findFirst();
   }
 
+  private static Optional<UserOrganizationRoles> getUserOrganizationRolesFromOrgFiscalCode(String organizationFiscalCode, UserInfo loggedUser) {
+    return loggedUser.getOrganizations().stream()
+      .filter(o -> organizationFiscalCode.equals(o.getOrganizationFiscalCode()) && !CollectionUtils.isEmpty(o.getRoles()))
+      .findFirst();
+  }
 }

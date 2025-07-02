@@ -44,7 +44,7 @@ class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovutiTest {
 
     assertNotNull(result);
     assertEquals(dovutiType.equals("PrimaryAndSecExists") ? 4 : 3, result.size());
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
     assertEquals(request.getEnteSILInviaRispostaPagamentoUrl(), result.get("enteSILInviaRispostaPagamentoUrl"));
     if(dovutiType.equals("PrimaryNull") || dovutiType.equals("PrimaryEmpty")) {
       assertNull(result.get("listaDovuti"));
@@ -68,21 +68,36 @@ class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovutiTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"happyCase", "idSessionNull", "urlNull"})
-  void extractResponseExtraInfo(String testType) {
+  @ValueSource(strings = {"happyCase", "idSessionNull", "urlNull", "fault"})
+  void extractResponseExtraInfo(String testCase) {
     PaaSILInviaCarrelloDovutiRisposta response = podamFactory.manufacturePojo(PaaSILInviaCarrelloDovutiRisposta.class);
-
-    switch (testType) {
-      case "idSessionNull" -> response.setIdSessionCarrello(null);
-      case "urlNull" -> response.setUrl(null);
+    int expectedSize = 3;
+    switch (testCase) {
+      case "idSessionNull" -> {
+        response.setIdSessionCarrello(null);
+        expectedSize = 2;
+      }
+      case "urlNull" -> {
+        response.setUrl(null);
+        expectedSize = 2;
+      }
+      case "fault" -> {
+        expectedSize = 6;
+      }
+    }
+    if (testCase.equals("fault")) {
+      response.setUrl(null);
+      response.setIdSessionCarrello(null);
+    } else {
+      response.setFault(null);
     }
 
     Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractResponseExtraInfo(response);
 
     assertNotNull(result);
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
-    assertEquals(testType.equals("happyCase") ? 3 : 2, result.size());
-    assertEquals(response.getUrl(), testType.equals("urlNull")?null:result.get("url"));
-    assertEquals(response.getIdSessionCarrello(), testType.equals("idSessionNull")?null:result.get("idSession"));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
+    assertEquals(expectedSize, result.size());
+    assertEquals(response.getUrl(), result.get("url"));
+    assertEquals(response.getIdSessionCarrello(), result.get("idSession"));
   }
 }

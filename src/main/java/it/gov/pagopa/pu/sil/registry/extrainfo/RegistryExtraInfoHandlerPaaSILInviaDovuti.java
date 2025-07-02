@@ -11,7 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class RegistryExtraInfoHandlerPaaSILInviaDovuti {
+public class RegistryExtraInfoHandlerPaaSILInviaDovuti extends AbstractFaultAwareExtraInfoHandler<PaaSILInviaDovutiRisposta> {
+
   public Map<String, Object> extractRequestExtraInfo(PaaSILInviaDovuti request, SoapHeaderElement header) {
     Map<String, Object> body = new HashMap<>();
     body.put("enteSILInviaRispostaPagamentoUrl", request.getEnteSILInviaRispostaPagamentoUrl());
@@ -20,11 +21,12 @@ public class RegistryExtraInfoHandlerPaaSILInviaDovuti {
     } else {
       body.put("dovuti", null);
     }
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaDovutiRisposta response) {
+  @Override
+  public Map<String, Object> extractResponseExtraInfoOutcomeOk(PaaSILInviaDovutiRisposta response) {
     Map<String, Object> body = new HashMap<>();
     if(response.getIdSession()!=null){
       body.put("idSession", response.getIdSession());
@@ -32,7 +34,8 @@ public class RegistryExtraInfoHandlerPaaSILInviaDovuti {
     if(response.getUrl()!=null){
       body.put("url", response.getUrl());
     }
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
+
 }

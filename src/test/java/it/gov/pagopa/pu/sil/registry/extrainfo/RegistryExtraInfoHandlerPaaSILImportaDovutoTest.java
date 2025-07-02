@@ -43,7 +43,7 @@ class RegistryExtraInfoHandlerPaaSILImportaDovutoTest {
     Map<String, Object> result = registryExtraInfoHandlerPaaSILImportaDovuto.extractRequestExtraInfo(request, header);
 
     assertNotNull(result);
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
     assertEquals(request.isFlagGeneraIuv(), result.get("flagGeneraIuv"));
     assertEquals(new String(request.getDovuto(), StandardCharsets.UTF_8), result.get("dovuto"));
     if(nullListLevel.equals("null")){
@@ -68,7 +68,7 @@ class RegistryExtraInfoHandlerPaaSILImportaDovutoTest {
     Map<String, Object> result = registryExtraInfoHandlerPaaSILImportaDovuto.extractResponseExtraInfo(response);
 
     assertNotNull(result);
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
     assertEquals(1, result.size());
   }
 }

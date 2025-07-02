@@ -31,9 +31,9 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
   void extractRequestExtraInfo(String dovutiType) {
     PaaSILInviaDovuti request = podamFactory.manufacturePojo(PaaSILInviaDovuti.class);
     SoapHeaderElement header = podamFactory.manufacturePojo(SoapHeaderElement.class);
-    if(dovutiType.equals("null")) {
+    if (dovutiType.equals("null")) {
       request.setDovuti(null);
-    } else if(dovutiType.equals("empty")) {
+    } else if (dovutiType.equals("empty")) {
       request.setDovuti(new byte[0]);
     }
 
@@ -41,26 +41,44 @@ class RegistryExtraInfoHandlerPaaSILInviaDovutiTest {
 
     assertNotNull(result);
     assertEquals(3, result.size());
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
     assertEquals(request.getEnteSILInviaRispostaPagamentoUrl(), result.get("enteSILInviaRispostaPagamentoUrl"));
-    assertEquals(dovutiType.equals("exists")?new String(request.getDovuti(), StandardCharsets.UTF_8):null, result.get("dovuti"));
+    assertEquals(dovutiType.equals("exists") ? new String(request.getDovuti(), StandardCharsets.UTF_8) : null, result.get("dovuti"));
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"happyCase", "idSessionNull", "urlNull"})
+  @ValueSource(strings = {"happyCase", "idSessionNull", "urlNull", "fault"})
   void extractResponseExtraInfo(String testCase) {
     PaaSILInviaDovutiRisposta response = podamFactory.manufacturePojo(PaaSILInviaDovutiRisposta.class);
-    if(testCase.equals("idSessionNull")) {
-      response.setIdSession(null);
-    } else if(testCase.equals("urlNull")) {
+    int expectedSize;
+    switch (testCase) {
+      case "idSessionNull" -> {
+        response.setIdSession(null);
+        expectedSize = 2;
+      }
+      case "urlNull" -> {
+        response.setUrl(null);
+        expectedSize = 2;
+      }
+      case "fault" -> {
+        expectedSize = 6;
+      }
+      default -> {
+        expectedSize = 3;
+      }
+    }
+    if (testCase.equals("fault")) {
       response.setUrl(null);
+      response.setIdSession(null);
+    } else {
+      response.setFault(null);
     }
 
     Map<String, Object> result = registryExtraInfoHandlerPaaSILInviaDovuti.extractResponseExtraInfo(response);
 
     assertNotNull(result);
-    assertTrue(result.containsKey(RegistryLogger.SKIP_XML_BODY_KEY));
-    assertEquals(testCase.equals("happyCase") ? 3 : 2, result.size());
+    assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
+    assertEquals(expectedSize, result.size());
     assertEquals(response.getUrl(), result.get("url"));
     assertEquals(response.getIdSession(), result.get("idSession"));
   }

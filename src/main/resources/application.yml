@@ -138,6 +138,11 @@ rest:
     max-attempts: "\${DEBT_POSITION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${DEBT_POSITION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${DEBT_POSITION_PRINT_BODY_WHEN_ERROR:true}"
+  fileshare:
+    base-url: "\${FILESHARE_BASE_URL:}"
+    max-attempts: "\${FILE_SHARE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${FILE_SHARE_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${FILE_SHARE_PRINT_BODY_WHEN_ERROR:true}"
   organization:
     base-url: "\${ORGANIZATION_BASE_URL:http://localhost:8081}"
     max-attempts: "\${ORGANIZATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
@@ -168,12 +173,26 @@ rest:
     max-attempts: "\${NOTIFICATION_PRICE_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${NOTIFICATION_PRICE_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${NOTIFICATION_PRICE_PRINT_BODY_WHEN_ERROR:true}"
+  payment-notification:
+    max-attempts: "\${PAYMENT_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+
+legacy-auth:
+  basic-legacy-expiration-seconds: "\${BASIC_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}" # 5 minutes
+  jwt-legacy-expiration-seconds: "${JWT_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:3600}" # 1 hour
 
 public-base-url:
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
 
 springdoc:
   writer-with-default-pretty-printer: true
+
+checkout:
+  default-callback-url:
+    ok: "\${CHECKOUT_DEFAULT_CALLBACK_URL_OK:http://localhost:8080/checkout/ok}"
+    ko: "\${CHECKOUT_DEFAULT_CALLBACK_URL_KO:http://localhost:8080/checkout/ko}"
+    cancel: "\${CHECKOUT_DEFAULT_CALLBACK_URL_CANCEL:http://localhost:8080/checkout/cancel}"
 
 cache:
   debtPositionTypeOrg:

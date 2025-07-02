@@ -1,42 +1,52 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
+import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
+import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
+import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
 
 @Service
 @Slf4j
-public class PaaSILInviaDovutiService {
+public class PaaSILInviaDovutiService extends AbstractImmediatePaymentsService<PaaSILInviaDovuti, PaaSILInviaDovutiRisposta> {
 
-  public Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> paaSILInviaDovuti(UserInfo userInfo, String orgIpaCode, PaaSILInviaDovuti request) {
-    String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
-    //check if the logged user has the right to call this endpoint
-    if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call paaSILInviaDovuti for organization {}", clientId, orgIpaCode);
-      return setFaultResponse(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
-    }
+  private final PaaSILInviaDovutiMapper paaSILInviaDovutiMapper;
 
-    //TODO P4ADEV-3076: unmarshall the request
-
-    //TODO P4ADEV-3078: implement business logic
-    String iuv = "iuv";
-    PaaSILInviaDovutiRisposta response = new PaaSILInviaDovutiRisposta();
-    response.setEsito(RegistryOutcome.OK.getValue());
-    return Triple.of(response, iuv, RegistryOutcome.OK);
+  public PaaSILInviaDovutiService(CheckoutService checkoutService,
+                                  CreateDebtPositionService createDebtPositionService,
+                                  CartRequestMapper cartRequestMapper,
+                                  OrganizationService organizationService,
+                                  PaaSILInviaDovutiMapper paaSILInviaDovutiMapper) {
+    super(checkoutService, createDebtPositionService, organizationService, cartRequestMapper);
+    this.paaSILInviaDovutiMapper = paaSILInviaDovutiMapper;
   }
 
-  private Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> setFaultResponse(SilFaults fault, String description) {
+  @Override
+  protected List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization org, String cartId, String accessToken) {
+    return paaSILInviaDovutiMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
+  }
+
+  @Override
+  protected PaaSILInviaDovutiRisposta mapToResponse(String outcome, String checkoutUrl, String sessionId) {
     PaaSILInviaDovutiRisposta response = new PaaSILInviaDovutiRisposta();
-    response.setEsito(RegistryOutcome.KO.getValue());
-    return Triple.of(FaultUtils.setFaultOnResponse(response, fault, description), null, RegistryOutcome.KO);
+    response.setEsito(RegistryOutcome.OK.getValue());
+    response.setUrl(checkoutUrl);
+    response.setIdSession(sessionId);
+    response.setRedirect(1); // 1 means redirect to the checkout URL
+    return response;
+  }
+
+  @Override
+  protected String getCallbackUrl(PaaSILInviaDovuti request) {
+    return request.getEnteSILInviaRispostaPagamentoUrl();
   }
 }

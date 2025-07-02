@@ -7,9 +7,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -17,13 +17,10 @@ import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
-import org.apache.commons.lang3.tuple.Triple;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -31,7 +28,6 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -44,9 +40,6 @@ class PaaSILInviaDovutiMapperTest {
 
   @Mock
   private JAXBTransformService jaxbTransformServiceMock;
-
-  @Mock
-  private OrganizationService organizationServiceMock;
 
   @Mock
   private DebtPositionService debtPositionServiceMock;
@@ -77,72 +70,43 @@ class PaaSILInviaDovutiMapperTest {
   }
 
   @Test
-  void mapRequestToDebtPositionsOrFault_UnmarshallingFailure_ReturnsError() {
+  void mapRequestToDebtPositions_UnmarshallingFailure_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_XML_NON_VALIDO, result.getMiddle());
-    assertTrue(result.getRight().contains("XML non conforme"));
-  }
-
-  @ParameterizedTest
-  @ValueSource(strings = {"not_active_ipa"})
-  @NullSource
-  void mapRequestToDebtPositionsOrFault_InvalidOrganization_ReturnsError(String orgIpaCode) {
-    PaaSILInviaDovuti request = new PaaSILInviaDovuti();
-    if(orgIpaCode==null){
-      org = null;
-    } else {
-      org.setStatus(OrganizationStatus.DRAFT);
-    }
-
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
-
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, result.getMiddle());
-    assertEquals("L'ente non è valido o non è abilitato", result.getRight());
+    assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
+    assertTrue(exception.getDescription().contains("XML non conforme"));
   }
 
   @Test
-  void mapRequestToDebtPositionsOrFault_InvalidIUV_ReturnsError() {
+  void mapRequestToDebtPositions_InvalidIUV_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento("IUV");
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_IUV_NON_VALIDO, result.getMiddle());
-    assertEquals("L'inserimento dello IUV è deprecato", result.getRight());
+    assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
+    assertEquals("L'inserimento dello IUV è deprecato", exception.getDescription());
+
   }
 
   @Test
-  void mapRequestToDebtPositionsOrFault_InvalidDebtor_ReturnsError() {
+  void mapRequestToDebtPositions_InvalidDebtor_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
-    when(personMapperMock.getAndValidateDebtor(any())).thenReturn(Triple.of(null, SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Error"));
+    doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
 
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,() -> mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN));
 
-    assertNotNull(result);
-    assertNull(result.getLeft());
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, result.getMiddle());
-    assertEquals("Error", result.getRight());
+    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
+    assertEquals("error", exception.getDescription());
   }
 
   @Test
@@ -161,19 +125,15 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
-    when(personMapperMock.getAndValidateDebtor(any())).thenReturn(Triple.of(debtor, null, null));
+    when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(podamFactory.manufacturePojo(DebtPositionTypeOrg.class));
-    Triple<List<DebtPositionDTO>, SilFaults, String> result = mapper.mapRequestToDebtPositionsOrFault(request, userInfo, ORG_IPA_CODE, ACCESS_TOKEN);
+    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org,"CART_ID", ACCESS_TOKEN);
 
     assertNotNull(result);
-    assertNotNull(result.getLeft());
-    assertNull(result.getMiddle());
-    assertNull(result.getRight());
-    assertEquals(1, result.getLeft().size());
+    assertEquals(1, result.size());
 
-    result.getLeft().forEach(dp -> {
+    result.forEach(dp -> {
       TestUtils.checkNotNullFields(dp,
         "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       dp.getPaymentOptions().forEach(po -> {

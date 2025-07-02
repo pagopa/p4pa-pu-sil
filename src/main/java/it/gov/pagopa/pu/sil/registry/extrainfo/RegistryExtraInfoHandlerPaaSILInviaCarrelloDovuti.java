@@ -12,7 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
-public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti {
+public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti extends AbstractFaultAwareExtraInfoHandler<PaaSILInviaCarrelloDovutiRisposta> {
+
   public Map<String, Object> extractRequestExtraInfo(PaaSILInviaCarrelloDovuti request, SoapHeaderElement header) {
     Map<String, Object> body = new HashMap<>();
     body.put("enteSILInviaRispostaPagamentoUrl", request.getEnteSILInviaRispostaPagamentoUrl());
@@ -33,11 +34,12 @@ public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti {
         .map(d -> new String(d, StandardCharsets.UTF_8))
         .toList()));
 
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILInviaCarrelloDovutiRisposta response) {
+  @Override
+  public Map<String, Object> extractResponseExtraInfoOutcomeOk(PaaSILInviaCarrelloDovutiRisposta response) {
     Map<String, Object> body = new HashMap<>();
     if(response.getIdSessionCarrello()!=null){
       body.put("idSession", response.getIdSessionCarrello());
@@ -45,7 +47,7 @@ public class RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti {
     if(response.getUrl()!=null){
       body.put("url", response.getUrl());
     }
-    body.put(RegistryLogger.SKIP_XML_BODY_KEY, "true");
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
     return body;
   }
 }
