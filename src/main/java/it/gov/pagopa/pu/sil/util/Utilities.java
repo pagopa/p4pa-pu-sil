@@ -60,6 +60,14 @@ public class Utilities {
     return now.toLocalDate().plusDays(isSameDay ? 0 : 1);
   }
 
+  /**
+   * Checks if the fiscal code is a valid natural person fiscal code.
+   * A valid natural person fiscal code is either 16 characters long or equals the anonymous fiscal code.
+   * A natural person must have a {@link it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType#F}.
+   *
+   * @param fiscalCode the fiscal code to check
+   * @return true if the fiscal code is a valid natural person fiscal code, false otherwise
+   */
   public static boolean isNaturalPerson(String fiscalCode) {
     return fiscalCode != null && (fiscalCode.length() == 16 || fiscalCode.equals(Constants.ANONYMOUS_FISCAL_CODE));
   }
