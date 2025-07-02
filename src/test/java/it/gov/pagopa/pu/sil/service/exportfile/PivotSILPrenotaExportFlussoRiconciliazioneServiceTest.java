@@ -14,7 +14,7 @@ import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
-import org.apache.commons.lang3.tuple.Pair;
+import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazioneRisposta;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -103,7 +103,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
         .thenReturn(new DebtPositionTypeOrg().flagActive(true));
 
 
-      Pair<Long, XMLGregorianCalendar> result = service.doReservation(
+      PivotSILPrenotaExportFlussoRiconciliazioneRisposta result = service.doReservation(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -111,8 +111,8 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
       );
 
       assertNotNull(result);
-      assertEquals(456L, result.getLeft());
-      assertEquals(request.getDataUltimoAggiornamentoA(), result.getRight());
+      assertEquals(String.valueOf(456L), result.getRequestToken());
+      assertEquals(request.getDataUltimoAggiornamentoA(), result.getDataA());
       verify(exportFileServiceMock).createClassificationsExportFile(any(), eq(accessToken));
     }
   }

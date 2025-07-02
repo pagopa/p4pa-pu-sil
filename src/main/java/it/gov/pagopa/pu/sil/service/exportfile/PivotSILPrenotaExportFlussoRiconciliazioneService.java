@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
+import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazioneRisposta;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService {
     this.classificationsExportFileRequestMapper = classificationsExportFileRequestMapper;
   }
 
-  public Pair<Long, XMLGregorianCalendar> doReservation(UserInfo userInfo, String accessToken, String orgIpaCode, PivotSILPrenotaExportFlussoRiconciliazione request) {
+  public PivotSILPrenotaExportFlussoRiconciliazioneRisposta doReservation(UserInfo userInfo, String accessToken, String orgIpaCode, PivotSILPrenotaExportFlussoRiconciliazione request) {
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
 
@@ -57,8 +58,9 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService {
     Long exportFileId = exportFileService.createClassificationsExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
 
-    return Pair.of(exportFileId,
-      request.getDataUltimoAggiornamentoDa() != null && request.getDataUltimoAggiornamentoA() != null ? request.getDataUltimoAggiornamentoA() : null
-    );
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response = new PivotSILPrenotaExportFlussoRiconciliazioneRisposta();
+    response.setDataA(request.getDataUltimoAggiornamentoDa() != null && request.getDataUltimoAggiornamentoA() != null ? request.getDataUltimoAggiornamentoA() : null);
+    response.setRequestToken(exportFileId.toString());
+    return response;
   }
 }

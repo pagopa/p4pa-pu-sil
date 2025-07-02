@@ -231,29 +231,19 @@ public class PuForOrganizationReconciliationEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "pivotSILPrenotaExportFlussoRiconciliazione");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
-      .loggedUser(userInfo)
-      .build();
-
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        Pair<Long, XMLGregorianCalendar> result = pivotSILPrenotaExportFlussoRiconciliazioneService.doReservation(
-          userInfo,
-          accessToken,
-          orgIpaCode,
-          request
-        );
-        PivotSILPrenotaExportFlussoRiconciliazioneRisposta response = new PivotSILPrenotaExportFlussoRiconciliazioneRisposta();
-        response.setRequestToken(String.valueOf(result.getLeft()));
-        response.setDataA(result.getRight());
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      exportFileExceptionHandler(PivotSILPrenotaExportFlussoRiconciliazioneRisposta::new)
-    );
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response;
+    try {
+      response = pivotSILPrenotaExportFlussoRiconciliazioneService.doReservation(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        request
+      );
+    } catch (Exception e) {
+      response = exportFileExceptionHandler(PivotSILPrenotaExportFlussoRiconciliazioneRisposta::new)
+        .apply(e);
+    }
+    return response;
   }
 
 

@@ -197,7 +197,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     // When
     PivotSILAutorizzaImportFlussoRisposta response =
-            puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlusso(request, header);
+      puForOrganizationReconciliationEndpoint.pivotSILAutorizzaImportFlusso(request, header);
 
     // Then
     Assertions.assertNotNull(response);
@@ -321,17 +321,13 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Long expectedToken = 12345L;
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta expectedResponse = new PivotSILPrenotaExportFlussoRiconciliazioneRisposta();
+    expectedResponse.setRequestToken(String.valueOf(expectedToken));
+    expectedResponse.setDataA(request.getDataUltimoAggiornamentoA());
 
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request)
-    )).thenReturn(Pair.of(expectedToken, request.getDataUltimoAggiornamentoA()));
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
+    )).thenReturn(expectedResponse);
 
     // When
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
@@ -350,17 +346,10 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
-    ).thenThrow(new it.gov.pagopa.pu.sil.exception.ExportFileClientException(
-      CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
+    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
+        .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+      .thenThrow(new ExportFileClientException(
+        CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
@@ -378,14 +367,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
         .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
       .thenThrow(new ExportFileClientException(
-      CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
+        CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
@@ -400,16 +382,9 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
+      .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
     ).thenThrow(new RuntimeException("Unexpected error"));
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.pivotSILPrenotaExportFlussoRiconciliazione)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request);
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
@@ -422,8 +397,8 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenAnyWhenPivotSILChiediPagatiRiconciliatiThenFault() throws Exception {
     testFaultResponse(PivotSILChiediPagatiRiconciliati.class,
-            SilFaults.PIVOT_SYSTEM_ERROR.code(),
-            puForOrganizationReconciliationEndpoint::pivotSILChiediPagatiRiconciliati);
+      SilFaults.PIVOT_SYSTEM_ERROR.code(),
+      puForOrganizationReconciliationEndpoint::pivotSILChiediPagatiRiconciliati);
   }
   //endregion
 
@@ -431,8 +406,8 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenAnyWhenPivotSILAutorizzaImportFlussoRendicontazioneThenFault() throws Exception {
     testFaultResponse(PivotSILAutorizzaImportFlussoRendicontazione.class,
-            SilFaults.PIVOT_SYSTEM_ERROR.code(),
-            puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRendicontazione);
+      SilFaults.PIVOT_SYSTEM_ERROR.code(),
+      puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRendicontazione);
   }
   //endregion
 
@@ -440,8 +415,8 @@ class PuForOrganizationReconciliationEndpointTest {
   @Test
   void givenAnyWhenPivotSILAutorizzaImportFlussoRTThenFault() throws Exception {
     testFaultResponse(PivotSILAutorizzaImportFlussoRT.class,
-            SilFaults.PIVOT_SYSTEM_ERROR.code(),
-            puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRT);
+      SilFaults.PIVOT_SYSTEM_ERROR.code(),
+      puForOrganizationReconciliationEndpoint::pivotSILAutorizzaImportFlussoRT);
   }
 
   //endregion
