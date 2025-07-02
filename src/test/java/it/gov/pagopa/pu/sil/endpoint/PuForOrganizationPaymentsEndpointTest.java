@@ -28,6 +28,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoServic
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -77,6 +78,8 @@ class PuForOrganizationPaymentsEndpointTest {
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoServiceMock;
+  @Mock
+  private PaaSILChiediPagatiService paaSILChiediPagatiServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -337,6 +340,43 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO.code(), result.getFault().getFaultCode());
+    Assertions.assertEquals("Description", result.getFault().getDescription());
+  }
+  // endregion
+
+  // region PaaSILChiediPagatiRisposta
+  @Test
+  void givenValidRequestWhenPaaSILChiediPagatiThenOk() {
+    // Given
+    PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
+    PaaSILChiediPagatiRisposta expectedResponse = new PaaSILChiediPagatiRisposta();
+
+    Mockito.when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenReturn(expectedResponse);
+
+    // When
+    PaaSILChiediPagatiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagati(request);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions. assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAnErrorWhenPaaSPaaSILChiediPagatiThenKo() {
+    // Given
+    PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
+
+    Mockito.when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+
+    // When
+    PaaSILChiediPagatiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagati(request);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertNotNull(result.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
     Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion

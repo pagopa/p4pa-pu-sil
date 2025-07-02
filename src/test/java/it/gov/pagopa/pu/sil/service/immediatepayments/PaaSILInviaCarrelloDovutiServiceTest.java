@@ -14,8 +14,8 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaCarrelloDovutiMapper;
+import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
-import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
@@ -56,6 +56,8 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   private CartRequestMapper cartRequestMapperMock;
   @Mock
   private OrganizationService organizationServiceMock;
+  @Mock
+  private SessionIdMapper sessionIdMapperMock;
 
   @InjectMocks
   private PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
@@ -200,18 +202,14 @@ class PaaSILInviaCarrelloDovutiServiceTest {
       .map(InstallmentDTO::getIuv)
       .collect(Collectors.joining(Utilities.IUV_SEPARATOR));
 
-    String sessionId = debtPositionDTOList.stream()
-      .flatMap(dp -> dp.getPaymentOptions().stream())
-      .flatMap(option -> option.getInstallments().stream())
-      .map(InstallmentDTO::getInstallmentId)
-      .map(String::valueOf)
-      .collect(Collectors.joining(Constants.SESSION_ID_SEPARATOR));
+    String sessionId = "SESSION_ID";
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaCarrelloDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), argThat(c -> {cartId.set(c); return true;}), eq(TOKEN)))
       .thenReturn(debtPositionDTOList);
     when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
       .thenReturn(debtPositionDTOList);
+    when(sessionIdMapperMock.mapDebtPositionsToSessionId(debtPositionDTOList)).thenReturn(sessionId);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");

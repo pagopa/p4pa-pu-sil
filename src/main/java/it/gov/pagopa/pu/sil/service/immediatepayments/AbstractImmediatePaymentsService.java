@@ -12,9 +12,9 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
-import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -28,19 +28,23 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
+
   protected final CheckoutService checkoutService;
   protected final CreateDebtPositionService createDebtPositionService;
   protected final CartRequestMapper cartRequestMapper;
   protected final OrganizationService organizationService;
+  protected final SessionIdMapper sessionIdMapper;
 
   protected AbstractImmediatePaymentsService(CheckoutService checkoutService,
                                              CreateDebtPositionService createDebtPositionService,
                                              OrganizationService organizationService,
-                                             CartRequestMapper cartRequestMapper) {
+                                             CartRequestMapper cartRequestMapper,
+                                             SessionIdMapper sessionIdMapper) {
     this.checkoutService = checkoutService;
     this.createDebtPositionService = createDebtPositionService;
     this.cartRequestMapper = cartRequestMapper;
     this.organizationService = organizationService;
+    this.sessionIdMapper = sessionIdMapper;
   }
 
   protected abstract List<DebtPositionDTO> mapRequestToDebtPositions(REQ request, Organization org, String cartId, String accessToken);
@@ -83,12 +87,7 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
       .collect(Collectors.joining(Utilities.IUV_SEPARATOR));
 
     //sessionId is a concatenation of all installment IDs, used to track the session
-    String sessionId = debtPositions.stream()
-      .flatMap(dp -> dp.getPaymentOptions().stream())
-      .flatMap(option -> option.getInstallments().stream())
-      .map(InstallmentDTO::getInstallmentId)
-      .map(String::valueOf)
-      .collect(Collectors.joining(Constants.SESSION_ID_SEPARATOR));
+    String sessionId = sessionIdMapper.mapDebtPositionsToSessionId(debtPositions);
 
     //map debt positions to cart request
     CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(debtPositions, organization, cartId, getCallbackUrl(request));

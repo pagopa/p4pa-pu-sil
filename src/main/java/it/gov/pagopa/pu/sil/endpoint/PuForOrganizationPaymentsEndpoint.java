@@ -24,6 +24,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoServic
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -63,6 +64,8 @@ public class PuForOrganizationPaymentsEndpoint {
   private final RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
 
   private final PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
+
+  private final PaaSILChiediPagatiService paaSILChiediPagatiService;
 
   private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
 
@@ -290,6 +293,28 @@ public class PuForOrganizationPaymentsEndpoint {
     return response;
   }
 
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediPagati")
+  @ResponsePayload
+  public PaaSILChiediPagatiRisposta paaSILChiediPagati(
+    @RequestPayload PaaSILChiediPagati request) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+
+    PaaSILChiediPagatiRisposta response;
+    try {
+      response = paaSILChiediPagatiService.processRequest(request, userInfo, accessToken);
+    }catch(Exception e){
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILChiediPagatiRisposta(),
+        PaaSILChiediPagatiRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ).apply(e);
+    }
+
+    return response;
+  }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediAvvisiPendenti")
   @ResponsePayload
