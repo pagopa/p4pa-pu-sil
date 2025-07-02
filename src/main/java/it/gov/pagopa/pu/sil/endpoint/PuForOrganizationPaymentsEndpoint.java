@@ -395,7 +395,7 @@ public class PuForOrganizationPaymentsEndpoint {
       response.setRequestToken(String.valueOf(result));
       return response;
     } catch (Exception e) {
-      return exportFileExceptionHandler(PaaSILPrenotaExportFlussoRisposta::new)
+      return handleExportFileRequestValidationException(PaaSILPrenotaExportFlussoRisposta::new)
         .apply(e);
     }
   }
@@ -434,7 +434,6 @@ public class PuForOrganizationPaymentsEndpoint {
     String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getIdentificativoTipoDovuto)
       .orElse(null);
 
-    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response;
     try {
       Long result = paaSILPrenotaExportFlussoIncrementaleConRicevutaService.doReservation(
         userInfo,
@@ -446,19 +445,19 @@ public class PuForOrganizationPaymentsEndpoint {
         debtPositionTypeOrgCode,
         incremental
       );
-      response = new PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta();
+      PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = new PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta();
       response.setRequestToken(String.valueOf(result));
       if (incremental) {
         response.setDateTo(xmlGregorianCalendar.orElse(null));
       }
+      return response;
     } catch (Exception e) {
-      response = exportFileExceptionHandler(PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::new)
+      return handleExportFileRequestValidationException(PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::new)
         .apply(e);
     }
-    return response;
   }
 
-  private <T extends Risposta> Function<Exception, T> exportFileExceptionHandler(Supplier<T> response) {
+  private <T extends Risposta> Function<Exception, T> handleExportFileRequestValidationException(Supplier<T> response) {
     return (Exception e) -> {
       if (e instanceof ExportFileClientException ce) {
         SilFaults fault = switch (ce.getCode()) {

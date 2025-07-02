@@ -8,26 +8,21 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
-import java.util.Optional;
 
 @Slf4j
 @Service
-public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService {
+public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService extends AbstractExportFileReservationService {
 
   private final ExportFileService exportFileService;
-  private final DebtPositionService debtPositionService;
 
   public PaaSILPrenotaExportFlussoIncrementaleConRicevutaService(ExportFileService exportFileService,
                                                                  DebtPositionService debtPositionService) {
+    super(debtPositionService);
     this.exportFileService = exportFileService;
-    this.debtPositionService = debtPositionService;
   }
 
   @SuppressWarnings("java:S107")
@@ -41,29 +36,19 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService {
     String debtPositionTypeOrgCode,
     boolean incremental) {
 
-    String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
-
-    if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call export file for organization {}", clientId, orgIpaCode);
-      throw new UnauthorizedException("Utente non autorizzato");
-    }
-
-    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
-
-    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
-      organizationId, debtPositionTypeOrgCode, accessToken);
-
-    if (debtPositionTypeOrg == null) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
-    } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgCode);
-    }
+    checkAdminRole(orgIpaCode, userInfo);
+    Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
+    DebtPositionTypeOrg debtPositionTypeOrg = getAndValidateDebtPositionTypeOrg(
+      organizationId,
+      debtPositionTypeOrgCode,
+      accessToken,
+      SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
+      SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO
+    );
 
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId(), incremental);
-
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
-
     return exportFileId;
   }
 
