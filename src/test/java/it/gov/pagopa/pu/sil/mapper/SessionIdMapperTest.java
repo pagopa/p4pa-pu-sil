@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
-public class SessionIdMapperTest {
+class SessionIdMapperTest {
 
   @InjectMocks
   private SessionIdMapper sessionIdMapper;
@@ -56,10 +56,9 @@ public class SessionIdMapperTest {
 
   @Test
   void mapSessionIdToInstallmentIdsThrowsExceptionForInvalidSessionId() {
+    String ids = String.join(Constants.SESSION_ID_SEPARATOR, "invalid","session", "id");
     SilFaultException exception = assertThrows(SilFaultException.class, () ->
-      sessionIdMapper.mapSessionIdToInstallmentIds(
-        String.join(Constants.SESSION_ID_SEPARATOR, "invalid","session", "id")
-    ));
+      sessionIdMapper.mapSessionIdToInstallmentIds(ids));
 
     assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO, exception.getFault());
     assertEquals("ID session non valido", exception.getDescription());

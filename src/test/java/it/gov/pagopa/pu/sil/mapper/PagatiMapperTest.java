@@ -24,7 +24,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
-public class PagatiMapperTest {
+class PagatiMapperTest {
 
   @InjectMocks
   private PagatiMapper pagatiMapper;
@@ -38,7 +38,7 @@ public class PagatiMapperTest {
 
   @ParameterizedTest
   @ValueSource(strings={"default", "mdb"})
-  public void testMapDebtPositionsToEncodedPagatiConRicevuta(String testType) {
+  void testMapDebtPositionsToEncodedPagatiConRicevuta(String testType) {
     // Given
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(2);
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
@@ -102,7 +102,7 @@ public class PagatiMapperTest {
   }
 
   @Test
-  public void testMapDebtPositionsToEncodedPagati() {
+  void testMapDebtPositionsToEncodedPagati() {
     // Given
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(2);
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);

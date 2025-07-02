@@ -27,7 +27,7 @@ public class SessionIdMapper {
     try{
       return Stream.of(sessionId.split(Constants.SESSION_ID_SEPARATOR))
         .map(Long::parseLong)
-        .collect(Collectors.toList());
+        .toList();
     } catch (NullPointerException | NumberFormatException e) {
       log.error("Invalid sessionId: {}", sessionId, e);
       throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "ID session non valido");

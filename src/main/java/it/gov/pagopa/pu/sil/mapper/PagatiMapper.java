@@ -29,10 +29,11 @@ public class PagatiMapper {
 
   /**
    * Maps a debt position and installment to an encoded PagatiConRicevuta object.
+   *
    * @param debtPosition the debt position to map
-   * @param installment the installment associated with the debt position
+   * @param installment  the installment associated with the debt position
    * @param organization the organization of the payment
-   * @param accessToken the access token for authorization
+   * @param accessToken  the access token for authorization
    * @return the encoded PagatiConRicevuta as byte array
    */
   public byte[] mapDebtPositionsToEncodedPagatiConRicevuta(DebtPositionDTO debtPosition, InstallmentDTO installment, Organization organization, String accessToken) {
@@ -42,10 +43,11 @@ public class PagatiMapper {
 
   /**
    * Maps a debt position and installment to an encoded Pagati object.
+   *
    * @param debtPosition the debt position to map
-   * @param installment the installment associated with the debt position
+   * @param installment  the installment associated with the debt position
    * @param organization the organization of the payment
-   * @param accessToken the access token for authorization
+   * @param accessToken  the access token for authorization
    * @return the encoded Pagati as byte array
    */
   public byte[] mapDebtPositionsToEncodedPagati(DebtPositionDTO debtPosition, InstallmentDTO installment, Organization organization, String accessToken) {
@@ -59,7 +61,8 @@ public class PagatiMapper {
   }
 
   private PagatiConRicevuta mapToPagatiConRicevuta(DebtPositionDTO debtPosition, InstallmentDTO installment, Organization organization, boolean withReceiptFields, String accessToken) {
-
+    log.debug("mapping debtPosition[{}] installment[{}] org[{}] withReceipt[{}] with PagatiConRicevuta",
+      debtPosition.getDebtPositionId(), installment.getInstallmentId(), organization.getOrganizationId(), withReceiptFields);
     ReceiptDTO receipt = debtPositionService.getReceiptById(installment.getReceiptId(), accessToken);
 
     PagatiConRicevuta pagatiConRicevuta = new PagatiConRicevuta();
@@ -141,13 +144,11 @@ public class PagatiMapper {
       ctDatiSingoloPagamentoPagatiConRicevuta.setDataEsitoSingoloPagamento(ConversionUtils.toXMLGregorianCalendar(receipt.getPaymentDateTime()));
       ctDatiSingoloPagamentoPagatiConRicevuta.setSingoloImportoPagato(ConversionUtils.centsAmountToBigDecimalEuroAmount(transfer.getAmountCents()));
       ctDatiSingoloPagamentoPagatiConRicevuta.setCommissioniApplicatePSP(ConversionUtils.centsAmountToBigDecimalEuroAmount(receipt.getFeeCents()));
-      if(withReceiptFields) {
-        if (transfer.getStampHashDocument() != null) {
-          CtAllegatoRicevuta ctAllegatoRicevuta = new CtAllegatoRicevuta();
-          ctAllegatoRicevuta.setTipoAllegatoRicevuta(StTipoAllegatoRicevuta.BD);
-          ctDatiSingoloPagamentoPagatiConRicevuta.setAllegatoRicevuta(null); //TODO task P4ADEV-3328 extract data from transfer.getMdbAttachment()
-          ctDatiSingoloPagamentoPagatiConRicevuta.setAllegatoRicevuta(ctAllegatoRicevuta);
-        }
+      if (withReceiptFields && transfer.getStampHashDocument() != null) {
+        CtAllegatoRicevuta ctAllegatoRicevuta = new CtAllegatoRicevuta();
+        ctAllegatoRicevuta.setTipoAllegatoRicevuta(StTipoAllegatoRicevuta.BD);
+        ctDatiSingoloPagamentoPagatiConRicevuta.setAllegatoRicevuta(null); //TODO task P4ADEV-3328 extract data from transfer.getMdbAttachment()
+        ctDatiSingoloPagamentoPagatiConRicevuta.setAllegatoRicevuta(ctAllegatoRicevuta);
       }
       datiPagamento.getDatiSingoloPagamentos().add(ctDatiSingoloPagamentoPagatiConRicevuta);
     });
