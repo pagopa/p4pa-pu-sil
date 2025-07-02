@@ -83,11 +83,11 @@ public class RegistryLogger {
                                             Function<O, Map<String, Object>> registryBodyResponseExtraInfoExtractor) {
     try {
       Object body = null;
-      if (registryBodyResponseExtraInfoExtractor != null) {
+      if (registryBodyResponseExtraInfoExtractor != null && response != null) {
         Map<String, Object> bodyMap = new HashMap<>(registryBodyResponseExtraInfoExtractor.apply(response));
         if (bodyMap.containsKey(SKIP_XML_BODY_KEY)) {
           bodyMap.remove(SKIP_XML_BODY_KEY);
-        } else if (response != null) {
+        } else {
           //noinspection unchecked: it will necessarily be the right class
           bodyMap.put(XML_BODY_KEY, jaxbTransformService.marshalling(response, (Class<O>) response.getClass()));
         }

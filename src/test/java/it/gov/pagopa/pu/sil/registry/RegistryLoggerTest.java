@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.Map;
@@ -431,10 +432,19 @@ public class RegistryLoggerTest {
       return true;
     };
     ArgumentMatcher<Function<Exception, Object>> exceptionHandler = i -> {
-      if (exception[0] != null) {
+      if (exception[0] != null && i != null) {
         result[0] = i.apply(exception[0]);
+        exception[0] = null;
       }
       return true;
+    };
+
+    Answer<Object> answer = i -> {
+      if(exception[0] != null) {
+        throw exception[0];
+      } else {
+        return result[0];
+      }
     };
 
     if(withExtraInfo) {
@@ -448,17 +458,19 @@ public class RegistryLoggerTest {
           return true;
         }),
         Mockito.argThat(responseExtraInfoExtractor  -> {
-          responseExtraInfoExtractor.apply(result[0]);
+          if (result[0] != null) {
+            responseExtraInfoExtractor.apply(result[0]);
+          }
           return true;
         })
-      )).thenAnswer(i -> result[0]);
+      )).thenAnswer(answer);
     } else {
       Mockito.when(registryLoggerMock.execute(
         Mockito.eq(contextData),
         Mockito.same(request),
         Mockito.argThat(requestHandler),
         Mockito.argThat(exceptionHandler)
-      )).thenAnswer(i -> result[0]);
+      )).thenAnswer(answer);
     }
   }
 }

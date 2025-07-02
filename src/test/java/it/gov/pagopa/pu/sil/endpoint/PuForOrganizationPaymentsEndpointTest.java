@@ -11,14 +11,20 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILImportaDovuto;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
+import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
@@ -56,7 +62,17 @@ class PuForOrganizationPaymentsEndpointTest {
   @Mock
   private PaaSILImportaDovutoService paaSILImportaDovutoServiceMock;
   @Mock
+  private PaaSILInviaDovutiService paaSILInviaDovutiServiceMock;
+  @Mock
+  private PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiServiceMock;
+  @Mock
+  private PaaSILVerificaAvvisoService paaSILVerificaAvvisoServiceMock;
+  @Mock
   private RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovutoServiceMock;
+  @Mock
+  private RegistryExtraInfoHandlerPaaSILInviaDovuti registryExtraInfoHandlerPaaSILInviaDovutiMock;
+  @Mock
+  private RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock;
   @Mock
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
@@ -212,7 +228,117 @@ class PuForOrganizationPaymentsEndpointTest {
     Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractRequestExtraInfo(request, header);
     Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractResponseExtraInfo(result);
   }
+  // endregion
 
+  // region PaaSILInviaDovuti
+  @Test
+  void givenValidRequestWhenPaaSILInviaDovutiThenOk() throws Exception {
+    // Given
+    PaaSILInviaDovuti request = podamFactory.manufacturePojo(PaaSILInviaDovuti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Triple<PaaSILInviaDovutiRisposta, String, RegistryOutcome> expectedResponse = Triple.of(
+      new PaaSILInviaDovutiRisposta(),
+      "iuv",
+      RegistryOutcome.OK
+    );
+
+    Mockito.when(paaSILInviaDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+      .thenReturn(expectedResponse);
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.paaSILInviaDovuti)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request, true);
+
+    // When
+    PaaSILInviaDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILInviaDovuti(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractRequestExtraInfo(request, header);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractResponseExtraInfo(result);
+  }
+  // endregion
+
+  // region PaaSILInviaCarrelloDovuti
+  @Test
+  void givenValidRequestWhenPaaSILInviaCarrelloDovutiThenOk() throws Exception {
+    // Given
+    PaaSILInviaCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILInviaCarrelloDovuti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> expectedResponse = Triple.of(
+      new PaaSILInviaCarrelloDovutiRisposta(),
+      "iuv",
+      RegistryOutcome.OK
+    );
+
+    Mockito.when(paaSILInviaCarrelloDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+      .thenReturn(expectedResponse);
+
+    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
+      .loggedUser(userInfo)
+      .eventType(RegistryEventType.paaSILInviaCarrelloDovuti)
+      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .build();
+    configureRegistryLoggerMock(expectedRegistryContextData, request, true);
+
+    // When
+    PaaSILInviaCarrelloDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILInviaCarrelloDovuti(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractRequestExtraInfo(request, header);
+    Mockito.verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractResponseExtraInfo(result);
+  }
+  // endregion
+
+  // region PaaSILVerificaAvviso
+  @Test
+  void givenValidRequestWhenPaaSPaaSILVerificaAvvisoThenOk() throws Exception {
+    // Given
+    PaaSILVerificaAvviso request = podamFactory.manufacturePojo(PaaSILVerificaAvviso.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    PaaSILVerificaAvvisoRisposta expectedResponse = new PaaSILVerificaAvvisoRisposta();
+
+    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
+      .thenReturn(expectedResponse);
+
+    // When
+    PaaSILVerificaAvvisoRisposta result = puForOrganizationPaymentsEndpoint.paaSILVerificaAvviso(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions. assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAnErrorWhenPaaSPaaSILVerificaAvvisoThenKo() throws Exception {
+    // Given
+    PaaSILVerificaAvviso request = podamFactory.manufacturePojo(PaaSILVerificaAvviso.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
+      .thenThrow(new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Description"));
+
+    // When
+    PaaSILVerificaAvvisoRisposta result = puForOrganizationPaymentsEndpoint.paaSILVerificaAvviso(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertNotNull(result.getFault());
+    Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO.code(), result.getFault().getFaultCode());
+    Assertions.assertEquals("Description", result.getFault().getDescription());
+  }
   // endregion
 
   // region PaaSILChiediAvvisiPendenti
@@ -247,7 +373,7 @@ class PuForOrganizationPaymentsEndpointTest {
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThenResponseContainsExpectedToken() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
-    request.setIdentificativoTipoDovuto("1");
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
@@ -276,7 +402,7 @@ class PuForOrganizationPaymentsEndpointTest {
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
-    request.setIdentificativoTipoDovuto("1");
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
@@ -304,7 +430,7 @@ class PuForOrganizationPaymentsEndpointTest {
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThrowsServiceExceptionThenResponseContainsExpectedFaultCode() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
-    request.setIdentificativoTipoDovuto("1");
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);

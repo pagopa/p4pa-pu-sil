@@ -21,6 +21,7 @@ import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncremen
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
@@ -28,6 +29,7 @@ import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -46,6 +48,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Endpoint
+@RequiredArgsConstructor
 @Slf4j
 public class PuForOrganizationPaymentsEndpoint {
   public static final String NAMESPACE_URI = "http://www.regione.veneto.it/pagamenti/ente/";
@@ -64,8 +67,9 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
   private final RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
 
+  private final PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
+
   private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
-  private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 
   @SuppressWarnings("java:S107")
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
@@ -262,6 +266,7 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILInviaCarrelloDovuti");
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
@@ -273,7 +278,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILInviaCarrelloDovutiService.paaSILInviaCarrelloDovuti(userInfo, orgIpaCode, request),
+      () -> paaSILInviaCarrelloDovutiService.processRequest(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaCarrelloDovutiRisposta(),
         PaaSILInviaCarrelloDovutiRisposta::setFault,
@@ -284,6 +289,34 @@ public class PuForOrganizationPaymentsEndpoint {
       () -> registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILInviaCarrelloDovuti::extractResponseExtraInfo
     );
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILVerificaAvviso")
+  @ResponsePayload
+  public PaaSILVerificaAvvisoRisposta paaSILVerificaAvviso(
+    @RequestPayload PaaSILVerificaAvviso request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILVerificaAvviso");
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+
+    PaaSILVerificaAvvisoRisposta response;
+    try {
+      response = paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, accessToken);
+    }catch(Exception e){
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILVerificaAvvisoRisposta(),
+        PaaSILVerificaAvvisoRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ).apply(e);
+    }
+
+    return response;
   }
 
 
@@ -373,8 +406,8 @@ public class PuForOrganizationPaymentsEndpoint {
       .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
       .map(odt -> odt.truncatedTo(ChronoUnit.DAYS)).orElse(null);
 
-    Long debtPositionTypeOrgId = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
-      .map(Long::valueOf).orElse(null);
+    String debtPositionTypeOrgCode = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
+      .orElse(null);
 
     return registryLogger.execute(
       contextData,
@@ -387,7 +420,7 @@ public class PuForOrganizationPaymentsEndpoint {
           fileVersion,
           from,
           to,
-          debtPositionTypeOrgId
+          debtPositionTypeOrgCode
         );
         PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
         response.setRequestToken(String.valueOf(result));
