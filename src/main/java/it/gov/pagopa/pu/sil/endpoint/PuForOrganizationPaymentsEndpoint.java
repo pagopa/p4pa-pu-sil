@@ -79,38 +79,30 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILChiediStatoImportFlusso");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILChiediStatoImportFlusso)
-      .loggedUser(userInfo)
-      .build();
-
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
+    PaaSILChiediStatoImportFlussoRisposta response;
+    try {
+      PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         request,
         userInfo,
         accessToken,
         orgIpaCode,
         Long.valueOf(request.getRequestToken()),
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-        PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
-        response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
-        response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
-        response.setUrlFileIUV(processingStatusDTO.getUrlImported());
-        response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      response = new PaaSILChiediStatoImportFlussoRisposta();
+      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
+      response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
+      response.setUrlFileIUV(processingStatusDTO.getUrlImported());
+      response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
+    } catch (Exception e){
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediStatoImportFlussoRisposta(),
         PaaSILChiediStatoImportFlussoRisposta::setFault,
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR
-      )
-    );
+      ).apply(e);
+    }
+    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILAutorizzaImportFlusso")

@@ -143,13 +143,6 @@ class PuForOrganizationPaymentsEndpointTest {
       Mockito.eq(request), Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILChiediStatoImportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
-
     // When
     PaaSILChiediStatoImportFlussoRisposta response =
       puForOrganizationPaymentsEndpoint.paaSILChiediStatoImportFlusso(request, header);
