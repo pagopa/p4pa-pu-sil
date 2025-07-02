@@ -43,7 +43,7 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
     //check if the logged user has the right to call this endpoint
     String orgIpaCode = getOrgIpaCode(request);
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call {} for organization {}", request.getClass().getSimpleName(), clientId, orgIpaCode);
+      log.error("ClientId [{}] not authorized to call {} for organization {}", clientId, request.getClass().getSimpleName(), orgIpaCode);
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
     }
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
@@ -90,10 +90,10 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
     if(Objects.equals(installment.getStatus(), InstallmentStatus.UNPAID)){
       //unpaid
       throw new SilFaultException(SilFaults.PAA_PAGAMENTO_NON_INIZIATO, "Pagamento non effettuato");
-    } else if(Objects.equals(installment.getStatus(), InstallmentStatus.PAID) || Objects.equals(installment.getStatus(), InstallmentStatus.REPORTED)) {
+    } else if(!Objects.equals(installment.getStatus(), InstallmentStatus.PAID) && !Objects.equals(installment.getStatus(), InstallmentStatus.REPORTED)) {
       //any other state
       log.error("Installment with id[{}] has invalid status[{}]", installment.getInstallmentId(), installment.getStatus());
-      throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "ID session non valido");
+      throw new SilFaultException(SilFaults.PAA_DOVUTO_NON_PAGABILE, "Dovuto non pagabile");
     }
   }
 

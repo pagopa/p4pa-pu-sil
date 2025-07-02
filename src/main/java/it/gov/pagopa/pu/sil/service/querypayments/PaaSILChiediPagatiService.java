@@ -30,11 +30,12 @@ public class PaaSILChiediPagatiService extends AbstractQueryPaymentsService<PaaS
   public PaaSILChiediPagatiService(
     OrganizationService organizationService,
     DebtPositionService debtPositionService,
-    PagatiMapper pagatiMapper) {
+    PagatiMapper pagatiMapper,
+    SessionIdMapper sessionIdMapper) {
     super(organizationService);
     this.debtPositionService = debtPositionService;
     this.pagatiMapper = pagatiMapper;
-    this.sessionIdMapper = new SessionIdMapper();
+    this.sessionIdMapper = sessionIdMapper;
   }
 
   @Override
