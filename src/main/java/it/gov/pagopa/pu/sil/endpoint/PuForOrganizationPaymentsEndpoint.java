@@ -454,7 +454,8 @@ public class PuForOrganizationPaymentsEndpoint {
         .map(odt -> incremental ? odt : odt.truncatedTo(ChronoUnit.DAYS))
         .orElse(null);
 
-    OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getDateTo)
+    Optional<XMLGregorianCalendar> xmlGregorianCalendar = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getDateTo);
+    OffsetDateTime to = xmlGregorianCalendar
         .map(XMLGregorianCalendar::toGregorianCalendar)
         .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
         .map(odt -> incremental ? odt : odt.truncatedTo(ChronoUnit.DAYS))
@@ -478,7 +479,7 @@ public class PuForOrganizationPaymentsEndpoint {
       response = new PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta();
       response.setRequestToken(String.valueOf(result));
       if (incremental) {
-        response.setDateTo(request.getDateTo());
+        response.setDateTo(xmlGregorianCalendar.orElse(null));
       }
     } catch (Exception e) {
       response = exportFileExceptionHandler(PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::new)
