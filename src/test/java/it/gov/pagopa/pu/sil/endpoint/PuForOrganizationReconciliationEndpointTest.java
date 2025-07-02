@@ -128,6 +128,35 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()), response.getStato());
   }
+
+  @Test
+  void givenValidRequestWhenPivotSILChiediStatoImportFlussoTesoreriaThenKO() throws Exception {
+    //  Given
+    Long requestToken = 12345L;
+    PivotSILChiediStatoImportFlussoTesoreria request = podamFactory.manufacturePojo(PivotSILChiediStatoImportFlussoTesoreria.class);
+    request.setRequestToken(String.valueOf(requestToken));
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
+      IngestionFlowFileTypeEnum.TREASURY_CSV,
+      IngestionFlowFileTypeEnum.TREASURY_XLS,
+      IngestionFlowFileTypeEnum.TREASURY_POSTE};
+
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
+    )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
+
+    // When
+    PivotSILChiediStatoImportFlussoTesoreriaRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlussoTesoreria(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
   //endregion
 
   //region pivotSILChiediStatoImportFlusso
@@ -155,6 +184,30 @@ class PuForOrganizationReconciliationEndpointTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()), response.getStato());
+  }
+
+  @Test
+  void givenValidRequestWhenPivotSILChiediStatoImportFlussoThenKo() throws Exception {
+    // Given
+    Long requestToken = 12345L;
+    PivotSILChiediStatoImportFlusso request = podamFactory.manufacturePojo(PivotSILChiediStatoImportFlusso.class);
+    request.setRequestToken(String.valueOf(requestToken));
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(INVALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
+    )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
+
+    // When
+    PivotSILChiediStatoImportFlussoRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediStatoImportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
   }
 
   //endregion

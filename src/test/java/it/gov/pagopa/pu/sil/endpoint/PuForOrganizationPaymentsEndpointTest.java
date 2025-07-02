@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -153,6 +154,29 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertEquals(statusDTO.getUrlImported(), response.getUrlFileIUV());
     Assertions.assertEquals(statusDTO.getUrlErrors(), response.getUrlFileScarti());
     Assertions.assertEquals(statusDTO.getUrlNotice(), response.getUrlFileAvvisi());
+  }
+
+  @Test
+  void givenValidRequestWhenPaaSILChiediStatoImportFlussoThenKo() throws Exception {
+    // Given
+    Long requestToken = 12345L;
+    PaaSILChiediStatoImportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoImportFlusso.class);
+    it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT.class);
+
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.eq(request), Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(INVALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+    )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
+
+    // When
+    PaaSILChiediStatoImportFlussoRisposta response =
+      puForOrganizationPaymentsEndpoint.paaSILChiediStatoImportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO.code(), response.getFault().getFaultCode());
   }
   // endregion
 
