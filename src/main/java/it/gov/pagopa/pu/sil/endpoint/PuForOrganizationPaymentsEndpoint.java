@@ -70,6 +70,7 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
 
   private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
+  private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 
   @SuppressWarnings("java:S107")
   public PuForOrganizationPaymentsEndpoint(RegistryLogger registryLogger,
@@ -82,7 +83,8 @@ public class PuForOrganizationPaymentsEndpoint {
                                            PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService,
                                            RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovuti,
                                            PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService,
-                                           PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService) {
+                                           PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService,
+                                           PaaSILVerificaAvvisoService paaSILVerificaAvvisoService) {
     this.registryLogger = registryLogger;
     this.paaSILImportaDovutoService = paaSILImportaDovutoService;
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
@@ -93,6 +95,7 @@ public class PuForOrganizationPaymentsEndpoint {
     this.paaSILInviaCarrelloDovutiService = paaSILInviaCarrelloDovutiService;
     this.registryExtraInfoHandlerPaaSILInviaCarrelloDovuti = registryExtraInfoHandlerPaaSILInviaCarrelloDovuti;
     this.paaSILPrenotaExportFlussoService = paaSILPrenotaExportFlussoService;
+    this.paaSILVerificaAvvisoService = paaSILVerificaAvvisoService;
     this.paaSILPrenotaExportFlussoIncrementaleConRicevutaService = paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
   }
 
@@ -243,7 +246,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILInviaDovutiService.paaSILInviaDovuti(request, orgIpaCode, userInfo, accessToken),
+      () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILInviaDovutiRisposta(),
         PaaSILInviaDovutiRisposta::setFault,
@@ -388,31 +391,27 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlusso");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .loggedUser(userInfo)
-      .build();
-
     Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
 
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato).orElse(null);
 
-    OffsetDateTime from = optRequest.flatMap(r -> Optional.ofNullable(r.getDateFrom()))
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
-      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS)).orElse(null);
-
-    OffsetDateTime to = optRequest.flatMap(r -> Optional.ofNullable(r.getDateTo()))
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
-      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS)).orElse(null);
-
-    String debtPositionTypeOrgCode = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
+    OffsetDateTime from = optRequest.map(PaaSILPrenotaExportFlusso::getDateFrom)
+      .map(XMLGregorianCalendar::toGregorianCalendar)
+      .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
+      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS))
       .orElse(null);
 
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
+    OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlusso::getDateTo)
+      .map(XMLGregorianCalendar::toGregorianCalendar)
+      .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
+      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS))
+      .orElse(null);
+
+    String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlusso::getIdentificativoTipoDovuto)
+      .orElse(null);
+
+    PaaSILPrenotaExportFlussoRisposta response;
+    try {
         Long result = paaSILPrenotaExportFlussoService.paaSILPrenotaExportFlusso(
           userInfo,
           accessToken,
@@ -422,12 +421,13 @@ public class PuForOrganizationPaymentsEndpoint {
           to,
           debtPositionTypeOrgCode
         );
-        PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
+        response = new PaaSILPrenotaExportFlussoRisposta();
         response.setRequestToken(String.valueOf(result));
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      exportFileExceptionHandler(PaaSILPrenotaExportFlussoRisposta::new)
-    );
+    } catch (Exception e) {
+      response = exportFileExceptionHandler(PaaSILPrenotaExportFlussoRisposta::new)
+        .apply(e);
+    }
+    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILPrenotaExportFlussoIncrementaleConRicevuta")
@@ -442,51 +442,49 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlussoIncrementaleConRicevuta");
 
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
-      .eventType(RegistryEventType.paaSILPrenotaExportFlussoIncrementaleConRicevuta)
-      .loggedUser(userInfo)
-      .build();
-
     Optional<PaaSILPrenotaExportFlussoIncrementaleConRicevuta> optRequest = Optional.ofNullable(request);
 
     boolean incremental = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::isIncrementale).orElse(false);
 
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getVersioneTracciato).orElse(null);
 
-    OffsetDateTime from = optRequest.flatMap(r -> Optional.ofNullable(r.getDateFrom()))
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
-      .map(odt -> { if (incremental) return odt; else return odt.truncatedTo(ChronoUnit.DAYS); }).orElse(null);
+    OffsetDateTime from = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getDateFrom)
+        .map(XMLGregorianCalendar::toGregorianCalendar)
+        .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
+        .map(odt -> incremental ? odt : odt.truncatedTo(ChronoUnit.DAYS))
+        .orElse(null);
 
-    Optional<XMLGregorianCalendar> optXmlTo = optRequest.flatMap(r -> Optional.ofNullable(r.getDateTo()));
-    OffsetDateTime to = optXmlTo
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toOffsetDateTime())
-      .map(odt -> { if (incremental) return odt; else return odt.truncatedTo(ChronoUnit.DAYS); }).orElse(null);
+    OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getDateTo)
+        .map(XMLGregorianCalendar::toGregorianCalendar)
+        .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
+        .map(odt -> incremental ? odt : odt.truncatedTo(ChronoUnit.DAYS))
+        .orElse(null);
 
-    Long debtPositionTypeOrgId = optRequest.flatMap(r -> Optional.ofNullable(r.getIdentificativoTipoDovuto()))
-      .map(Long::valueOf).orElse(null);
+    String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlussoIncrementaleConRicevuta::getIdentificativoTipoDovuto)
+      .orElse(null);
 
-    return registryLogger.execute(
-      contextData,
-      request,
-      () -> {
-        Long result = paaSILPrenotaExportFlussoIncrementaleConRicevutaService.paaSILPrenotaExportFlussoIncrementaleConRicevuta(
-          userInfo,
-          accessToken,
-          orgIpaCode,
-          fileVersion,
-          from,
-          to,
-          debtPositionTypeOrgId,
-          incremental
-        );
-        PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = new PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta();
-        response.setRequestToken(String.valueOf(result));
-        if (incremental) response.setDateTo(optXmlTo.orElse(null));
-        return Triple.of(response, null, RegistryOutcome.OK);
-      },
-      exportFileExceptionHandler(PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::new)
-    );
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response;
+    try {
+      Long result = paaSILPrenotaExportFlussoIncrementaleConRicevutaService.doReservation(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        fileVersion,
+        from,
+        to,
+        debtPositionTypeOrgCode,
+        incremental
+      );
+      response = new PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta();
+      response.setRequestToken(String.valueOf(result));
+      if (incremental) {
+        response.setDateTo(request.getDateTo());
+      }
+    } catch (Exception e) {
+      response = exportFileExceptionHandler(PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::new)
+        .apply(e);
+    }
+    return response;
   }
 
   private <T extends Risposta> Function<Exception, T> exportFileExceptionHandler(Supplier<T> response) {
@@ -524,6 +522,4 @@ public class PuForOrganizationPaymentsEndpoint {
       ).apply(e);
     };
   }
-
-
 }

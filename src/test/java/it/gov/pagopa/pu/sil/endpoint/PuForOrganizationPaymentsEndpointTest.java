@@ -77,6 +77,8 @@ class PuForOrganizationPaymentsEndpointTest {
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoServiceMock;
+  @Mock
+  private PaaSILPrenotaExportFlussoIncrementaleConRicevuta paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -110,7 +112,9 @@ class PuForOrganizationPaymentsEndpointTest {
       ingestionFlowFileAuthorizationServiceMock,
       paaSILImportaDovutoServiceMock,
       registryExtraInfoHandlerPaaSILImportaDovutoServiceMock,
-      ingestionFlowFileProcessingStatusServiceMock
+      ingestionFlowFileProcessingStatusServiceMock,
+      paaSILPrenotaExportFlussoServiceMock,
+      paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock
     );
   }
 
@@ -383,13 +387,6 @@ class PuForOrganizationPaymentsEndpointTest {
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenReturn(expectedToken);
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
-
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
 
@@ -410,13 +407,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
-
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
@@ -439,15 +429,77 @@ class PuForOrganizationPaymentsEndpointTest {
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenThrow(new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
 
-    RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
-      .loggedUser(userInfo)
-      .eventType(RegistryEventType.paaSILPrenotaExportFlusso)
-      .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
-      .build();
-    configureRegistryLoggerMock(expectedRegistryContextData, request, false);
-
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
+  // endregion
+
+  // region PaaSILPrenotaExportFlussoIncrementaleConRicevuta
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoIncrementaleConRicevutaThenResponseContainsExpectedToken() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlussoIncrementaleConRicevuta request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlussoIncrementaleConRicevuta.class);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Long expectedToken = 12345L;
+
+    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenReturn(expectedToken);
+
+    // When
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
+      .paaSILPrenotaExportFlussoIncrementaleConRicevuta(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+  }
+
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoIncrementaleConRicevutaThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlussoIncrementaleConRicevuta request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlussoIncrementaleConRicevuta.class);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+
+    // When
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
+      .paaSILPrenotaExportFlussoIncrementaleConRicevuta(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
+
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoIncrementaleConRicevutaThrowsServiceExceptionThenResponseContainsExpectedFaultCode() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlussoIncrementaleConRicevuta request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlussoIncrementaleConRicevuta.class);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+    )).thenThrow(new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
+
+    // When
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
+      .paaSILPrenotaExportFlussoIncrementaleConRicevuta(request, header);
 
     // Then
     Assertions.assertNotNull(response);

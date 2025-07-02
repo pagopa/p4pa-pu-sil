@@ -30,14 +30,15 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService {
     this.debtPositionService = debtPositionService;
   }
 
-  public Long paaSILPrenotaExportFlussoIncrementaleConRicevuta(
+  @SuppressWarnings("java:S107")
+  public Long doReservation(
     UserInfo userInfo,
     String accessToken,
     String orgIpaCode,
     String fileVersion,
     OffsetDateTime from,
     OffsetDateTime to,
-    Long debtPositionTypeOrgId,
+    String debtPositionTypeOrgCode,
     boolean incremental) {
 
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
@@ -50,15 +51,15 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService {
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
-      organizationId, debtPositionTypeOrgId.toString(), accessToken);
+      organizationId, debtPositionTypeOrgCode, accessToken);
 
     if (debtPositionTypeOrg == null) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgId);
+      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
     } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
-      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgId);
+      throw new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgCode);
     }
 
-    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgId, incremental);
+    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId(), incremental);
 
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
@@ -78,9 +79,11 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService {
       .fileVersion(fileVersion);
 
     if (incremental) {
-
-      //TODO TASK P4ADEV-2960 set filter fields for increamental export
-
+      ret.filterFields(new PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
+          .from(from)
+          .to(to))
+        .debtPositionTypeOrgId(debtPositionTypeOrgId));
     } else {
       ret.filterFields(new PaidExportFileFilter()
         .paymentDateTime(new OffsetDateTimeIntervalFilter()
@@ -88,7 +91,6 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService {
           .to(to))
         .debtPositionTypeOrgId(debtPositionTypeOrgId));
     }
-
     return ret;
   }
 }
