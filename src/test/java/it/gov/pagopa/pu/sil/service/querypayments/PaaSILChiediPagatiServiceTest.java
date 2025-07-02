@@ -127,7 +127,7 @@ class PaaSILChiediPagatiServiceTest {
     "unpaidInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
     "invalidStatusInstallment,PAA_DOVUTO_NON_PAGABILE,Dovuto non pagabile"
   }, nullValues = {"null"})
-  void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) throws IOException {
+  void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
 
     // change input data to fit testCase
     switch (testCase) {
@@ -152,13 +152,13 @@ class PaaSILChiediPagatiServiceTest {
       case "invalidStatusInstallment":
         pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAYABLE);
         break;
+      default:
+        //nothing to do
     }
 
     // mock only used methods of testCase
     switch (testCase) {
-      case "invalidStatusInstallment":
-      case "unpaidInstallment":
-      case "invalidOrgDebtPosition":
+      case "invalidStatusInstallment", "unpaidInstallment", "invalidOrgDebtPosition":
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );

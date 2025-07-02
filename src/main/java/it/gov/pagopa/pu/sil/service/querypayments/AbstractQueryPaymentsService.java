@@ -23,7 +23,7 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
 
   private final OrganizationService organizationService;
 
-  public AbstractQueryPaymentsService(OrganizationService organizationService) {
+  protected AbstractQueryPaymentsService(OrganizationService organizationService) {
     this.organizationService = organizationService;
   }
 
