@@ -2,10 +2,7 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentSyncStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
@@ -88,6 +85,7 @@ class PaaSILChiediPagatiServiceTest {
     pairList = installmentIds.stream().map(i -> {
       DebtPositionDTO dp = podamFactory.manufacturePojo(DebtPositionDTO.class);
       dp.setOrganizationId(organization.getOrganizationId());
+      dp.setStatus(DebtPositionStatus.PAID);
       InstallmentDTO inst = dp.getPaymentOptions().getFirst().getInstallments().getFirst();
       inst.setInstallmentId(i);
       inst.setStatus(InstallmentStatus.PAID);
