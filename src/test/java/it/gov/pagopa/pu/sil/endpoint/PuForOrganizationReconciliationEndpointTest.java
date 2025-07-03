@@ -2,11 +2,14 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
@@ -17,6 +20,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
+import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
@@ -59,6 +63,8 @@ class PuForOrganizationReconciliationEndpointTest {
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneServiceMock;
+  @Mock
+  private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
 
   @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
@@ -85,7 +91,9 @@ class PuForOrganizationReconciliationEndpointTest {
       registryLoggerMock,
       ingestionFlowFileAuthorizationServiceMock,
       ingestionFlowFileProcessingStatusServiceMock,
-      pivotSILPrenotaExportFlussoRiconciliazioneServiceMock);
+      pivotSILPrenotaExportFlussoRiconciliazioneServiceMock,
+      exportFileProcessingStatusServiceMock
+    );
   }
 
   @AfterEach
@@ -97,6 +105,60 @@ class PuForOrganizationReconciliationEndpointTest {
   private void configureRegistryLoggerMock(RegistryContextData contextData, Object request) {
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, false, false);
   }
+
+  // region pivotSILChiediStatoExportFlussoRiconciliazione
+  @Test
+  void givenValidRequestWhenpivotSILChiediStatoExportFlussoRiconciliazioneThenResponseContainsExpectedStatusAndUrl() throws Exception {
+    // Given
+    Long requestToken = 12345L;
+    String expectedUrl = "https://export.url";
+    PivotSILChiediStatoExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILChiediStatoExportFlussoRiconciliazione.class);
+    request.setRequestToken(String.valueOf(requestToken));
+
+    Pair<ExportFileStatus, String> processingStatus = Pair.of(
+      ExportFileStatus.COMPLETED,
+      expectedUrl + "/exported"
+    );
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.CLASSIFICATIONS)
+    )).thenReturn(processingStatus);
+
+    // When
+    PivotSILChiediStatoExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediStatoExportFlussoRiconciliazione(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(ExportFileLegacyStatus.fromValue2LegacyValue(processingStatus.getLeft()), response.getStato());
+    Assertions.assertEquals(processingStatus.getRight(), response.getDownloadUrl());
+  }
+
+  @Test
+  void givenGenericExceptionWhenPivotSILChiediStatoExportFlussoRiconciliazioneThenSystemErrorFault() throws Exception {
+    // Given
+    Long requestToken = 12345L;
+    PivotSILChiediStatoExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILChiediStatoExportFlussoRiconciliazione.class);
+    request.setRequestToken(String.valueOf(requestToken));
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.CLASSIFICATIONS)
+    )).thenThrow(new RuntimeException("Unexpected error"));
+    //When
+    PivotSILChiediStatoExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediStatoExportFlussoRiconciliazione(request, header);
+
+    // Then
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
+  // endregion
 
   //region pivotSILChiediStatoImportFlussoTesoreria
 
