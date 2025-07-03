@@ -167,13 +167,8 @@ components:
           type: string
           description: |
             002 = codice avviso sconosciuto: questo codice si ottiene qualora il chiamante abbia fornito un numeroAvviso non presente, presso il Gestionale, come attributo di alcuna notifica gestita per l’ente mittente.
-            In questo caso il servizio restituisce un errore di tipo 404 - Not Found.
-
             003 = avviso non ancora notificato: questo codice si ottiene qualora il chiamante abbia fornito un numeroAvviso di cui non siano presenti nessuna delle due date (dataVisualizzazione e dataPerfezionamentoDecorrenzaTermini entrambe <valore vuoto>). Indica che la notifica non è ancora arrivata a perfezionamento per presa visione o decorrenza termini.
-            In questo caso il servizio restituisce un errore di tipo 412 - Precondition Failed.
-
             004 = avviso non pagabile (pagato o ritirato): questo codice si ottiene qualora il numeroAvviso non risulti pagabile
-            In questo caso il servizio restituisce un errore di tipo 409 - Conflict.
           enum:
             - '002'
             - '003'

@@ -1,18 +1,18 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
-import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AmountUpdatesMapper {
-  public AmountUpdatesDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
-    return AmountUpdatesDTO.builder()
+  public ActualizationResultDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
+    return ActualizationResultDTO.builder()
       .nav(pagamentoAggiornato.getNumeroAvviso())
       .iun(pagamentoAggiornato.getIun())
-      .notificationFee(pagamentoAggiornato.getSpeseNotifica())
+      .notificationFeeCents(pagamentoAggiornato.getSpeseNotifica())
       .displayDate(pagamentoAggiornato.getDataVisualizzazione())
-      .updatedAmount(pagamentoAggiornato.getImportoPosizione())
+      .updatedAmountCents(pagamentoAggiornato.getImportoPosizione())
       .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
       .balance(pagamentoAggiornato.getBilancio())
       .build();
