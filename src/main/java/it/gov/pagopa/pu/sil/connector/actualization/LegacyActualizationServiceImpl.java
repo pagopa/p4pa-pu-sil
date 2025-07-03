@@ -4,7 +4,7 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato.CodiceEnum;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyActualizationClient;
-import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
@@ -24,12 +24,12 @@ public class LegacyActualizationServiceImpl implements LegacyActualizationServic
   }
 
   @Override
-  public AmountUpdatesDTO actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
+  public ActualizationResultDTO actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
       PagamentoAggiornato actualization = legacyActualizationClient.actualization(accessToken, serviceUrl, pagamento);
       return validateOutcome(actualization);
   }
 
-  private AmountUpdatesDTO validateOutcome(PagamentoAggiornato actualization) {
+  private ActualizationResultDTO validateOutcome(PagamentoAggiornato actualization) {
     if (actualization.getCodice() != null) {
       String message = actualization.getDettaglio();
       switch (actualization.getCodice()) {

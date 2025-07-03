@@ -4,7 +4,7 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato.CodiceEnum;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyActualizationClient;
-import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
@@ -46,7 +46,7 @@ class LegacyActualizationServiceTest {
     String serviceUrl = "http://example.com/service";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
-    AmountUpdatesDTO expectedAmountUpdatesDTO = new AmountUpdatesDTO();
+    ActualizationResultDTO expectedAmountUpdatesDTO = new ActualizationResultDTO();
 
     Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
            .thenReturn(expectedPagamentoAggiornato);
@@ -54,7 +54,7 @@ class LegacyActualizationServiceTest {
             .thenReturn(expectedAmountUpdatesDTO);
 
     // When
-    AmountUpdatesDTO result = legacyActualizationService.actualization(accessToken, serviceUrl, pagamento);
+    ActualizationResultDTO result = legacyActualizationService.actualization(accessToken, serviceUrl, pagamento);
     // Then
     assertSame(expectedAmountUpdatesDTO, result);
   }

@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.actualization;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
-import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 
 public interface LegacyActualizationService {
-  AmountUpdatesDTO actualization(String accessToken, String serviceUrl, Pagamento pagamento);
+  ActualizationResultDTO actualization(String accessToken, String serviceUrl, Pagamento pagamento);
 }
