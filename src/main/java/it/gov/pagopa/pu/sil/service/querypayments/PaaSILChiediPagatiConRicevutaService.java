@@ -23,13 +23,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
 public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsService<PaaSILChiediPagatiConRicevuta, PaaSILChiediPagatiConRicevutaRisposta> {
 
-  private static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
+  public static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
     DebtPositionOrigin.ORDINARY,
     DebtPositionOrigin.ORDINARY_SIL,
     DebtPositionOrigin.SPONTANEOUS,
@@ -58,8 +58,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
   @Override
   protected void validateRequest(PaaSILChiediPagatiConRicevuta request) {
     //validate that only one search field is present
-    if (Set.of(request.getIdSession(), request.getIdentificativoUnivocoDovuto(), request.getIdentificativoUnivocoVersamento())
-      .stream()
+    if(Stream.of(request.getIdSession(), request.getIdentificativoUnivocoDovuto(), request.getIdentificativoUnivocoVersamento())
       .filter(StringUtils::isNotBlank)
       .count() != 1) {
       throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore, è obbligatorio specificare esattamente un parametro tra idSession, identificativoUnivocoVersamento e identificativoUnivocoDovuto.");
@@ -86,7 +85,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
         //return the pair of debt position and matching installment
         .toList();
     } else if (StringUtils.isNotBlank(request.getIdentificativoUnivocoDovuto())) {
-      debtPositionNotFoundFault = SilFaults.PAA_IUV_NON_VALIDO;
+      debtPositionNotFoundFault = SilFaults.PAA_IUD_NON_VALIDO;
 
       return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
           organization.getOrganizationId(), request.getIdentificativoUnivocoDovuto(), ALLOWED_ORIGINS, accessToken)
