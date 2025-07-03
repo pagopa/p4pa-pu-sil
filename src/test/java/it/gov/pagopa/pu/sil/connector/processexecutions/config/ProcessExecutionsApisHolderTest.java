@@ -66,4 +66,14 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
       new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }
+
+  @Test
+  void whenGetExportFileEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken ->
+        processExecutionsApisHolder.getExportFileEntityControllerApi(accessToken)
+          .crudGetExportfile("123"),
+      new ParameterizedTypeReference<>() {},
+      processExecutionsApisHolder::unload);
+  }
 }

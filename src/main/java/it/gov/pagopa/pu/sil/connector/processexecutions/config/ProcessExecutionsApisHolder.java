@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.connector.processexecutions.config;
 import it.gov.pagopa.pu.processexecutions.controller.BaseApi;
 import it.gov.pagopa.pu.processexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.processexecutions.controller.generated.ExportFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.controller.generated.ExportFileEntityControllerApi;
 import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileControllerApi;
 import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
@@ -17,6 +18,7 @@ public class ProcessExecutionsApisHolder {
   private final IngestionFlowFileControllerApi ingestionFlowFileControllerApi;
   private final IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApi;
   private final ExportFileControllerApi exportFileControllerApi;
+  private final ExportFileEntityControllerApi exportFileEntityControllerApi;
 
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
@@ -37,6 +39,7 @@ public class ProcessExecutionsApisHolder {
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
     this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);
     this.exportFileControllerApi = new ExportFileControllerApi(apiClient);
+    this.exportFileEntityControllerApi = new ExportFileEntityControllerApi(apiClient);
   }
 
   @PreDestroy
@@ -61,6 +64,11 @@ public class ProcessExecutionsApisHolder {
   public ExportFileControllerApi getExportFileControllerApi(
     String accessToken) {
     return getApi(accessToken, exportFileControllerApi);
+  }
+
+  public ExportFileEntityControllerApi getExportFileEntityControllerApi(
+    String accessToken) {
+    return getApi(accessToken, exportFileEntityControllerApi);
   }
 
   private <T extends BaseApi> T getApi(String accessToken, T api) {
