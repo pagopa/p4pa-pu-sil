@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentSyncStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
@@ -125,6 +126,8 @@ class PaaSILChiediPagatiServiceTest {
     "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
     "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
     "unpaidInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
+    "unpaidToSyncInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
+    "expiredInstallment,PAA_PAGAMENTO_SCADUTO,Pagamento scaduto",
     "invalidStatusInstallment,PAA_DOVUTO_NON_PAGABILE,Dovuto non pagabile"
   }, nullValues = {"null"})
   void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
@@ -149,6 +152,13 @@ class PaaSILChiediPagatiServiceTest {
       case "unpaidInstallment":
         pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAID);
         break;
+      case "unpaidToSyncInstallment":
+        pairList.getFirst().getRight().setStatus(InstallmentStatus.TO_SYNC);
+        pairList.getFirst().getRight().setSyncStatus(new InstallmentSyncStatus(InstallmentStatus.DRAFT, InstallmentStatus.UNPAID, null));
+        break;
+      case "expiredInstallment":
+        pairList.getFirst().getRight().setStatus(InstallmentStatus.EXPIRED);
+        break;
       case "invalidStatusInstallment":
         pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAYABLE);
         break;
@@ -158,7 +168,7 @@ class PaaSILChiediPagatiServiceTest {
 
     // mock only used methods of testCase
     switch (testCase) {
-      case "invalidStatusInstallment", "unpaidInstallment", "invalidOrgDebtPosition":
+      case "invalidStatusInstallment", "unpaidInstallment", "unpaidToSyncInstallment", "expiredInstallment", "invalidOrgDebtPosition":
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
