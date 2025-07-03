@@ -21,6 +21,7 @@ import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInv
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
+import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
@@ -28,6 +29,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoServic
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -77,6 +79,10 @@ class PuForOrganizationPaymentsEndpointTest {
   private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoServiceMock;
+  @Mock
+  private PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock;
+  @Mock
+  private PaaSILChiediPagatiService paaSILChiediPagatiServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -110,7 +116,9 @@ class PuForOrganizationPaymentsEndpointTest {
       ingestionFlowFileAuthorizationServiceMock,
       paaSILImportaDovutoServiceMock,
       registryExtraInfoHandlerPaaSILImportaDovutoServiceMock,
-      ingestionFlowFileProcessingStatusServiceMock
+      ingestionFlowFileProcessingStatusServiceMock,
+      paaSILPrenotaExportFlussoServiceMock,
+      paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock
     );
   }
 
@@ -348,6 +356,43 @@ class PuForOrganizationPaymentsEndpointTest {
   }
   // endregion
 
+  // region PaaSILChiediPagatiRisposta
+  @Test
+  void givenValidRequestWhenPaaSILChiediPagatiThenOk() {
+    // Given
+    PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
+    PaaSILChiediPagatiRisposta expectedResponse = new PaaSILChiediPagatiRisposta();
+
+    Mockito.when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenReturn(expectedResponse);
+
+    // When
+    PaaSILChiediPagatiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagati(request);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions. assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAnErrorWhenPaaSPaaSILChiediPagatiThenKo() {
+    // Given
+    PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
+
+    Mockito.when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+
+    // When
+    PaaSILChiediPagatiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagati(request);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertNotNull(result.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
+    Assertions.assertEquals("Description", result.getFault().getDescription());
+  }
+  // endregion
+
   // region PaaSILChiediAvvisiPendenti
   @Test
   void givenAnyWhenPaaSILChiediAvvisiPendentiThenFault() throws Exception {
@@ -434,6 +479,75 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
+  // endregion
+
+  // region PaaSILPrenotaExportFlussoIncrementaleConRicevuta
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoIncrementaleConRicevutaThenResponseContainsExpectedToken() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlussoIncrementaleConRicevuta request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlussoIncrementaleConRicevuta.class);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Long expectedToken = 12345L;
+
+    Mockito.when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
+    )).thenReturn(expectedToken);
+
+    // When
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
+      .paaSILPrenotaExportFlussoIncrementaleConRicevuta(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+  }
+
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoIncrementaleConRicevutaThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlussoIncrementaleConRicevuta request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlussoIncrementaleConRicevuta.class);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
+    )).thenThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+
+    // When
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
+      .paaSILPrenotaExportFlussoIncrementaleConRicevuta(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
+
+  @Test
+  void givenValidRequestWhenPaaSILPrenotaExportFlussoIncrementaleConRicevutaThrowsServiceExceptionThenResponseContainsExpectedFaultCode() throws Exception {
+    // Given
+    PaaSILPrenotaExportFlussoIncrementaleConRicevuta request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlussoIncrementaleConRicevuta.class);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
+    )).thenThrow(new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
+
+    // When
+    PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
+      .paaSILPrenotaExportFlussoIncrementaleConRicevuta(request, header);
 
     // Then
     Assertions.assertNotNull(response);

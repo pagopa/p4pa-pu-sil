@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
+import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
@@ -25,8 +26,9 @@ public class PaaSILInviaDovutiService extends AbstractImmediatePaymentsService<P
                                   CreateDebtPositionService createDebtPositionService,
                                   CartRequestMapper cartRequestMapper,
                                   OrganizationService organizationService,
-                                  PaaSILInviaDovutiMapper paaSILInviaDovutiMapper) {
-    super(checkoutService, createDebtPositionService, organizationService, cartRequestMapper);
+                                  PaaSILInviaDovutiMapper paaSILInviaDovutiMapper,
+                                  SessionIdMapper sessionIdMapper) {
+    super(checkoutService, createDebtPositionService, organizationService, cartRequestMapper, sessionIdMapper);
     this.paaSILInviaDovutiMapper = paaSILInviaDovutiMapper;
   }
 
