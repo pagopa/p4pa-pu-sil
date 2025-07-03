@@ -4,24 +4,25 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
-import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
-import it.gov.pagopa.pu.sil.service.AccessTokenService;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
+import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
+import it.gov.pagopa.pu.sil.service.AccessTokenService;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class ActualizationServiceTest {
@@ -55,7 +56,7 @@ class ActualizationServiceTest {
       .orgSilServiceId(orgSilServiceId)
       .flagLegacy(true)
       .serviceUrl("http://service.url");
-    AmountUpdatesDTO amountUpdatesDTO = new AmountUpdatesDTO()
+    ActualizationResultDTO amountUpdatesDTO = new ActualizationResultDTO()
       .errorCode(null);
 
     Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
@@ -65,7 +66,7 @@ class ActualizationServiceTest {
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);
       authService.when(() -> AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId())).thenReturn(orgFiscalCode);
-      AmountUpdatesDTO result = service.actualize(orgSilServiceId, nav, loggedUser, token);
+      ActualizationResultDTO result = service.actualize(orgSilServiceId, nav, loggedUser, token);
       assertEquals(amountUpdatesDTO, result);
       assertNull(result.getErrorCode());
     }

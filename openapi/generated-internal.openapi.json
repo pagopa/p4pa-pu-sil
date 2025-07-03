@@ -13,11 +13,11 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
+    "name" : "Actualization",
+    "description" : "the Actualization API"
+  }, {
     "name" : "notifyPayment",
     "description" : "the notifyPayment API"
-  }, {
-    "name" : "AmountUpdates",
-    "description" : "the AmountUpdates API"
   } ],
   "paths" : {
     "/internal/orgSilService/{orgSilServiceId}/notify-payment" : {
@@ -92,12 +92,12 @@
         } ]
       }
     },
-    "/internal/orgSilService/{orgSilServiceId}/amount-updates" : {
+    "/internal/orgSilService/{orgSilServiceId}/actualization" : {
       "get" : {
-        "tags" : [ "AmountUpdates" ],
-        "summary" : "get amount updates",
-        "description" : "get amount updates",
-        "operationId" : "getAmountUpdates",
+        "tags" : [ "Actualization" ],
+        "summary" : "actualize amount",
+        "description" : "actualize amount",
+        "operationId" : "actualize",
         "parameters" : [ {
           "name" : "orgSilServiceId",
           "in" : "path",
@@ -120,7 +120,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/AmountUpdatesDTO"
+                  "$ref" : "#/components/schemas/ActualizationResultDTO"
                 }
               }
             }
@@ -210,10 +210,10 @@
         },
         "required" : [ "code", "message" ]
       },
-      "AmountUpdatesDTO" : {
+      "ActualizationResultDTO" : {
         "type" : "object",
         "properties" : {
-          "updatedAmount" : {
+          "updatedAmountCents" : {
             "type" : "integer",
             "format" : "int64",
             "description" : "updated amount (in euro cents), if the invocation was successful"
@@ -230,10 +230,6 @@
             "type" : "string",
             "description" : "Error description in case of KO outcome"
           },
-          "isBlockingError" : {
-            "type" : "boolean",
-            "description" : "Indicates if the error is blocking or not and whether the error is blocking for payment purposes"
-          },
           "nav" : {
             "type" : "string",
             "description" : "Debt Position unique number"
@@ -242,7 +238,7 @@
             "type" : "string",
             "description" : "Unique identifier of the notification"
           },
-          "notificationFee" : {
+          "notificationFeeCents" : {
             "type" : "integer",
             "format" : "int64",
             "description" : "Notification fee amount (in euro cents)"

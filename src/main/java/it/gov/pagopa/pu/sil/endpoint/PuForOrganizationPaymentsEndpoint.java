@@ -25,6 +25,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoServic
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -71,6 +72,7 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
 
   private final PaaSILChiediPagatiService paaSILChiediPagatiService;
+  private final PaaSILChiediPagatiConRicevutaService paaSILChiediPagatiConRicevutaService;
 
   private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
   private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
@@ -310,6 +312,29 @@ public class PuForOrganizationPaymentsEndpoint {
       response = FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediPagatiRisposta(),
         PaaSILChiediPagatiRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ).apply(e);
+    }
+
+    return response;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediPagatiConRicevuta")
+  @ResponsePayload
+  public PaaSILChiediPagatiConRicevutaRisposta paaSILChiediPagatiConRicevuta(
+    @RequestPayload PaaSILChiediPagatiConRicevuta request) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+
+    PaaSILChiediPagatiConRicevutaRisposta response;
+    try {
+      response = paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken);
+    }catch(Exception e){
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILChiediPagatiConRicevutaRisposta(),
+        PaaSILChiediPagatiConRicevutaRisposta::setFault,
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR

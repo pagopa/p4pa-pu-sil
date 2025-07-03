@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sil.dto.generated.AmountUpdatesDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.service.actualization.ActualizationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,12 +42,12 @@ class AmountUpdatesControllerTest {
   void whenGetAmountUpdatesThenOk() {
     Long orgSilServiceId = 1L;
     String nav = "NAV123";
-    AmountUpdatesDTO expectedResult = new AmountUpdatesDTO();
+    ActualizationResultDTO expectedResult = new ActualizationResultDTO();
 
     Mockito.when(actualizationServiceMock.actualize(orgSilServiceId, nav, userInfo, "fakeAccessToken"))
             .thenReturn(expectedResult);
 
-    ResponseEntity<AmountUpdatesDTO> response = amountUpdatesController.getAmountUpdates(orgSilServiceId, nav);
+    ResponseEntity<ActualizationResultDTO> response = amountUpdatesController.actualize(orgSilServiceId, nav);
 
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertSame(expectedResult, response.getBody());
