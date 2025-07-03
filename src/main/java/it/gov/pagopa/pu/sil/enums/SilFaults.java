@@ -27,6 +27,7 @@ public enum SilFaults {
   PAA_URL_NON_VALIDA("Url risposta pagamento non valida"),
   PAA_ID_SESSION_NON_VALIDO("ID session non valido"),
   PAA_PAGAMENTO_NON_INIZIATO("Pagamento non effettuato"),
+  PAA_DOVUTO_NON_PAGABILE("Dovuto non pagabile"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
