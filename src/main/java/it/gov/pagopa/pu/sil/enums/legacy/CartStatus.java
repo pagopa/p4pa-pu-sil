@@ -1,0 +1,26 @@
+package it.gov.pagopa.pu.sil.enums.legacy;
+
+import lombok.Getter;
+
+@Getter
+public enum CartStatus {
+  UNPAID("NUOVO_CARRELLO"),
+  PAID("PAGATO"),
+  NOT_PAYABLE("NON_PAGATO"),
+  EXPIRED("SCADUTO"),
+  //these statuses of MyPay are only mentioned for reference, but not used in the codebase
+  STATO_CARRELLO_PREDISPOSTO("PREDISPOSTO"),
+  STATO_CARRELLO_PARZIALMENTE_PAGATO("PARZ_PAGATO"),
+  STATO_CARRELLO_PAGAMENTO_IN_CORSO("PAGAM_IN_CORSO"),
+  STATO_CARRELLO_DECORRENZA_TERMINI("DECORR_TERM"),
+  STATO_CARRELLO_DECORRENZA_TERMINI_PARZIALE("DECORR_TERM_PARZ"),
+  STATO_CARRELLO_ABORT("ABORT"),
+  STATO_CARRELLO_IMPOSSIBILE_INVIARE_RP("IMPOSSIBILE_INVIARE_CARRELLO_RP"),
+  STATO_CARRELLO_SCADUTO_ELABORATO("SCADUTO_ELABORATO");
+
+  private final String value;
+
+  CartStatus(String value) {
+    this.value = value;
+  }
+}
