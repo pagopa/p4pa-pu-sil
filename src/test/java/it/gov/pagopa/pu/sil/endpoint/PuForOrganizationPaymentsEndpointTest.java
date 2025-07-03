@@ -165,18 +165,23 @@ class PuForOrganizationPaymentsEndpointTest {
 
   @Test
   void givenGenericExceptionWhenPivotSILChiediStatoExportFlussoThenSystemErrorFault() throws Exception {
+    Long requestToken = 12345L;
+
     PaaSILChiediStatoExportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoExportFlusso.class);
+    request.setRequestToken(String.valueOf(requestToken));
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(exportFileProcessingStatusServiceMock
-      .getProcessingStatus(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
-    ).thenThrow(new RuntimeException("Unexpected error"));
+    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.PAID)
+    )).thenThrow(new RuntimeException("Unexpected error"));
 
+    // When
     PaaSILChiediStatoExportFlussoRisposta response =
       puForOrganizationPaymentsEndpoint.paaSILChiediStatoExportFlusso(request, header);
 
+    // Then
     Assertions.assertNotNull(response.getFault());
     Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
   }
