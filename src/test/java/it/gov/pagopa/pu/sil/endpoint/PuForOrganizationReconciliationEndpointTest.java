@@ -139,17 +139,21 @@ class PuForOrganizationReconciliationEndpointTest {
 
   @Test
   void givenGenericExceptionWhenPivotSILChiediStatoExportFlussoRiconciliazioneThenSystemErrorFault() throws Exception {
+    // Given
+    Long requestToken = 12345L;
     PivotSILChiediStatoExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILChiediStatoExportFlussoRiconciliazione.class);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(exportFileProcessingStatusServiceMock
-      .getProcessingStatus(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
-    ).thenThrow(new RuntimeException("Unexpected error"));
-
+    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.CLASSIFICATIONS)
+    )).thenThrow(new RuntimeException("Unexpected error"));
+    //When
     PivotSILChiediStatoExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILChiediStatoExportFlussoRiconciliazione(request, header);
+
+    // Then
     Assertions.assertNotNull(response.getFault());
     Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
   }
