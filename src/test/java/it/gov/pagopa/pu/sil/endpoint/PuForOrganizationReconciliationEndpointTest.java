@@ -142,6 +142,7 @@ class PuForOrganizationReconciliationEndpointTest {
     // Given
     Long requestToken = 12345L;
     PivotSILChiediStatoExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILChiediStatoExportFlussoRiconciliazione.class);
+    request.setRequestToken(String.valueOf(requestToken));
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
