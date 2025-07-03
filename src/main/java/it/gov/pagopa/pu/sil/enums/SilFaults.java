@@ -5,6 +5,7 @@ public enum SilFaults {
   PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR"),
   PAA_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
   PAA_IUV_NON_VALIDO("IUV non valido"),
+  PAA_IUD_NON_VALIDO("IUD non valido"),
   PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO("Identificativo tipo dovuto non valido"),
   PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO("Identificativo tipo dovuto non abilitato"),
   PAA_IUD_DUPLICATO("IUD duplicato"),
@@ -27,6 +28,7 @@ public enum SilFaults {
   PAA_URL_NON_VALIDA("Url risposta pagamento non valida"),
   PAA_ID_SESSION_NON_VALIDO("ID session non valido"),
   PAA_PAGAMENTO_NON_INIZIATO("Pagamento non effettuato"),
+  PAA_PAGAMENTO_SCADUTO("Pagamento scaduto"),
   PAA_DOVUTO_NON_PAGABILE("Dovuto non pagabile"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),

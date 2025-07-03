@@ -86,13 +86,17 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
   }
 
   private void validatePaidInstallment(InstallmentDTO installment) {
+    InstallmentStatus status = Objects.equals(installment.getStatus(), InstallmentStatus.TO_SYNC) ? installment.getSyncStatus().getSyncStatusTo() : installment.getStatus();
     //throw fault if installment is not paid
-    if(Objects.equals(installment.getStatus(), InstallmentStatus.UNPAID)){
+    if(Objects.equals(status, InstallmentStatus.UNPAID)){
       //unpaid
       throw new SilFaultException(SilFaults.PAA_PAGAMENTO_NON_INIZIATO, "Pagamento non effettuato");
-    } else if(!Objects.equals(installment.getStatus(), InstallmentStatus.PAID) && !Objects.equals(installment.getStatus(), InstallmentStatus.REPORTED)) {
+    } else if(Objects.equals(status, InstallmentStatus.EXPIRED)){
+      //unpaid
+      throw new SilFaultException(SilFaults.PAA_PAGAMENTO_SCADUTO, "Pagamento scaduto");
+    } else if(!Objects.equals(status, InstallmentStatus.PAID) && !Objects.equals(status, InstallmentStatus.REPORTED)) {
       //any other state
-      log.error("Installment with id[{}] has invalid status[{}]", installment.getInstallmentId(), installment.getStatus());
+      log.error("Installment with id[{}] has invalid status[{}]", installment.getInstallmentId(), status);
       throw new SilFaultException(SilFaults.PAA_DOVUTO_NON_PAGABILE, "Dovuto non pagabile");
     }
   }
