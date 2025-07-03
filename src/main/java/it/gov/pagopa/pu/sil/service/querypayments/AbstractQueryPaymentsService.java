@@ -70,7 +70,7 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
         throw new SilFaultException(getFaultForDebtPositionNotFound(), "Posizione debitoria non trovata");
       }
       //validate installment is paid
-      validatePaidInstallment(debtPositionWithInstallment.getRight());
+      validateInstallmentStatus(debtPositionWithInstallment.getRight());
     });
 
     //map and prepare the response
@@ -85,7 +85,7 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
       .orElseThrow(() -> new SilFaultException(getFaultForDebtPositionNotFound(), "Avviso non trovato"));
   }
 
-  private void validatePaidInstallment(InstallmentDTO installment) {
+  protected void validateInstallmentStatus(InstallmentDTO installment) {
     InstallmentStatus status = Objects.equals(installment.getStatus(), InstallmentStatus.TO_SYNC) ? installment.getSyncStatus().getSyncStatusTo() : installment.getStatus();
     //throw fault if installment is not paid
     if(Objects.equals(status, InstallmentStatus.UNPAID)){

@@ -25,6 +25,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoServic
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
@@ -73,6 +74,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
   private final PaaSILChiediPagatiService paaSILChiediPagatiService;
   private final PaaSILChiediPagatiConRicevutaService paaSILChiediPagatiConRicevutaService;
+  private final PaaSILChiediEsitoCarrelloDovutiService paaSILChiediEsitoCarrelloDovutiService;
 
   private final PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoService;
   private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
@@ -335,6 +337,29 @@ public class PuForOrganizationPaymentsEndpoint {
       response = FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediPagatiConRicevutaRisposta(),
         PaaSILChiediPagatiConRicevutaRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ).apply(e);
+    }
+
+    return response;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediEsitoCarrelloDovuti")
+  @ResponsePayload
+  public PaaSILChiediEsitoCarrelloDovutiRisposta paaSILChiediEsitoCarrelloDovuti(
+    @RequestPayload PaaSILChiediEsitoCarrelloDovuti request) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+
+    PaaSILChiediEsitoCarrelloDovutiRisposta response;
+    try {
+      response = paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken);
+    }catch(Exception e){
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILChiediEsitoCarrelloDovutiRisposta(),
+        PaaSILChiediEsitoCarrelloDovutiRisposta::setFault,
         FaultBean::new,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR

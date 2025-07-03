@@ -29,6 +29,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoServic
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -86,6 +87,8 @@ class PuForOrganizationPaymentsEndpointTest {
   private PaaSILChiediPagatiService paaSILChiediPagatiServiceMock;
   @Mock
   private PaaSILChiediPagatiConRicevutaService paaSILChiediPagatiConRicevutaServiceMock;
+  @Mock
+  private PaaSILChiediEsitoCarrelloDovutiService paaSILChiediEsitoCarrelloDovutiServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -415,7 +418,7 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   @Test
-  void givenAnErrorWhenPaaSPaaSILChiediPagatiConRicevutaThenKo() {
+  void givenAnErrorWhenPaaSILChiediPagatiConRicevutaThenKo() {
     // Given
     PaaSILChiediPagatiConRicevuta request = podamFactory.manufacturePojo(PaaSILChiediPagatiConRicevuta.class);
 
@@ -424,6 +427,43 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // When
     PaaSILChiediPagatiConRicevutaRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagatiConRicevuta(request);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertNotNull(result.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
+    Assertions.assertEquals("Description", result.getFault().getDescription());
+  }
+  // endregion
+
+  // region PaaSILChiediEsitoCarrelloDovuti
+  @Test
+  void givenValidRequestWhenPaaSILChiediEsitoCarrelloDovutiThenOk() {
+    // Given
+    PaaSILChiediEsitoCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILChiediEsitoCarrelloDovuti.class);
+    PaaSILChiediEsitoCarrelloDovutiRisposta expectedResponse = new PaaSILChiediEsitoCarrelloDovutiRisposta();
+
+    Mockito.when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenReturn(expectedResponse);
+
+    // When
+    PaaSILChiediEsitoCarrelloDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediEsitoCarrelloDovuti(request);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions. assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAnErrorWhenPaaSILChiediEsitoCarrelloDovutiThenKo() {
+    // Given
+    PaaSILChiediEsitoCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILChiediEsitoCarrelloDovuti.class);
+
+    Mockito.when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+
+    // When
+    PaaSILChiediEsitoCarrelloDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediEsitoCarrelloDovuti(request);
 
     // Then
     Assertions.assertNotNull(result);
