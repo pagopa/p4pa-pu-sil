@@ -2,12 +2,11 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.*;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
@@ -21,6 +20,7 @@ import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInv
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
+import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
@@ -86,6 +86,8 @@ class PuForOrganizationPaymentsEndpointTest {
   private PaaSILChiediPagatiService paaSILChiediPagatiServiceMock;
   @Mock
   private PaaSILChiediPagatiConRicevutaService paaSILChiediPagatiConRicevutaServiceMock;
+  @Mock
+  private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
 
   @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
@@ -121,13 +123,46 @@ class PuForOrganizationPaymentsEndpointTest {
       registryExtraInfoHandlerPaaSILImportaDovutoServiceMock,
       ingestionFlowFileProcessingStatusServiceMock,
       paaSILPrenotaExportFlussoServiceMock,
-      paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock
+      paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock,
+      exportFileProcessingStatusServiceMock
     );
   }
 
   private void configureRegistryLoggerMock(RegistryContextData contextData, Object request, boolean withExtraInfo) {
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, withExtraInfo, withExtraInfo);
   }
+
+  // region PaaSILChiediStatoExportFlusso
+  @Test
+  void givenValidRequestWhenPaaSILChiediStatoExportFlussoThenResponseContainsExpectedStatusAndUrl() throws Exception {
+    // Given
+    Long requestToken = 12345L;
+    String expectedUrl = "https://export.url";
+    PaaSILChiediStatoExportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoExportFlusso.class);
+    request.setRequestToken(String.valueOf(requestToken));
+
+    Pair<ExportFileStatus, String> processingStatus = Pair.of(
+      ExportFileStatus.COMPLETED,
+      expectedUrl + "/exported"
+    );
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.PAID)
+    )).thenReturn(processingStatus);
+
+    // When
+    PaaSILChiediStatoExportFlussoRisposta response =
+      puForOrganizationPaymentsEndpoint.paaSILChiediStatoExportFlusso(request, header);
+
+    // Then
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(ExportFileLegacyStatus.fromValue2LegacyValue(processingStatus.getLeft()), response.getStato());
+    Assertions.assertEquals(processingStatus.getRight(), response.getDownloadUrl());
+  }
+  // endregion
 
   // region PaaSILChiediStatoImportFlusso
 
