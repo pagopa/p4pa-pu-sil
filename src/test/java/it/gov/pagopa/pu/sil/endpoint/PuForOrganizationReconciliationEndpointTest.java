@@ -136,6 +136,23 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertEquals(ExportFileLegacyStatus.fromValue2LegacyValue(processingStatus.getLeft()), response.getStato());
     Assertions.assertEquals(processingStatus.getRight(), response.getDownloadUrl());
   }
+
+  @Test
+  void givenGenericExceptionWhenPivotSILChiediStatoExportFlussoRiconciliazioneThenSystemErrorFault() throws Exception {
+    PivotSILChiediStatoExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILChiediStatoExportFlussoRiconciliazione.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(exportFileProcessingStatusServiceMock
+      .getProcessingStatus(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+    ).thenThrow(new RuntimeException("Unexpected error"));
+
+    PivotSILChiediStatoExportFlussoRiconciliazioneRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediStatoExportFlussoRiconciliazione(request, header);
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
   // endregion
 
   //region pivotSILChiediStatoImportFlussoTesoreria
