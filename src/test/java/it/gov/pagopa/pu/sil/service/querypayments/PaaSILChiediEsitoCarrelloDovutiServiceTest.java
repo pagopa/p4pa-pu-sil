@@ -11,14 +11,15 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import it.veneto.regione.pagamenti.ente.PaaSILChiediPagati;
-import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiRisposta;
+import it.veneto.regione.pagamenti.ente.PaaSILChiediEsitoCarrelloDovuti;
+import it.veneto.regione.pagamenti.ente.PaaSILChiediEsitoCarrelloDovutiRisposta;
+import it.veneto.regione.pagamenti.ente.RispostaCarrello;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -37,10 +38,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PaaSILChiediPagatiServiceTest {
+class PaaSILChiediEsitoCarrelloDovutiServiceTest {
 
   @InjectMocks
-  private PaaSILChiediPagatiService paaSILChiediPagatiService;
+  private PaaSILChiediEsitoCarrelloDovutiService paaSILChiediEsitoCarrelloDovutiService;
 
   @Mock
   private DebtPositionService debtPositionServiceMock;
@@ -50,6 +51,8 @@ class PaaSILChiediPagatiServiceTest {
   private SessionIdMapper sessionIdMapperMock;
   @Mock
   private OrganizationService organizationServiceMock;
+  @Mock
+  private ReceiptService receiptServiceMock;
 
   private final PodamFactory podamFactory;
 
@@ -57,11 +60,11 @@ class PaaSILChiediPagatiServiceTest {
   private String sessionId;
   private UserInfo userInfo;
   private Organization organization;
-  private PaaSILChiediPagati request;
+  private PaaSILChiediEsitoCarrelloDovuti request;
   private List<Long> installmentIds;
   private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList;
 
-  PaaSILChiediPagatiServiceTest() {
+  PaaSILChiediEsitoCarrelloDovutiServiceTest() {
     this.podamFactory = TestUtils.getPodamFactory();
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(2);
   }
@@ -71,7 +74,7 @@ class PaaSILChiediPagatiServiceTest {
     accessToken = "accessToken";
     sessionId = "sessionId";
     userInfo = podamFactory.manufacturePojo(UserInfo.class);
-    request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
+    request = podamFactory.manufacturePojo(PaaSILChiediEsitoCarrelloDovuti.class);
     organization = podamFactory.manufacturePojo(Organization.class);
     organization.setStatus(OrganizationStatus.ACTIVE);
     UserOrganizationRoles uor = userInfo.getOrganizations().getFirst();
@@ -79,7 +82,7 @@ class PaaSILChiediPagatiServiceTest {
     uor.setOrganizationIpaCode(organization.getIpaCode());
     uor.setRoles(List.of(AuthorizationService.ROLE_ADMIN));
     request.setCodIpaEnte(organization.getIpaCode());
-    request.setIdSession(sessionId);
+    request.setIdSessionCarrello(sessionId);
 
     installmentIds = List.of(1L, 2L);
     pairList = installmentIds.stream().map(i -> {
@@ -94,27 +97,66 @@ class PaaSILChiediPagatiServiceTest {
   }
 
 
-  @Test
-  void testGetDebtPositionsAndInstallmentsOk() throws IOException {
+  @ParameterizedTest
+  @CsvSource(value = {
+    "unpaidInstallment,NUOVO_CARRELLO",
+    "unpaidToSyncInstallment,NUOVO_CARRELLO",
+    "expiredInstallment,SCADUTO",
+    "invalidStatusInstallment,NON_PAGATO",
+    "valid,PAGATO"
+  }, nullValues = {"null"})
+  void testGetDebtPositionsAndInstallmentsOk(String testCase, String expectedOutcome) throws IOException {
     byte[] encodedPagati = "encodedPagati".getBytes(StandardCharsets.UTF_8);
+    byte[] encodedRt = "encodedRt".getBytes(StandardCharsets.UTF_8);
+
+    // change input data to fit testCase
+    switch (testCase) {
+      case "unpaidInstallment":
+        pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAID);
+        break;
+      case "unpaidToSyncInstallment":
+        pairList.getFirst().getRight().setStatus(InstallmentStatus.TO_SYNC);
+        pairList.getFirst().getRight().setSyncStatus(new InstallmentSyncStatus(InstallmentStatus.DRAFT, InstallmentStatus.UNPAID, null));
+        break;
+      case "expiredInstallment":
+        pairList.getFirst().getRight().setStatus(InstallmentStatus.EXPIRED);
+        break;
+      case "invalidStatusInstallment":
+        pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAYABLE);
+        break;
+      default:
+        //nothing to do
+    }
 
     when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
     when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
     pairList.forEach(pair ->
       when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
     );
-    //TODO currently support only one debt position and installment, but could be extended to support multiple
-    Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(firstPair.getLeft(), firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
+    if(testCase.equals("valid")) {
+      //TODO currently support only one debt position and installment, but could be extended to support multiple
+      Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
+      when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(firstPair.getLeft(), firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
+      when(receiptServiceMock.getReceiptById(firstPair.getRight().getReceiptId(), organization.getOrganizationId(), accessToken)).thenReturn(encodedRt);
+    }
 
-    PaaSILChiediPagatiRisposta result = paaSILChiediPagatiService.processRequest(request, userInfo, accessToken);
+    PaaSILChiediEsitoCarrelloDovutiRisposta result = paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken);
 
     assertNotNull(result);
     assertNull(result.getFault());
-    assertNotNull(result.getPagati());
-    assertInstanceOf(ByteArrayDataSource.class, result.getPagati().getDataSource());
-    assertInstanceOf(ByteArrayInputStream.class, result.getPagati().getDataSource().getInputStream());
-    assertArrayEquals(encodedPagati, ((ByteArrayInputStream) result.getPagati().getDataSource().getInputStream()).readAllBytes());
+    assertNotNull(result.getListaCarrelli());
+    assertEquals(1, result.getListaCarrelli().getRispostaCarrellos().size());
+    RispostaCarrello cartResponse = result.getListaCarrelli().getRispostaCarrellos().getFirst();
+    assertEquals(organization.getIpaCode(), cartResponse.getCodIpaEnte());
+    assertEquals(expectedOutcome, cartResponse.getEsito());
+    if(testCase.equals("valid")) {
+      assertInstanceOf(ByteArrayDataSource.class, cartResponse.getPagati().getDataSource());
+      assertInstanceOf(ByteArrayInputStream.class, cartResponse.getPagati().getDataSource().getInputStream());
+      assertArrayEquals(encodedPagati, ((ByteArrayInputStream) cartResponse.getPagati().getDataSource().getInputStream()).readAllBytes());
+    } else {
+      assertNull(cartResponse.getPagati());
+      assertNull(cartResponse.getRt());
+    }
   }
 
   @ParameterizedTest
@@ -123,10 +165,6 @@ class PaaSILChiediPagatiServiceTest {
     "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
     "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
     "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
-    "unpaidInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
-    "unpaidToSyncInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
-    "expiredInstallment,PAA_PAGAMENTO_SCADUTO,Pagamento scaduto",
-    "invalidStatusInstallment,PAA_DOVUTO_NON_PAGABILE,Dovuto non pagabile"
   }, nullValues = {"null"})
   void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
 
@@ -147,26 +185,13 @@ class PaaSILChiediPagatiServiceTest {
       case "invalidOrgDebtPosition":
         pairList.getFirst().getLeft().setOrganizationId(organization.getOrganizationId() + 1);
         break;
-      case "unpaidInstallment":
-        pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAID);
-        break;
-      case "unpaidToSyncInstallment":
-        pairList.getFirst().getRight().setStatus(InstallmentStatus.TO_SYNC);
-        pairList.getFirst().getRight().setSyncStatus(new InstallmentSyncStatus(InstallmentStatus.DRAFT, InstallmentStatus.UNPAID, null));
-        break;
-      case "expiredInstallment":
-        pairList.getFirst().getRight().setStatus(InstallmentStatus.EXPIRED);
-        break;
-      case "invalidStatusInstallment":
-        pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAYABLE);
-        break;
       default:
         //nothing to do
     }
 
     // mock only used methods of testCase
     switch (testCase) {
-      case "invalidStatusInstallment", "unpaidInstallment", "unpaidToSyncInstallment", "expiredInstallment", "invalidOrgDebtPosition":
+      case "invalidOrgDebtPosition":
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
@@ -179,7 +204,7 @@ class PaaSILChiediPagatiServiceTest {
         //do nothing
     }
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediPagatiService.processRequest(request, userInfo, accessToken));
+    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken));
 
     assertNotNull(result);
     assertNotNull(result.getFault());

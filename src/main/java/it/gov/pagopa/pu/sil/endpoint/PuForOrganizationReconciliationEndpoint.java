@@ -1,11 +1,14 @@
 package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
@@ -15,6 +18,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
@@ -45,15 +49,51 @@ public class PuForOrganizationReconciliationEndpoint {
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
   private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService;
+  private final ExportFileProcessingStatusService exportFileProcessingStatusService;
 
   public PuForOrganizationReconciliationEndpoint(RegistryLogger registryLogger,
                                                  IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
                                                  IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService,
-                                                 PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService) {
+                                                 PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService,
+                                                 ExportFileProcessingStatusService exportFileProcessingStatusService) {
     this.registryLogger = registryLogger;
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
     this.ingestionFlowFileProcessingStatusService = ingestionFlowFileProcessingStatusService;
     this.pivotSILPrenotaExportFlussoRiconciliazioneService = pivotSILPrenotaExportFlussoRiconciliazioneService;
+    this.exportFileProcessingStatusService = exportFileProcessingStatusService;
+  }
+
+  @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediStatoExportFlussoRiconciliazione")
+  @ResponsePayload
+  public PivotSILChiediStatoExportFlussoRiconciliazioneRisposta pivotSILChiediStatoExportFlussoRiconciliazione(
+    @RequestPayload PivotSILChiediStatoExportFlussoRiconciliazione request,
+    @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "pivotSILChiediStatoExportFlussoRiconciliazione");
+    try {
+      Pair<ExportFileStatus, String> processingStatus = exportFileProcessingStatusService.getProcessingStatus(
+        userInfo,
+        accessToken,
+        orgIpaCode,
+        Long.valueOf(request.getRequestToken()),
+        ExportFile.ExportFileTypeEnum.CLASSIFICATIONS);
+      PivotSILChiediStatoExportFlussoRiconciliazioneRisposta response = new PivotSILChiediStatoExportFlussoRiconciliazioneRisposta();
+      response.setStato(ExportFileLegacyStatus.fromValue2LegacyValue(processingStatus.getLeft()));
+      response.setDownloadUrl(processingStatus.getRight());
+      return response;
+    } catch (Exception e) {
+      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PivotSILChiediStatoExportFlussoRiconciliazioneRisposta(),
+        PivotSILChiediStatoExportFlussoRiconciliazioneRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PIVOT_ENTE_NON_VALIDO,
+        SilFaults.PIVOT_SYSTEM_ERROR
+      ).apply(e);
+    }
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediStatoImportFlussoTesoreria")
