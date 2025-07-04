@@ -140,7 +140,7 @@ class PaaSILVerificaAvvisoServiceTest {
   void givenNotFoundIUVWhenPaaSILVerificaAvvisoThenFault() {
     //given
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), eq(TOKEN)))
+    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of());
 
     //when
@@ -157,7 +157,7 @@ class PaaSILVerificaAvvisoServiceTest {
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.EXPIRED);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), eq(TOKEN)))
+    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
 
     //when
@@ -175,7 +175,7 @@ class PaaSILVerificaAvvisoServiceTest {
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), eq(TOKEN)))
+    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
@@ -198,7 +198,7 @@ class PaaSILVerificaAvvisoServiceTest {
     String sessionId = String.valueOf(installmentDTO.getInstallmentId());
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), eq(TOKEN)))
+    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenReturn(cartRequest);
