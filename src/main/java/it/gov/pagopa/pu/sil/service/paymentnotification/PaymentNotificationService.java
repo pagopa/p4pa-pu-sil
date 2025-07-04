@@ -66,7 +66,7 @@ public class PaymentNotificationService {
   }
 
   private List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(String accessToken, List<InstallmentDTO> installmentDTOs) {
-    List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList = installmentDTOs.stream()
+    return installmentDTOs.stream()
       .map(InstallmentDTO::getInstallmentId)
       //search for the debt position by installmentId
       .map(installmentId -> Pair.of(installmentId, deptPositionService.getDebtPositionByInstallmentId(installmentId, accessToken)))
@@ -75,7 +75,6 @@ public class PaymentNotificationService {
         installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
       //return the pair of debt position and matching installment
       .toList();
-    return debtPositionWithInstallmentList;
   }
 
   private InstallmentDTO findInstallmentOfDebtPosition(DebtPositionDTO debtPosition, Predicate<InstallmentDTO> installmentFinderPredicate) {
