@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -47,7 +48,7 @@ class AccessTokenServiceTest {
 
     // Then
     Mockito.verify(silLegacyAuthFacadeServiceMock, Mockito.times(1))
-      .authenticate(Mockito.any());
+      .authenticate(Mockito.any(), Mockito.any());
   }
 
   @Test
@@ -55,8 +56,9 @@ class AccessTokenServiceTest {
     // Given
     String token = "ACCESSTOKEN";
 
+    RegistryContextData contextData = mock(RegistryContextData.class);
     OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
-    String result = service.getAccessToken(orgSilService, token);
+    String result = service.getAccessToken(contextData, orgSilService, token);
 
     Assertions.assertSame(token, result);
   }
@@ -69,12 +71,13 @@ class AccessTokenServiceTest {
       .orgSilServiceId(1L)
       .authConfig(config)
       .flagLegacy(true);
-    Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(orgSilService.getAuthConfig()))
+    RegistryContextData contextData = mock(RegistryContextData.class);
+    Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(contextData, orgSilService.getAuthConfig()))
       .thenReturn(expectedResult);
 
     // When
-    String result1 = service.getAccessToken(orgSilService, token);
-    String result2 = service.getAccessToken(orgSilService, token);
+    String result1 = service.getAccessToken(contextData, orgSilService, token);
+    String result2 = service.getAccessToken(contextData, orgSilService, token);
 
     // Then
     Assertions.assertSame(expectedResult.getAccessToken(), result1);

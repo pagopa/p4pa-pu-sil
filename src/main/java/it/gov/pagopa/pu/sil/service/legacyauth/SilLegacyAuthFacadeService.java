@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,9 +17,9 @@ public class SilLegacyAuthFacadeService {
     this.jwtAuthService = jwtAuthService;
   }
 
-  public AccessToken authenticate(OrgSilServiceRequestBodyAuthConfig authConfig) {
+  public AccessToken authenticate(RegistryContextData contextData, OrgSilServiceRequestBodyAuthConfig authConfig) {
     return switch (authConfig) {
-      case SilServiceLegacyBasicAuthConfig legacyBasicAuth -> basicAuthService.authenticate(legacyBasicAuth);
+      case SilServiceLegacyBasicAuthConfig legacyBasicAuth -> basicAuthService.authenticate(contextData, legacyBasicAuth);
       case SilServiceLegacyJwtAuthConfig legacyJwtAuth -> jwtAuthService.authenticate(legacyJwtAuth);
       default -> throw new IllegalArgumentException("Unsupported auth config type: " + authConfig.getClass().getSimpleName());
     };

@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.service.AccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.junit.jupiter.api.Assertions;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class ActualizationServiceTest {
@@ -58,10 +60,11 @@ class ActualizationServiceTest {
       .serviceUrl("http://service.url");
     ActualizationResultDTO amountUpdatesDTO = new ActualizationResultDTO()
       .errorCode(null);
+    RegistryContextData contextData = mock(RegistryContextData.class);
 
-    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
+    Mockito.when(accessTokenServiceMock.getAccessToken(contextData, orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
-    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
+    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(RegistryContextData.class), Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);

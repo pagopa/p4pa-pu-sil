@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyActualizationServiceTest {
@@ -47,14 +49,14 @@ class LegacyActualizationServiceTest {
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
     ActualizationResultDTO expectedAmountUpdatesDTO = new ActualizationResultDTO();
-
-    Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
+    RegistryContextData contextData = mock(RegistryContextData.class);
+    Mockito.when(legacyActualizationClientMock.actualization(contextData, accessToken, serviceUrl, pagamento))
            .thenReturn(expectedPagamentoAggiornato);
     Mockito.when(amountUpdatesMapperMock.pagamentoAggiornato2AmountUpdatesDTO(expectedPagamentoAggiornato))
             .thenReturn(expectedAmountUpdatesDTO);
 
     // When
-    ActualizationResultDTO result = legacyActualizationService.actualization(accessToken, serviceUrl, pagamento);
+    ActualizationResultDTO result = legacyActualizationService.actualization(contextData, accessToken, serviceUrl, pagamento);
     // Then
     assertSame(expectedAmountUpdatesDTO, result);
   }
@@ -64,12 +66,13 @@ class LegacyActualizationServiceTest {
     String accessToken = "accessToken";
     String serviceUrl = "http://example.com/service";
     Pagamento pagamento = new Pagamento();
+    RegistryContextData contextData = mock(RegistryContextData.class);
     PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
     pagamentoAggiornato.setCodice(CodiceEnum._002);
     pagamentoAggiornato.setDettaglio("Not found");
-    Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(contextData, accessToken, serviceUrl, pagamento))
            .thenReturn(pagamentoAggiornato);
-    assertThrows(PaymentNotFoundException.class, () -> legacyActualizationService.actualization(accessToken, serviceUrl, pagamento));
+    assertThrows(PaymentNotFoundException.class, () -> legacyActualizationService.actualization(contextData, accessToken, serviceUrl, pagamento));
   }
 
   @Test
@@ -77,12 +80,13 @@ class LegacyActualizationServiceTest {
     String accessToken = "accessToken";
     String serviceUrl = "http://example.com/service";
     Pagamento pagamento = new Pagamento();
+    RegistryContextData contextData = mock(RegistryContextData.class);
     PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
     pagamentoAggiornato.setCodice(CodiceEnum._003);
     pagamentoAggiornato.setDettaglio("Not notified");
-    Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(contextData, accessToken, serviceUrl, pagamento))
            .thenReturn(pagamentoAggiornato);
-    assertThrows(PaymentNotNotifiedException.class, () -> legacyActualizationService.actualization(accessToken, serviceUrl, pagamento));
+    assertThrows(PaymentNotNotifiedException.class, () -> legacyActualizationService.actualization(contextData, accessToken, serviceUrl, pagamento));
   }
 
   @Test
@@ -91,10 +95,11 @@ class LegacyActualizationServiceTest {
     String serviceUrl = "http://example.com/service";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
+    RegistryContextData contextData = mock(RegistryContextData.class);
     pagamentoAggiornato.setCodice(CodiceEnum._004);
     pagamentoAggiornato.setDettaglio("Invalid status");
-    Mockito.when(legacyActualizationClientMock.actualization(accessToken, serviceUrl, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(contextData, accessToken, serviceUrl, pagamento))
            .thenReturn(pagamentoAggiornato);
-    assertThrows(PaymentInvalidStatusException.class, () -> legacyActualizationService.actualization(accessToken, serviceUrl, pagamento));
+    assertThrows(PaymentInvalidStatusException.class, () -> legacyActualizationService.actualization(contextData, accessToken, serviceUrl, pagamento));
   }
 }

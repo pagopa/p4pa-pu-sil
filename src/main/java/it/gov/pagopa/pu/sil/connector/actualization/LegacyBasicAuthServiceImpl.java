@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.connector.actualization;
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyBasicAuthClient;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,7 +15,7 @@ public class LegacyBasicAuthServiceImpl implements LegacyBasicAuthService {
   }
 
   @Override
-  public Token login(Credentials credentials, String authUrl) {
-    return legacyBasicAuthClient.login(credentials, authUrl);
+  public Token login(RegistryContextData contextData, Credentials credentials, String authUrl) {
+    return legacyBasicAuthClient.login(contextData, credentials, authUrl);
   }
 }

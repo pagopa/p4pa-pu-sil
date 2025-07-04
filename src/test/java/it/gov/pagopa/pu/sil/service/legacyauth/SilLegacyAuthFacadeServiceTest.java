@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,10 +32,11 @@ class SilLegacyAuthFacadeServiceTest {
   void authenticate_withBasicAuthConfig_delegatesToBasicAuthService() {
     SilServiceLegacyBasicAuthConfig config = mock(SilServiceLegacyBasicAuthConfig.class);
     AccessToken expectedToken = mock(AccessToken.class);
-    when(basicAuthServiceMock.authenticate(config)).thenReturn(expectedToken);
-    AccessToken result = facadeService.authenticate(config);
+    RegistryContextData contextData = mock(RegistryContextData.class);
+    when(basicAuthServiceMock.authenticate(contextData, config)).thenReturn(expectedToken);
+    AccessToken result = facadeService.authenticate(contextData, config);
     assertSame(expectedToken, result);
-    verify(basicAuthServiceMock).authenticate(config);
+    verify(basicAuthServiceMock).authenticate(contextData, config);
     verifyNoInteractions(jwtAuthServiceMock);
   }
 
@@ -43,7 +45,7 @@ class SilLegacyAuthFacadeServiceTest {
     SilServiceLegacyJwtAuthConfig config = mock(SilServiceLegacyJwtAuthConfig.class);
     AccessToken expectedToken = mock(AccessToken.class);
     when(jwtAuthServiceMock.authenticate(config)).thenReturn(expectedToken);
-    AccessToken result = facadeService.authenticate(config);
+    AccessToken result = facadeService.authenticate(new RegistryContextData(), config);
     assertSame(expectedToken, result);
     verify(jwtAuthServiceMock).authenticate(config);
     verifyNoInteractions(basicAuthServiceMock);
@@ -52,7 +54,8 @@ class SilLegacyAuthFacadeServiceTest {
   @Test
   void authenticate_withUnsupportedConfig_throwsException() {
     OrgSilServiceRequestBodyAuthConfig unsupportedConfig = mock(OrgSilServiceRequestBodyAuthConfig.class);
-    assertThrows(IllegalArgumentException.class, () -> facadeService.authenticate(unsupportedConfig));
+    RegistryContextData contextData = mock(RegistryContextData.class);
+    assertThrows(IllegalArgumentException.class, () -> facadeService.authenticate(contextData, unsupportedConfig));
     verifyNoInteractions(basicAuthServiceMock, jwtAuthServiceMock);
   }
 }

@@ -4,6 +4,8 @@ import it.gov.pagopa.actualization.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyActualizationClientTest {
@@ -20,12 +23,14 @@ class LegacyActualizationClientTest {
   private ActualizationApisHolder actualizationApisHolderMock;
   @Mock
   private DefaultApi amountUpdatesLegacyApiClientMock;
+  @Mock
+  RegistryLogger registryLoggerMock;
 
   private LegacyActualizationClient client;
 
   @BeforeEach
   void setUp() {
-    client = new LegacyActualizationClient(actualizationApisHolderMock);
+    client = new LegacyActualizationClient(actualizationApisHolderMock, registryLoggerMock);
   }
 
   @AfterEach
@@ -40,13 +45,13 @@ class LegacyActualizationClientTest {
     String token = "accessToken";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
-
+    RegistryContextData contextData = mock(RegistryContextData.class);
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(token, serviceUrl))
       .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
       .thenReturn(expectedPagamentoAggiornato);
     // When
-    PagamentoAggiornato result = client.actualization(token, serviceUrl, pagamento);
+    PagamentoAggiornato result = client.actualization(contextData, token, serviceUrl, pagamento);
 
     // Then
     assertSame(expectedPagamentoAggiornato, result);
