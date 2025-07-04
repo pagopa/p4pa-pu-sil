@@ -30,7 +30,8 @@ public class LegacyActualizationClient {
             .attualizzazione(pagamento),
           null,
           RegistryOutcome.OK
-        )
+        ),
+      null
     );
   }
 }

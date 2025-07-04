@@ -31,7 +31,8 @@ public class LegacyBasicAuthClient {
           .login(credentials),
         null,
         RegistryOutcome.OK
-      )
+      ),
+      null
     );
   }
 }

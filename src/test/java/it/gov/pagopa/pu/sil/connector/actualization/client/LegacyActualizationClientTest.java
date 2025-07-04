@@ -25,7 +25,7 @@ class LegacyActualizationClientTest {
   @Mock
   private DefaultApi amountUpdatesLegacyApiClientMock;
   @Mock
-  RegistryLogger registryLoggerMock;
+  private RegistryLogger registryLoggerMock;
 
   private LegacyActualizationClient client;
 
@@ -36,7 +36,7 @@ class LegacyActualizationClientTest {
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(actualizationApisHolderMock);
+    Mockito.verifyNoMoreInteractions(actualizationApisHolderMock, amountUpdatesLegacyApiClientMock, registryLoggerMock);
   }
 
   @Test
@@ -44,7 +44,10 @@ class LegacyActualizationClientTest {
     // Given
     String serviceUrl = "http://example.com/service";
     String token = "accessToken";
-    Pagamento pagamento = new Pagamento();
+    Pagamento pagamento = new Pagamento()
+      .cfEnteCreditore("orgFiscalCode")
+      .importoPosizione(Pagamento.ImportoPosizioneEnum.S)
+      .numeroAvviso("1234567890");
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode("orgFiscalCode")

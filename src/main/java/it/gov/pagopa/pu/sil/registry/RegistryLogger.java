@@ -40,21 +40,6 @@ public class RegistryLogger {
   public <I, O> O execute(
     RegistryContextData contextData,
     I request,
-    Supplier<Triple<O, String, RegistryOutcome>> requestHandler
-  ) {
-    return this.execute(
-      contextData,
-      request,
-      requestHandler,
-      null,
-      null,
-      null
-    );
-  }
-
-  public <I, O> O execute(
-    RegistryContextData contextData,
-    I request,
     Supplier<Triple<O, String, RegistryOutcome>> requestHandler,
     Function<Exception, O> exceptionHandler
   ) {
