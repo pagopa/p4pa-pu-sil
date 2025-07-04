@@ -16,7 +16,7 @@ public class LegacyActualizationClient {
   }
 
   public PagamentoAggiornato actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
-    return actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl)
+    return actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl.replace("/notification-price", ""))
       .attualizzazione(pagamento);
   }
 }

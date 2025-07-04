@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -27,10 +28,11 @@ public class AlgorithmResolverService {
     }
     return algorithmCache.compute(Pair.of(algorithm, privateKey), (k, v) -> {
       try {
+        byte[] privateKeyDecoded = Base64.getDecoder().decode(privateKey);
         return switch (algorithm) {
-          case JwtAlgorithm.HS256 -> Algorithm.HMAC256(privateKey);
-          case JwtAlgorithm.HS384 -> Algorithm.HMAC384(privateKey);
-          case JwtAlgorithm.HS512 -> Algorithm.HMAC512(privateKey);
+          case JwtAlgorithm.HS256 -> Algorithm.HMAC256(privateKeyDecoded);
+          case JwtAlgorithm.HS384 -> Algorithm.HMAC384(privateKeyDecoded);
+          case JwtAlgorithm.HS512 -> Algorithm.HMAC512(privateKeyDecoded);
           case JwtAlgorithm.RS256 -> Algorithm.RSA256(null, CertUtils.pemKey2PrivateKey(RSA, privateKey));
           case JwtAlgorithm.RS384 -> Algorithm.RSA384(null, CertUtils.pemKey2PrivateKey(RSA, privateKey));
           case JwtAlgorithm.RS512 -> Algorithm.RSA512(null, CertUtils.pemKey2PrivateKey(RSA, privateKey));
