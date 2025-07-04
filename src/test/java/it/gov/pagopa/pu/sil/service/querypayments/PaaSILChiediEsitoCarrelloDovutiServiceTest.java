@@ -196,13 +196,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
           when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
         break;
-      case "emptyDebtPositionList":
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-        break;
-      case "invalidOrgStatus":
-        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
-        break;
-      case "userNotAuth":
+      case "invalidOrgStatus", "emptyDebtPositionList", "userNotAuth":
       default:
         //do nothing
     }
