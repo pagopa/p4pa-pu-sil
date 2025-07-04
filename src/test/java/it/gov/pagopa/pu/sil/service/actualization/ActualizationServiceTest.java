@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.AccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ class ActualizationServiceTest {
   void whenActualizeWithNoErrorCodeThenReturnsAmountUpdatesDTO() {
     Long orgSilServiceId = 1L;
     String orgFiscalCode = "FISCALCODE";
-    String nav = "NAV123";
+    String nav = "30123456789";
     UserInfo loggedUser = Mockito.mock(UserInfo.class);
     Long organizationId = 2L;
     String token = "token";
@@ -56,6 +57,7 @@ class ActualizationServiceTest {
     OrgSilService orgSilService = new OrgSilService()
       .organizationId(organizationId)
       .orgSilServiceId(orgSilServiceId)
+      .applicationName("TestService")
       .flagLegacy(true)
       .serviceUrl("http://service.url");
     ActualizationResultDTO amountUpdatesDTO = new ActualizationResultDTO()
@@ -63,6 +65,8 @@ class ActualizationServiceTest {
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .orgSilServiceName(orgSilService.getApplicationName())
+      .iuv(Utilities.nav2Iuv(nav))
       .loggedUser(loggedUser)
       .build();
 
