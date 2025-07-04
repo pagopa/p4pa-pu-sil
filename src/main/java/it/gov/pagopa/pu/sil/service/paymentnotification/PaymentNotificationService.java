@@ -31,7 +31,7 @@ import java.util.function.Predicate;
 public class PaymentNotificationService {
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyPaymentNotificationService legacyPaymentNotificationService;
-  private final AccessTokenService accessTokenService;
+  private final AccessTokenService SilAccessTokenService;
   private final OrganizationService organizationService;
   private final DebtPositionService deptPositionService;
   private final PagatiMapper pagatiMapper;
@@ -56,7 +56,7 @@ public class PaymentNotificationService {
 
     PaymentNotification paymentNotification = buildPaymentNotification(debtPositionWithInstallmentList, organization, accessToken);
 
-    String silAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
+    String silAccessToken = SilAccessTokenService.getSilAccessToken(orgSilService, accessToken);
 
     legacyPaymentNotificationService.notifyPayment(
       silAccessToken,

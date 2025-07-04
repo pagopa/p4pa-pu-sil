@@ -34,7 +34,7 @@ class AccessTokenServiceTest {
   }
 
   @Test
-  void givenEmptyCacheWhenGetAccessTokenThenInvokeAndCache(){
+  void givenEmptyCacheWhenGetSilAccessTokenThenInvokeAndCache(){
     // Given
     AccessToken expectedResult = AccessToken.builder()
       .expiresIn(10)
@@ -51,12 +51,12 @@ class AccessTokenServiceTest {
   }
 
   @Test
-  void givenLoggedUserAccessTokenWhenGetAccessTokenThenReturnToken() {
+  void givenLoggedUserAccessTokenWhenGetSilAccessTokenThenReturnToken() {
     // Given
     String token = "ACCESSTOKEN";
 
     OrgSilService orgSilService = new OrgSilService().flagLegacy(false);
-    String result = service.getAccessToken(orgSilService, token);
+    String result = service.getSilAccessToken(orgSilService, token);
 
     Assertions.assertSame(token, result);
   }
@@ -73,8 +73,8 @@ class AccessTokenServiceTest {
       .thenReturn(expectedResult);
 
     // When
-    String result1 = service.getAccessToken(orgSilService, token);
-    String result2 = service.getAccessToken(orgSilService, token);
+    String result1 = service.getSilAccessToken(orgSilService, token);
+    String result2 = service.getSilAccessToken(orgSilService, token);
 
     // Then
     Assertions.assertSame(expectedResult.getAccessToken(), result1);

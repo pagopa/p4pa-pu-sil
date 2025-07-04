@@ -33,7 +33,7 @@ public class ActualizationService {
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
     String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
-    String silAccessToken = accessTokenService.getAccessToken(orgSilService, accessToken);
+    String silAccessToken = accessTokenService.getSilAccessToken(orgSilService, accessToken);
 
     return legacyActualizationService.actualization(
       silAccessToken,

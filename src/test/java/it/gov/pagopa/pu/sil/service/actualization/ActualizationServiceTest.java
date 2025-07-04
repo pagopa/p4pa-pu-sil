@@ -59,7 +59,7 @@ class ActualizationServiceTest {
     ActualizationResultDTO amountUpdatesDTO = new ActualizationResultDTO()
       .errorCode(null);
 
-    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
+    Mockito.when(accessTokenServiceMock.getSilAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 

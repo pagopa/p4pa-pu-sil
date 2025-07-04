@@ -112,7 +112,7 @@ class PaymentNotificationServiceTest {
       .thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(encodedReceipt);
-    when(accessTokenServiceMock.getAccessToken(orgSilService, token))
+    when(accessTokenServiceMock.getSilAccessToken(orgSilService, token))
       .thenReturn(accessToken.getAccessToken());
     doNothing().when(legacyPaymentNotificationServiceMock)
       .notifyPayment(accessToken.getAccessToken(), orgSilService.getServiceUrl(), paymentNotification);
