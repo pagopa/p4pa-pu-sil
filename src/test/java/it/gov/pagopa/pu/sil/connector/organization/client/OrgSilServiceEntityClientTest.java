@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.organization.client;
 
-import it.gov.pagopa.pu.organization.client.generated.OrgSilServiceEntityControllerApi;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.client.generated.OrganizationSilServiceApi;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.organization.config.OrganizationApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,14 +13,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 @ExtendWith(MockitoExtension.class)
 class OrgSilServiceEntityClientTest {
+
   @Mock
   private OrganizationApisHolder organizationApisHolderMock;
   @Mock
-  private OrgSilServiceEntityControllerApi orgSilServiceEntityControllerApiMock;
+  private OrganizationSilServiceApi organizationSilServiceApiMock;
 
   private OrgSilServiceEntityClient client;
 
@@ -33,7 +35,7 @@ class OrgSilServiceEntityClientTest {
   void tearDown() {
     Mockito.verifyNoMoreInteractions(
       organizationApisHolderMock,
-      orgSilServiceEntityControllerApiMock
+      organizationSilServiceApiMock
     );
   }
 
@@ -41,16 +43,16 @@ class OrgSilServiceEntityClientTest {
   void whenFindByIdThenInvokeWithAccessToken() {
     // Given
     String accessToken = "ACCESSTOKEN";
-    String orgSilServiceId = "ORGSILSERVICEID";
-    OrgSilService expectedResult = new OrgSilService();
+    Long orgSilServiceId = 0L;
+    OrgSilServiceDTO expectedResult = new OrgSilServiceDTO();
 
-    Mockito.when(organizationApisHolderMock.getOrgSilServiceEntityControllerApi(accessToken))
-           .thenReturn(orgSilServiceEntityControllerApiMock);
-    Mockito.when(orgSilServiceEntityControllerApiMock.crudGetOrgsilservice(orgSilServiceId))
+    Mockito.when(organizationApisHolderMock.getOrganizationSilServiceApi(accessToken))
+           .thenReturn(organizationSilServiceApiMock);
+    Mockito.when(organizationSilServiceApiMock.getOrgSilService(orgSilServiceId))
            .thenReturn(expectedResult);
 
     // When
-    OrgSilService result = client.findById(orgSilServiceId, accessToken);
+    OrgSilServiceDTO result = client.findById(orgSilServiceId, accessToken);
 
     // Then
     assertSame(expectedResult, result);
@@ -60,13 +62,13 @@ class OrgSilServiceEntityClientTest {
   void whenFindByIdAndNotFoundThenReturnNull() {
     // Given
     String accessToken = "ACCESSTOKEN";
-    String orgSilServiceId = "ORGSILSERVICEID";
-    Mockito.when(organizationApisHolderMock.getOrgSilServiceEntityControllerApi(accessToken))
-      .thenReturn(orgSilServiceEntityControllerApiMock);
-    Mockito.when(orgSilServiceEntityControllerApiMock.crudGetOrgsilservice(orgSilServiceId))
+    Long orgSilServiceId = 0L;
+    Mockito.when(organizationApisHolderMock.getOrganizationSilServiceApi(accessToken))
+      .thenReturn(organizationSilServiceApiMock);
+    Mockito.when(organizationSilServiceApiMock.getOrgSilService(orgSilServiceId))
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
     // When
-    OrgSilService result = client.findById(orgSilServiceId, accessToken);
+    OrgSilServiceDTO result = client.findById(orgSilServiceId, accessToken);
     // Then
     assertNull(result);
   }
