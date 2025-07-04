@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,9 @@ public class DebtPositionFacadeService {
   }
 
   public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, String accessToken) {
-    return debtPositionService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, ALLOWED_ORIGINS, accessToken);
+    return debtPositionService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, ALLOWED_ORIGINS, accessToken)
+      .stream()
+      .filter(i -> i.getStatus() != InstallmentStatus.CANCELLED)
+      .toList();
   }
 }

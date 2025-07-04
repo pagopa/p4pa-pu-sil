@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.service.paymentnotification;
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
@@ -42,10 +41,7 @@ public class PaymentNotificationService {
     Organization organization = organizationService.getOrganizationById(orgSilService.getOrganizationId(), accessToken)
       .orElse(null);
 
-    List<InstallmentDTO> installments = debtPositionFacadeService.getInstallmentsByOrganizationIdAndNav(orgSilService.getOrganizationId(), nav, accessToken)
-        .stream()
-        .filter(i -> i.getStatus() != InstallmentStatus.CANCELLED)
-        .toList();
+    List<InstallmentDTO> installments = debtPositionFacadeService.getInstallmentsByOrganizationIdAndNav(orgSilService.getOrganizationId(), nav, accessToken);
 
     PaymentNotification paymentNotification = buildPaymentNotification(installments, organization, accessToken);
 
