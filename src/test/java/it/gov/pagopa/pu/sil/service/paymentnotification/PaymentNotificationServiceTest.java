@@ -9,10 +9,8 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
-import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
@@ -49,8 +47,6 @@ class PaymentNotificationServiceTest {
   @Mock
   private DebtPositionFacadeService debtPositionFacadeServiceMock;
   @Mock
-  private DebtPositionService debtPositionServiceMock;
-  @Mock
   private PagatiMapper pagatiMapperMock;
   @Mock
   private ReceiptService receiptServiceMock;
@@ -67,7 +63,6 @@ class PaymentNotificationServiceTest {
             legacyPaymentNotificationServiceMock,
             silAccessTokenServiceMock,
             organizationServiceMock,
-            debtPositionServiceMock,
             pagatiMapperMock,
             receiptServiceMock,
             debtPositionFacadeServiceMock
@@ -110,9 +105,7 @@ class PaymentNotificationServiceTest {
     when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(
         orgSilService.getOrganizationId(), nav, accessToken.getAccessToken()))
       .thenReturn(installmentDTOs);
-    when(debtPositionServiceMock.getDebtPositionByInstallmentId(installmentDTO.getInstallmentId(), accessToken.getAccessToken()))
-      .thenReturn(debtPositionDTO);
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(debtPositionDTO, installmentDTO, organization, accessToken.getAccessToken()))
+    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(installmentDTO, organization, accessToken.getAccessToken()))
       .thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(encodedReceipt);
@@ -123,43 +116,6 @@ class PaymentNotificationServiceTest {
     try (MockedStatic<AuthorizationService> authService = mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).then(Answers.RETURNS_DEEP_STUBS);
       assertDoesNotThrow(() -> service.notifyPayment(orgSilServiceId, nav, loggedUser, token));
-    }
-  }
-
-  @Test
-  void whenInstallmentNotFoundThenPaymentNotFoundException() {
-    Long organizationId = 2L;
-    Long orgSilServiceId = 1L;
-    String nav = "NAV123";
-    UserInfo loggedUser = mock(UserInfo.class);
-    String token = "token";
-    AccessToken accessToken = new AccessToken()
-      .accessToken("token")
-      .tokenType("Bearer");
-    OrgSilService orgSilService = new OrgSilService()
-      .organizationId(organizationId)
-      .orgSilServiceId(orgSilServiceId)
-      .flagLegacy(true)
-      .serviceUrl("http://service.url");
-
-    Organization organization = mock(Organization.class);
-    InstallmentDTO installmentDTO = mock(InstallmentDTO.class);
-    List<InstallmentDTO> installmentDTOs = List.of(installmentDTO);
-    DebtPositionDTO debtPositionDTO = mock(DebtPositionDTO.class);
-
-    when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken()))
-      .thenReturn(Optional.of(orgSilService));
-    when(organizationServiceMock.getOrganizationById(orgSilService.getOrganizationId(), accessToken.getAccessToken()))
-      .thenReturn(Optional.of(organization));
-    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(
-      orgSilService.getOrganizationId(), nav, accessToken.getAccessToken()))
-      .thenReturn(installmentDTOs);
-    when(debtPositionServiceMock.getDebtPositionByInstallmentId(installmentDTO.getInstallmentId(), accessToken.getAccessToken()))
-      .thenReturn(debtPositionDTO);
-
-    try (MockedStatic<AuthorizationService> authService = mockStatic(AuthorizationService.class)) {
-      authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).then(Answers.RETURNS_DEEP_STUBS);
-      assertThrows(PaymentNotFoundException.class, () -> service.notifyPayment(orgSilServiceId, nav, loggedUser, token));
     }
   }
 
