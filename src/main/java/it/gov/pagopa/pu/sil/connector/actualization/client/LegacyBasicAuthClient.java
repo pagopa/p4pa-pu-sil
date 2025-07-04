@@ -16,7 +16,7 @@ public class LegacyBasicAuthClient {
   }
 
   public Token login(Credentials credentials, String authUrl) {
-    return actualizationApisHolder.getAmountUpdatesLegacyApi(null, authUrl)
+    return actualizationApisHolder.getAmountUpdatesLegacyApi(null, authUrl.replace("/login", ""))
         .login(credentials);
   }
 }
