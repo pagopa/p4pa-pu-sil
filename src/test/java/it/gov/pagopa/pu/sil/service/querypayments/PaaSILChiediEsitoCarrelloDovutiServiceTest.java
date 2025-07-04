@@ -163,8 +163,8 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
   @CsvSource(value = {
     "userNotAuth,PAA_ENTE_NON_VALIDO,Utente non autorizzato",
     "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
-    "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
-    "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
+    "emptyDebtPositionList,PAA_ENTE_NON_VALIDO,Nessuna posizione debitoria trovata",
+    "invalidOrgDebtPosition,PAA_ENTE_NON_VALIDO,Posizione debitoria non trovata",
   }, nullValues = {"null"})
   void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
 
