@@ -2,6 +2,8 @@ package it.gov.pagopa.pu.sil.connector.paymentnotification;
 
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.client.LegacyPaymentNotificationClient;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,12 +40,15 @@ class LegacyPaymentNotificationServiceTest {
     PaymentNotification paymentNotification = new PaymentNotification()
       .esito("OK")
       .rt("RT123");
-
-    doNothing().when(legacyPaymentNotificationClientMock).notifyPayment(accessToken, serviceUrl, paymentNotification);
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode("ORG123")
+      .eventType(RegistryEventType.SIL_notificaPagamento)
+      .build();
+    doNothing().when(legacyPaymentNotificationClientMock).notifyPayment(contextData, accessToken, serviceUrl, paymentNotification);
 
     // When Then
     assertDoesNotThrow(() ->
-        legacyPaymentNotificationService.notifyPayment(accessToken, serviceUrl, paymentNotification)
+        legacyPaymentNotificationService.notifyPayment(contextData, accessToken, serviceUrl, paymentNotification)
     );
   }
 }
