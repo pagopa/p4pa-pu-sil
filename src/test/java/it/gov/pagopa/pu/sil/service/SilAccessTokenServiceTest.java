@@ -16,16 +16,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class AccessTokenServiceTest {
+class SilAccessTokenServiceTest {
 
   @Mock
   private SilLegacyAuthFacadeService silLegacyAuthFacadeServiceMock;
 
-  private AccessTokenService service;
+  private SilAccessTokenService service;
 
   @BeforeEach
   void init(){
-    service = new AccessTokenService(silLegacyAuthFacadeServiceMock);
+    service = new SilAccessTokenService(silLegacyAuthFacadeServiceMock);
   }
 
   @AfterEach

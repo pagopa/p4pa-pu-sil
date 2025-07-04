@@ -12,7 +12,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
-import it.gov.pagopa.pu.sil.service.AccessTokenService;
+import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -42,7 +42,7 @@ class PaymentNotificationServiceTest {
   @Mock
   LegacyPaymentNotificationService legacyPaymentNotificationServiceMock;
   @Mock
-  private AccessTokenService accessTokenServiceMock;
+  private SilAccessTokenService silAccessTokenServiceMock;
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
@@ -62,7 +62,7 @@ class PaymentNotificationServiceTest {
     service = new PaymentNotificationService(
             orgSilServiceComponentMock,
             legacyPaymentNotificationServiceMock,
-            accessTokenServiceMock,
+      silAccessTokenServiceMock,
             organizationServiceMock,
             debtPositionServiceMock,
             pagatiMapperMock,
@@ -112,7 +112,7 @@ class PaymentNotificationServiceTest {
       .thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(encodedReceipt);
-    when(accessTokenServiceMock.getSilAccessToken(orgSilService, token))
+    when(silAccessTokenServiceMock.getSilAccessToken(orgSilService, token))
       .thenReturn(accessToken.getAccessToken());
     doNothing().when(legacyPaymentNotificationServiceMock)
       .notifyPayment(accessToken.getAccessToken(), orgSilService.getServiceUrl(), paymentNotification);

@@ -12,7 +12,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
-import it.gov.pagopa.pu.sil.service.AccessTokenService;
+import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ import java.util.function.Predicate;
 public class PaymentNotificationService {
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyPaymentNotificationService legacyPaymentNotificationService;
-  private final AccessTokenService SilAccessTokenService;
+  private final SilAccessTokenService silAccessTokenService;
   private final OrganizationService organizationService;
   private final DebtPositionService deptPositionService;
   private final PagatiMapper pagatiMapper;
@@ -56,7 +56,7 @@ public class PaymentNotificationService {
 
     PaymentNotification paymentNotification = buildPaymentNotification(debtPositionWithInstallmentList, organization, accessToken);
 
-    String silAccessToken = SilAccessTokenService.getSilAccessToken(orgSilService, accessToken);
+    String silAccessToken = silAccessTokenService.getSilAccessToken(orgSilService, accessToken);
 
     legacyPaymentNotificationService.notifyPayment(
       silAccessToken,

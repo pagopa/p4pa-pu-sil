@@ -13,12 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-public class AccessTokenService {
+public class SilAccessTokenService {
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
   private final Map<Long, Pair<LocalDateTime, String>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
-  public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
+  public SilAccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
       this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
