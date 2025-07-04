@@ -5,7 +5,9 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
 import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class LegacyBasicAuthClientTest {
@@ -44,7 +45,12 @@ class LegacyBasicAuthClientTest {
     String authUrl = "http://example.com/auth";
     Credentials credential = new Credentials("username", "password");
     Token expectedToken = new Token();
-    RegistryContextData contextData = mock(RegistryContextData.class);
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode("orgFiscalCode")
+      .eventType(RegistryEventType.SIL_notificaPagamento)
+      .build();
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, credential, false, false);
+
     Mockito.when(actualizationApisHolderMock.getAmountUpdatesLegacyApi(null, authUrl))
            .thenReturn(amountUpdatesLegacyApiClientMock);
     Mockito.when(amountUpdatesLegacyApiClientMock.login(credential))
