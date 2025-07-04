@@ -9,12 +9,13 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
@@ -46,6 +47,8 @@ class PaymentNotificationServiceTest {
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
+  private DebtPositionFacadeService debtPositionFacadeServiceMock;
+  @Mock
   private DebtPositionService debtPositionServiceMock;
   @Mock
   private PagatiMapper pagatiMapperMock;
@@ -62,11 +65,12 @@ class PaymentNotificationServiceTest {
     service = new PaymentNotificationService(
             orgSilServiceComponentMock,
             legacyPaymentNotificationServiceMock,
-      silAccessTokenServiceMock,
+            silAccessTokenServiceMock,
             organizationServiceMock,
             debtPositionServiceMock,
             pagatiMapperMock,
-            receiptServiceMock
+            receiptServiceMock,
+            debtPositionFacadeServiceMock
     );
   }
 
@@ -103,8 +107,8 @@ class PaymentNotificationServiceTest {
       .thenReturn(Optional.of(orgSilService));
     when(organizationServiceMock.getOrganizationById(orgSilService.getOrganizationId(), accessToken.getAccessToken()))
         .thenReturn(Optional.of(organization));
-    when(debtPositionServiceMock.getInstallmentsByOrganizationIdAndNav(
-        orgSilService.getOrganizationId(), nav, null, accessToken.getAccessToken()))
+    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(
+        orgSilService.getOrganizationId(), nav, accessToken.getAccessToken()))
       .thenReturn(installmentDTOs);
     when(debtPositionServiceMock.getDebtPositionByInstallmentId(installmentDTO.getInstallmentId(), accessToken.getAccessToken()))
       .thenReturn(debtPositionDTO);
@@ -147,8 +151,8 @@ class PaymentNotificationServiceTest {
       .thenReturn(Optional.of(orgSilService));
     when(organizationServiceMock.getOrganizationById(orgSilService.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(Optional.of(organization));
-    when(debtPositionServiceMock.getInstallmentsByOrganizationIdAndNav(
-      orgSilService.getOrganizationId(), nav, null, accessToken.getAccessToken()))
+    when(debtPositionFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(
+      orgSilService.getOrganizationId(), nav, accessToken.getAccessToken()))
       .thenReturn(installmentDTOs);
     when(debtPositionServiceMock.getDebtPositionByInstallmentId(installmentDTO.getInstallmentId(), accessToken.getAccessToken()))
       .thenReturn(debtPositionDTO);

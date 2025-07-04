@@ -15,6 +15,7 @@ import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
+import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,13 +30,15 @@ import java.util.function.Predicate;
 @Service
 @RequiredArgsConstructor
 public class PaymentNotificationService {
+
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyPaymentNotificationService legacyPaymentNotificationService;
   private final SilAccessTokenService silAccessTokenService;
   private final OrganizationService organizationService;
-  private final DebtPositionService deptPositionService;
+  private final DebtPositionService debtPositionService;
   private final PagatiMapper pagatiMapper;
   private final ReceiptService receiptService;
+  private final DebtPositionFacadeService debtPositionFacadeService;
 
   public void notifyPayment(Long orgSilServiceId, String nav, UserInfo loggedUser, String accessToken) {
     OrgSilService orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
@@ -45,14 +48,9 @@ public class PaymentNotificationService {
     Organization organization = organizationService.getOrganizationById(orgSilService.getOrganizationId(), accessToken)
       .orElse(null);
 
-    List<InstallmentDTO> installmentDTOs = deptPositionService.getInstallmentsByOrganizationIdAndNav(
-      orgSilService.getOrganizationId(),
-      nav,
-      null,
-      accessToken
-    );
+    List<InstallmentDTO> installments = debtPositionFacadeService.getInstallmentsByOrganizationIdAndNav(orgSilService.getOrganizationId(), nav, accessToken);
 
-    List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList = getDebtPositionsAndInstallments(accessToken, installmentDTOs);
+    List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList = getDebtPositionsAndInstallments(accessToken, installments);
 
     PaymentNotification paymentNotification = buildPaymentNotification(debtPositionWithInstallmentList, organization, accessToken);
 
@@ -69,7 +67,7 @@ public class PaymentNotificationService {
     return installmentDTOs.stream()
       .map(InstallmentDTO::getInstallmentId)
       //search for the debt position by installmentId
-      .map(installmentId -> Pair.of(installmentId, deptPositionService.getDebtPositionByInstallmentId(installmentId, accessToken)))
+      .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionByInstallmentId(installmentId, accessToken)))
       //find the installment in the debt position
       .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
         installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
