@@ -28,7 +28,7 @@ public class LegacyPaymentNotificationClient {
   public void notifyPayment(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, String nav, UserInfo loggedUser, String accessToken, PaymentNotification paymentNotification) {
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
-      .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .eventType(RegistryEventType.SIL_notificaPagamento)
       .orgSilServiceName(orgSilServiceDTO.getApplicationName())
       .iuv(Utilities.nav2Iuv(nav))
       .loggedUser(loggedUser)
