@@ -24,6 +24,7 @@ import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
@@ -65,6 +66,8 @@ class PuForOrganizationReconciliationEndpointTest {
   private PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneServiceMock;
   @Mock
   private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
+  @Mock
+  private QueryAssessmentsService queryAssessmentsServiceMock;
 
   @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
@@ -92,7 +95,8 @@ class PuForOrganizationReconciliationEndpointTest {
       ingestionFlowFileAuthorizationServiceMock,
       ingestionFlowFileProcessingStatusServiceMock,
       pivotSILPrenotaExportFlussoRiconciliazioneServiceMock,
-      exportFileProcessingStatusServiceMock
+      exportFileProcessingStatusServiceMock,
+      queryAssessmentsServiceMock
     );
   }
 
@@ -105,6 +109,49 @@ class PuForOrganizationReconciliationEndpointTest {
   private void configureRegistryLoggerMock(RegistryContextData contextData, Object request) {
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, contextData, request, false, false);
   }
+
+  // region pivotSILChiediAccertamento
+  @Test
+  void givenValidRequestWhenPivotSILChiediAccertamentoThenReturnsExpectedResponse() throws Exception {
+    // Given
+    PivotSILChiediAccertamento request = podamFactory.manufacturePojo(PivotSILChiediAccertamento.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    PivotSILChiediAccertamentoRisposta expectedResponse = new PivotSILChiediAccertamentoRisposta();
+    Mockito.when(queryAssessmentsServiceMock.handlePivotSILChiediAccertamento(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(request)
+    )).thenReturn(expectedResponse);
+
+    // When
+    PivotSILChiediAccertamentoRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediAccertamento(request, header);
+
+    // Then
+    Assertions.assertSame(expectedResponse, response);
+    Assertions.assertNull(response.getFault());
+  }
+
+  @Test
+  void givenExceptionWhenPivotSILChiediAccertamentoThenSystemErrorFault() throws Exception {
+    // Given
+    PivotSILChiediAccertamento request = podamFactory.manufacturePojo(PivotSILChiediAccertamento.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    Mockito.when(queryAssessmentsServiceMock.handlePivotSILChiediAccertamento(
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(request)
+    )).thenThrow(new RuntimeException("Unexpected error"));
+
+    // When
+    PivotSILChiediAccertamentoRisposta response =
+      puForOrganizationReconciliationEndpoint.pivotSILChiediAccertamento(request, header);
+
+    // Then
+    Assertions.assertNotNull(response.getFault());
+    Assertions.assertEquals(SilFaults.PIVOT_SYSTEM_ERROR.code(), response.getFault().getFaultCode());
+  }
+  // endregion
 
   // region pivotSILChiediStatoExportFlussoRiconciliazione
   @Test
