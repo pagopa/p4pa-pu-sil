@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.service.paymentnotification;
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -34,7 +34,7 @@ public class PaymentNotificationService {
   private final DebtPositionFacadeService debtPositionFacadeService;
 
   public void notifyPayment(Long orgSilServiceId, String nav, UserInfo loggedUser, String accessToken) {
-    OrgSilService orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
+    OrgSilServiceDTO orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
       .orElseThrow(() -> new IllegalArgumentException("Organization service not found"));
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
 
