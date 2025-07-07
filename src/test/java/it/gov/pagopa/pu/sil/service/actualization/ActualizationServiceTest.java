@@ -3,11 +3,11 @@ package it.gov.pagopa.pu.sil.service.actualization;
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
-import it.gov.pagopa.pu.sil.service.AccessTokenService;
+import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +31,13 @@ class ActualizationServiceTest {
   @Mock
   private LegacyActualizationService legacyActualizationServiceMock;
   @Mock
-  private AccessTokenService accessTokenServiceMock;
+  private SilAccessTokenService silAccessTokenServiceMock;
 
   private ActualizationService service;
 
   @BeforeEach
   void setUp() {
-    service = new ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock, accessTokenServiceMock);
+    service = new ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock, silAccessTokenServiceMock);
   }
 
   @Test
@@ -51,7 +51,7 @@ class ActualizationServiceTest {
     AccessToken accessToken = new AccessToken()
       .accessToken("token")
       .tokenType("Bearer");
-    OrgSilService orgSilService = new OrgSilService()
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
       .organizationId(organizationId)
       .orgSilServiceId(orgSilServiceId)
       .flagLegacy(true)
@@ -59,7 +59,7 @@ class ActualizationServiceTest {
     ActualizationResultDTO amountUpdatesDTO = new ActualizationResultDTO()
       .errorCode(null);
 
-    Mockito.when(accessTokenServiceMock.getAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
+    Mockito.when(silAccessTokenServiceMock.getSilAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
     Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 

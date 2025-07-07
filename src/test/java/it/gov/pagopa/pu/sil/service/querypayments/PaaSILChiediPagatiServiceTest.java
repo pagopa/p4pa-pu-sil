@@ -105,7 +105,7 @@ class PaaSILChiediPagatiServiceTest {
     );
     //TODO currently support only one debt position and installment, but could be extended to support multiple
     Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(firstPair.getLeft(), firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
+    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
 
     PaaSILChiediPagatiRisposta result = paaSILChiediPagatiService.processRequest(request, userInfo, accessToken);
 

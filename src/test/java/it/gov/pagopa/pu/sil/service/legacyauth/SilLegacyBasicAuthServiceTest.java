@@ -1,18 +1,20 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
-import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
-import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
+import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SilLegacyBasicAuthServiceTest {
@@ -28,16 +30,16 @@ class SilLegacyBasicAuthServiceTest {
 
   @Test
   void whenCallLegacyBasicAuthServiceThenReturnToken() {
-    byte[] user = "user".getBytes();
-    byte[] psw = "psw".getBytes();
+    String user = "user";
+    String psw = "psw";
     String authUrl = "http://auth.url";
-    SilServiceLegacyBasicAuthConfig config = new SilServiceLegacyBasicAuthConfig()
+    SilServiceLegacyBasicAuthConfigDTO config = new SilServiceLegacyBasicAuthConfigDTO()
       .user(user)
       .psw(psw)
       .authUrl(authUrl);
     Credentials credentials = Credentials.builder()
-      .username(String.valueOf(user))
-      .password(String.valueOf(psw))
+      .username(user)
+      .password(psw)
       .build();
 
     Token expectedToken = new Token()

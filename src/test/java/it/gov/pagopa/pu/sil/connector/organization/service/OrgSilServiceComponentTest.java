@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.organization.service;
 
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.organization.client.OrgSilServiceEntityClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -35,13 +35,13 @@ class OrgSilServiceComponentTest {
     // Given
     Long orgsilserviceid = 123L;
     String accessToken = "ACCESSTOKEN";
-    OrgSilService expectedResult = new OrgSilService();
+    OrgSilServiceDTO expectedResult = new OrgSilServiceDTO();
 
-    Mockito.when(orgSilServiceEntityClientMock.findById(String.valueOf(orgsilserviceid), accessToken))
+    Mockito.when(orgSilServiceEntityClientMock.findById(orgsilserviceid, accessToken))
       .thenReturn(expectedResult);
 
     // When
-    Optional<OrgSilService> result = orgSilServiceComponent.getOrgSilServiceById(orgsilserviceid, accessToken);
+    Optional<OrgSilServiceDTO> result = orgSilServiceComponent.getOrgSilServiceById(orgsilserviceid, accessToken);
 
     // Then
     Assertions.assertTrue(result.isPresent());
@@ -54,11 +54,11 @@ class OrgSilServiceComponentTest {
     Long orgsilserviceid = 123L;
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(orgSilServiceEntityClientMock.findById(String.valueOf(orgsilserviceid), accessToken))
+    Mockito.when(orgSilServiceEntityClientMock.findById(orgsilserviceid, accessToken))
       .thenReturn(null);
 
     // When
-    Optional<OrgSilService> result = orgSilServiceComponent.getOrgSilServiceById(orgsilserviceid, accessToken);
+    Optional<OrgSilServiceDTO> result = orgSilServiceComponent.getOrgSilServiceById(orgsilserviceid, accessToken);
     // Then
     Assertions.assertTrue(result.isEmpty());
   }

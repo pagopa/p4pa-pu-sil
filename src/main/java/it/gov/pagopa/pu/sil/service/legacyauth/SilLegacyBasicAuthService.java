@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
-import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
-import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
+import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,7 @@ public class SilLegacyBasicAuthService {
       this.legacyBasicAuthService = legacyBasicAuthService;
   }
 
-  public AccessToken authenticate(SilServiceLegacyBasicAuthConfig config) {
-    // TODO: transform the Credentials fields properly https://pagopa.atlassian.net/browse/P4ADEV-3126
+  public AccessToken authenticate(SilServiceLegacyBasicAuthConfigDTO config) {
     Token token = legacyBasicAuthService.login(
       Credentials.builder()
         .username(String.valueOf(config.getUser()))

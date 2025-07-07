@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,16 +13,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-public class AccessTokenService {
+public class SilAccessTokenService {
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
   private final Map<Long, Pair<LocalDateTime, String>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
-  public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
+  public SilAccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
       this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public String getAccessToken(OrgSilService orgSilService, String loggedUserAccessToken) {
+  public String getSilAccessToken(OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
     if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
