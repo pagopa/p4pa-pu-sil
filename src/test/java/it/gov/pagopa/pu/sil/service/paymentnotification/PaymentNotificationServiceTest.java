@@ -114,7 +114,7 @@ class PaymentNotificationServiceTest {
     when(silAccessTokenServiceMock.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, token))
       .thenReturn(accessToken.getAccessToken());
     doNothing().when(legacyPaymentNotificationServiceMock)
-      .notifyPayment(accessToken.getAccessToken(), orgSilService.getServiceUrl(), paymentNotification);
+      .notifyPayment(organization.getOrgFiscalCode(), orgSilService, nav, loggedUser, accessToken.getAccessToken(), paymentNotification);
     try (MockedStatic<AuthorizationService> authService = mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).then(Answers.RETURNS_DEEP_STUBS);
       assertDoesNotThrow(() -> service.notifyPayment(orgSilServiceId, nav, loggedUser, token));

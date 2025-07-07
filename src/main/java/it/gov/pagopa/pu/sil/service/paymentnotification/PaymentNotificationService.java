@@ -48,8 +48,11 @@ public class PaymentNotificationService {
     String silAccessToken = silAccessTokenService.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, accessToken);
 
     legacyPaymentNotificationService.notifyPayment(
+      organization.getOrgFiscalCode(),
+      orgSilService,
+      nav,
+      loggedUser,
       silAccessToken,
-      orgSilService.getServiceUrl(),
       paymentNotification
     );
   }

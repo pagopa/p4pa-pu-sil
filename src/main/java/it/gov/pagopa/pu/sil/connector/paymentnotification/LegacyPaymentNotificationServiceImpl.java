@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.paymentnotification;
 
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.client.LegacyPaymentNotificationClient;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.springframework.stereotype.Component;
@@ -14,7 +16,7 @@ public class LegacyPaymentNotificationServiceImpl implements LegacyPaymentNotifi
   }
 
   @Override
-  public void notifyPayment(RegistryContextData contextData, String accessToken, String serviceUrl, PaymentNotification paymentNotification) {
-    legacyPaymentNotificationClient.notifyPayment(contextData, accessToken, serviceUrl, paymentNotification);
+  public void notifyPayment(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, String nav, UserInfo loggedUser, String accessToken, PaymentNotification paymentNotification) {
+    legacyPaymentNotificationClient.notifyPayment(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, paymentNotification);
   }
 }

@@ -1,10 +1,14 @@
 package it.gov.pagopa.pu.sil.connector.paymentnotification.client;
 
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.config.PaymentNotificationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Component;
@@ -21,13 +25,20 @@ public class LegacyPaymentNotificationClient {
     this.registryLogger = registryLogger;
   }
 
-  public void notifyPayment(RegistryContextData contextData, String accessToken, String serviceUrl, PaymentNotification paymentNotification) {
-    log.info("Sending payment notification to service URL: {}", serviceUrl);
+  public void notifyPayment(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, String nav, UserInfo loggedUser, String accessToken, PaymentNotification paymentNotification) {
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(orgFiscalCode)
+      .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .orgSilServiceName(orgSilServiceDTO.getApplicationName())
+      .iuv(Utilities.nav2Iuv(nav))
+      .loggedUser(loggedUser)
+      .build();
+
     registryLogger.execute(
       contextData,
       paymentNotification,
       () -> {
-        paymentNotificationApisHolder.getPaymentNotificationLegacyApi(accessToken, serviceUrl.replace("/payment-notification", ""))
+        paymentNotificationApisHolder.getPaymentNotificationLegacyApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/payment-notification", ""))
           .paymentNotification(paymentNotification);
         return Triple.of(Void.TYPE,
           null,
