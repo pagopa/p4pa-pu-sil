@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTOAuthConfig;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfigDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,22 +31,38 @@ class SilLegacyAuthFacadeServiceTest {
 
   @Test
   void authenticate_withBasicAuthConfig_delegatesToBasicAuthService() {
+    String orgFiscalCode = "orgFiscalCode";
+    String nav = "nav123";
+    UserInfo loggedUser = mock(UserInfo.class);
     SilServiceLegacyBasicAuthConfigDTO config = mock(SilServiceLegacyBasicAuthConfigDTO.class);
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
+      .applicationName("TestApp")
+      .authConfig(config);
     AccessToken expectedToken = mock(AccessToken.class);
-    RegistryContextData contextData = mock(RegistryContextData.class);
-    when(basicAuthServiceMock.authenticate(contextData, config)).thenReturn(expectedToken);
-    AccessToken result = facadeService.authenticate(contextData, config);
+
+    when(basicAuthServiceMock.authenticate(orgFiscalCode, orgSilService.getApplicationName(), nav, loggedUser, config)).thenReturn(expectedToken);
+
+    AccessToken result = facadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService);
+
     assertSame(expectedToken, result);
-    verify(basicAuthServiceMock).authenticate(contextData, config);
+    verify(basicAuthServiceMock).authenticate(orgFiscalCode, orgSilService.getApplicationName(), nav, loggedUser, config);
     verifyNoInteractions(jwtAuthServiceMock);
   }
 
   @Test
   void authenticate_withJwtAuthConfig_delegatesToJwtAuthService() {
+    String orgFiscalCode = "orgFiscalCode";
+    String nav = "nav123";
+    UserInfo loggedUser = mock(UserInfo.class);
     SilServiceLegacyJwtAuthConfigDTO config = mock(SilServiceLegacyJwtAuthConfigDTO.class);
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
+      .authConfig(config);
     AccessToken expectedToken = mock(AccessToken.class);
+
     when(jwtAuthServiceMock.authenticate(config)).thenReturn(expectedToken);
-    AccessToken result = facadeService.authenticate(new RegistryContextData(), config);
+
+    AccessToken result = facadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService);
+
     assertSame(expectedToken, result);
     verify(jwtAuthServiceMock).authenticate(config);
     verifyNoInteractions(basicAuthServiceMock);
@@ -54,9 +70,17 @@ class SilLegacyAuthFacadeServiceTest {
 
   @Test
   void authenticate_withUnsupportedConfig_throwsException() {
-    OrgSilServiceDTOAuthConfig unsupportedConfig = mock(OrgSilServiceDTOAuthConfig.class);
-    RegistryContextData contextData = mock(RegistryContextData.class);
-    assertThrows(IllegalArgumentException.class, () -> facadeService.authenticate(contextData, unsupportedConfig));
+    String orgFiscalCode = "orgFiscalCode";
+    String nav = "nav123";
+    UserInfo loggedUser = mock(UserInfo.class);
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
+      .authConfig(null)
+      .organizationId(1L)
+      .orgSilServiceId(123L)
+      .flagLegacy(true)
+      .serviceUrl("http://service.url");
+
+    assertThrows(IllegalArgumentException.class, () -> facadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService));
     verifyNoInteractions(basicAuthServiceMock, jwtAuthServiceMock);
   }
 }

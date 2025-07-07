@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -23,7 +22,7 @@ public class SilAccessTokenService {
       this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public String getSilAccessToken(RegistryContextData contextData, OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
+  public String getSilAccessToken(String orgFiscalCode, String nav, UserInfo loggedUser, OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
     if (!orgSilService.getFlagLegacy()) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
@@ -34,7 +33,7 @@ public class SilAccessTokenService {
           orgSilService.getAuthConfig().getClass().getSimpleName(),
           orgSilService.getOrgSilServiceId());
         LocalDateTime tokenRequestDateTime = LocalDateTime.now();
-        AccessToken accessToken = silLegacyAuthFacadeService.authenticate(contextData, orgSilService.getAuthConfig());
+        AccessToken accessToken = silLegacyAuthFacadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService);
         LocalDateTime expiration = tokenRequestDateTime.plusSeconds(accessToken.getExpiresIn() - 5L);
         return Pair.of(expiration, accessToken.getAccessToken());
       } else {
