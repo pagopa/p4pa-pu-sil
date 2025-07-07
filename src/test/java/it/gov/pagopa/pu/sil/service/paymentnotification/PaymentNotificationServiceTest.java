@@ -11,8 +11,6 @@ import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
-import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
@@ -20,7 +18,6 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import it.gov.pagopa.pu.sil.util.Utilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,7 +77,7 @@ class PaymentNotificationServiceTest {
     Long orgSilServiceId = 1L;
     String orgFiscalCode = "FISCALCODE";
     String nav = "30123456789";
-    UserInfo loggedUser = mock(UserInfo.class);
+    UserInfo loggedUser = podamFactory.manufacturePojo(UserInfo.class);
     String token = "token";
     AccessToken accessToken = new AccessToken()
       .accessToken("token")
@@ -93,7 +90,7 @@ class PaymentNotificationServiceTest {
     PaymentNotification paymentNotification = new PaymentNotification()
       .rt(Base64.getEncoder().encodeToString(encodedReceipt))
       .esito(Base64.getEncoder().encodeToString(encodedPagati));
-    Organization organization = mock(Organization.class);
+    Organization organization = podamFactory.manufacturePojo(Organization.class);
     organization.setOrgFiscalCode(orgFiscalCode);
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     debtPositionDTO.setOrganizationId(organization.getOrganizationId());
@@ -102,13 +99,6 @@ class PaymentNotificationServiceTest {
     installmentDTO.setInstallmentId(1l);
     installmentDTO.setStatus(InstallmentStatus.PAID);
     List<InstallmentDTO> installmentDTOs = List.of(installmentDTO);
-    RegistryContextData contextData = RegistryContextData.builder()
-      .orgFiscalCode(orgFiscalCode)
-      .eventType(RegistryEventType.SIL_notificaPagamento)
-      .orgSilServiceName(orgSilService.getApplicationName())
-      .iuv(Utilities.nav2Iuv(nav))
-      .loggedUser(loggedUser)
-      .build();
 
     when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken()))
       .thenReturn(Optional.of(orgSilService));
@@ -121,7 +111,7 @@ class PaymentNotificationServiceTest {
       .thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(encodedReceipt);
-    when(silAccessTokenServiceMock.getSilAccessToken(contextData, orgSilService, token))
+    when(silAccessTokenServiceMock.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, token))
       .thenReturn(accessToken.getAccessToken());
     doNothing().when(legacyPaymentNotificationServiceMock)
       .notifyPayment(accessToken.getAccessToken(), orgSilService.getServiceUrl(), paymentNotification);

@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTOAuthConfig;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfigDTO;
 import org.springframework.stereotype.Service;
@@ -17,11 +17,11 @@ public class SilLegacyAuthFacadeService {
     this.jwtAuthService = jwtAuthService;
   }
 
-  public AccessToken authenticate(RegistryContextData contextData, OrgSilServiceDTOAuthConfig authConfig) {
-    return switch (authConfig) {
-      case SilServiceLegacyBasicAuthConfigDTO legacyBasicAuth -> basicAuthService.authenticate(contextData, legacyBasicAuth);
+  public AccessToken authenticate(String orgFiscalCode, String nav, UserInfo loggedUser, OrgSilServiceDTO orgSilService) {
+    return switch (orgSilService.getAuthConfig()) {
+      case SilServiceLegacyBasicAuthConfigDTO legacyBasicAuth -> basicAuthService.authenticate(orgFiscalCode, orgSilService.getApplicationName(), nav, loggedUser, legacyBasicAuth);
       case SilServiceLegacyJwtAuthConfigDTO legacyJwtAuth -> jwtAuthService.authenticate(legacyJwtAuth);
-      default -> throw new IllegalArgumentException("Unsupported auth config type: " + authConfig.getClass().getSimpleName());
+      default -> throw new IllegalArgumentException("Unsupported auth config type: " + orgSilService.getClass().getSimpleName());
     };
   }
 }

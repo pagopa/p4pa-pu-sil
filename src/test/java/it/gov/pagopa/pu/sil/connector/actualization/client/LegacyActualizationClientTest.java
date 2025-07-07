@@ -48,7 +48,7 @@ class LegacyActualizationClientTest {
     // Given
     String orgFiscalCode = "orgFiscalCode";
     OrgSilServiceDTO orgSilServiceDTO = mock(OrgSilServiceDTO.class);
-    String nav = "1234567890";
+    String nav = "31234567890";
     UserInfo loggedUser = mock(UserInfo.class);
     String accessToken = "accessToken";
     Pagamento pagamento = new Pagamento()

@@ -47,7 +47,7 @@ class LegacyBasicAuthClientTest {
     // Given
     String orgFiscalCode = "orgFiscalCode";
     String orgSilServiceName = "TestService";
-    String nav = "1234567890";
+    String nav = "31234567890";
     UserInfo loggedUser = mock(UserInfo.class);
     String authUrl = "http://example.com/login";
     Credentials credential = new Credentials("username", "password");
