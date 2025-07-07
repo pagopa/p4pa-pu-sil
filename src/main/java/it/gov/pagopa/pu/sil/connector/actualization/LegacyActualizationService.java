@@ -6,5 +6,5 @@ import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 
 public interface LegacyActualizationService {
-  ActualizationResultDTO actualization(String orgFiscalCode, OrgSilServiceDTO orgSilService, String nav, UserInfo loggedUser, String accessToken, Pagamento pagamento);
+  ActualizationResultDTO actualization(String orgFiscalCode, OrgSilServiceDTO orgSilService, UserInfo loggedUser, String accessToken, Pagamento pagamento);
 }

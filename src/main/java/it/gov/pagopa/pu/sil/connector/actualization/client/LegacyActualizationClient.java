@@ -26,12 +26,12 @@ public class LegacyActualizationClient {
     this.registryLogger = registryLogger;
   }
 
-  public PagamentoAggiornato actualization(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, String nav, UserInfo loggedUser, String accessToken, Pagamento pagamento) {
+  public PagamentoAggiornato actualization(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, UserInfo loggedUser, String accessToken, Pagamento pagamento) {
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName(orgSilServiceDTO.getApplicationName())
-      .iuv(Utilities.nav2Iuv(nav))
+      .iuv(Utilities.nav2Iuv(pagamento.getNumeroAvviso()))
       .loggedUser(loggedUser)
       .build();
 

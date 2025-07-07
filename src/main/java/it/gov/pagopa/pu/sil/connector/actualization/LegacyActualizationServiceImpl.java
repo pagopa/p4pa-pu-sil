@@ -26,8 +26,8 @@ public class LegacyActualizationServiceImpl implements LegacyActualizationServic
   }
 
   @Override
-  public ActualizationResultDTO actualization(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, String nav, UserInfo loggedUser, String accessToken, Pagamento pagamento) {
-      PagamentoAggiornato actualization = legacyActualizationClient.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento);
+  public ActualizationResultDTO actualization(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, UserInfo loggedUser, String accessToken, Pagamento pagamento) {
+      PagamentoAggiornato actualization = legacyActualizationClient.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento);
       return validateOutcome(actualization);
   }
 

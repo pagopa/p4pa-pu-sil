@@ -38,7 +38,6 @@ public class ActualizationService {
     return legacyActualizationService.actualization(
       orgFiscalCode,
       orgSilService,
-      nav,
       loggedUser,
       silAccessToken,
       Pagamento.builder()

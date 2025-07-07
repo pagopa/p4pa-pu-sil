@@ -59,7 +59,7 @@ class ActualizationServiceTest {
 
     Mockito.when(silAccessTokenServiceMock.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, token)).thenReturn(silAccessToken);
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
-    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.eq(orgFiscalCode), Mockito.eq(orgSilService), Mockito.eq(nav), Mockito.eq(loggedUser), Mockito.eq(silAccessToken), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
+    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.eq(orgFiscalCode), Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(silAccessToken), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);

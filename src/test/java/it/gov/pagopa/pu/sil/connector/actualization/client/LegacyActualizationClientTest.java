@@ -64,7 +64,7 @@ class LegacyActualizationClientTest {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName("TestApp")
-      .iuv(Utilities.nav2Iuv(nav))
+      .iuv(Utilities.nav2Iuv(pagamento.getNumeroAvviso()))
       .loggedUser(loggedUser)
       .build();
 
@@ -76,7 +76,7 @@ class LegacyActualizationClientTest {
       .thenReturn(expectedPagamentoAggiornato);
 
     // When
-    PagamentoAggiornato result = client.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento);
+    PagamentoAggiornato result = client.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento);
 
     // Then
     assertSame(expectedPagamentoAggiornato, result);
