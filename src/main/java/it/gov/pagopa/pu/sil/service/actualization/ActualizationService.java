@@ -7,7 +7,10 @@ import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +36,17 @@ public class ActualizationService {
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
     String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
-    String silAccessToken = silAccessTokenService.getSilAccessToken(orgSilService, accessToken);
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(orgFiscalCode)
+      .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .orgSilServiceName(orgSilService.getApplicationName())
+      .iuv(Utilities.nav2Iuv(nav))
+      .loggedUser(loggedUser)
+      .build();
 
-    return legacyActualizationService.actualization(
+    String silAccessToken = silAccessTokenService.getSilAccessToken(contextData, orgSilService, accessToken);
+
+    return legacyActualizationService.actualization(contextData,
       silAccessToken,
       orgSilService.getServiceUrl(),
       Pagamento.builder()

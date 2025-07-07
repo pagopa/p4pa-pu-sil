@@ -8,7 +8,11 @@ import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
+import it.gov.pagopa.pu.sil.service.AccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,7 +48,7 @@ class ActualizationServiceTest {
   void whenActualizeWithNoErrorCodeThenReturnsAmountUpdatesDTO() {
     Long orgSilServiceId = 1L;
     String orgFiscalCode = "FISCALCODE";
-    String nav = "NAV123";
+    String nav = "30123456789";
     UserInfo loggedUser = Mockito.mock(UserInfo.class);
     Long organizationId = 2L;
     String token = "token";
@@ -54,14 +58,22 @@ class ActualizationServiceTest {
     OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
       .organizationId(organizationId)
       .orgSilServiceId(orgSilServiceId)
+      .applicationName("TestService")
       .flagLegacy(true)
       .serviceUrl("http://service.url");
     ActualizationResultDTO amountUpdatesDTO = new ActualizationResultDTO()
       .errorCode(null);
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(orgFiscalCode)
+      .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .orgSilServiceName(orgSilService.getApplicationName())
+      .iuv(Utilities.nav2Iuv(nav))
+      .loggedUser(loggedUser)
+      .build();
 
-    Mockito.when(silAccessTokenServiceMock.getSilAccessToken(orgSilService, token)).thenReturn(accessToken.getAccessToken());
+    Mockito.when(silAccessTokenServiceMock.getSilAccessToken(contextData, orgSilService, token)).thenReturn(accessToken.getAccessToken());
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilService.getOrgSilServiceId(), accessToken.getAccessToken())).thenReturn(Optional.of(orgSilService));
-    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
+    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.any(RegistryContextData.class), Mockito.any(), Mockito.any(), Mockito.any(Pagamento.class))).thenReturn(amountUpdatesDTO);
 
     try (MockedStatic<AuthorizationService> authService = Mockito.mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser)).thenAnswer(Answers.RETURNS_DEFAULTS);

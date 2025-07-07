@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.springframework.stereotype.Component;
 
 
@@ -24,8 +25,8 @@ public class LegacyActualizationServiceImpl implements LegacyActualizationServic
   }
 
   @Override
-  public ActualizationResultDTO actualization(String accessToken, String serviceUrl, Pagamento pagamento) {
-      PagamentoAggiornato actualization = legacyActualizationClient.actualization(accessToken, serviceUrl, pagamento);
+  public ActualizationResultDTO actualization(RegistryContextData contextData, String accessToken, String serviceUrl, Pagamento pagamento) {
+      PagamentoAggiornato actualization = legacyActualizationClient.actualization(contextData, accessToken, serviceUrl, pagamento);
       return validateOutcome(actualization);
   }
 
