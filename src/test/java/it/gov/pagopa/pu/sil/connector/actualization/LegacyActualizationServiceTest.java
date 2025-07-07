@@ -47,20 +47,19 @@ class LegacyActualizationServiceTest {
     // Given
     String orgFiscalCode = "orgFiscalCode";
     OrgSilServiceDTO orgSilServiceDTO = mock(OrgSilServiceDTO.class);
-    String nav = "nav123";
     UserInfo loggedUser = mock(UserInfo.class);
     String accessToken = "accessToken";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
     ActualizationResultDTO expectedAmountUpdatesDTO = new ActualizationResultDTO();
 
-    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento))
            .thenReturn(expectedPagamentoAggiornato);
     Mockito.when(amountUpdatesMapperMock.pagamentoAggiornato2AmountUpdatesDTO(expectedPagamentoAggiornato))
             .thenReturn(expectedAmountUpdatesDTO);
 
     // When
-    ActualizationResultDTO result = legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento);
+    ActualizationResultDTO result = legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento);
     // Then
     assertSame(expectedAmountUpdatesDTO, result);
   }
@@ -69,47 +68,44 @@ class LegacyActualizationServiceTest {
   void whenCodice002ThenThrowPaymentNotFoundException() {
     String orgFiscalCode = "orgFiscalCode";
     OrgSilServiceDTO orgSilServiceDTO = mock(OrgSilServiceDTO.class);
-    String nav = "nav123";
     UserInfo loggedUser = mock(UserInfo.class);
     String accessToken = "accessToken";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
     pagamentoAggiornato.setCodice(CodiceEnum._002);
     pagamentoAggiornato.setDettaglio("Not found");
-    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento))
            .thenReturn(pagamentoAggiornato);
-    assertThrows(PaymentNotFoundException.class, () -> legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento));
+    assertThrows(PaymentNotFoundException.class, () -> legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento));
   }
 
   @Test
   void whenCodice003ThenThrowPaymentNotNotifiedException() {
     String orgFiscalCode = "orgFiscalCode";
     OrgSilServiceDTO orgSilServiceDTO = mock(OrgSilServiceDTO.class);
-    String nav = "nav123";
     UserInfo loggedUser = mock(UserInfo.class);
     String accessToken = "accessToken";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
     pagamentoAggiornato.setCodice(CodiceEnum._003);
     pagamentoAggiornato.setDettaglio("Not notified");
-    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento))
            .thenReturn(pagamentoAggiornato);
-    assertThrows(PaymentNotNotifiedException.class, () -> legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento));
+    assertThrows(PaymentNotNotifiedException.class, () -> legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento));
   }
 
   @Test
   void whenCodice004ThenThrowPaymentInvalidStatusException() {
     String orgFiscalCode = "orgFiscalCode";
     OrgSilServiceDTO orgSilServiceDTO = mock(OrgSilServiceDTO.class);
-    String nav = "nav123";
     UserInfo loggedUser = mock(UserInfo.class);
     String accessToken = "accessToken";
     Pagamento pagamento = new Pagamento();
     PagamentoAggiornato pagamentoAggiornato = new PagamentoAggiornato();
     pagamentoAggiornato.setCodice(CodiceEnum._004);
     pagamentoAggiornato.setDettaglio("Invalid status");
-    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento))
+    Mockito.when(legacyActualizationClientMock.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento))
            .thenReturn(pagamentoAggiornato);
-    assertThrows(PaymentInvalidStatusException.class, () -> legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento));
+    assertThrows(PaymentInvalidStatusException.class, () -> legacyActualizationService.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento));
   }
 }

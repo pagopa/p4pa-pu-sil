@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
-import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
