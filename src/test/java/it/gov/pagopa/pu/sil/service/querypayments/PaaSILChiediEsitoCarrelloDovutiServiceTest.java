@@ -163,8 +163,8 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
   @CsvSource(value = {
     "userNotAuth,PAA_ENTE_NON_VALIDO,Utente non autorizzato",
     "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
-    "emptyDebtPositionList,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
-    "invalidOrgDebtPosition,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
+    "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
+    "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
   }, nullValues = {"null"})
   void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
 
@@ -191,12 +191,21 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
 
     // mock only used methods of testCase
     switch (testCase) {
+      case "invalidOrgStatus":
+        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        break;
+      case "emptyDebtPositionList":
+        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+        break;
       case "invalidOrgDebtPosition":
+        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
         break;
-      case "invalidOrgStatus", "emptyDebtPositionList", "userNotAuth":
+      case "userNotAuth":
       default:
         //do nothing
     }
