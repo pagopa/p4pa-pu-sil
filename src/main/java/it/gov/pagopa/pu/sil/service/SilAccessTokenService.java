@@ -14,16 +14,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-public class AccessTokenService {
+public class SilAccessTokenService {
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
   private final Map<Long, Pair<LocalDateTime, String>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
-  public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
+  public SilAccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
       this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public String getAccessToken(RegistryContextData contextData, OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
+  public String getSilAccessToken(RegistryContextData contextData, OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
     if (!orgSilService.getFlagLegacy()) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;

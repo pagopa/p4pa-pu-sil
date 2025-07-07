@@ -30,39 +30,37 @@ public class PagatiMapper {
   /**
    * Maps a debt position and installment to an encoded PagatiConRicevuta object.
    *
-   * @param debtPosition the debt position to map
    * @param installment  the installment associated with the debt position
    * @param organization the organization of the payment
    * @param accessToken  the access token for authorization
    * @return the encoded PagatiConRicevuta as byte array
    */
-  public byte[] mapDebtPositionsToEncodedPagatiConRicevuta(DebtPositionDTO debtPosition, InstallmentDTO installment, Organization organization, String accessToken) {
-    PagatiConRicevuta pagatiConRicevuta = mapToPagatiConRicevuta(debtPosition, installment, organization, true, accessToken);
+  public byte[] mapDebtPositionsToEncodedPagatiConRicevuta(InstallmentDTO installment, Organization organization, String accessToken) {
+    PagatiConRicevuta pagatiConRicevuta = mapToPagatiConRicevuta(installment, organization, true, accessToken);
     return jaxbTransformService.marshallingAsBytes(pagatiConRicevuta, PagatiConRicevuta.class);
   }
 
   /**
    * Maps a debt position and installment to an encoded Pagati object.
    *
-   * @param debtPosition the debt position to map
    * @param installment  the installment associated with the debt position
    * @param organization the organization of the payment
    * @param accessToken  the access token for authorization
    * @return the encoded Pagati as byte array
    */
-  public byte[] mapDebtPositionsToEncodedPagati(DebtPositionDTO debtPosition, InstallmentDTO installment, Organization organization, String accessToken) {
+  public byte[] mapDebtPositionsToEncodedPagati(InstallmentDTO installment, Organization organization, String accessToken) {
     // since the Pagati object has the same structure of PagatiConRicevuta, with just some missing fields,
     // we can reuse the same mapping logic and then convert it to Pagati using jackson-databind.
-    PagatiConRicevuta pagatiConRicevuta = mapToPagatiConRicevuta(debtPosition, installment, organization, false, accessToken);
+    PagatiConRicevuta pagatiConRicevuta = mapToPagatiConRicevuta(installment, organization, false, accessToken);
     Pagati pagati = new ObjectMapper()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       .convertValue(pagatiConRicevuta, Pagati.class);
     return jaxbTransformService.marshallingAsBytes(pagati, Pagati.class);
   }
 
-  private PagatiConRicevuta mapToPagatiConRicevuta(DebtPositionDTO debtPosition, InstallmentDTO installment, Organization organization, boolean withReceiptFields, String accessToken) {
-    log.debug("mapping debtPosition[{}] installment[{}] org[{}] withReceipt[{}] with PagatiConRicevuta",
-      debtPosition.getDebtPositionId(), installment.getInstallmentId(), organization.getOrganizationId(), withReceiptFields);
+  private PagatiConRicevuta mapToPagatiConRicevuta(InstallmentDTO installment, Organization organization, boolean withReceiptFields, String accessToken) {
+    log.debug("mapping installment[{}] org[{}] withReceipt[{}] with PagatiConRicevuta",
+      installment.getInstallmentId(), organization.getOrganizationId(), withReceiptFields);
     ReceiptDTO receipt = debtPositionService.getReceiptById(installment.getReceiptId(), accessToken);
 
     PagatiConRicevuta pagatiConRicevuta = new PagatiConRicevuta();

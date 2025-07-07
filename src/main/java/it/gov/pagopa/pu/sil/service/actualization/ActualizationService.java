@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponen
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
-import it.gov.pagopa.pu.sil.service.AccessTokenService;
+import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
@@ -19,14 +19,14 @@ import org.springframework.stereotype.Service;
 public class ActualizationService {
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyActualizationService legacyActualizationService;
-  private final AccessTokenService accessTokenService;
+  private final SilAccessTokenService silAccessTokenService;
 
   public ActualizationService(OrgSilServiceComponent orgSilServiceComponent,
                               LegacyActualizationService legacyActualizationService,
-                              AccessTokenService accessTokenService) {
+                              SilAccessTokenService silAccessTokenService) {
     this.orgSilServiceComponent = orgSilServiceComponent;
     this.legacyActualizationService = legacyActualizationService;
-    this.accessTokenService = accessTokenService;
+    this.silAccessTokenService = silAccessTokenService;
   }
 
   public ActualizationResultDTO actualize(Long orgSilServiceId, String nav,
@@ -44,7 +44,7 @@ public class ActualizationService {
       .loggedUser(loggedUser)
       .build();
 
-    String silAccessToken = accessTokenService.getAccessToken(contextData, orgSilService, accessToken);
+    String silAccessToken = silAccessTokenService.getSilAccessToken(contextData, orgSilService, accessToken);
 
     return legacyActualizationService.actualization(contextData,
       silAccessToken,

@@ -136,7 +136,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
     if(testCase.equals("valid")) {
       //TODO currently support only one debt position and installment, but could be extended to support multiple
       Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
-      when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(firstPair.getLeft(), firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
+      when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
       when(receiptServiceMock.getReceiptById(firstPair.getRight().getReceiptId(), organization.getOrganizationId(), accessToken)).thenReturn(encodedRt);
     }
 
@@ -191,14 +191,20 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
 
     // mock only used methods of testCase
     switch (testCase) {
+      case "invalidOrgStatus":
+        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        break;
+      case "emptyDebtPositionList":
+        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+        break;
       case "invalidOrgDebtPosition":
+        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
-      case "emptyDebtPositionList":
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-      case "invalidOrgStatus":
-        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        break;
       case "userNotAuth":
       default:
         //do nothing
