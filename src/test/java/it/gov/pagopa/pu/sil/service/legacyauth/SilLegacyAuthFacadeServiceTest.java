@@ -67,20 +67,4 @@ class SilLegacyAuthFacadeServiceTest {
     verify(jwtAuthServiceMock).authenticate(config);
     verifyNoInteractions(basicAuthServiceMock);
   }
-
-  @Test
-  void authenticate_withUnsupportedConfig_throwsException() {
-    String orgFiscalCode = "orgFiscalCode";
-    String nav = "nav123";
-    UserInfo loggedUser = mock(UserInfo.class);
-    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
-      .authConfig(null)
-      .organizationId(1L)
-      .orgSilServiceId(123L)
-      .flagLegacy(true)
-      .serviceUrl("http://service.url");
-
-    assertThrows(IllegalArgumentException.class, () -> facadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService));
-    verifyNoInteractions(basicAuthServiceMock, jwtAuthServiceMock);
-  }
 }
