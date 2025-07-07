@@ -92,7 +92,6 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
     response.getListaCarrelli().getRispostaCarrellos().add(rispostaCarrello);
 
     //TODO currently support only one debt position and installment, but could be extended to support multiple
-    DebtPositionDTO debtPositionDTO = debtPositionWithInstallmentList.getFirst().getLeft();
     InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
 
     CartStatus cartStatus = getCartStatus(installmentDTO);
@@ -100,7 +99,7 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
     rispostaCarrello.setCodIpaEnte(organization.getIpaCode());
     if(cartStatus == CartStatus.PAID) {
       //map debt position to Pagati
-      byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(debtPositionDTO, installmentDTO, organization, accessToken);
+      byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installmentDTO, organization, accessToken);
 
       //retrieve the original receipt
       byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
