@@ -2,8 +2,8 @@ package it.gov.pagopa.pu.sil.connector.actualization;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyBasicAuthClient;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,17 +35,20 @@ class LegacyBasicAuthServiceTest {
   @Test
   void whenLoginThenReturnToken() {
     // Given
+    String orgFiscalCode = "orgFiscalCode";
+    String orgSilServiceName = "TestService";
+    String nav = "1234567890";
+    UserInfo loggedUser = mock(UserInfo.class);
     String authUrl = "http://example.com";
     Credentials credentials = new Credentials()
       .username("testUser").password("testPassword");
     Token expectedToken = new Token();
-    RegistryContextData contextData = mock(RegistryContextData.class);
 
-    Mockito.when(legacyBasicAuthClientMock.login(contextData, credentials, authUrl))
+    Mockito.when(legacyBasicAuthClientMock.login(orgFiscalCode, orgSilServiceName, nav, loggedUser, credentials, authUrl))
            .thenReturn(expectedToken);
 
     // When
-    Token result = legacyBasicAuthService.login(contextData, credentials, authUrl);
+    Token result = legacyBasicAuthService.login(orgFiscalCode, orgSilServiceName, nav, loggedUser, credentials, authUrl);
 
     // Then
     assertSame(expectedToken, result);

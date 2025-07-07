@@ -3,6 +3,8 @@ package it.gov.pagopa.pu.sil.connector.actualization;
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato.CodiceEnum;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.actualization.client.LegacyActualizationClient;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
@@ -25,8 +27,8 @@ public class LegacyActualizationServiceImpl implements LegacyActualizationServic
   }
 
   @Override
-  public ActualizationResultDTO actualization(RegistryContextData contextData, String accessToken, String serviceUrl, Pagamento pagamento) {
-      PagamentoAggiornato actualization = legacyActualizationClient.actualization(contextData, accessToken, serviceUrl, pagamento);
+  public ActualizationResultDTO actualization(String orgFiscalCode, OrgSilServiceDTO orgSilServiceDTO, String nav, UserInfo loggedUser, String accessToken, Pagamento pagamento) {
+      PagamentoAggiornato actualization = legacyActualizationClient.actualization(orgFiscalCode, orgSilServiceDTO, nav, loggedUser, accessToken, pagamento);
       return validateOutcome(actualization);
   }
 
