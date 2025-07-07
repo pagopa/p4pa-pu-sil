@@ -24,7 +24,7 @@ public class AccessTokenService {
   }
 
   public String getAccessToken(RegistryContextData contextData, OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
-    if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
+    if (!orgSilService.getFlagLegacy()) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
     }
