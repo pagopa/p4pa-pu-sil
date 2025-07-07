@@ -11,7 +11,6 @@ import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.springframework.stereotype.Component;
 
 

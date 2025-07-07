@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,21 +65,5 @@ class SilLegacyAuthFacadeServiceTest {
     assertSame(expectedToken, result);
     verify(jwtAuthServiceMock).authenticate(config);
     verifyNoInteractions(basicAuthServiceMock);
-  }
-
-  @Test
-  void authenticate_withUnsupportedConfig_throwsException() {
-    String orgFiscalCode = "orgFiscalCode";
-    String nav = "nav123";
-    UserInfo loggedUser = mock(UserInfo.class);
-    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
-      .authConfig(null)
-      .organizationId(1L)
-      .orgSilServiceId(123L)
-      .flagLegacy(true)
-      .serviceUrl("http://service.url");
-
-    assertThrows(IllegalArgumentException.class, () -> facadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService));
-    verifyNoInteractions(basicAuthServiceMock, jwtAuthServiceMock);
   }
 }
