@@ -33,7 +33,7 @@ class ActualizationApisHolderTest extends BaseApiHolderTest {
       accessToken -> apisHolder.getAmountUpdatesLegacyApi(accessToken, "http://example.com")
         .login(new Credentials()),
       new ParameterizedTypeReference<>() {},
-      () -> {},
+      apisHolder::unload,
       AUTH_TYPE.NO_AUTH);
   }
 }

@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,7 +22,7 @@ public class SilAccessTokenService {
       this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public String getSilAccessToken(OrgSilService orgSilService, String loggedUserAccessToken) {
+  public String getSilAccessToken(OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
     if (Boolean.FALSE.equals(orgSilService.getFlagLegacy())) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;

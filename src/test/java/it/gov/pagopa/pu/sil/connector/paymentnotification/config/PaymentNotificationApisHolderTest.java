@@ -37,7 +37,7 @@ class PaymentNotificationApisHolderTest extends BaseApiHolderTest {
         return voidMock;
       },
       new ParameterizedTypeReference<>() {},
-      () -> {},
+      apisHolder::unload,
       AUTH_TYPE.NO_AUTH);
   }
 }
