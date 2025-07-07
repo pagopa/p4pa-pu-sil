@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
@@ -95,6 +94,7 @@ class PaymentNotificationServiceTest {
       .rt(Base64.getEncoder().encodeToString(encodedReceipt))
       .esito(Base64.getEncoder().encodeToString(encodedPagati));
     Organization organization = mock(Organization.class);
+    organization.setOrgFiscalCode(orgFiscalCode);
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     debtPositionDTO.setOrganizationId(organization.getOrganizationId());
     debtPositionDTO.setStatus(DebtPositionStatus.PAID);
@@ -104,7 +104,7 @@ class PaymentNotificationServiceTest {
     List<InstallmentDTO> installmentDTOs = List.of(installmentDTO);
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
-      .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .eventType(RegistryEventType.SIL_notificaPagamento)
       .orgSilServiceName(orgSilService.getApplicationName())
       .iuv(Utilities.nav2Iuv(nav))
       .loggedUser(loggedUser)

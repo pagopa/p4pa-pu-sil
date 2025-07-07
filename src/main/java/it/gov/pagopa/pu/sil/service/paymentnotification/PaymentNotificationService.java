@@ -50,7 +50,7 @@ public class PaymentNotificationService {
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(organization.getOrgFiscalCode())
-      .eventType(RegistryEventType.SIL_attualizzazioneImporti)
+      .eventType(RegistryEventType.SIL_notificaPagamento)
       .orgSilServiceName(orgSilService.getApplicationName())
       .iuv(Utilities.nav2Iuv(nav))
       .loggedUser(loggedUser)
