@@ -73,14 +73,6 @@ public class PuForOrganizationReconciliationEndpoint {
         orgIpaCode,
         request
       );
-    } catch (UnsupportedOperationException e) {
-      return FaultUtils.setFaultOnResponse(
-        new PivotSILChiediAccertamentoRisposta(),
-        SilFaults.PIVOT_SYSTEM_ERROR,
-        e.getMessage(),
-        FaultBean::new,
-        PivotSILChiediAccertamentoRisposta::setFault
-      );
     } catch (Exception e) {
       return FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PivotSILChiediAccertamentoRisposta(),
