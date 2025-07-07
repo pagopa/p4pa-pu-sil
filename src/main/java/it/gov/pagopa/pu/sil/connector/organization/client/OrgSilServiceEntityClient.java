@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.organization.client;
 
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.organization.config.OrganizationApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,10 +14,10 @@ public class OrgSilServiceEntityClient {
     this.organizationApisHolder = organizationApisHolder;
   }
 
-  public OrgSilService findById(String orgSilServiceId, String accessToken) {
+  public OrgSilServiceDTO findById(Long orgSilServiceId, String accessToken) {
     try {
-      return organizationApisHolder.getOrgSilServiceEntityControllerApi(accessToken)
-          .crudGetOrgsilservice(orgSilServiceId);
+      return organizationApisHolder.getOrganizationSilServiceApi(accessToken)
+          .getOrgSilService(orgSilServiceId);
     } catch (Exception e) {
       log.info("Cannot find OrgSilService with id {}", orgSilServiceId, e);
       return null;

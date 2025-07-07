@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.service.actualization;
 import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
@@ -54,7 +54,7 @@ class ActualizationServiceTest {
     AccessToken accessToken = new AccessToken()
       .accessToken("token")
       .tokenType("Bearer");
-    OrgSilService orgSilService = new OrgSilService()
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
       .organizationId(organizationId)
       .orgSilServiceId(orgSilServiceId)
       .applicationName("TestService")

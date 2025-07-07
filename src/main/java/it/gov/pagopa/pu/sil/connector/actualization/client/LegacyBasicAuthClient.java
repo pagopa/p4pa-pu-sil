@@ -27,7 +27,7 @@ public class LegacyBasicAuthClient {
       contextData,
       credentials,
       () -> Triple.of(
-        actualizationApisHolder.getAmountUpdatesLegacyApi(null, authUrl)
+        actualizationApisHolder.getAmountUpdatesLegacyApi(null, authUrl.replace("/login", ""))
           .login(credentials),
         null,
         RegistryOutcome.OK

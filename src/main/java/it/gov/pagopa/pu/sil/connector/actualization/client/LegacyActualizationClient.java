@@ -24,13 +24,13 @@ public class LegacyActualizationClient {
 
   public PagamentoAggiornato actualization(RegistryContextData contextData, String accessToken, String serviceUrl, Pagamento pagamento) {
     return registryLogger.execute(
-        contextData,
-        pagamento,
-        () -> Triple.of(actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl)
-            .attualizzazione(pagamento),
-          null,
-          RegistryOutcome.OK
-        ),
+      contextData,
+      pagamento,
+      () -> Triple.of(actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, serviceUrl.replace("/notification-price", ""))
+          .attualizzazione(pagamento),
+        null,
+        RegistryOutcome.OK
+      ),
       null
     );
   }

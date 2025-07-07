@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.JwtAlgorithm;
-import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
+import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfigDTO;
 import it.gov.pagopa.pu.sil.service.AlgorithmResolverService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
@@ -38,17 +37,16 @@ class SilLegacyJwtAuthServiceTest {
   void givenAccessWhenBuildThenOk() {
     // Given
     JwtAlgorithm jwtAlgorithm = JwtAlgorithm.HS256;
-    byte[] signingKey = "signingKey".getBytes(StandardCharsets.UTF_8);
+    String signingKey = "signingKey";
     Algorithm algorithm = Algorithm.HMAC256(signingKey);
-    SilServiceLegacyJwtAuthConfig authConfig = new SilServiceLegacyJwtAuthConfig()
+    SilServiceLegacyJwtAuthConfigDTO authConfig = new SilServiceLegacyJwtAuthConfigDTO()
       .kid("KEY_ID")
       .subject("SUBJECT")
       .issuer("ISSUER")
       .algorithm(jwtAlgorithm)
       .signingKey(signingKey);
-    String encodedToString = Base64.getEncoder().encodeToString(authConfig.getSigningKey());
 
-    when(algorithmResolverServiceMock.resolveAlgorithm(authConfig.getAlgorithm(), encodedToString))
+    when(algorithmResolverServiceMock.resolveAlgorithm(authConfig.getAlgorithm(), signingKey))
       .thenReturn(algorithm);
 
     // When
