@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
+import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
@@ -81,7 +82,7 @@ class PaymentNotificationServiceTest {
     AccessToken accessToken = new AccessToken()
       .accessToken("token")
       .tokenType("Bearer");
-    OrgSilService orgSilService = new OrgSilService()
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
       .organizationId(organizationId)
       .orgSilServiceId(orgSilServiceId)
       .flagLegacy(true)
@@ -140,7 +141,7 @@ class PaymentNotificationServiceTest {
     String nav = "NAV123";
     String token = "token";
     UserInfo loggedUser = mock(UserInfo.class);
-    OrgSilService orgSilService = new OrgSilService().organizationId(organizationId).orgSilServiceId(orgSilServiceId).flagLegacy(true).serviceUrl("http://service.url");
+    OrgSilServiceDTO orgSilService = new OrgSilServiceDTO().organizationId(organizationId).orgSilServiceId(orgSilServiceId).flagLegacy(true).serviceUrl("http://service.url");
     when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
     try (MockedStatic<AuthorizationService> authService = mockStatic(AuthorizationService.class)) {
       authService.when(() -> AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser)).thenThrow(AuthorizationDeniedException.class);
