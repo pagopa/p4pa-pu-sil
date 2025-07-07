@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.service.legacyauth;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfig;
-import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyJwtAuthConfig;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceRequestBodyAuthConfig;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTOAuthConfig;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
