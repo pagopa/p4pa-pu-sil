@@ -79,7 +79,7 @@ class PaymentNotificationServiceTest {
     String orgFiscalCode = "FISCALCODE";
     Long organizationId = 2L;
     Long orgSilServiceId = 1L;
-    String nav = "NAV123";
+    String nav = "3123456789";
     UserInfo loggedUser = mock(UserInfo.class);
     String token = "token";
     AccessToken accessToken = new AccessToken()
