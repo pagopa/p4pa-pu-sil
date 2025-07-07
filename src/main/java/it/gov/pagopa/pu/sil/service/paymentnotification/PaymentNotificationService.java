@@ -9,10 +9,13 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponen
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
+import it.gov.pagopa.pu.sil.registry.RegistryContextData;
+import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,9 +48,18 @@ public class PaymentNotificationService {
 
     PaymentNotification paymentNotification = buildPaymentNotification(installments, organization, accessToken);
 
-    String silAccessToken = silAccessTokenService.getSilAccessToken(orgSilService, accessToken);
+    RegistryContextData contextData = RegistryContextData.builder()
+      .orgFiscalCode(organization.getOrgFiscalCode())
+      .eventType(RegistryEventType.SIL_notificaPagamento)
+      .orgSilServiceName(orgSilService.getApplicationName())
+      .iuv(Utilities.nav2Iuv(nav))
+      .loggedUser(loggedUser)
+      .build();
+
+    String silAccessToken = silAccessTokenService.getSilAccessToken(contextData, orgSilService, accessToken);
 
     legacyPaymentNotificationService.notifyPayment(
+      contextData,
       silAccessToken,
       orgSilService.getServiceUrl(),
       paymentNotification

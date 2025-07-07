@@ -10,7 +10,6 @@ import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
-import it.gov.pagopa.pu.sil.service.AccessTokenService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import org.junit.jupiter.api.Assertions;
