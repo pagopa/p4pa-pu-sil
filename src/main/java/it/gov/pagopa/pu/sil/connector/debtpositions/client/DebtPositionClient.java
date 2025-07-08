@@ -106,7 +106,7 @@ public class DebtPositionClient {
         .getInstallmentNoPiiSearchControllerApi(accessToken)
         .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId);
     } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find InstallmentNoPII by semantic key", e);
+      log.info("Cannot find InstallmentNoPII by semantic key: organizationId {} - iuv {} - iur {} - transferIndex {}", organizationId, iuv, iur, transferIndex, e);
       return null;
     }
   }
