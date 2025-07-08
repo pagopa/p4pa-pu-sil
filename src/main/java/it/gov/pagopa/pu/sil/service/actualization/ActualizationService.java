@@ -33,11 +33,13 @@ public class ActualizationService {
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
     String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
-    String silAccessToken = silAccessTokenService.getSilAccessToken(orgSilService, accessToken);
+    String silAccessToken = silAccessTokenService.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, accessToken);
 
     return legacyActualizationService.actualization(
+      orgFiscalCode,
+      orgSilService,
+      loggedUser,
       silAccessToken,
-      orgSilService.getServiceUrl(),
       Pagamento.builder()
         .importoPosizione(Pagamento.ImportoPosizioneEnum.S)
         .numeroAvviso(nav)

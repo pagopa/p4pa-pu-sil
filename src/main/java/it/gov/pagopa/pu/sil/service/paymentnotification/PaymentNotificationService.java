@@ -45,7 +45,7 @@ public class PaymentNotificationService {
 
     PaymentNotification paymentNotification = buildPaymentNotification(installments, organization, accessToken);
 
-    String silAccessToken = silAccessTokenService.getSilAccessToken(orgSilService, accessToken);
+    String silAccessToken = silAccessTokenService.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, accessToken);
 
     legacyPaymentNotificationService.notifyPayment(
       silAccessToken,

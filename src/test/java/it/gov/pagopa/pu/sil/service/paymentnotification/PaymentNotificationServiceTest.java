@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.organization.dto.generated.OrgSilService;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
@@ -76,8 +75,9 @@ class PaymentNotificationServiceTest {
     byte[] encodedReceipt = "receipt".getBytes();
     Long organizationId = 2L;
     Long orgSilServiceId = 1L;
-    String nav = "NAV123";
-    UserInfo loggedUser = mock(UserInfo.class);
+    String orgFiscalCode = "FISCALCODE";
+    String nav = "30123456789";
+    UserInfo loggedUser = podamFactory.manufacturePojo(UserInfo.class);
     String token = "token";
     AccessToken accessToken = new AccessToken()
       .accessToken("token")
@@ -90,7 +90,8 @@ class PaymentNotificationServiceTest {
     PaymentNotification paymentNotification = new PaymentNotification()
       .rt(Base64.getEncoder().encodeToString(encodedReceipt))
       .esito(Base64.getEncoder().encodeToString(encodedPagati));
-    Organization organization = mock(Organization.class);
+    Organization organization = podamFactory.manufacturePojo(Organization.class);
+    organization.setOrgFiscalCode(orgFiscalCode);
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     debtPositionDTO.setOrganizationId(organization.getOrganizationId());
     debtPositionDTO.setStatus(DebtPositionStatus.PAID);
@@ -110,7 +111,7 @@ class PaymentNotificationServiceTest {
       .thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(encodedReceipt);
-    when(silAccessTokenServiceMock.getSilAccessToken(orgSilService, token))
+    when(silAccessTokenServiceMock.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, token))
       .thenReturn(accessToken.getAccessToken());
     doNothing().when(legacyPaymentNotificationServiceMock)
       .notifyPayment(accessToken.getAccessToken(), orgSilService.getServiceUrl(), paymentNotification);
