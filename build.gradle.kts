@@ -170,6 +170,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation",
+    "openApiGenerateCLASSIFICATION"
   )
 }
 
@@ -536,6 +537,32 @@ jaxb {
       "generateConstructorWithAllArgs" to "true",
       "generatedConstructorWithRequiredArgs" to "true",
       "enumPropertyNaming" to "original",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    ))
+    library.set("resttemplate")
+  }
+
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateCLASSIFICATION") {
+    group = "AutomaticallyGeneratedCode"
+    description = "openapi"
+
+    generatorName.set("java")
+    remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-classification/refs/heads/develop/openapi/generated.openapi.json")
+    outputDir.set("$projectDir/build/generated")
+    invokerPackage.set("it.gov.pagopa.pu.classification.generated")
+    apiPackage.set("it.gov.pagopa.pu.classification.client.generated")
+    modelPackage.set("it.gov.pagopa.pu.classification.dto.generated")
+    configOptions.set(mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "serializableModel" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
       "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
     ))
     library.set("resttemplate")

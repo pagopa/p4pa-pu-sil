@@ -177,6 +177,11 @@ rest:
     max-attempts: "\${PAYMENT_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+  classification:
+    base-url: "\${CLASSIFICATION_BASE_URL:}"
+    max-attempts: "\${CLASSIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${CLASSIFICATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${CLASSIFICATION_PRINT_BODY_WHEN_ERROR:true}"
 
 legacy-auth:
   basic-legacy-expiration-seconds: "\${BASIC_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}" # 5 minutes
