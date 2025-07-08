@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -70,8 +71,8 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   }
 
   @Override
-  public InstallmentNoPII findAuthorizedByTransferSemanticKey(Long organizationId, String iuv, String iur, int transferIndex, String operatorExternalUserId, String accessToken) {
-    return client.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+  public Optional<InstallmentNoPII> findAuthorizedByTransferSemanticKey(Long organizationId, String iuv, String iur, int transferIndex, String operatorExternalUserId, String accessToken) {
+    return Optional.ofNullable(client.findAuthorizedByTransferSemanticKey(
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken));
   }
 }

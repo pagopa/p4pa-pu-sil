@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DebtPositionService {
   DebtPositionTypeOrg getDebtPositionTypeOrgByOrgIdAndType(Long organizationId, String debtPositionTypeOrgCode, String accessToken);
@@ -78,9 +79,9 @@ public interface DebtPositionService {
    * @param transferIndex the index of the transfer
    * @param operatorExternalUserId the external user ID of the operator
    * @param accessToken the access token for authentication
-   * @return an InstallmentNoPII object if found, otherwise null
+   * @return an Optional containing the InstallmentNoPII if found, or empty if not found
    */
-  InstallmentNoPII findAuthorizedByTransferSemanticKey(
+  Optional<InstallmentNoPII> findAuthorizedByTransferSemanticKey(
     Long organizationId,
     String iuv,
     String iur,
