@@ -68,4 +68,23 @@ public interface DebtPositionService {
    * @return the ReceiptDTO associated with the given receipt ID
    */
   ReceiptDTO getReceiptById(Long receiptId, String accessToken);
+
+  /**
+   * Finds an InstallmentNoPII by transfer semantic key.
+   *
+   * @param organizationId the ID of the organization
+   * @param iuv the IUV (Identificativo Unico di Versamento)
+   * @param iur the IUR (Identificativo Unico di Riscossione)
+   * @param transferIndex the index of the transfer
+   * @param operatorExternalUserId the external user ID of the operator
+   * @param accessToken the access token for authentication
+   * @return an InstallmentNoPII object if found, otherwise null
+   */
+  InstallmentNoPII findAuthorizedByTransferSemanticKey(
+    Long organizationId,
+    String iuv,
+    String iur,
+    int transferIndex,
+    String operatorExternalUserId,
+    String accessToken);
 }
