@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.classification.dto.generated.Treasury;
 import it.gov.pagopa.pu.sil.connector.classification.config.ClassificationApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -20,8 +21,13 @@ public class ClassificationClient {
 
   public Treasury findTreasuryBySemanticKey(Long organizationId, String billCode, String billYear, String accessToken) {
     log.info("Finding treasury by organization ID, bill code, and bill year");
-    return classificationApisHolder.getTreasurySearchControllerApi(accessToken)
-        .crudTreasuryFindBySemanticKey(organizationId, billCode, billYear);
+    try {
+      return classificationApisHolder.getTreasurySearchControllerApi(accessToken)
+          .crudTreasuryFindBySemanticKey(organizationId, billCode, billYear);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find Treasury having organizationId {}, billCode {} and billYear {}", organizationId, billCode, billYear, e);
+      return null;
+    }
   }
 
   public CollectionModelPaymentsReporting findPaymentsReportingByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken) {

@@ -8,12 +8,14 @@ import it.gov.pagopa.pu.classification.dto.generated.CollectionModelPaymentsRepo
 import it.gov.pagopa.pu.classification.dto.generated.Treasury;
 import it.gov.pagopa.pu.sil.connector.classification.config.ClassificationApisHolder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -64,6 +66,26 @@ class ClassificationClientTest {
 
     // Then
     assertEquals(expectedTreasury, result);
+  }
+
+  @Test
+  void whenFindTreasuryBySemanticKeyThenNull(){
+    //Given
+    Long organizationId = 1L;
+    String billCode = "BILL_CODE";
+    String billYear = "2025";
+    String accessToken = "ACCESSTOKEN";
+
+    Mockito.when(apisHolder.getTreasurySearchControllerApi(accessToken))
+      .thenReturn(treasurySearchControllerApiMock);
+    Mockito.when(treasurySearchControllerApiMock.crudTreasuryFindBySemanticKey(organizationId, billCode, billYear))
+      .thenThrow(HttpClientErrorException.NotFound.class);
+
+    // When
+    Treasury result = client.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken);
+
+    // Then
+    Assertions.assertNull(result);
   }
 
   @Test
