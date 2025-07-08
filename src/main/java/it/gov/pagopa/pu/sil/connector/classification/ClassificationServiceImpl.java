@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 public class ClassificationServiceImpl implements ClassificationService {
@@ -16,8 +17,8 @@ public class ClassificationServiceImpl implements ClassificationService {
   }
 
   @Override
-  public Treasury findTreasuryBySemanticKey(Long organizationId, String billCode, String billYear, String accessToken) {
-    return client.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken);
+  public Optional<Treasury> findTreasuryBySemanticKey(Long organizationId, String billCode, String billYear, String accessToken) {
+    return Optional.ofNullable(client.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken));
   }
 
   @Override
