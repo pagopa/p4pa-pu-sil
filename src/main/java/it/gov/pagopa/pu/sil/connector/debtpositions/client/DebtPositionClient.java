@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 
@@ -93,4 +94,20 @@ public class DebtPositionClient {
     }
   }
 
+  public InstallmentNoPII findAuthorizedByTransferSemanticKey(
+      Long organizationId,
+      String iuv,
+      String iur,
+      int transferIndex,
+      String operatorExternalUserId,
+      String accessToken) {
+    try {
+      return debtPositionsApisHolder
+        .getInstallmentNoPiiSearchControllerApi(accessToken)
+        .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find InstallmentNoPII by semantic key", e);
+      return null;
+    }
+  }
 }
