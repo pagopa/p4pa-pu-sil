@@ -4,7 +4,6 @@ import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotificatio
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.client.LegacyPaymentNotificationClient;
-import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import org.springframework.stereotype.Component;
 
 @Component
