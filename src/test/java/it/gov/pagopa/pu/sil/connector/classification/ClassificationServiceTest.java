@@ -11,6 +11,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,9 +44,9 @@ class ClassificationServiceTest {
     Mockito.when(clientMock.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken))
            .thenReturn(expectedTreasury);
     // When
-    Treasury result = service.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken);
+    Optional<Treasury> result = service.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken);
     // Then
-    assertEquals(expectedTreasury, result);
+    assertEquals(Optional.of(expectedTreasury), result);
   }
 
   @Test
