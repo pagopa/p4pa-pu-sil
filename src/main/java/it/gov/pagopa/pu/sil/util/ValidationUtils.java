@@ -112,4 +112,7 @@ public class ValidationUtils {
     }
   }
 
+  public static boolean verifyExclusivePresence(Object a, Object b) {
+   return (a == null) ^ (b == null);
+  }
 }
