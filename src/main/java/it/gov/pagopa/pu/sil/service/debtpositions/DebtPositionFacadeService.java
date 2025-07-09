@@ -10,10 +10,11 @@ import java.util.List;
 
 @Service
 public class DebtPositionFacadeService {
-  private static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
+  public static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
     DebtPositionOrigin.ORDINARY,
     DebtPositionOrigin.ORDINARY_SIL,
-    DebtPositionOrigin.SPONTANEOUS
+    DebtPositionOrigin.SPONTANEOUS,
+    DebtPositionOrigin.SPONTANEOUS_SIL
   );
 
   private final DebtPositionService debtPositionService;

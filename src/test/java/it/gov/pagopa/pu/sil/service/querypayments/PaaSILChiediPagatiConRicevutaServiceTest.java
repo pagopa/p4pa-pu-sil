@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -34,7 +35,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-import static it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService.ALLOWED_ORIGINS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -116,12 +116,12 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
       String iuv = pairList.getFirst().getRight().getIuv();
       request.setIdentificativoUnivocoVersamento(iuv);
       when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(organization.getOrganizationId(),
-        iuv, ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
+        iuv, DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
     } else if ("iud".equals(testCase)) {
       String iud = pairList.getFirst().getRight().getIud();
       request.setIdentificativoUnivocoDovuto(iud);
       when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(organization.getOrganizationId(),
-        iud, ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
+        iud, DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
     }
 
     when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
@@ -228,7 +228,7 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
            "emptyDebtPositionListIuv", "invalidOrgStatus", "noSearchCriteria",
            "multipleSearchCriteria":
         if ("invalidOrgDebtPositionIud".equals(testCase)) {
-          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(organization.getOrganizationId(), pairList.getFirst().getRight().getIud(), ALLOWED_ORIGINS, accessToken))
+          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(organization.getOrganizationId(), pairList.getFirst().getRight().getIud(), DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken))
             .thenReturn(List.of(pairList.getFirst().getLeft()));
         }
         when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
