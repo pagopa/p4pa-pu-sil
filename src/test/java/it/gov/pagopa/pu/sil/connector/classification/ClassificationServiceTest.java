@@ -78,10 +78,10 @@ class ClassificationServiceTest {
     CollectionModelAssessmentsBalanceViewEmbedded embedded = new CollectionModelAssessmentsBalanceViewEmbedded();
     CollectionModelAssessmentsBalanceView expectedBalanceView = new CollectionModelAssessmentsBalanceView(embedded, null);
 
-    Mockito.when(clientMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(organizationId.toString(), iuds, accessToken))
+    Mockito.when(clientMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(organizationId, iuds, accessToken))
            .thenReturn(expectedBalanceView);
     // When
-    List<AssessmentsBalanceView> result = service.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(organizationId.toString(), iuds, accessToken);
+    List<AssessmentsBalanceView> result = service.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(organizationId, iuds, accessToken);
     // Then
     assertEquals(expectedBalanceViews, result);
   }

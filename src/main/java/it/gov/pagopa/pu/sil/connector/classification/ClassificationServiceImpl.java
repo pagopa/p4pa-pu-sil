@@ -27,7 +27,7 @@ public class ClassificationServiceImpl implements ClassificationService {
     return Objects.requireNonNull(collectionModelPaymentsReporting.getEmbedded()).getPaymentsReportings();
   }
 
-  public List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(String organizationId, List<String> iuds, String accessToken) {
+  public List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(Long organizationId, List<String> iuds, String accessToken) {
     CollectionModelAssessmentsBalanceView collectionModelAssessmentsBalanceView = client.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(organizationId, iuds, accessToken);
     return Objects.requireNonNull(collectionModelAssessmentsBalanceView.getEmbedded()).getAssessmentsBalanceViews();
   }
