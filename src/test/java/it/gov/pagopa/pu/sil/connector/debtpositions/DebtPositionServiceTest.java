@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionServiceTest {
@@ -214,6 +213,6 @@ class DebtPositionServiceTest {
     InstallmentNoPII result = service.findAuthorizedByTransferSemanticKey(
         organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
     // Then
-    Assertions.assertEquals(Optional.of(expectedResult), result);
+    Assertions.assertEquals(expectedResult, result);
   }
 }
