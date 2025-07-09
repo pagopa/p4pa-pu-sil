@@ -111,7 +111,7 @@ class ClassificationClientTest {
   @Test
   void whenFindClosedAssessmentsBalanceViewByOrganizationIdAndIudsThenInvokeApi() {
     // Given
-    String organizationId = "1";
+    Long organizationId = 1L;
     List<String> iuds = List.of("IUD1", "IUD2");
     String accessToken = "ACCESSTOKEN";
 
@@ -120,7 +120,7 @@ class ClassificationClientTest {
 
     Mockito.when(apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken))
         .thenReturn(assessmentsBalanceViewSearchControllerApiMock);
-    Mockito.when(assessmentsBalanceViewSearchControllerApiMock.crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuds(organizationId, iuds))
+    Mockito.when(assessmentsBalanceViewSearchControllerApiMock.crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuds(String.valueOf(organizationId), iuds))
         .thenReturn(expectedBalanceView);
     // When
     CollectionModelAssessmentsBalanceView result =
