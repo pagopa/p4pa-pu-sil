@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
@@ -39,8 +39,8 @@ class QueryAssessmentsServiceTest {
   private ClassificationService classificationService;
   @Mock
   private DebtPositionService debtPositionService;
-
-  private AssessmentsBalanceMapper assessmentsBalanceMapper = new AssessmentsBalanceMapper();
+  @Mock
+  private AssessmentsBalanceMapper assessmentsBalanceMapper;
 
   private QueryAssessmentsService service;
 
@@ -51,9 +51,9 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenUserNotAdminWhenHandlePivotSILChiediAccertamentoThenUnauthorizedException() {
-    UserInfo userInfo = Mockito.mock(UserInfo.class);
+    UserInfo userInfo = mock(UserInfo.class);
     String orgIpaCode = "org";
-    PivotSILChiediAccertamento request = Mockito.mock(PivotSILChiediAccertamento.class);
+    PivotSILChiediAccertamento request = mock(PivotSILChiediAccertamento.class);
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
       assertThrows(UnauthorizedException.class, () ->
@@ -64,18 +64,18 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenFullRequestWhenHandlePivotSILChiediAccertamentoThenIllegalArgumentException() {
-    UserInfo userInfo = Mockito.mock(UserInfo.class);
+    UserInfo userInfo = mock(UserInfo.class);
     String orgIpaCode = "org";
-    PivotSILChiediAccertamento request = Mockito.mock(PivotSILChiediAccertamento.class);
-    RichiestaPerBolletta richiestaPerBolletta = Mockito.mock(RichiestaPerBolletta.class);
-    RichiestaPerIUF richiestaPerIUF = Mockito.mock(RichiestaPerIUF.class);
+    PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
+    RichiestaPerBolletta richiestaPerBolletta = mock(RichiestaPerBolletta.class);
+    RichiestaPerIUF richiestaPerIUF = mock(RichiestaPerIUF.class);
     request.setRichiestaPerIUF(richiestaPerIUF);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class);
          MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(isNull(), eq(orgIpaCode))).thenReturn(789L);
-      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(richiestaPerBolletta, richiestaPerIUF))
+      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
         .thenReturn(false);
 
       assertThrows(IllegalArgumentException.class, () ->
@@ -86,19 +86,19 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenRichiestaPerBollettaWhenHandlePivotSILChiediAccertamentoThenSilFaultException() {
-    UserInfo userInfo = Mockito.mock(UserInfo.class);
+    UserInfo userInfo = mock(UserInfo.class);
     String orgIpaCode = "org";
-    PivotSILChiediAccertamento request = Mockito.mock(PivotSILChiediAccertamento.class);
-    RichiestaPerBolletta richiestaPerBolletta = Mockito.mock(RichiestaPerBolletta.class);
+    PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
+    RichiestaPerBolletta richiestaPerBolletta = mock(RichiestaPerBolletta.class);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class);
          MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(isNull(), eq(orgIpaCode))).thenReturn(789L);
-      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(richiestaPerBolletta, isNull()))
+      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
         .thenReturn(true);
 
-      Mockito.when(classificationService.findTreasuryBySemanticKey(Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any()))
+      when(classificationService.findTreasuryBySemanticKey(anyLong(), any(), any(), any()))
         .thenReturn(Optional.empty());
       assertThrows(SilFaultException.class, () ->
         service.handlePivotSILChiediAccertamento(userInfo, "token", "org", request)
@@ -108,19 +108,19 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenRichiestaPerIUFWhenHandlePivotSILChiediAccertamentoThenSilFaultException() {
-    UserInfo userInfo = Mockito.mock(UserInfo.class);
+    UserInfo userInfo = mock(UserInfo.class);
     String orgIpaCode = "org";
-    PivotSILChiediAccertamento request = Mockito.mock(PivotSILChiediAccertamento.class);
-    RichiestaPerIUF richiestaPerIUF = Mockito.mock(RichiestaPerIUF.class);
+    PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
+    RichiestaPerIUF richiestaPerIUF = mock(RichiestaPerIUF.class);
     request.setRichiestaPerIUF(richiestaPerIUF);
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class);
       MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(isNull(), eq(orgIpaCode))).thenReturn(789L);
-      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(isNull(), richiestaPerIUF))
+      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
         .thenReturn(true);
 
-      Mockito.when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(Mockito.anyLong(), Mockito.any(), Mockito.any()))
+      when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any()))
         .thenReturn(Collections.emptyList());
       assertThrows(SilFaultException.class, () ->
         service.handlePivotSILChiediAccertamento(userInfo, "token", "org", request)
@@ -130,35 +130,41 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenRichiestaPerBollettaWhenHandlePivotSILChiediAccertamentoThenSuccess() {
-    UserInfo userInfo = Mockito.mock(UserInfo.class);
+    UserInfo userInfo = mock(UserInfo.class);
     String orgIpaCode = "org";
-    PivotSILChiediAccertamento request = Mockito.mock(PivotSILChiediAccertamento.class);
-    RichiestaPerBolletta richiestaPerBolletta = Mockito.mock(RichiestaPerBolletta.class);
+    PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
+    RichiestaPerBolletta richiestaPerBolletta = mock(RichiestaPerBolletta.class);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
-    Treasury treasury = Mockito.mock(Treasury.class);
-    AssessmentsBalanceView assessmentsBalanceView = mock(AssessmentsBalanceView.class);
-    PaymentsReporting paymentsReporting = Mockito.mock(PaymentsReporting.class);
+    Treasury treasury = mock(Treasury.class);
+    treasury.setIuf("iuf");
+    AssessmentsBalanceView assessmentsBalanceView = new AssessmentsBalanceView()
+      .officeCode("OFF1")
+      .debtPositionTypeOrgCode("TYP1")
+      .assessmentCode("CAP1")
+      .sectionCode("SEC1")
+      .amountCents(12345L);
+    PaymentsReporting paymentsReporting = mock(PaymentsReporting.class);
+    CtBilancio expectedCtBilancio = new CtBilancio();
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class);
          MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       authMock.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(isNull(), eq(orgIpaCode))).thenReturn(789L);
-      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(richiestaPerBolletta, isNull()))
+      validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
         .thenReturn(true);
 
-      Mockito.when(classificationService.findTreasuryBySemanticKey(Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any()))
+      when(classificationService.findTreasuryBySemanticKey(anyLong(), any(), any(), any()))
         .thenReturn(Optional.of(treasury));
-      Mockito.when(treasury.getIuf()).thenReturn("iuf");
-      Mockito.when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(Mockito.anyLong(), Mockito.any(), Mockito.any()))
+      when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any()))
         .thenReturn(List.of(paymentsReporting));
-      Mockito.when(debtPositionService.findAuthorizedByTransferSemanticKey(Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any()))
-        .thenReturn(Optional.of(Mockito.mock(it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII.class)));
-      Mockito.when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(Mockito.anyLong(), Mockito.anyList(), Mockito.any()))
+      when(debtPositionService.findAuthorizedByTransferSemanticKey(anyLong(), any(), any(), anyInt(), any(), any()))
+        .thenReturn(Optional.of(mock(InstallmentNoPII.class)));
+      when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(anyLong(), anyList(), any()))
         .thenReturn(List.of(assessmentsBalanceView));
-      Mockito.when(assessmentsBalanceMapper.map2CtBilancio(eq(assessmentsBalanceView))).thenReturn(Mockito.mock(CtBilancio.class));
+      when(assessmentsBalanceMapper.map2CtBilancio(assessmentsBalanceView)).thenReturn(expectedCtBilancio);
 
       PivotSILChiediAccertamentoRisposta resp = service.handlePivotSILChiediAccertamento(userInfo, "token", "org", request);
       assertNotNull(resp);
-      assertFalse(resp.getBilancios().isEmpty());
+      assertEquals(expectedCtBilancio, resp.getBilancios());
     }
   }
 }
