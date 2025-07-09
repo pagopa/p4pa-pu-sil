@@ -211,7 +211,7 @@ class DebtPositionServiceTest {
       .thenReturn(expectedResult);
 
     // When
-    Optional<InstallmentNoPII> result = service.findAuthorizedByTransferSemanticKey(
+    InstallmentNoPII result = service.findAuthorizedByTransferSemanticKey(
         organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
     // Then
     Assertions.assertEquals(Optional.of(expectedResult), result);

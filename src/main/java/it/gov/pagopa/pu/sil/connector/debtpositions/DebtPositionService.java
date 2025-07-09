@@ -79,9 +79,9 @@ public interface DebtPositionService {
    * @param transferIndex the index of the transfer
    * @param operatorExternalUserId the external user ID of the operator
    * @param accessToken the access token for authentication
-   * @return an Optional containing the InstallmentNoPII if found, or empty if not found
+   * @return an InstallmentNoPII if found, otherwise null
    */
-  Optional<InstallmentNoPII> findAuthorizedByTransferSemanticKey(
+  InstallmentNoPII findAuthorizedByTransferSemanticKey(
     Long organizationId,
     String iuv,
     String iur,

@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.classification.dto.generated.PaymentsReporting;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
@@ -18,12 +20,15 @@ import it.veneto.regione.pagamenti.pivot.ente.RichiestaPerIUF;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
 @Service
 public class QueryAssessmentsService {
+  private static final List<String> PAYMENT_OUTCOME_CODES = List.of("8", "9");
+
   private final ClassificationService classificationService;
   private final DebtPositionService debtPositionService;
   private final AssessmentsBalanceMapper assessmentsBalanceMapper;
@@ -81,22 +86,21 @@ public class QueryAssessmentsService {
   private List<CtBilancio> getAssessmentsBalances(UserInfo userInfo, String accessToken, Long organizationId, String iuf) {
     List<String> iuds = classificationService.findPaymentsReportingByOrganizationIdAndIuf(organizationId, iuf, accessToken)
       .stream()
+      .filter(pr -> !PAYMENT_OUTCOME_CODES.contains(pr.getPaymentOutcomeCode()))
       .map(pr -> debtPositionService.findAuthorizedByTransferSemanticKey(
-          pr.getOrganizationId(),
-          pr.getIuv(),
-          pr.getIur(),
-          pr.getTransferIndex(),
-          userInfo.getMappedExternalUserId(),
-          accessToken
-        )
-        .orElseThrow(() -> new SilFaultException(
-          SilFaults.PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA,
-          "Nessuna rendicontazione trovata per l'organizzazione [ %s ] e IUF [ %s ]"
-            .formatted(organizationId, iuf))
-        )
-        .getIud()
-      )
+        pr.getOrganizationId(),
+        pr.getIuv(),
+        pr.getIur(),
+        pr.getTransferIndex(),
+        userInfo.getMappedExternalUserId(),
+        accessToken))
+      .map(InstallmentNoPII::getIud)
       .toList();
+    if (iuds.isEmpty()) {
+      throw new SilFaultException(SilFaults.PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA,
+        "Nessuna rendicontazione trovata per l'organizzazione [ %s ] e IUF [ %s ]"
+          .formatted(organizationId, iuf));
+    }
     return classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(
         organizationId, iuds, accessToken).stream()
       .map(assessmentsBalanceMapper::map2CtBilancio)

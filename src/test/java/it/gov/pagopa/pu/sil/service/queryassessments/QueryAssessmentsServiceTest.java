@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.classification.dto.generated.PaymentsReporting;
 import it.gov.pagopa.pu.classification.dto.generated.Treasury;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.pivot.ente.CtBilancio;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILChiediAccertamento;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +45,8 @@ class QueryAssessmentsServiceTest {
   private AssessmentsBalanceMapper assessmentsBalanceMapper;
 
   private QueryAssessmentsService service;
+
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
@@ -130,10 +134,10 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenRichiestaPerBollettaWhenHandlePivotSILChiediAccertamentoThenSuccess() {
-    UserInfo userInfo = mock(UserInfo.class);
+    UserInfo userInfo = podamFactory.manufacturePojo(UserInfo.class);
     String orgIpaCode = "org";
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
-    RichiestaPerBolletta richiestaPerBolletta = mock(RichiestaPerBolletta.class);
+    RichiestaPerBolletta richiestaPerBolletta = podamFactory.manufacturePojo(RichiestaPerBolletta.class);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
     Treasury treasury = mock(Treasury.class);
     treasury.setIuf("iuf");
@@ -143,8 +147,9 @@ class QueryAssessmentsServiceTest {
       .assessmentCode("CAP1")
       .sectionCode("SEC1")
       .amountCents(12345L);
-    PaymentsReporting paymentsReporting = mock(PaymentsReporting.class);
+    PaymentsReporting paymentsReporting = podamFactory.manufacturePojo(PaymentsReporting.class);
     CtBilancio expectedCtBilancio = new CtBilancio();
+    InstallmentNoPII installmentNoPII = podamFactory.manufacturePojo(InstallmentNoPII.class);
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class);
          MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -157,14 +162,14 @@ class QueryAssessmentsServiceTest {
       when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any()))
         .thenReturn(List.of(paymentsReporting));
       when(debtPositionService.findAuthorizedByTransferSemanticKey(anyLong(), any(), any(), anyInt(), any(), any()))
-        .thenReturn(Optional.of(mock(InstallmentNoPII.class)));
+        .thenReturn(installmentNoPII);
       when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(anyLong(), anyList(), any()))
         .thenReturn(List.of(assessmentsBalanceView));
       when(assessmentsBalanceMapper.map2CtBilancio(assessmentsBalanceView)).thenReturn(expectedCtBilancio);
 
       PivotSILChiediAccertamentoRisposta resp = service.handlePivotSILChiediAccertamento(userInfo, "token", "org", request);
       assertNotNull(resp);
-      assertEquals(expectedCtBilancio, resp.getBilancios());
+      assertEquals(expectedCtBilancio, resp.getBilancios().getFirst());
     }
   }
 }
