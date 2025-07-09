@@ -37,7 +37,10 @@ public enum SilFaults {
   PIVOT_INTERVALLO_DATE_NON_VALIDO("L'intervallo data inizio e data fine non è valido"),
   PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO("Identificativo tipo dovuto non valido"),
   PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO("Identificativo tipo dovuto non abilitato"),
-  PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido");
+  PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido"),
+  PIVOT_BOLLETTA_NON_TROVATA("Bolletta non trovata"),
+  PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA("Nessuna rendicontazione associata allo IUF della bolletta")
+  ;
 
   private final String description;
 
