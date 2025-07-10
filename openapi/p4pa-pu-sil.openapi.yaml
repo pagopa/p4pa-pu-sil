@@ -349,10 +349,10 @@ paths:
     post:
       tags:
         - DebtPosition
-      summary: manage a single debt position
+      summary: create a single debt position
       description: |
-        Service to manage a single debt position, allowing to create, update or delete it.
-      operationId: manageSingleDebtPosition
+        Service to create a single debt position.
+      operationId: createSingleDebtPosition
       parameters:
         - name: orgFiscalCode
           description: the fiscal code of the organization
@@ -384,6 +384,9 @@ paths:
       tags:
         - DebtPosition
       operationId: manageDebtPositionInstallments
+      summary: manage a single debt position
+      description: |
+        Service to manage a single debt position, allowing to add, modify or delete one or more installments.
       parameters:
         - name: orgFiscalCode
           description: the fiscal code of the organization
@@ -538,6 +541,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: withReceiptBytes
+          description: if true, the response will contain the receipt bytes
+          in: query
+          required: false
+          schema:
+            type: boolean
       responses:
         '200':
           description: Ok
@@ -914,7 +923,10 @@ components:
             - NOT_PAID
             - PAID
         receipt:
-          $ref: "#/components/schemas/ReceiptDTO"
+          $ref: "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
+        receiptBytes:
+          type: string
+          format: binary
         lastUpdateDateTime:
           type: string
           format: date-time
