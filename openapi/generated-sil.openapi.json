@@ -238,7 +238,8 @@
           "province" : {
             "type" : "string"
           }
-        }
+        },
+        "required" : [ "address", "municipality" ]
       },
       "Attachment" : {
         "type" : "object",
@@ -300,16 +301,21 @@
           },
           "paFee" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 0
           },
           "vat" : {
             "type" : "integer",
-            "format" : "int32"
+            "format" : "int32",
+            "maximum" : 100,
+            "minimum" : 0
           },
           "pagoPaIntMode" : {
             "$ref" : "#/components/schemas/PagoPaIntModeEnum"
           }
-        }
+        },
+        "required" : [ "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ]
       },
       "Document" : {
         "type" : "object",
@@ -332,9 +338,13 @@
             "$ref" : "#/components/schemas/TypeEnum"
           },
           "address" : {
-            "type" : "string"
+            "type" : "string",
+            "maxLength" : 320,
+            "minLength" : 0,
+            "pattern" : "^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])$"
           }
-        }
+        },
+        "required" : [ "address", "type" ]
       },
       "NotificationFeePolicyEnum" : {
         "type" : "string",
@@ -355,7 +365,8 @@
           "attachment" : {
             "$ref" : "#/components/schemas/Attachment"
           }
-        }
+        },
+        "required" : [ "applyCost", "creditorTaxId", "noticeCode" ]
       },
       "PagoPaIntModeEnum" : {
         "type" : "string",
@@ -367,7 +378,8 @@
           "pagoPa" : {
             "$ref" : "#/components/schemas/PagoPa"
           }
-        }
+        },
+        "required" : [ "pagoPa" ]
       },
       "PhysicalCommunicationTypeEnum" : {
         "type" : "string",
@@ -397,7 +409,8 @@
               "$ref" : "#/components/schemas/Payment"
             }
           }
-        }
+        },
+        "required" : [ "denomination", "physicalAddress", "recipientType", "taxId" ]
       },
       "RecipientTypeEnum" : {
         "type" : "string",
@@ -424,10 +437,6 @@
           "iun" : {
             "type" : "string"
           },
-          "notificationDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
           "payments" : {
             "type" : "array",
             "items" : {
@@ -443,7 +452,8 @@
               "type" : "string"
             }
           }
-        }
+        },
+        "required" : [ "organizationId", "payments", "sendNotificationId", "status" ]
       },
       "SendNotificationPaymentsDTO" : {
         "type" : "object",
@@ -457,8 +467,13 @@
             "items" : {
               "type" : "string"
             }
+          },
+          "notificationDate" : {
+            "type" : "string",
+            "format" : "date-time"
           }
-        }
+        },
+        "required" : [ "debtPositionId", "navList" ]
       }
     },
     "securitySchemes" : {

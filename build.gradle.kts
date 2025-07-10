@@ -232,8 +232,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
@@ -257,8 +260,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
@@ -285,8 +291,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
@@ -313,8 +322,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
@@ -338,8 +350,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
@@ -360,23 +375,22 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   invokerPackage.set("it.gov.pagopa.pu.organization.generated")
   apiPackage.set("it.gov.pagopa.pu.organization.client.generated")
   modelPackage.set("it.gov.pagopa.pu.organization.dto.generated")
-  configOptions.set(
-    mapOf(
-      "swaggerAnnotations" to "false",
-      "openApiNullable" to "false",
-      "dateLibrary" to "java8",
-      "serializableModel" to "true",
-      "useSpringBoot3" to "true",
-      "useJakartaEe" to "true",
-      "useOneOfInterfaces" to "true",
-      "serializationLibrary" to "jackson",
-      "generateSupportingFiles" to "true",
-      "generateConstructorWithAllArgs" to "true",
-      "generatedConstructorWithRequiredArgs" to "true",
-      "enumPropertyNaming" to "original",
-      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
-    )
-  )
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "serializableModel" to "true",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "enumPropertyNaming" to "original",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
   library.set("resttemplate")
 }
 
@@ -393,8 +407,11 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
@@ -415,33 +432,31 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   invokerPackage.set("it.gov.pagopa.pu.workflowhub.generated")
   apiPackage.set("it.gov.pagopa.pu.workflowhub.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.workflowhub.dto.generated")
-  typeMappings.set(
-    mapOf(
-      "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
-      "IngestionFlowFileType" to "String",
-      "WfExecutionConfig" to "com.fasterxml.jackson.databind.JsonNode",
-      "ExportFileType" to "String",
-      "WorkflowTypeOrg" to "String",
-      "ScheduleEnum" to "String",
-      "WorkflowExecutionStatus" to "String"
-    )
-  )
-  configOptions.set(
-    mapOf(
-      "swaggerAnnotations" to "false",
-      "openApiNullable" to "false",
-      "dateLibrary" to "java8",
-      "serializableModel" to "true",
-      "useSpringBoot3" to "true",
-      "useJakartaEe" to "true",
-      "serializationLibrary" to "jackson",
-      "generateSupportingFiles" to "true",
-      "generateConstructorWithAllArgs" to "true",
-      "generatedConstructorWithRequiredArgs" to "true",
-      "enumPropertyNaming" to "original",
-      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
-    )
-  )
+  typeMappings.set(mapOf(
+    "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
+    "IngestionFlowFileType" to "String",
+    "WfExecutionConfig" to "com.fasterxml.jackson.databind.JsonNode",
+    "ExportFileType" to "String",
+    "WorkflowTypeOrg" to "String",
+    "ScheduleEnum" to "String",
+    "WorkflowExecutionStatus" to "String"
+  ))
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "serializableModel" to "true",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "enumPropertyNaming" to "original",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
   library.set("resttemplate")
 }
 
@@ -476,8 +491,11 @@ jaxb {
       "swaggerAnnotations" to "false",
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
+      "serializableModel" to "true",
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
+      "useBeanValidation" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
       "generateConstructorWithAllArgs" to "true",
@@ -504,8 +522,11 @@ jaxb {
       "swaggerAnnotations" to "false",
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
+      "serializableModel" to "true",
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
+      "useBeanValidation" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
       "useAbstractionForFiles" to "true",
@@ -530,8 +551,11 @@ jaxb {
       "swaggerAnnotations" to "false",
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
+      "serializableModel" to "true",
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
+      "useBeanValidation" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
       "generateConstructorWithAllArgs" to "true",
@@ -559,10 +583,13 @@ jaxb {
       "serializableModel" to "true",
       "useSpringBoot3" to "true",
       "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
+      "useBeanValidation" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
       "generateConstructorWithAllArgs" to "true",
       "generatedConstructorWithRequiredArgs" to "true",
+      "enumPropertyNaming" to "original",
       "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
     ))
     library.set("resttemplate")
