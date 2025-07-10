@@ -71,9 +71,9 @@ public class QueryAssessmentsService {
         "La bolletta per codIpaEnte [ %s ], annoBolletta [ %s ] e numeroBolletta [ %s ] non è stata trovata"
           .formatted(orgIpaCode, richiestaPerBolletta.getAnnoBolletta(), richiestaPerBolletta.getNumeroBolletta()))
       );
-      balances = getAssessmentsBalances(userInfo, accessToken, organizationId, treasury.getIuf());
+      balances = getAssessmentsBalances(userInfo, accessToken, organizationId, treasury.getIuf(), orgIpaCode);
     } else {
-      balances = getAssessmentsBalances(userInfo, accessToken, organizationId, richiestaPerIUF.getIdentificativoUnivocoFlusso());
+      balances = getAssessmentsBalances(userInfo, accessToken, organizationId, richiestaPerIUF.getIdentificativoUnivocoFlusso(), orgIpaCode);
     }
 
     PivotSILChiediAccertamentoRisposta response = new PivotSILChiediAccertamentoRisposta();
@@ -81,7 +81,7 @@ public class QueryAssessmentsService {
     return response;
   }
 
-  private List<CtBilancio> getAssessmentsBalances(UserInfo userInfo, String accessToken, Long organizationId, String iuf) {
+  private List<CtBilancio> getAssessmentsBalances(UserInfo userInfo, String accessToken, Long organizationId, String iuf, String organizationIpaCode) {
     List<String> iuds = classificationService.findPaymentsReportingByOrganizationIdAndIuf(organizationId, iuf, accessToken)
       .stream()
       .filter(pr -> !PAYMENT_OUTCOME_CODES.contains(pr.getPaymentOutcomeCode()))
@@ -97,7 +97,7 @@ public class QueryAssessmentsService {
     if (iuds.isEmpty()) {
       throw new SilFaultException(SilFaults.PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA,
         "Nessuna rendicontazione trovata per l'organizzazione [ %s ] e IUF [ %s ]"
-          .formatted(organizationId, iuf));
+          .formatted(organizationIpaCode, iuf));
     }
     return classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(
         organizationId, iuds, accessToken).stream()
