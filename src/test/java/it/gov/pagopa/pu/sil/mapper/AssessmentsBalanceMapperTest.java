@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.CtAccertamento;
 import it.veneto.regione.pagamenti.pivot.ente.CtBilancio;
 import it.veneto.regione.pagamenti.pivot.ente.CtCapitolo;
@@ -36,5 +37,10 @@ class AssessmentsBalanceMapperTest {
     CtAccertamento accertamento = capitolo.getAccertamentos().get(0);
     assertEquals("SEC1", accertamento.getCodAccertamento());
     assertEquals(ConversionUtils.centsAmountToBigDecimalEuroAmount(12345L), accertamento.getImporto());
+
+    TestUtils.checkNotNullFields(result);
+    TestUtils.checkNotNullFields(tipoDovuto);
+    TestUtils.checkNotNullFields(capitolo);
+    TestUtils.checkNotNullFields(accertamento);
   }
 }
