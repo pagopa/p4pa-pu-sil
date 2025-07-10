@@ -36,9 +36,9 @@ public class ClassificationClient {
         .crudPaymentsReportingFindByOrganizationIdAndIuf(organizationId, iuf);
   }
 
-  public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(String organizationId, List<String> iuds, String accessToken) {
+  public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(Long organizationId, List<String> iuds, String accessToken) {
     log.info("Finding assessments balance view by organization ID and IUDs");
     return classificationApisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuds(organizationId, iuds);
+        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuds(String.valueOf(organizationId), iuds);
   }
 }

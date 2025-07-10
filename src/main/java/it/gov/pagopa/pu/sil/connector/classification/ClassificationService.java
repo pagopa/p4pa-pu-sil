@@ -8,5 +8,5 @@ import java.util.Optional;
 public interface ClassificationService {
   Optional<Treasury> findTreasuryBySemanticKey(Long organizationId, String billCode, String billYear, String accessToken);
   List<PaymentsReporting> findPaymentsReportingByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken);
-  List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(String organizationId, List<String> iuds, String accessToken);
+  List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(Long organizationId, List<String> iuds, String accessToken);
 }
