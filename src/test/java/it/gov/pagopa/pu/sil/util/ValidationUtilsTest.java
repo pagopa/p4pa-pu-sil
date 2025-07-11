@@ -9,6 +9,8 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPer
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
@@ -16,6 +18,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -311,6 +314,22 @@ class ValidationUtilsTest {
   @NullAndEmptySource
   void isValidUri_InvalidUri_ReturnsFalse(String uri) {
     assertFalse(ValidationUtils.isValidUri(uri));
+  }
+
+  @ParameterizedTest
+  @MethodSource("verifyExclusivePresenceProvider")
+  void testVerifyExclusivePresence(Object obj1, Object obj2, boolean expected) {
+    boolean result = ValidationUtils.verifyExclusivePresence(obj1, obj2);
+    assertEquals(expected, result);
+  }
+
+  private static Stream<Arguments> verifyExclusivePresenceProvider() {
+    return Stream.of(
+      Arguments.of(new Object(), null, true),
+      Arguments.of(null, new Object(), true),
+      Arguments.of(null, null, false),
+      Arguments.of(new Object(), new Object(), false)
+    );
   }
 
 }

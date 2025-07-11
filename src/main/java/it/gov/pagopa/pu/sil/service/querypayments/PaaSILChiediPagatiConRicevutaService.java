@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
@@ -11,6 +10,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
+import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiConRicevuta;
@@ -28,13 +28,6 @@ import java.util.stream.Stream;
 @Service
 @Slf4j
 public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsService<PaaSILChiediPagatiConRicevuta, PaaSILChiediPagatiConRicevutaRisposta> {
-
-  public static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
-    DebtPositionOrigin.ORDINARY,
-    DebtPositionOrigin.ORDINARY_SIL,
-    DebtPositionOrigin.SPONTANEOUS,
-    DebtPositionOrigin.SPONTANEOUS_SIL
-  );
 
   private final DebtPositionService debtPositionService;
   private final PagatiMapper pagatiMapper;
@@ -88,7 +81,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
       debtPositionNotFoundFault = SilFaults.PAA_IUD_NON_VALIDO;
 
       return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-          organization.getOrganizationId(), request.getIdentificativoUnivocoDovuto(), ALLOWED_ORIGINS, accessToken)
+          organization.getOrganizationId(), request.getIdentificativoUnivocoDovuto(), DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)
         .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
         .findFirst()
         .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
@@ -100,7 +93,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
 
       //search for the debt position by identificativoUnivocoVersamento
       return debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-          organization.getOrganizationId(), request.getIdentificativoUnivocoVersamento(), ALLOWED_ORIGINS, accessToken)
+          organization.getOrganizationId(), request.getIdentificativoUnivocoVersamento(), DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)
         .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
         .findFirst()
         .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
@@ -121,11 +114,10 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
                                                          Organization organization, String accessToken) {
 
     //TODO currently support only one debt position and installment, but could be extended to support multiple
-    DebtPositionDTO debtPositionDTO = debtPositionWithInstallmentList.getFirst().getLeft();
     InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
 
     //map debt position to Pagati
-    byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(debtPositionDTO, installmentDTO, organization, accessToken);
+    byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installmentDTO, organization, accessToken);
 
     //retrieve the original receipt
     byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);

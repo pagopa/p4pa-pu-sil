@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,16 +14,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-public class AccessTokenService {
+public class SilAccessTokenService {
   private final SilLegacyAuthFacadeService silLegacyAuthFacadeService;
 
   private final Map<Long, Pair<LocalDateTime, String>> orgSilServiceId2legacyAccessTokensMap = new ConcurrentHashMap<>();
 
-  public AccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
+  public SilAccessTokenService(SilLegacyAuthFacadeService silLegacyAuthFacadeService) {
       this.silLegacyAuthFacadeService = silLegacyAuthFacadeService;
   }
 
-  public String getAccessToken(OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
+  public String getSilAccessToken(String orgFiscalCode, String nav, UserInfo loggedUser, OrgSilServiceDTO orgSilService, String loggedUserAccessToken) {
     if (!orgSilService.getFlagLegacy()) {
       log.debug("Using current access token for orgSilServiceId: {}", orgSilService.getOrgSilServiceId());
       return loggedUserAccessToken;
@@ -33,7 +34,7 @@ public class AccessTokenService {
           orgSilService.getAuthConfig().getClass().getSimpleName(),
           orgSilService.getOrgSilServiceId());
         LocalDateTime tokenRequestDateTime = LocalDateTime.now();
-        AccessToken accessToken = silLegacyAuthFacadeService.authenticate(orgSilService.getAuthConfig());
+        AccessToken accessToken = silLegacyAuthFacadeService.authenticate(orgFiscalCode, nav, loggedUser, orgSilService);
         LocalDateTime expiration = tokenRequestDateTime.plusSeconds(accessToken.getExpiresIn() - 5L);
         return Pair.of(expiration, accessToken.getAccessToken());
       } else {

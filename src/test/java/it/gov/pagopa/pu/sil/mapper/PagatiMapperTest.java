@@ -95,7 +95,7 @@ class PagatiMapperTest {
     }), Mockito.eq(PagatiConRicevuta.class))).thenReturn(expectedBytes);
 
     // When
-    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(debtPosition, installment, organization, "accessToken");
+    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, "accessToken");
 
     // Then
     Assertions.assertEquals(expectedBytes, result);
@@ -154,7 +154,7 @@ class PagatiMapperTest {
     }), Mockito.eq(Pagati.class))).thenReturn(expectedBytes);
 
     // When
-    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagati(debtPosition, installment, organization, "accessToken");
+    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagati(installment, organization, "accessToken");
 
     // Then
     Assertions.assertEquals(expectedBytes, result);

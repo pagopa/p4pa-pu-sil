@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
 import it.gov.pagopa.pu.sil.service.legacyauth.SilLegacyAuthFacadeService;
@@ -16,16 +17,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class AccessTokenServiceTest {
+class SilAccessTokenServiceTest {
 
   @Mock
   private SilLegacyAuthFacadeService silLegacyAuthFacadeServiceMock;
 
-  private AccessTokenService service;
+  private SilAccessTokenService service;
 
   @BeforeEach
   void init(){
-    service = new AccessTokenService(silLegacyAuthFacadeServiceMock);
+    service = new SilAccessTokenService(silLegacyAuthFacadeServiceMock);
   }
 
   @AfterEach
@@ -34,7 +35,7 @@ class AccessTokenServiceTest {
   }
 
   @Test
-  void givenEmptyCacheWhenGetAccessTokenThenInvokeAndCache(){
+  void givenEmptyCacheWhenGetSilAccessTokenThenInvokeAndCache(){
     // Given
     AccessToken expectedResult = AccessToken.builder()
       .expiresIn(10)
@@ -47,16 +48,19 @@ class AccessTokenServiceTest {
 
     // Then
     Mockito.verify(silLegacyAuthFacadeServiceMock, Mockito.times(1))
-      .authenticate(Mockito.any());
+      .authenticate(Mockito.anyString(), Mockito.anyString(), Mockito.any(UserInfo.class), Mockito.any(OrgSilServiceDTO.class));
   }
 
   @Test
-  void givenLoggedUserAccessTokenWhenGetAccessTokenThenReturnToken() {
+  void givenLoggedUserAccessTokenWhenGetSilAccessTokenThenReturnToken() {
     // Given
     String token = "ACCESSTOKEN";
+    String orgFiscalCode = "orgFiscalCode";
+    String nav = "nav123";
+    UserInfo loggedUser = mock(UserInfo.class);
 
     OrgSilServiceDTO orgSilService = new OrgSilServiceDTO().flagLegacy(false);
-    String result = service.getAccessToken(orgSilService, token);
+    String result = service.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, token);
 
     Assertions.assertSame(token, result);
   }
@@ -64,17 +68,20 @@ class AccessTokenServiceTest {
   private void configureAndInvoke(AccessToken expectedResult) {
     // Given
     String token = "ACCESSTOKEN";
+    String orgFiscalCode = "orgFiscalCode";
+    String nav = "nav123";
+    UserInfo loggedUser = mock(UserInfo.class);
     SilServiceLegacyBasicAuthConfigDTO config = mock(SilServiceLegacyBasicAuthConfigDTO.class);
     OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
       .orgSilServiceId(1L)
       .authConfig(config)
       .flagLegacy(true);
-    Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(config))
+    Mockito.when(silLegacyAuthFacadeServiceMock.authenticate(orgFiscalCode, nav, loggedUser, orgSilService))
       .thenReturn(expectedResult);
 
     // When
-    String result1 = service.getAccessToken(orgSilService, token);
-    String result2 = service.getAccessToken(orgSilService, token);
+    String result1 = service.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, token);
+    String result2 = service.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, token);
 
     // Then
     Assertions.assertSame(expectedResult.getAccessToken(), result1);

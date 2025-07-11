@@ -74,4 +74,10 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   public ReceiptDTO getReceiptById(Long receiptId, String accessToken) {
     return client.getReceiptById(receiptId, accessToken);
   }
+
+  @Override
+  public InstallmentNoPII findAuthorizedByTransferSemanticKey(Long organizationId, String iuv, String iur, int transferIndex, String operatorExternalUserId, String accessToken) {
+    return client.findAuthorizedByTransferSemanticKey(
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+  }
 }

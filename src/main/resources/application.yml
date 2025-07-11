@@ -177,6 +177,11 @@ rest:
     max-attempts: "\${PAYMENT_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${PAYMENT_NOTIFICATION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PAYMENT_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+  classification:
+    base-url: "\${CLASSIFICATION_BASE_URL:}"
+    max-attempts: "\${CLASSIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${CLASSIFICATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${CLASSIFICATION_PRINT_BODY_WHEN_ERROR:true}"
   pagopa-payments:
     base-url: "\${PAGOPA_PAYMENTS_BASE_URL:}"
     max-attempts: "\${PAGOPA_PAYMENTS_MAX_ATTEMPTS:3}" # It's counting also the first attempt

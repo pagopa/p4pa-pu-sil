@@ -1,0 +1,32 @@
+package it.gov.pagopa.pu.sil.service.debtpositions;
+
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class DebtPositionFacadeService {
+  public static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
+    DebtPositionOrigin.ORDINARY,
+    DebtPositionOrigin.ORDINARY_SIL,
+    DebtPositionOrigin.SPONTANEOUS,
+    DebtPositionOrigin.SPONTANEOUS_SIL
+  );
+
+  private final DebtPositionService debtPositionService;
+
+  public DebtPositionFacadeService(DebtPositionService debtPositionService) {
+    this.debtPositionService = debtPositionService;
+  }
+
+  public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, String accessToken) {
+    return debtPositionService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, ALLOWED_ORIGINS, accessToken)
+      .stream()
+      .filter(i -> i.getStatus() != InstallmentStatus.CANCELLED)
+      .toList();
+  }
+}

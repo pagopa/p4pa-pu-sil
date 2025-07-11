@@ -269,6 +269,56 @@ class DebtPositionClientTest {
   }
 
   @Test
+  void whenFindAuthorizedByTransferSemanticKeyThenInvokeApi() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 1L;
+    String iuv = "IUV";
+    String iur = "IUR";
+    int transferIndex = 1;
+    String operatorExternalUserId = "OPERATOR_ID";
+
+    InstallmentNoPII expectedResult = new InstallmentNoPII();
+
+    Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
+      .thenReturn(installmentNoPiiSearchControllerApiMock);
+    Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
+        organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId))
+      .thenReturn(expectedResult);
+
+    // When
+    InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+
+    // Then
+    Assertions.assertEquals(expectedResult, result);
+  }
+
+  @Test
+  void whenFindAuthorizedByTransferSemanticKeyThenNotFound(){
+    //Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 1L;
+    String iuv = "IUV";
+    String iur = "IUR";
+    int transferIndex = 1;
+    String operatorExternalUserId = "OPERATOR_ID";
+
+    Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
+      .thenReturn(installmentNoPiiSearchControllerApiMock);
+    Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
+      organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId))
+      .thenThrow(HttpClientErrorException.NotFound.class);
+
+    // When
+    InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+
+    // Then
+    Assertions.assertNull(result);
+  }
+
+  @Test
   void whenManageDebtPositionInstallmentsThenInvokeApi() {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -288,5 +338,4 @@ class DebtPositionClientTest {
     Assertions.assertNotNull(result);
     Assertions.assertEquals(expectedResult, result.getBody());
   }
-
 }

@@ -194,6 +194,29 @@ class DebtPositionServiceTest {
   }
 
   @Test
+  void whenFindAuthorizedByTransferSemanticKeyThenReturnInstallment() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    Long organizationId = 1L;
+    String iuv = "IUV";
+    String iur = "IUR";
+    int transferIndex = 1;
+    String operatorExternalUserId = "OPERATOR_ID";
+
+    InstallmentNoPII expectedResult = new InstallmentNoPII();
+
+    Mockito.when(clientMock.findAuthorizedByTransferSemanticKey(
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken))
+      .thenReturn(expectedResult);
+
+    // When
+    InstallmentNoPII result = service.findAuthorizedByTransferSemanticKey(
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+    // Then
+    Assertions.assertEquals(expectedResult, result);
+  }
+
+  @Test
   void whenManageDebtPositionInstallmentsThenReturnDebtPositionDTO() {
     // Given
     DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
@@ -212,5 +235,4 @@ class DebtPositionServiceTest {
     Assertions.assertEquals(expectedResult.getBody(), result.getLeft());
     Assertions.assertEquals("workflow-id", result.getRight());
   }
-
 }
