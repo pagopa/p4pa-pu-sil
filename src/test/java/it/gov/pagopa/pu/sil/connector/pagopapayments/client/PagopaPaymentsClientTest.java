@@ -16,7 +16,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 @ExtendWith(MockitoExtension.class)
-class PrintPaymentsNoticeClientTest {
+class PagopaPaymentsClientTest {
 
   @Mock
   private PagoPaPaymentsApisHolder pagoPaPaymentsApisHolderMock;

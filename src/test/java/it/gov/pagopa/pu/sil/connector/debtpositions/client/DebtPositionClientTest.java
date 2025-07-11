@@ -328,8 +328,8 @@ class DebtPositionClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
       .thenReturn(debtPositionApiMock);
-    Mockito.when(debtPositionApiMock.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO))
-      .thenReturn(expectedResult);
+    Mockito.when(debtPositionApiMock.manageDebtPositionInstallmentsWithHttpInfo(debtPositionId, manageDebtPositionDTO))
+      .thenReturn(ResponseEntity.ok(expectedResult));
 
     // When
     ResponseEntity<DebtPositionDTO> result = client.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, accessToken);
