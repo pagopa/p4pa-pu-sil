@@ -192,4 +192,25 @@ class DebtPositionServiceTest {
     Assertions.assertEquals(expectedResult.getBody(), result.getLeft());
     Assertions.assertEquals("workflow-id", result.getRight());
   }
+
+  @Test
+  void whenManageDebtPositionInstallmentsThenReturnDebtPositionDTO() {
+    // Given
+    DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
+    Long debtPositionId = 1L;
+    String accessToken = "ACCESSTOKEN";
+    ManageDebtPositionDTO manageDebtPositionDTO = new ManageDebtPositionDTO();
+    ResponseEntity<DebtPositionDTO> expectedResult = ResponseEntity.ok().header("X-Workflow-Id", "workflow-id").body(new DebtPositionDTO());
+
+    Mockito.when(clientMock.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, accessToken)).thenReturn(expectedResult);
+
+    // When
+    Pair<DebtPositionDTO, String> result = service.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, accessToken);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(expectedResult.getBody(), result.getLeft());
+    Assertions.assertEquals("workflow-id", result.getRight());
+  }
+
 }

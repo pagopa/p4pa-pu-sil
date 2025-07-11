@@ -5,9 +5,13 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtAccertamento;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
+import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.co.jemos.podam.api.PodamFactory;
 
@@ -123,6 +127,7 @@ class ValidationUtilsTest {
     assertEquals(testType.equals("matching"), ValidationUtils.verifyBalanceAmount(balance, expectedResult));
   }
 
+  //region: verifyValidAnonymousDebtor-PersonDTO
   @Test
   void verifyValidAnonymousDebtor_AnonymousFiscalCode_ReturnsTrue() {
     DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg();
@@ -167,6 +172,54 @@ class ValidationUtilsTest {
 
     assertFalse(ValidationUtils.verifyValidAnonymousDebtor(null, personDTO));
   }
+  //endregion
+
+  //region: verifyValidAnonymousDebtor-CtIdentificativoUnivocoPersonaFG
+  @Test
+  void verifyValidAnonymousDebtor_AnonymousFiscalCodeCtIdentificativoUnivocoPersonaFG_ReturnsTrue() {
+    DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg();
+    debtPositionTypeOrg.setFlagAnonymousFiscalCode(true);
+
+    CtIdentificativoUnivocoPersonaFG fiscalCode = new CtIdentificativoUnivocoPersonaFG();
+    fiscalCode.setCodiceIdentificativoUnivoco(Constants.ANONYMOUS_FISCAL_CODE);
+    fiscalCode.setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.F);
+
+    assertTrue(ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, fiscalCode));
+  }
+
+  @Test
+  void verifyValidAnonymousDebtor_NonAnonymousFiscalCodeCtIdentificativoUnivocoPersonaFG_ReturnsTrue() {
+    DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg();
+    debtPositionTypeOrg.setFlagAnonymousFiscalCode(false);
+
+    CtIdentificativoUnivocoPersonaFG fiscalCode = new CtIdentificativoUnivocoPersonaFG();
+    fiscalCode.setCodiceIdentificativoUnivoco("RSSMRA85M01H501Z");
+    fiscalCode.setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.F);
+
+    assertTrue(ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, fiscalCode));
+  }
+
+  @Test
+  void verifyValidAnonymousDebtor_InvalidAnonymousFiscalCodeCtIdentificativoUnivocoPersonaFG_ReturnsFalse() {
+    DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg();
+    debtPositionTypeOrg.setFlagAnonymousFiscalCode(true);
+
+    CtIdentificativoUnivocoPersonaFG fiscalCode = new CtIdentificativoUnivocoPersonaFG();
+    fiscalCode.setCodiceIdentificativoUnivoco(Constants.ANONYMOUS_FISCAL_CODE);
+    fiscalCode.setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.G);
+
+    assertFalse(ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, fiscalCode));
+  }
+
+  @Test
+  void verifyValidAnonymousDebtor_NullDebtPositionTypeOrgCtIdentificativoUnivocoPersonaFG_ReturnsFalse() {
+    CtIdentificativoUnivocoPersonaFG fiscalCode = new CtIdentificativoUnivocoPersonaFG();
+    fiscalCode.setCodiceIdentificativoUnivoco("RSSMRA85M01H501Z");
+    fiscalCode.setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.F);
+
+    assertFalse(ValidationUtils.verifyValidAnonymousDebtor(null, fiscalCode));
+  }
+  //endregion
 
   @Test
   void isValidFiscalCodeNaturalPerson_ValidFiscalCode_ReturnsTrue() {
@@ -207,13 +260,14 @@ class ValidationUtilsTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/."})
+  @NullSource
   void isValidLegacyPaymentMetadataSecondary_ValidInputs_ReturnsTrue(String input) {
     assertTrue(ValidationUtils.isValidLegacyPaymentMetadataSecondary(input));
   }
 
   @ParameterizedTest
   @ValueSource(strings = {"InvalidData", "0/1234534AA/", "0/1234534IM", "0/123453IM/too_short", "0/123453FIM/invalid taxonomy", "0/1234534IM/ThisDataIsWayTooLongToBeValidBecauseItExceedsTheMaximumAllowedLengthOf138Characters12345678901234567890123456789012345678901234567890123456789012345678901234567890"})
-  @NullAndEmptySource
+  @EmptySource
   void isValidLegacyPaymentMetadataSecondary_InvalidInputs_ReturnsFalse(String input) {
     assertFalse(ValidationUtils.isValidLegacyPaymentMetadataSecondary(input));
   }

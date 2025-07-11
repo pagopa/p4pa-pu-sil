@@ -19,6 +19,15 @@ public interface DebtPositionService {
   Pair<DebtPositionDTO, String> createDebtPosition(DebtPositionDTO debtPositionDTO, String accessToken);
 
   /**
+   * Manages the installments of a debt position.
+   *
+   * @param debtPositionId the ID of the debt position
+   * @param manageDebtPositionDTO the DTO containing the details for installments to manage
+   * @param accessToken the access token for authentication
+   * @return a pair containing the updated DebtPositionDTO and the workflow ID from the response headers
+   */
+  Pair<DebtPositionDTO, String> manageDebtPositionInstallments(Long debtPositionId, ManageDebtPositionDTO manageDebtPositionDTO, String accessToken);
+                                                                 /**
    * Retrieves a list of InstallmentDTOs based on organization ID, NAV, and debt position origins.
    *
    * @param organizationId the ID of the organization
