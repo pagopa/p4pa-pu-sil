@@ -165,6 +165,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateREGISTRIES",
     "openApiGenerateWORKFLOWHUB",
     "openApiGenerateFILESHARE",
+    "openApiGeneratePAGOPAPAYMENTS",
     "openApiGenerateNodeCheckout",
     "openApiGenerateLegacyPaymentNofication",
     "openApiGenerateActualizationLegacy",
@@ -187,7 +188,7 @@ springBoot {
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePUSIL") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("spring")
   inputSpec.set("$rootDir/openapi/p4pa-pu-sil.openapi.yaml")
@@ -221,7 +222,7 @@ var targetEnv = when (Objects.requireNonNullElse(System.getProperty("targetBranc
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateP4PAAUTH") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-auth/refs/heads/$targetEnv/openapi/p4pa-auth.openapi.yaml")
@@ -249,7 +250,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateP4PASENDNOTIFICATION") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-send-notification/refs/heads/$targetEnv/openapi/generated.openapi.json")
@@ -277,7 +278,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePROCESSEXECUTION") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-process-executions/refs/heads/$targetEnv/openapi/generated.openapi.json")
@@ -308,7 +309,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateDEBTPOSITIONS") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-debt-positions/refs/heads/$targetEnv/openapi/generated.openapi.json")
@@ -339,7 +340,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateNodeCheckout") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/node_checkout.yaml")
@@ -366,7 +367,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateORGANIZATION") {
-  group = "AutomaticallyGeneratedCode"
+  group = "openapi"
   description = "openapi"
 
   generatorName.set("java")
@@ -396,7 +397,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateActualizationLegacy") {
   group = "openapi"
-  description = "description"
+  description = "openapi"
 
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/amount-updates-legacy.yaml")
@@ -423,7 +424,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateWORKFLOWHUB") {
-  group = "AutomaticallyGeneratedCode"
+  group = "openapi"
   description = "openapi"
 
   generatorName.set("java")
@@ -480,7 +481,7 @@ jaxb {
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateREGISTRIES") {
     group = "openapi"
-    description = "description"
+    description = "openapi"
 
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-registries/refs/heads/$targetEnv/openapi/generated.openapi.json")
@@ -508,7 +509,7 @@ jaxb {
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
     group = "openapi"
-    description = "description"
+    description = "openapi"
 
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-fileshare/refs/heads/$targetEnv/openapi/p4pa-fileshare.openapi.yaml")
@@ -540,7 +541,7 @@ jaxb {
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyPaymentNofication") {
     group = "openapi"
-    description = "description"
+    description = "openapi"
 
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/payment-notification-legacy.yaml")
@@ -587,6 +588,39 @@ jaxb {
       "useBeanValidation" to "true",
       "serializationLibrary" to "jackson",
       "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "enumPropertyNaming" to "original",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    ))
+    library.set("resttemplate")
+  }
+
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {
+    group = "openapi"
+    description = "openapi"
+
+    generatorName.set("java")
+    remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-pagopa-payments/refs/heads/$targetEnv/openapi/p4pa-pagopa-payments.openapi.yaml")
+    outputDir.set("$projectDir/build/generated")
+    invokerPackage.set("it.gov.pagopa.pu.pagopapayments.generated")
+    apiPackage.set("it.gov.pagopa.pu.pagopapayments.client.generated")
+    modelPackage.set("it.gov.pagopa.pu.pagopapayments.dto.generated")
+    typeMappings.set(mapOf(
+      "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
+    ))
+    configOptions.set(mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "useSpringBoot3" to "true",
+      "serializableModel" to "true",
+      "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
+      "useBeanValidation" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "useAbstractionForFiles" to "true",
       "generateConstructorWithAllArgs" to "true",
       "generatedConstructorWithRequiredArgs" to "true",
       "enumPropertyNaming" to "original",

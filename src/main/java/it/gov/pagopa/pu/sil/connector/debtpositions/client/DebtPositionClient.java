@@ -54,6 +54,12 @@ public class DebtPositionClient {
       .createDebtPositionWithHttpInfo(debtPositionDTO, false);
   }
 
+  public ResponseEntity<DebtPositionDTO> manageDebtPositionInstallments(Long debtPositionId, ManageDebtPositionDTO manageDebtPositionDTO, String accessToken) {
+    return debtPositionsApisHolder
+      .getDebtPositionApi(accessToken)
+      .manageDebtPositionInstallmentsWithHttpInfo(debtPositionId, manageDebtPositionDTO);
+  }
+
   public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
     return debtPositionsApisHolder
       .getInstallmentApi(accessToken)
