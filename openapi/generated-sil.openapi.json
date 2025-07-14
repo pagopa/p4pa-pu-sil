@@ -13,6 +13,9 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
+    "name" : "Massive",
+    "description" : "the Massive API"
+  }, {
     "name" : "SendNotification",
     "description" : "the SendNotification API"
   } ],
@@ -78,6 +81,109 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/CreateNotificationResponse"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/import" : {
+      "post" : {
+        "tags" : [ "Massive" ],
+        "summary" : "request a massive import operation",
+        "description" : "Service to request a massive import operation. The upload of the file is done invoking the url returned by this service. ",
+        "operationId" : "massiveImportRequest",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        }, {
+          "name" : "importFileType",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "$ref" : "#/components/schemas/IngestionFlowFileTypeEnum"
+          }
+        } ],
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportFileResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/export" : {
+      "post" : {
+        "tags" : [ "Massive" ],
+        "summary" : "request a massive export operation",
+        "description" : "Service to request a massive export operation.",
+        "operationId" : "massiveExportRequest",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ExportRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExportFileResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -199,6 +305,106 @@
           },
           "500" : {
             "description" : "Internal server error"
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/import/{importId}" : {
+      "get" : {
+        "tags" : [ "Massive" ],
+        "summary" : "request processing status of massive import operation",
+        "description" : "Service to request the processing status of massive import operation and the url to download output files (where applicable, based on processing status and import type). ",
+        "operationId" : "massiveImportStatus",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        }, {
+          "name" : "importId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ImportStatusResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/export/{exportId}" : {
+      "get" : {
+        "tags" : [ "Massive" ],
+        "summary" : "request processing status of export operation",
+        "description" : "Service to request the processing status of export operation and the url to download output files (where applicable, based on processing status and export type). ",
+        "operationId" : "massiveExportStatus",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        }, {
+          "name" : "exportId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExportStatusResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
           }
         },
         "security" : [ {
@@ -420,6 +626,99 @@
         "type" : "string",
         "enum" : [ "PEC" ]
       },
+      "ImportFileResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "importId" : {
+            "type" : "string"
+          },
+          "uploadUrl" : {
+            "type" : "string",
+            "description" : "The url to upload the file to, using a POST request with the file as body."
+          }
+        },
+        "required" : [ "importId", "uploadUrl" ]
+      },
+      "CodeEnum" : {
+        "type" : "string",
+        "enum" : [ "NOT_FOUND", "BAD_REQUEST", "INVALID_FILE", "FILE_UPLOAD_ERROR", "CONFLICT", "UNAUTHORIZED", "GENERIC_ERROR" ]
+      },
+      "PuSilErrorDTO" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "$ref" : "#/components/schemas/CodeEnum"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "message" ]
+      },
+      "IngestionFlowFileTypeEnum" : {
+        "type" : "string",
+        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "ASSESSMENTS", "ASSESSMENTS_REGISTRY" ]
+      },
+      "ExportFileResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "exportId" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "exportId" ]
+      },
+      "ExportFileTypeEnum" : {
+        "type" : "string",
+        "enum" : [ "PAID", "CLASSIFICATIONS", "PAYMENTS_REPORTING", "RECEIPTS_ARCHIVING" ]
+      },
+      "ExportRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "exportId" : {
+            "type" : "string"
+          },
+          "exportFileType" : {
+            "$ref" : "#/components/schemas/ExportFileTypeEnum"
+          },
+          "exportFilters" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/ExportRequestDTOExportFiltersValue"
+            }
+          },
+          "exportFlags" : {
+            "type" : "object",
+            "additionalProperties" : {
+              "$ref" : "#/components/schemas/ExportRequestDTOExportFlagsValue"
+            }
+          }
+        },
+        "required" : [ "exportFileType", "exportFilters", "exportId" ]
+      },
+      "ExportRequestDTOExportFiltersValue" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "key", "value" ]
+      },
+      "ExportRequestDTOExportFlagsValue" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "boolean"
+          }
+        }
+      },
       "NotificationStatus" : {
         "type" : "string",
         "enum" : [ "WAITING_FILE", "SENDING", "REGISTERED", "UPLOADED", "COMPLETE", "ACCEPTED" ]
@@ -474,6 +773,63 @@
           }
         },
         "required" : [ "debtPositionId", "navList" ]
+      },
+      "DownloadUrl" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "$ref" : "#/components/schemas/CodeEnum"
+          },
+          "url" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "url" ]
+      },
+      "ImportStatusResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "importId" : {
+            "type" : "string"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/StatusEnum"
+          },
+          "lastUpdateDateTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "downloadUrls" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DownloadUrl"
+            }
+          }
+        },
+        "required" : [ "importId", "status" ]
+      },
+      "StatusEnum" : {
+        "type" : "string",
+        "enum" : [ "TO_PROCESS", "PROCESSING", "PROCESSED_OK", "PROCESSED_ERROR", "PROCESSED_NO_DATA", "PROCESSED_MAX_ROWS_EXCEEDED" ]
+      },
+      "ExportStatusResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "exportId" : {
+            "type" : "string"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/StatusEnum"
+          },
+          "lastUpdateDateTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "downloadUrl" : {
+            "$ref" : "#/components/schemas/DownloadUrl"
+          }
+        },
+        "required" : [ "exportId", "status" ]
       }
     },
     "securitySchemes" : {
