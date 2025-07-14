@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -206,14 +207,14 @@ public class PuForOrganizationReconciliationEndpoint {
       contextData,
       request,
       () -> {
-        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeTreasuryIngestionFlowFile(
+        ImportFileResponseDTO result = ingestionFlowFileAuthorizationService.authorizeTreasuryIngestionFlowFile(
           userInfo,
           accessToken,
           orgIpaCode,
           request.getTipoFlusso());
         PivotSILAutorizzaImportFlussoTesoreriaRisposta response = new PivotSILAutorizzaImportFlussoTesoreriaRisposta();
-        response.setRequestToken(String.valueOf(result.getLeft()));
-        response.setUploadUrl(result.getRight());
+        response.setRequestToken(result.getImportId());
+        response.setUploadUrl(result.getUploadUrl());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
       this::handleIngestionFlowFileTypeValidationException
@@ -242,14 +243,14 @@ public class PuForOrganizationReconciliationEndpoint {
       contextData,
       request,
       () -> {
-        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+        ImportFileResponseDTO result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
           userInfo,
           accessToken,
           orgIpaCode,
           IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
         PivotSILAutorizzaImportFlussoRisposta response = new PivotSILAutorizzaImportFlussoRisposta();
-        response.setRequestToken(String.valueOf(result.getLeft()));
-        response.setUploadUrl(result.getRight());
+        response.setRequestToken(result.getImportId());
+        response.setUploadUrl(result.getUploadUrl());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
       FaultUtils.unauthorizedOrSystemExceptionHandler(
