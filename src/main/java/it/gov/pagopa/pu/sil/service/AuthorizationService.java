@@ -52,6 +52,7 @@ public class AuthorizationService {
     }
   }
 
+  @SuppressWarnings("java:S2637")
   public static String getOrgIpaCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
     if(loggedUser == null || organizationId == null) {
       return null;
@@ -60,6 +61,7 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  @SuppressWarnings("java:S2637")
   public static String getOrgIpaCodeFromUserInfo(UserInfo loggedUser, String organizationFiscalCode) {
     if(loggedUser == null || organizationFiscalCode == null) {
       return null;
@@ -68,6 +70,7 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  @SuppressWarnings("java:S2637")
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
     if(loggedUser == null || organizationId == null) {
       return null;
@@ -76,6 +79,7 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  @SuppressWarnings("java:S2637")
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
     if(loggedUser == null || organizationIpaCode == null) {
       return null;
@@ -84,6 +88,7 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  @SuppressWarnings("java:S2637")
   public static Long getOrganizationIdFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
     if(loggedUser == null || organizationIpaCode == null) {
       return null;
@@ -92,6 +97,7 @@ public class AuthorizationService {
       .orElse(null);
   }
 
+  @SuppressWarnings("java:S2637")
   public static Long getOrganizationIdFromOrgFiscalCode(UserInfo loggedUser, String organizationFiscalCode) {
     if(loggedUser == null || organizationFiscalCode == null) {
       return null;
