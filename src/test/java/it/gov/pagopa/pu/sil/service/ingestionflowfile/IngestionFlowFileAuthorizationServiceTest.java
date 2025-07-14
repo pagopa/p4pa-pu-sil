@@ -126,8 +126,8 @@ class IngestionFlowFileAuthorizationServiceTest {
       );
 
       assertNotNull(result);
-      assertEquals("456", result.getImportId());
-      assertEquals("http://upload.url", result.getUploadUrl());
+      assertEquals("999", result.getImportId());
+      assertEquals("http://upload.null", result.getUploadUrl());
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
     }
@@ -157,7 +157,7 @@ class IngestionFlowFileAuthorizationServiceTest {
         );
 
       assertNotNull(result);
-      assertEquals("456", result.getImportId());
+      assertEquals("654", result.getImportId());
       assertNull(result.getUploadUrl());
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());

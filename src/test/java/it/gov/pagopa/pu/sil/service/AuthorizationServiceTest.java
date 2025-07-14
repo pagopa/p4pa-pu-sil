@@ -338,7 +338,7 @@ class AuthorizationServiceTest {
     }
 
     // When
-    String result = AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, organizationFiscalCode);
+    String result = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, organizationFiscalCode);
 
     // Then
     Assertions.assertEquals(organizationIpaCode, result);
