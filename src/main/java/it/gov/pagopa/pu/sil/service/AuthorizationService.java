@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -37,7 +36,7 @@ public class AuthorizationService {
   }
 
   public static boolean isAdminRole(Long organizationId, UserInfo loggedUser) {
-    return findUserOrganizationRoles(loggedUser, org -> organizationId.equals(org.getOrganizationId()))
+    return findUserOrganizationRoles(loggedUser, organizationId, null, null)
       .filter(AuthorizationService::hasAdminRole)
       .isPresent();
   }
@@ -46,18 +45,17 @@ public class AuthorizationService {
     if (loggedUser == null) {
       return false;
     }
-    return findUserOrganizationRoles(loggedUser, org -> organizationIpaCode.equals(org.getOrganizationIpaCode()))
+    return findUserOrganizationRoles(loggedUser, null, organizationIpaCode, null)
       .filter(AuthorizationService::hasAdminRole)
       .isPresent();
   }
 
   public static void validateUserForOrganizationId(Long organizationId, UserInfo loggedUser) {
-    if (findUserOrganizationRoles(loggedUser, org -> organizationId.equals(org.getOrganizationId())).isEmpty()) {
+    if (findUserOrganizationRoles(loggedUser, organizationId, null, null).isEmpty()) {
       handleUnauthorizedUser(organizationId, loggedUser);
     }
   }
 
-  // Organization property extraction methods - keeping original method names for compatibility
   public static String getOrgIpaCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
     return extractOrganizationProperty(loggedUser, organizationId, null, null,
       UserOrganizationRoles::getOrganizationIpaCode);
@@ -89,34 +87,31 @@ public class AuthorizationService {
   }
 
   private static <T> T extractOrganizationProperty(UserInfo loggedUser, Long organizationId,
-      String organizationIpaCode, String organizationFiscalCode,
-      Function<UserOrganizationRoles, T> propertyExtractor) {
-
+                                                   String organizationIpaCode, String organizationFiscalCode,
+                                                   Function<UserOrganizationRoles, T> propertyExtractor) {
     if (loggedUser == null) {
       return null;
     }
-
-    Optional<UserOrganizationRoles> orgRoles = Optional.empty();
-    if (organizationId != null) {
-      orgRoles = findUserOrganizationRoles(loggedUser, org -> organizationId.equals(org.getOrganizationId()));
-    } else if (organizationIpaCode != null) {
-      orgRoles = findUserOrganizationRoles(loggedUser, org -> organizationIpaCode.equals(org.getOrganizationIpaCode()));
-    } else if (organizationFiscalCode != null) {
-      orgRoles = findUserOrganizationRoles(loggedUser, org -> organizationFiscalCode.equals(org.getOrganizationFiscalCode()));
-    }
-    return orgRoles.map(propertyExtractor).orElse(null);
+    return findUserOrganizationRoles(loggedUser, organizationId, organizationIpaCode, organizationFiscalCode)
+      .map(propertyExtractor)
+      .orElse(null);
   }
 
   private static Optional<UserOrganizationRoles> findUserOrganizationRoles(UserInfo loggedUser,
-      Predicate<UserOrganizationRoles> predicate) {
-
+                                                                           Long organizationId,
+                                                                           String organizationIpaCode,
+                                                                           String organizationFiscalCode) {
     if (loggedUser == null || CollectionUtils.isEmpty(loggedUser.getOrganizations())) {
       return Optional.empty();
     }
-
     return loggedUser.getOrganizations().stream()
       .filter(Objects::nonNull)
-      .filter(org -> predicate.test(org) && hasValidRoles(org))
+      .filter(org -> hasValidRoles(org) && (
+          (organizationId != null && organizationId.equals(org.getOrganizationId())) ||
+            (organizationIpaCode != null && organizationIpaCode.equals(org.getOrganizationIpaCode())) ||
+            (organizationFiscalCode != null && organizationFiscalCode.equals(org.getOrganizationFiscalCode()))
+        )
+      )
       .findFirst();
   }
 
