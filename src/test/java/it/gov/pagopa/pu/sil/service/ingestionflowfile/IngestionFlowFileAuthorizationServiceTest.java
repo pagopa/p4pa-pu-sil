@@ -3,11 +3,11 @@ package it.gov.pagopa.pu.sil.service.ingestionflowfile;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyType;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,7 +88,7 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileServiceMock.createIngestionFlowFileReservation(any(), eq(accessToken))).thenReturn(456L);
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn("http://upload.url");
 
-      Pair<Long, String> result = service.authorizeIngestionFlowFile(
+      ImportFileResponseDTO result = service.authorizeIngestionFlowFile(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -96,8 +96,8 @@ class IngestionFlowFileAuthorizationServiceTest {
       );
 
       assertNotNull(result);
-      assertEquals(456L, result.getLeft());
-      assertEquals("http://upload.url", result.getRight());
+      assertEquals("456", result.getImportId());
+      assertEquals("http://upload.url", result.getUploadUrl());
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
     }
@@ -117,7 +117,7 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileServiceMock.createIngestionFlowFileReservation(any(), eq(accessToken))).thenReturn(999L);
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn("http://upload.null");
 
-      Pair<Long, String> result = service.authorizeIngestionFlowFile(
+      ImportFileResponseDTO result = service.authorizeIngestionFlowFile(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -125,8 +125,8 @@ class IngestionFlowFileAuthorizationServiceTest {
       );
 
       assertNotNull(result);
-      assertEquals(999L, result.getLeft());
-      assertEquals("http://upload.null", result.getRight());
+      assertEquals("999", result.getImportId());
+      assertEquals("http://upload.null", result.getUploadUrl());
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
     }
@@ -147,7 +147,7 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileServiceMock.createIngestionFlowFileReservation(any(), eq(accessToken))).thenReturn(654L);
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn(null);
 
-      Pair<Long, String> result =
+      ImportFileResponseDTO result =
         service.authorizeIngestionFlowFile(
           userInfo,
           accessToken,
@@ -156,8 +156,8 @@ class IngestionFlowFileAuthorizationServiceTest {
         );
 
       assertNotNull(result);
-      assertEquals(654L, result.getLeft());
-      assertNull(result.getRight());
+      assertEquals("654", result.getImportId());
+      assertNull(result.getUploadUrl());
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
     }
@@ -177,7 +177,7 @@ class IngestionFlowFileAuthorizationServiceTest {
       when(ingestionFlowFileServiceMock.createIngestionFlowFileReservation(any(), eq(accessToken))).thenReturn(456L);
       when(ingestionFlowFileReservationServiceMock.generateUploadUrl(any())).thenReturn("http://upload.url");
 
-      Pair<Long, String> result = service.authorizeTreasuryIngestionFlowFile(
+      ImportFileResponseDTO result = service.authorizeTreasuryIngestionFlowFile(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -185,8 +185,8 @@ class IngestionFlowFileAuthorizationServiceTest {
       );
 
       assertNotNull(result);
-      assertEquals(456L, result.getLeft());
-      assertEquals("http://upload.url", result.getRight());
+      assertEquals("456", result.getImportId());
+      assertEquals("http://upload.url", result.getUploadUrl());
       verify(ingestionFlowFileServiceMock).createIngestionFlowFileReservation(any(), eq(accessToken));
       verify(ingestionFlowFileReservationServiceMock).generateUploadUrl(any());
     }

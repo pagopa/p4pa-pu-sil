@@ -237,7 +237,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
             i.getTransfers().forEach(t -> {
               TestUtils.checkNotNullFields(t, "transferId", "installmentId",
                 "stampType", "stampHashDocument", "stampProvincialResidence", "postalIban",
-                "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+                "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "mbdAttachment");
             });
           }
         });
