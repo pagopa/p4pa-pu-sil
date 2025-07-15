@@ -31,6 +31,7 @@ public class MassiveImportController implements MassiveApi {
   @Override
   public ResponseEntity<ImportFileResponseDTO> massiveImportRequest(String orgFiscalCode,
                                                                     IngestionFlowFileTypeEnum fileType) {
+    log.info("Received massive import request for orgFiscalCode: {}, fileType: {}", orgFiscalCode, fileType);
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
     String orgIpaCode = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode);
