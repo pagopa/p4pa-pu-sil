@@ -283,8 +283,8 @@ class NativeImportProcessingStatusServiceTest {
       .status(IngestionFlowFileStatus.COMPLETED)
       .organizationId(1L)
       .ingestionFlowFileId(1L)
-      .discardFileName("")
-      .pdfGeneratedId(null);
+      .discardFileName(null)
+      .pdfGeneratedId("pdf-123");
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -294,11 +294,12 @@ class NativeImportProcessingStatusServiceTest {
 
       assertEquals(IngestionFlowFileStatus.COMPLETED, result.getStatus());
       assertNotNull(result.getDownloadUrls());
-      assertEquals(1, result.getDownloadUrls().size());
+      assertEquals(2, result.getDownloadUrls().size());
 
-      DownloadUrl downloadUrl = result.getDownloadUrls().get(0);
-      assertEquals(DownloadUrl.CodeEnum.OUTPUT_FILE, downloadUrl.getCode());
-
+      DownloadUrl downloadUrlOutputFile = result.getDownloadUrls().getFirst();
+      assertEquals(DownloadUrl.CodeEnum.OUTPUT_FILE, downloadUrlOutputFile.getCode());
+      DownloadUrl downloadUrlPaymentNoticeFile = result.getDownloadUrls().get(1);
+      assertEquals(DownloadUrl.CodeEnum.PAYMENT_NOTICE_FILE, downloadUrlPaymentNoticeFile.getCode());
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }
   }
@@ -314,7 +315,7 @@ class NativeImportProcessingStatusServiceTest {
       .organizationId(1L)
       .ingestionFlowFileId(1L)
       .discardFileName(null)
-      .pdfGeneratedId("");
+      .pdfGeneratedId(null);
 
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
@@ -326,7 +327,7 @@ class NativeImportProcessingStatusServiceTest {
       assertNotNull(result.getDownloadUrls());
       assertEquals(1, result.getDownloadUrls().size());
 
-      DownloadUrl downloadUrl = result.getDownloadUrls().get(0);
+      DownloadUrl downloadUrl = result.getDownloadUrls().getFirst();
       assertEquals(DownloadUrl.CodeEnum.OUTPUT_FILE, downloadUrl.getCode());
 
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
