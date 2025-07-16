@@ -332,7 +332,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "integer",
+            "format" : "int64"
           }
         } ],
         "responses" : {
@@ -790,10 +791,11 @@
         "type" : "object",
         "properties" : {
           "importId" : {
-            "type" : "string"
+            "type" : "integer",
+            "format" : "int64"
           },
           "status" : {
-            "$ref" : "#/components/schemas/StatusEnum"
+            "$ref" : "#/components/schemas/IngestionFlowFileStatus"
           },
           "lastUpdateDateTime" : {
             "type" : "string",
@@ -808,9 +810,9 @@
         },
         "required" : [ "importId", "status" ]
       },
-      "StatusEnum" : {
+      "IngestionFlowFileStatus" : {
         "type" : "string",
-        "enum" : [ "TO_PROCESS", "PROCESSING", "PROCESSED_OK", "PROCESSED_ERROR", "PROCESSED_NO_DATA", "PROCESSED_MAX_ROWS_EXCEEDED" ]
+        "enum" : [ "UPLOADED", "PROCESSING", "COMPLETED", "ERROR", "WAITING_FILE" ]
       },
       "ExportStatusResponseDTO" : {
         "type" : "object",
@@ -830,6 +832,10 @@
           }
         },
         "required" : [ "exportId", "status" ]
+      },
+      "StatusEnum" : {
+        "type" : "string",
+        "enum" : [ "TO_PROCESS", "PROCESSING", "PROCESSED_OK", "PROCESSED_ERROR", "PROCESSED_NO_DATA", "PROCESSED_MAX_ROWS_EXCEEDED" ]
       }
     },
     "securitySchemes" : {
