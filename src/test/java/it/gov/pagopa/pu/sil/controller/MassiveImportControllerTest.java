@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.NativeImportProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class MassiveImportControllerTest {
   @Mock
   private IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationServiceMock;
   @Mock
-  private NativeImportProcessingStatusService nativeImportProcessingStatusServiceMock;
+  private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private RegistryLogger registryLoggerMock;
 
@@ -100,7 +100,7 @@ class MassiveImportControllerTest {
       authMock.when(() -> AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode))
         .thenReturn(userIpaCode);
 
-      when(nativeImportProcessingStatusServiceMock
+      when(ingestionFlowFileProcessingStatusServiceMock
         .getProcessingStatus(userInfo, accessToken, userIpaCode, importId))
         .thenReturn(expectedResult);
 

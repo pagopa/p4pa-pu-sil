@@ -22,7 +22,7 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.LegacyImportReconciliationProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -51,7 +51,7 @@ public class PuForOrganizationReconciliationEndpoint {
 
   private final RegistryLogger registryLogger;
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
-  private final LegacyImportReconciliationProcessingStatusService legacyImportReconciliationProcessingStatusService;
+  private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService;
   private final ExportFileProcessingStatusService exportFileProcessingStatusService;
   private final QueryAssessmentsService queryAssessmentsService;
@@ -131,7 +131,7 @@ public class PuForOrganizationReconciliationEndpoint {
       "pivotSILChiediStatoImportFlussoTesoreria");
 
     try {
-      ImportStatusResponseDTO processingStatusDTO = legacyImportReconciliationProcessingStatusService.getProcessingStatus(
+      ImportStatusResponseDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -166,7 +166,7 @@ public class PuForOrganizationReconciliationEndpoint {
       "pivotSILChiediStatoImportFlusso");
 
     try {
-      ImportStatusResponseDTO processingStatusDTO = legacyImportReconciliationProcessingStatusService.getProcessingStatus(
+      ImportStatusResponseDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,

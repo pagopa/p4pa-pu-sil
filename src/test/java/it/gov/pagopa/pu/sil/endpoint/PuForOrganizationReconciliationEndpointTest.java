@@ -24,7 +24,7 @@ import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.LegacyImportReconciliationProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
@@ -62,7 +62,7 @@ class PuForOrganizationReconciliationEndpointTest {
   @Mock
   private IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationServiceMock;
   @Mock
-  private LegacyImportReconciliationProcessingStatusService legacyImportReconciliationProcessingStatusServiceMock;
+  private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneServiceMock;
   @Mock
@@ -94,7 +94,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.verifyNoMoreInteractions(
       registryLoggerMock,
       ingestionFlowFileAuthorizationServiceMock,
-      legacyImportReconciliationProcessingStatusServiceMock,
+      ingestionFlowFileProcessingStatusServiceMock,
       pivotSILPrenotaExportFlussoRiconciliazioneServiceMock,
       exportFileProcessingStatusServiceMock,
       queryAssessmentsServiceMock
@@ -227,7 +227,7 @@ class PuForOrganizationReconciliationEndpointTest {
       IngestionFlowFileTypeEnum.TREASURY_XLS,
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
-    Mockito.when(legacyImportReconciliationProcessingStatusServiceMock.getProcessingStatus(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
 
@@ -255,7 +255,7 @@ class PuForOrganizationReconciliationEndpointTest {
     ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
-    Mockito.when(legacyImportReconciliationProcessingStatusServiceMock.getProcessingStatus(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
 

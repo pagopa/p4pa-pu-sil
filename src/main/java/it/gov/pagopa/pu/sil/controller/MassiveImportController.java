@@ -12,7 +12,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.NativeImportProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MassiveImportController implements MassiveApi {
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
-  private final NativeImportProcessingStatusService nativeImportProcessingStatusService;
+  private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final RegistryLogger registryLogger;
 
   public MassiveImportController(IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService,
-                                 NativeImportProcessingStatusService nativeImportProcessingStatusService,
+                                 IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService,
                                  RegistryLogger registryLogger) {
     this.ingestionFlowFileAuthorizationService = ingestionFlowFileAuthorizationService;
-    this.nativeImportProcessingStatusService = nativeImportProcessingStatusService;
+    this.ingestionFlowFileProcessingStatusService = ingestionFlowFileProcessingStatusService;
     this.registryLogger = registryLogger;
   }
 
@@ -69,7 +69,7 @@ public class MassiveImportController implements MassiveApi {
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
     String orgIpaCode = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode);
-    return ResponseEntity.ok(nativeImportProcessingStatusService.getProcessingStatus(
+    return ResponseEntity.ok(ingestionFlowFileProcessingStatusService.getProcessingStatus(
       userInfo,
       accessToken,
       orgIpaCode,

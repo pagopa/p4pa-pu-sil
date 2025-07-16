@@ -28,7 +28,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiS
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.LegacyImportReconciliationProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
@@ -66,7 +66,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
-  private final LegacyImportReconciliationProcessingStatusService legacyImportReconciliationProcessingStatusService;
+  private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto;
 
   private final PaaSILInviaDovutiService paaSILInviaDovutiService;
@@ -132,7 +132,7 @@ public class PuForOrganizationPaymentsEndpoint {
       "paaSILChiediStatoImportFlusso");
 
     try {
-      ImportStatusResponseDTO processingStatusDTO = legacyImportReconciliationProcessingStatusService.getProcessingStatus(
+      ImportStatusResponseDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -143,9 +143,9 @@ public class PuForOrganizationPaymentsEndpoint {
       processingStatusDTO.getDownloadUrls().forEach(
         url -> {
           switch (url.getCode()) {
-            case DISCARDED_FILE -> response.setUrlFileScarti(url.getUrl());
-            case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(url.getUrl());
-            case OUTPUT_FILE -> response.setUrlFileIUV(url.getUrl());
+            case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti())? url.getUrl() : null);
+            case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(Boolean.TRUE.equals(request.isFileAvvisi())? url.getUrl() : null);
+            case OUTPUT_FILE -> response.setUrlFileIUV(Boolean.TRUE.equals(request.isFileIUV())? url.getUrl() : null);
             case INPUT_FILE -> log.debug("Ignoring INPUT_FILE download URL in response, as it is not relevant for this operation.");
           }
         }

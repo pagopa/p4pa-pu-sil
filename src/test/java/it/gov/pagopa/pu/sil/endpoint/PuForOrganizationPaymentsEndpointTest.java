@@ -29,7 +29,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiS
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.LegacyImportReconciliationProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
@@ -80,7 +80,7 @@ class PuForOrganizationPaymentsEndpointTest {
   @Mock
   private RegistryExtraInfoHandlerPaaSILInviaCarrelloDovuti registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock;
   @Mock
-  private LegacyImportReconciliationProcessingStatusService legacyImportReconciliationProcessingStatusServiceMock;
+  private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private PaaSILPrenotaExportFlussoService paaSILPrenotaExportFlussoServiceMock;
   @Mock
@@ -126,7 +126,7 @@ class PuForOrganizationPaymentsEndpointTest {
       ingestionFlowFileAuthorizationServiceMock,
       paaSILImportaDovutoServiceMock,
       registryExtraInfoHandlerPaaSILImportaDovutoServiceMock,
-      legacyImportReconciliationProcessingStatusServiceMock,
+      ingestionFlowFileProcessingStatusServiceMock,
       paaSILPrenotaExportFlussoServiceMock,
       paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock,
       exportFileProcessingStatusServiceMock
@@ -216,7 +216,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(legacyImportReconciliationProcessingStatusServiceMock.getProcessingStatus(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
 
