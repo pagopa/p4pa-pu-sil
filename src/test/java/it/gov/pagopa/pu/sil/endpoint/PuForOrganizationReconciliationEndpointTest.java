@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.Ingest
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -24,7 +25,7 @@ import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.LegacyImportReconciliationProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
@@ -62,7 +63,7 @@ class PuForOrganizationReconciliationEndpointTest {
   @Mock
   private IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationServiceMock;
   @Mock
-  private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
+  private LegacyImportReconciliationProcessingStatusService legacyImportReconciliationProcessingStatusServiceMock;
   @Mock
   private PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneServiceMock;
   @Mock
@@ -94,7 +95,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.verifyNoMoreInteractions(
       registryLoggerMock,
       ingestionFlowFileAuthorizationServiceMock,
-      ingestionFlowFileProcessingStatusServiceMock,
+      legacyImportReconciliationProcessingStatusServiceMock,
       pivotSILPrenotaExportFlussoRiconciliazioneServiceMock,
       exportFileProcessingStatusServiceMock,
       queryAssessmentsServiceMock
@@ -219,7 +220,7 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+    ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
     IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
@@ -227,7 +228,7 @@ class PuForOrganizationReconciliationEndpointTest {
       IngestionFlowFileTypeEnum.TREASURY_XLS,
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+    Mockito.when(legacyImportReconciliationProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
 
@@ -252,10 +253,10 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+    ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+    Mockito.when(legacyImportReconciliationProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
 

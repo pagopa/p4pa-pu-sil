@@ -7,8 +7,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
-import it.veneto.regione.pagamenti.ente.PaaSILChiediStatoImportFlusso;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,16 +21,18 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class IngestionFlowFileProcessingStatusServiceTest {
+class LegacyImportReconciliationProcessingStatusServiceTest {
   @Mock
   IngestionFlowFileService ingestionFlowFileServiceMock;
 
-  private IngestionFlowFileProcessingStatusService service;
+  private LegacyImportReconciliationProcessingStatusService service;
 
   @BeforeEach
   void setUp() {
-    service = new IngestionFlowFileProcessingStatusService(ingestionFlowFileServiceMock,
-      "http://fileshare.example.com");
+    service = new LegacyImportReconciliationProcessingStatusService(
+      "http://fileshare.example.com",
+      ingestionFlowFileServiceMock
+    );
   }
 
   @AfterEach
@@ -40,7 +41,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
   }
 
   @Test
-  void givenUserNotAdminWhenGetIngestionFlowFileThenKo() {
+  void givenUserNotAdminWhenGetProcessingStatusThenKo() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
@@ -50,14 +51,14 @@ class IngestionFlowFileProcessingStatusServiceTest {
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
       assertThrows(UnauthorizedException.class, () ->
-        service.getIngestionFlowFile(userInfo, accessToken, orgIpaCode, 1L, type)
+        service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, type)
       );
       verifyNoInteractions(ingestionFlowFileServiceMock);
     }
   }
 
   @Test
-  void givenUserAdminWhenGetIngestionFlowFileThenOk() {
+  void givenUserAdminWhenGetProcessingStatusThenOk() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
@@ -72,7 +73,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
       when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken))
         .thenReturn(expectedIngestionFlowFile);
 
-      IngestionFlowFile result = service.getIngestionFlowFile(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+      ImportStatusResponseDTO result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
       assertNotNull(result);
       assertEquals(expectedIngestionFlowFile.getStatus(), result.getStatus());
@@ -82,7 +83,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
   }
 
   @Test
-  void givenTypeMismatchWhenGetIngestionFlowFileThenThrowException() {
+  void givenTypeMismatchWhenGetProcessingStatusThenThrowException() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
@@ -96,7 +97,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
         .thenReturn(expectedIngestionFlowFile);
 
       assertThrows(IllegalArgumentException.class, () ->
-        service.getIngestionFlowFile(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.TREASURY_OPI)
+        service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.TREASURY_OPI)
       );
 
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
@@ -104,7 +105,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
   }
 
   @Test
-  void givenStatusNotCompletedWhenGetProcessingStatusThenNoUrls() {
+  void givenStatusProcessingWhenGetProcessingStatusThenReturnProcessingStatus() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
@@ -114,23 +115,20 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .status(IngestionFlowFileStatus.PROCESSING)
       .organizationId(1L)
       .ingestionFlowFileId(1L);
+
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken)).thenReturn(ingestionFlowFile);
-      PaaSILChiediStatoImportFlusso req = new PaaSILChiediStatoImportFlusso();
-      req.setFileScarti(true);
-      req.setFileAvvisi(true);
-      req.setFileIUV(true);
-      PaymentsProcessingStatusDTO result = service.getProcessingStatus(req, userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-      assertNull(result.getUrlErrors());
-      assertNull(result.getUrlNotice());
-      assertNull(result.getUrlImported());
+
+      ImportStatusResponseDTO result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+
+      assertEquals(IngestionFlowFileStatus.PROCESSING, result.getStatus());
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }
   }
 
   @Test
-  void givenStatusCompletedAndAllFlagsTrueWhenGetProcessingStatusThenAllUrlsSet() {
+  void givenStatusCompletedWhenGetProcessingStatusThenReturnCompletedStatus() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
@@ -140,72 +138,38 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .status(IngestionFlowFileStatus.COMPLETED)
       .organizationId(1L)
       .ingestionFlowFileId(1L);
+
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken)).thenReturn(ingestionFlowFile);
-      PaaSILChiediStatoImportFlusso req = new PaaSILChiediStatoImportFlusso();
-      req.setFileScarti(true);
-      req.setFileAvvisi(true);
-      req.setFileIUV(true);
-      PaymentsProcessingStatusDTO result = service.getProcessingStatus(req, userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-      assertEquals("http://fileshare.example.com/organization/1/ingestionflowfiles/1/errors", result.getUrlErrors());
-      assertEquals("http://fileshare.example.com/organization/1/ingestionflowfiles/1/notice", result.getUrlNotice());
-      assertEquals("http://fileshare.example.com/organization/1/ingestionflowfiles/1/imported", result.getUrlImported());
+
+      ImportStatusResponseDTO result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+
+      assertEquals(IngestionFlowFileStatus.COMPLETED, result.getStatus());
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }
   }
 
   @Test
-  void givenStatusCompletedAndAllFlagsFalseWhenGetProcessingStatusThenNoUrlsSet() {
+  void givenStatusFailedWhenGetProcessingStatusThenReturnFailedStatus() {
     UserInfo userInfo = new UserInfo();
     userInfo.setUserId("user1");
     String orgIpaCode = "ORG1";
     String accessToken = "token";
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile()
       .ingestionFlowFileType(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
-      .status(IngestionFlowFileStatus.COMPLETED)
+      .status(IngestionFlowFileStatus.ERROR)
       .organizationId(1L)
       .ingestionFlowFileId(1L);
+
     try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
       authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
       when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken)).thenReturn(ingestionFlowFile);
-      PaaSILChiediStatoImportFlusso req = new PaaSILChiediStatoImportFlusso();
-      req.setFileScarti(false);
-      req.setFileAvvisi(false);
-      req.setFileIUV(false);
-      PaymentsProcessingStatusDTO result = service.getProcessingStatus(req, userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-      assertNull(result.getUrlErrors());
-      assertNull(result.getUrlNotice());
-      assertNull(result.getUrlImported());
+
+      ImportStatusResponseDTO result = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+
+      assertEquals(IngestionFlowFileStatus.ERROR, result.getStatus());
       verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
     }
   }
-
-  @Test
-  void givenStatusCompletedAndOnlySomeFlagsTrueWhenGetProcessingStatusThenOnlySomeUrlsSet() {
-    UserInfo userInfo = new UserInfo();
-    userInfo.setUserId("user1");
-    String orgIpaCode = "ORG1";
-    String accessToken = "token";
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile()
-      .ingestionFlowFileType(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
-      .status(IngestionFlowFileStatus.COMPLETED)
-      .organizationId(1L)
-      .ingestionFlowFileId(1L);
-    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
-      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(true);
-      when(ingestionFlowFileServiceMock.getIngestionFlowFile(1L, accessToken)).thenReturn(ingestionFlowFile);
-      PaaSILChiediStatoImportFlusso req = new PaaSILChiediStatoImportFlusso();
-      req.setFileScarti(true);
-      req.setFileAvvisi(false);
-      req.setFileIUV(true);
-      PaymentsProcessingStatusDTO result = service.getProcessingStatus(req, userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-      assertEquals("http://fileshare.example.com/organization/1/ingestionflowfiles/1/errors", result.getUrlErrors());
-      assertNull(result.getUrlNotice());
-      assertEquals("http://fileshare.example.com/organization/1/ingestionflowfiles/1/imported", result.getUrlImported());
-      verify(ingestionFlowFileServiceMock).getIngestionFlowFile(1L, accessToken);
-    }
-  }
-
-
 }

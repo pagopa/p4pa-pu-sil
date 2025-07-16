@@ -6,8 +6,8 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -28,7 +28,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiS
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.LegacyImportReconciliationProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
@@ -66,7 +66,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
-  private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
+  private final LegacyImportReconciliationProcessingStatusService legacyImportReconciliationProcessingStatusService;
   private final RegistryExtraInfoHandlerPaaSILImportaDovuto registryExtraInfoHandlerPaaSILImportaDovuto;
 
   private final PaaSILInviaDovutiService paaSILInviaDovutiService;
@@ -132,8 +132,7 @@ public class PuForOrganizationPaymentsEndpoint {
       "paaSILChiediStatoImportFlusso");
 
     try {
-      PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
-        request,
+      ImportStatusResponseDTO processingStatusDTO = legacyImportReconciliationProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -141,9 +140,16 @@ public class PuForOrganizationPaymentsEndpoint {
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
       PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
       response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
-      response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
-      response.setUrlFileIUV(processingStatusDTO.getUrlImported());
-      response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
+      processingStatusDTO.getDownloadUrls().forEach(
+        url -> {
+          switch (url.getCode()) {
+            case DISCARDED_FILE -> response.setUrlFileScarti(url.getUrl());
+            case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(url.getUrl());
+            case OUTPUT_FILE -> response.setUrlFileIUV(url.getUrl());
+            case INPUT_FILE -> log.debug("Ignoring INPUT_FILE download URL in response, as it is not relevant for this operation.");
+          }
+        }
+      );
       return response;
     } catch (Exception e) {
       return FaultUtils.unauthorizedOrSystemExceptionHandler(
