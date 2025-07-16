@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,9 +36,8 @@ public class IngestionFlowFileProcessingStatusService {
     Long ingestionFlowFileId,
     IngestionFlowFile.IngestionFlowFileTypeEnum... expectedTypes) {
 
-    String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", clientId, orgIpaCode);
+      log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", userInfo.getUserId(), orgIpaCode);
       throw new UnauthorizedException("Utente non autorizzato");
     }
 
