@@ -3,12 +3,14 @@ package it.gov.pagopa.pu.sil.controller;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
+import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,8 @@ import static org.mockito.Mockito.when;
 class MassiveImportControllerTest {
   @Mock
   private IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationServiceMock;
+  @Mock
+  private IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusServiceMock;
   @Mock
   private RegistryLogger registryLoggerMock;
 
@@ -81,5 +85,32 @@ class MassiveImportControllerTest {
       Assertions.assertSame(expectedResult, response.getBody());
     }
 
+  }
+
+  @Test
+  void whenMassiveImportStatusThenOk() {
+    // Given
+    String orgFiscalCode = "ORG123456789";
+    Long importId = 123L;
+    String accessToken = "fakeAccessToken";
+    String userIpaCode = "userIpaCode";
+    ImportStatusResponseDTO expectedResult = new ImportStatusResponseDTO();
+
+    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
+      authMock.when(() -> AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode))
+        .thenReturn(userIpaCode);
+
+      when(ingestionFlowFileProcessingStatusServiceMock
+        .getProcessingStatus(userInfo, accessToken, userIpaCode, importId))
+        .thenReturn(expectedResult);
+
+      // When
+      ResponseEntity<ImportStatusResponseDTO> response = controller
+        .massiveImportStatus(orgFiscalCode, importId);
+
+      // Then
+      Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+      Assertions.assertSame(expectedResult, response.getBody());
+    }
   }
 }

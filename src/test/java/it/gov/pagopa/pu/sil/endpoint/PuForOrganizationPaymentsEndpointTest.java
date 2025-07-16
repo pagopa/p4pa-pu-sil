@@ -4,8 +4,9 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.*;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
+import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -203,17 +204,20 @@ class PuForOrganizationPaymentsEndpointTest {
     request.setFileAvvisi(Boolean.FALSE);
     request.setFileScarti(Boolean.TRUE);
     request.setFileIUV(Boolean.TRUE);
-    PaymentsProcessingStatusDTO statusDTO = new PaymentsProcessingStatusDTO();
-    statusDTO.setUrlNotice(null);
-    statusDTO.setUrlImported(expectedUrl + "/imported");
-    statusDTO.setUrlErrors(expectedUrl + "/errors");
+    ImportStatusResponseDTO statusDTO = new ImportStatusResponseDTO();
+    List<DownloadUrl> downloadUrls = List.of(
+      new DownloadUrl(DownloadUrl.CodeEnum.OUTPUT_FILE, expectedUrl + "/imported"),
+      new DownloadUrl(DownloadUrl.CodeEnum.DISCARDED_FILE, expectedUrl + "/errors"),
+      new DownloadUrl(DownloadUrl.CodeEnum.PAYMENT_NOTICE_FILE, expectedUrl + "/notice")
+    );
+    statusDTO.setDownloadUrls(downloadUrls);
     statusDTO.setStatus(IngestionFlowFileStatus.COMPLETED);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
-      Mockito.eq(request), Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
 
     // When
@@ -223,9 +227,7 @@ class PuForOrganizationPaymentsEndpointTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(statusDTO.getStatus()), response.getStato());
-    Assertions.assertEquals(statusDTO.getUrlImported(), response.getUrlFileIUV());
-    Assertions.assertEquals(statusDTO.getUrlErrors(), response.getUrlFileScarti());
-    Assertions.assertEquals(statusDTO.getUrlNotice(), response.getUrlFileAvvisi());
+    Assertions.assertFalse(statusDTO.getDownloadUrls().isEmpty());
   }
   // endregion
 

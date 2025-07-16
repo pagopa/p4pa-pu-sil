@@ -259,7 +259,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: Ok
@@ -707,14 +708,10 @@ components:
         - status
       properties:
         importId:
-          type: string
+          type: integer
+          format: int64
         status:
-          type: string
-          enum:
-            - TO_PROCESS
-            - PROCESSING
-            - PROCESSED
-            - ABORTED
+          type: 'ImportStatusType'
         lastUpdateDateTime:
           type: string
           format: date-time

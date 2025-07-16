@@ -3,11 +3,11 @@ package it.gov.pagopa.pu.sil.endpoint;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -131,7 +131,7 @@ public class PuForOrganizationReconciliationEndpoint {
       "pivotSILChiediStatoImportFlussoTesoreria");
 
     try {
-      IngestionFlowFile ingestionFlowFile = ingestionFlowFileProcessingStatusService.getIngestionFlowFile(
+      ImportStatusResponseDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -141,7 +141,7 @@ public class PuForOrganizationReconciliationEndpoint {
         IngestionFlowFileTypeEnum.TREASURY_XLS,
         IngestionFlowFileTypeEnum.TREASURY_POSTE);
       PivotSILChiediStatoImportFlussoTesoreriaRisposta response = new PivotSILChiediStatoImportFlussoTesoreriaRisposta();
-      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()));
+      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
       return response;
     } catch (Exception e) {
       return FaultUtils.unauthorizedOrSystemExceptionHandler(
@@ -166,14 +166,14 @@ public class PuForOrganizationReconciliationEndpoint {
       "pivotSILChiediStatoImportFlusso");
 
     try {
-      IngestionFlowFile ingestionFlowFile = ingestionFlowFileProcessingStatusService.getIngestionFlowFile(
+      ImportStatusResponseDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,
         Long.valueOf(request.getRequestToken()),
         IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION);
       PivotSILChiediStatoImportFlussoRisposta response = new PivotSILChiediStatoImportFlussoRisposta();
-      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(ingestionFlowFile.getStatus()));
+      response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
       return response;
     } catch (Exception e) {
       return FaultUtils.unauthorizedOrSystemExceptionHandler(

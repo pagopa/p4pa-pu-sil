@@ -4,11 +4,11 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -219,7 +219,7 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+    ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
     IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
@@ -227,7 +227,7 @@ class PuForOrganizationReconciliationEndpointTest {
       IngestionFlowFileTypeEnum.TREASURY_XLS,
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
 
@@ -252,10 +252,10 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+    ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
 
