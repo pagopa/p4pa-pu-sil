@@ -596,6 +596,9 @@ jaxb {
       "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
     ))
     library.set("resttemplate")
+    typeMappings.set(mapOf(
+      "LocalDateTime" to "java.time.LocalDateTime"
+    ))
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {
