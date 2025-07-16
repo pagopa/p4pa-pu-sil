@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService
 import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
