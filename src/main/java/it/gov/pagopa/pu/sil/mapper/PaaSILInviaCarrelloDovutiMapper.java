@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
@@ -36,11 +36,11 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
   private final TaxonomyService taxonomyService;
 
   public PaaSILInviaCarrelloDovutiMapper(JAXBTransformService jaxbTransformService,
-                                         DebtPositionService debtPositionService,
+                                         DebtPositionTypeService debtPositionTypeService,
                                          PersonMapper personMapper,
                                          ValidationService validationService,
                                          TaxonomyService taxonomyService) {
-    super(jaxbTransformService, debtPositionService, validationService, personMapper);
+    super(jaxbTransformService, debtPositionTypeService, validationService, personMapper);
     this.taxonomyService = taxonomyService;
   }
 
@@ -139,9 +139,9 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(legacyPaymentMetadata);
     if (category == null) {
       // Retrieve the category from the DebtPositionTypeOrg using the debtPositionTypeOrgId
-      DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
+      DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
         organizationId, debtPositionTypeOrgCode, accessToken);
-      DebtPositionType debtPositionType = debtPositionService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
+      DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
       category = debtPositionType.getTaxonomyCode();
     }
     if (StringUtils.isBlank(category)) {

@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
+import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiConRicevuta;
@@ -71,7 +71,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
 
       return sessionIdMapper.mapSessionIdToInstallmentIds(request.getIdSession()).stream()
         //search for the debt position by installmentId
-        .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionByInstallmentId(installmentId, accessToken)))
+        .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
         //find the installment in the debt position
         .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
           installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
@@ -81,7 +81,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
       debtPositionNotFoundFault = SilFaults.PAA_IUD_NON_VALIDO;
 
       return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-          organization.getOrganizationId(), request.getIdentificativoUnivocoDovuto(), DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)
+          organization.getOrganizationId(), request.getIdentificativoUnivocoDovuto(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
         .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
         .findFirst()
         .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
@@ -93,7 +93,7 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
 
       //search for the debt position by identificativoUnivocoVersamento
       return debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-          organization.getOrganizationId(), request.getIdentificativoUnivocoVersamento(), DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)
+          organization.getOrganizationId(), request.getIdentificativoUnivocoVersamento(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
         .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
         .findFirst()
         .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,

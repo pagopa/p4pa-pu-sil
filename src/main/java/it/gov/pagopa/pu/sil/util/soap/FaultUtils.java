@@ -2,11 +2,11 @@ package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.Risposta;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -77,7 +77,7 @@ public class FaultUtils {
       SilFaults unauthorizedFault,
       SilFaults systemErrorFault) {
     return (Exception e) -> {
-      if (e instanceof UnauthorizedException ue) {
+      if (e instanceof AuthorizationDeniedException ue) {
         return setFaultOnResponse(
           responseObj,
           unauthorizedFault,

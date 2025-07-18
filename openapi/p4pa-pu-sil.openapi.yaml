@@ -160,7 +160,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
   /internal/orgSilService/{orgSilServiceId}/notify-payment:
-    get:
+    post:
       tags:
         - notifyPayment
       summary: notifyPayment
@@ -173,11 +173,11 @@ paths:
           schema:
             type: integer
             format: int64
-        - name: nav
-          in: query
-          required: true
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: 'InstallmentDTO'
       responses:
         '200':
           description: OK

@@ -8,7 +8,6 @@ import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,12 +33,9 @@ public class IngestionFlowFileProcessingStatusService {
     String accessToken,
     String orgIpaCode,
     Long ingestionFlowFileId,
-    IngestionFlowFile.IngestionFlowFileTypeEnum... expectedTypes) {
-
-    if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", userInfo.getUserId(), orgIpaCode);
-      throw new UnauthorizedException("Utente non autorizzato");
-    }
+    IngestionFlowFile.IngestionFlowFileTypeEnum... expectedTypes
+  ) {
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
 
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
     log.debug("Retrieved IngestionFlowFile: {}", ingestionFlowFile);

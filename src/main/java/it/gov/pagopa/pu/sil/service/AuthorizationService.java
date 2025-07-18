@@ -3,14 +3,14 @@ package it.gov.pagopa.pu.sil.service;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -28,10 +28,16 @@ public class AuthorizationService {
     return authClientImpl.getUserInfo(accessToken);
   }
 
-  public void validateAdminRole(Long organizationId, UserInfo loggedUser) {
+  public static void validateAdminRole(Long organizationId, UserInfo loggedUser) {
     boolean roleAdmin = isAdminRole(organizationId, loggedUser);
     if (!roleAdmin) {
       handleUnauthorizedUser(organizationId, loggedUser);
+    }
+  }
+  public static void validateAdminRole(String organizationIpaCode, UserInfo loggedUser) {
+    boolean roleAdmin = isAdminRole(organizationIpaCode, loggedUser);
+    if (!roleAdmin) {
+      handleUnauthorizedUser(organizationIpaCode, loggedUser);
     }
   }
 
@@ -127,5 +133,11 @@ public class AuthorizationService {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
     String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : "unknown";
     throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + userId);
+  }
+
+  private static void handleUnauthorizedUser(String orgIpaCode, UserInfo loggedUser) {
+    log.debug("Unauthorized user. [orgIpaCode:{}]", orgIpaCode);
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : "unknown";
+    throw new AuthorizationDeniedException("Access denied on orgIpaCode " + orgIpaCode + " to user " + userId);
   }
 }

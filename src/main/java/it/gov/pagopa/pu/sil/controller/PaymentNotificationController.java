@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.controller;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.sil.controller.generated.NotifyPaymentApi;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.paymentnotification.PaymentNotificationService;
@@ -17,9 +18,9 @@ public class PaymentNotificationController implements NotifyPaymentApi {
   }
 
   @Override
-  public ResponseEntity<Void> notifyPayment(Long orgSilServiceId, String nav) {
-    log.info("Requested payment notification for orgSilServiceId: {}, nav: {}", orgSilServiceId, nav);
-    paymentNotificationService.notifyPayment(orgSilServiceId, nav,
+  public ResponseEntity<Void> notifyPayment(Long orgSilServiceId, InstallmentDTO installmentDTO) {
+    log.info("Requested payment notification for orgSilServiceId: {}, nav: {}", orgSilServiceId, installmentDTO.getNav());
+    paymentNotificationService.notifyPayment(orgSilServiceId, installmentDTO,
       SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
     return ResponseEntity.ok().build();
   }

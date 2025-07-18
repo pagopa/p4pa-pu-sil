@@ -1,7 +1,11 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.controller.generated.*;
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -24,17 +28,9 @@ class DebtPositionClientTest {
   @Mock
   private DebtPositionsApisHolder apisHolderMock;
   @Mock
-  private DebtPositionTypeOrgSearchControllerApi debtPositionTypeOrgSearchControllerApiMock;
-  @Mock
-  private DebtPositionTypeEntityControllerApi debtPositionTypeEntityControllerApiMock;
-  @Mock
-  private InstallmentApi installmentApiMock;
-  @Mock
-  private InstallmentNoPiiSearchControllerApi installmentNoPiiSearchControllerApiMock;
-  @Mock
   private DebtPositionApi debtPositionApiMock;
   @Mock
-  private ReceiptApi receiptApiMock;
+  private DebtPositionSearchControllerApi debtPositionSearchControllerApiMock;
 
 
   private DebtPositionClient client;
@@ -48,113 +44,9 @@ class DebtPositionClientTest {
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(
       apisHolderMock,
-      debtPositionTypeOrgSearchControllerApiMock,
-      debtPositionTypeEntityControllerApiMock,
-      installmentApiMock
+      debtPositionApiMock,
+      debtPositionSearchControllerApiMock
       );
-  }
-
-  @Test
-  void whenGetDebtPositionTypeOrgByOrganizationIdAndCodeThenInvokeApi(){
-    //Given
-    String accessToken = "ACCESSTOKEN";
-    long debtPositionTypeOrgId = 1L;
-    String debtPositionTypeOrgCode = "CODE";
-    DebtPositionTypeOrg expectedResult = new DebtPositionTypeOrg();
-
-    Mockito.when(apisHolderMock.getDebtPositionTypeOrgSearchControllerApi(accessToken))
-      .thenReturn(debtPositionTypeOrgSearchControllerApiMock);
-    Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode))
-      .thenReturn(expectedResult);
-
-    // When
-    DebtPositionTypeOrg result = client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
-
-    // Then
-    Assertions.assertSame(expectedResult, result);
-  }
-
-  @Test
-  void givenNotExistentTypeOrgWhenGetDebtPositionTypeOrgByOrganizationIdAndCodeThenNull(){
-    //Given
-    String accessToken = "ACCESSTOKEN";
-    long debtPositionTypeOrgId = 1L;
-    String debtPositionTypeOrgCode = "CODE";
-
-    Mockito.when(apisHolderMock.getDebtPositionTypeOrgSearchControllerApi(accessToken))
-      .thenReturn(debtPositionTypeOrgSearchControllerApiMock);
-    Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode))
-      .thenThrow(HttpClientErrorException.NotFound.class);
-
-    // When
-    DebtPositionTypeOrg response = client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
-
-    // Then
-    Assertions.assertNull(response);
-  }
-
-  @Test
-  void whenCountExistingInstallmentsByIudIuvNavThenInvokeApi() {
-      // Given
-      String accessToken = "ACCESSTOKEN";
-      long organizationId = 1L;
-      String iud = "IUD";
-      String iuv = "IUV";
-      String nav = "NAV";
-      long expectedCount = 5L;
-
-      Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
-          .thenReturn(installmentNoPiiSearchControllerApiMock);
-      Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsCountExistingInstallments(organizationId, iud, iuv, nav))
-          .thenReturn(expectedCount);
-
-      // When
-      Long result = client.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
-
-      // Then
-      Assertions.assertEquals(expectedCount, result);
-  }
-
-  @ParameterizedTest
-  @ValueSource(longs = {1L, 2L})
-  void whenGetDebtPositionTypeByIdThenInvokeApi(Long debtPositionTypeId) {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    DebtPositionType expectedResult;
-
-    Mockito.when(apisHolderMock.getDebtPositionTypeEntityControllerApi(accessToken))
-      .thenReturn(debtPositionTypeEntityControllerApiMock);
-    if(debtPositionTypeId == 2L) {
-      Mockito.when(debtPositionTypeEntityControllerApiMock.crudGetDebtpositiontype(String.valueOf(debtPositionTypeId)))
-        .thenThrow(HttpClientErrorException.NotFound.class);
-      expectedResult = null;
-    } else {
-      expectedResult = new DebtPositionType();
-      Mockito.when(debtPositionTypeEntityControllerApiMock.crudGetDebtpositiontype(String.valueOf(debtPositionTypeId))).thenReturn(expectedResult);
-    }
-
-    //when
-    DebtPositionType result = client.getDebtPositionTypeById(debtPositionTypeId, accessToken);
-
-    //then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void whenGetInstallmentsByOrganizationIdAndNavThenInvokeApi() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    List<InstallmentDTO> expectedResult = List.of(new InstallmentDTO());
-
-    Mockito.when(apisHolderMock.getInstallmentApi(accessToken))
-      .thenReturn(installmentApiMock);
-    Mockito.when(installmentApiMock.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null)).thenReturn(expectedResult);
-
-    //when
-    List<InstallmentDTO> result = client.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken);
-
-    //then
-    Assertions.assertEquals(expectedResult, result);
   }
 
   @Test
@@ -178,7 +70,7 @@ class DebtPositionClientTest {
 
   @ParameterizedTest
   @ValueSource(longs = {1L, 2L})
-  void whenGetDebtPositionByInstallmentIdThenInvokeApi(Long installmentId) {
+  void whenGetDebtPositionDTOByInstallmentIdThenInvokeApi(Long installmentId) {
     // Given
     String accessToken = "ACCESSTOKEN";
     DebtPositionDTO expectedResult;
@@ -195,7 +87,7 @@ class DebtPositionClientTest {
     }
 
     // When
-    DebtPositionDTO result = client.getDebtPositionByInstallmentId(installmentId, accessToken);
+    DebtPositionDTO result = client.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
 
     // Then
     Assertions.assertEquals(expectedResult, result);
@@ -243,81 +135,6 @@ class DebtPositionClientTest {
     Assertions.assertEquals(expectedResult, result);
   }
 
-  @ParameterizedTest
-  @ValueSource(longs = {1L, 2L})
-  void whenGetReceiptByIdThenInvokeApi(Long receiptId) {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    ReceiptDTO expectedResult;
-
-    Mockito.when(apisHolderMock.getReceiptApi(accessToken))
-      .thenReturn(receiptApiMock);
-    if(receiptId == 2L) {
-      Mockito.when(receiptApiMock.getReceipt(receiptId))
-        .thenThrow(HttpClientErrorException.NotFound.class);
-      expectedResult = null;
-    } else {
-      expectedResult = new ReceiptDTO();
-      Mockito.when(receiptApiMock.getReceipt(receiptId)).thenReturn(expectedResult);
-    }
-
-    // When
-    ReceiptDTO result = client.getReceiptById(receiptId, accessToken);
-
-    // Then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void whenFindAuthorizedByTransferSemanticKeyThenInvokeApi() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
-    String iuv = "IUV";
-    String iur = "IUR";
-    int transferIndex = 1;
-    String operatorExternalUserId = "OPERATOR_ID";
-
-    InstallmentNoPII expectedResult = new InstallmentNoPII();
-
-    Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
-      .thenReturn(installmentNoPiiSearchControllerApiMock);
-    Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId))
-      .thenReturn(expectedResult);
-
-    // When
-    InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
-
-    // Then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void whenFindAuthorizedByTransferSemanticKeyThenNotFound(){
-    //Given
-    String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
-    String iuv = "IUV";
-    String iur = "IUR";
-    int transferIndex = 1;
-    String operatorExternalUserId = "OPERATOR_ID";
-
-    Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
-      .thenReturn(installmentNoPiiSearchControllerApiMock);
-    Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
-      organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId))
-      .thenThrow(HttpClientErrorException.NotFound.class);
-
-    // When
-    InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
-      organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
-
-    // Then
-    Assertions.assertNull(result);
-  }
-
   @Test
   void whenManageDebtPositionInstallmentsThenInvokeApi() {
     // Given
@@ -337,5 +154,30 @@ class DebtPositionClientTest {
     // Then
     Assertions.assertNotNull(result);
     Assertions.assertEquals(expectedResult, result.getBody());
+  }
+
+  @ParameterizedTest
+  @ValueSource(longs = {1L, 2L})
+  void whenGetDebtPositionByInstallmentIdThenInvokeApi(Long installmentId) {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    DebtPosition expectedResult;
+
+    Mockito.when(apisHolderMock.getDebtPositionSearchControllerApi(accessToken))
+      .thenReturn(debtPositionSearchControllerApiMock);
+    if(installmentId == 2L) {
+      Mockito.when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new DebtPosition();
+      Mockito.when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId)).thenReturn(expectedResult);
+    }
+
+    // When
+    DebtPosition result = client.getDebtPositionByInstallmentId(installmentId, accessToken);
+
+    // Then
+    Assertions.assertEquals(expectedResult, result);
   }
 }

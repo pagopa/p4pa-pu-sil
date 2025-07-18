@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
@@ -32,6 +32,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,7 +48,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
   private JAXBTransformService jaxbTransformServiceMock;
 
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private DebtPositionTypeService debtPositionTypeServiceMock;
 
   @Mock
   private TaxonomyService taxonomyServiceMock;
@@ -174,7 +175,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     //given
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
     DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
-    debtPositionTypeOrg.setDebtPositionTypeId(debtPositionType.getDebtPositionTypeId());
+    debtPositionTypeOrg.setDebtPositionTypeId(Objects.requireNonNull(debtPositionType.getDebtPositionTypeId()));
 
     PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
     request.setListaDovuti(new ListaDovuti());
@@ -203,10 +204,10 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any())).thenReturn(dovutiEntiSecondari);
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
-    when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
     if(legacyPaymentMetadataSecondary == null) {
-      when(debtPositionServiceMock.getDebtPositionTypeById(debtPositionType.getDebtPositionTypeId(), ACCESS_TOKEN)).thenReturn(debtPositionType);
+      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionType.getDebtPositionTypeId(), ACCESS_TOKEN)).thenReturn(debtPositionType);
     }
     String expectedCategory = legacyPaymentMetadataSecondary==null ? debtPositionType.getTaxonomyCode() : legacyPaymentMetadataSecondary.substring(2,11);
     when(taxonomyServiceMock.getTaxonomyByTaxonomyCode(expectedCategory, ACCESS_TOKEN)).thenReturn(Optional.of(new Taxonomy()));
@@ -282,10 +283,10 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any())).thenReturn(dovutiEntiSecondari);
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
-    when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
     if(legacyPaymentMetadataSecondary == null) {
-      when(debtPositionServiceMock.getDebtPositionTypeById(debtPositionType.getDebtPositionTypeId(), ACCESS_TOKEN)).thenReturn(new DebtPositionType());
+      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionType.getDebtPositionTypeId(), ACCESS_TOKEN)).thenReturn(new DebtPositionType());
     } else {
       when(taxonomyServiceMock.getTaxonomyByTaxonomyCode(legacyPaymentMetadataSecondary.substring(2,11), ACCESS_TOKEN)).thenReturn(Optional.empty());
     }
@@ -326,7 +327,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any())).thenThrow(new ApplicationException("error unmarshalling secondary"));
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
-    when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
 
     //when

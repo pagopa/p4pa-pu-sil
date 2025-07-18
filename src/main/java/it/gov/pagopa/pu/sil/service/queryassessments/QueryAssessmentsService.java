@@ -1,26 +1,20 @@
 package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.classification.dto.generated.Treasury;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
+import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.classification.dto.generated.Treasury;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
-import it.veneto.regione.pagamenti.pivot.ente.CtBilancio;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILChiediAccertamento;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILChiediAccertamentoRisposta;
-import it.veneto.regione.pagamenti.pivot.ente.RichiestaPerBolletta;
-import it.veneto.regione.pagamenti.pivot.ente.RichiestaPerIUF;
+import it.veneto.regione.pagamenti.pivot.ente.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,14 +22,14 @@ public class QueryAssessmentsService {
   private static final List<String> PAYMENT_OUTCOME_CODES = List.of("8", "9");
 
   private final ClassificationService classificationService;
-  private final DebtPositionService debtPositionService;
+  private final InstallmentService installmentService;
   private final AssessmentsBalanceMapper assessmentsBalanceMapper;
 
   public QueryAssessmentsService(ClassificationService classificationService,
-                                 DebtPositionService debtPositionService,
+                                 InstallmentService installmentService,
                                  AssessmentsBalanceMapper assessmentsBalanceMapper) {
     this.classificationService = classificationService;
-    this.debtPositionService = debtPositionService;
+    this.installmentService = installmentService;
     this.assessmentsBalanceMapper = assessmentsBalanceMapper;
   }
 
@@ -43,13 +37,9 @@ public class QueryAssessmentsService {
     UserInfo userInfo,
     String accessToken,
     String orgIpaCode,
-    PivotSILChiediAccertamento request) {
-    String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
-
-    if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", clientId, orgIpaCode);
-      throw new UnauthorizedException("Utente non autorizzato");
-    }
+    PivotSILChiediAccertamento request
+  ) {
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
 
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
@@ -85,7 +75,7 @@ public class QueryAssessmentsService {
     List<String> iuds = classificationService.findPaymentsReportingByOrganizationIdAndIuf(organizationId, iuf, accessToken)
       .stream()
       .filter(pr -> !PAYMENT_OUTCOME_CODES.contains(pr.getPaymentOutcomeCode()))
-      .map(pr -> debtPositionService.findAuthorizedByTransferSemanticKey(
+      .map(pr -> installmentService.findAuthorizedByTransferSemanticKey(
         pr.getOrganizationId(),
         pr.getIuv(),
         pr.getIur(),

@@ -47,6 +47,15 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     }
 
   @Test
+  void whenGetDebtPositionTypeEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getDebtPositionTypeEntityControllerApi(accessToken)
+        .crudGetDebtpositiontype("1"),
+      new ParameterizedTypeReference<>() {},
+      apisHolder::unload);
+  }
+
+  @Test
   void whenGetInstallmentApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getInstallmentApi(accessToken)
@@ -65,19 +74,19 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
   }
 
   @Test
-  void whenGetDebtPositionTypeEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+  void whenGetDebtPositionApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> apisHolder.getDebtPositionTypeEntityControllerApi(accessToken)
-        .crudGetDebtpositiontype("1"),
+      accessToken -> apisHolder.getDebtPositionApi(accessToken)
+        .getDebtPositionByInstallmentId(1L),
       new ParameterizedTypeReference<>() {},
       apisHolder::unload);
   }
 
   @Test
-  void whenGetDebtPositionApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+  void whenGetDebtPositionEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> apisHolder.getDebtPositionApi(accessToken)
-        .getDebtPositionByInstallmentId(1L),
+      accessToken -> apisHolder.getDebtPositionSearchControllerApi(accessToken)
+        .crudDebtPositionsFindByInstallmentId(1L),
       new ParameterizedTypeReference<>() {},
       apisHolder::unload);
   }

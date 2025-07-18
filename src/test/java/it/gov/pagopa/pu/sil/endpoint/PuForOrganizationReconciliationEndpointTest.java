@@ -14,7 +14,6 @@ import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -39,6 +38,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
@@ -387,7 +387,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(INVALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
-    )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
+    )).thenThrow(new AuthorizationDeniedException("Utente non autorizzato"));
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)

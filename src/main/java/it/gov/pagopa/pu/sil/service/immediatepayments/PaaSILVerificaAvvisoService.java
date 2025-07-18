@@ -13,7 +13,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
+import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
@@ -36,7 +36,7 @@ public class PaaSILVerificaAvvisoService {
   private final CartRequestMapper cartRequestMapper;
   private final OrganizationService organizationService;
   private final CheckoutService checkoutService;
-  private final DebtPositionFacadeService debtPositionFacadeService;
+  private final InstallmentFacadeService installmentFacadeService;
 
   public PaaSILVerificaAvvisoRisposta processRequest(PaaSILVerificaAvviso request, String orgIpaCode, UserInfo userInfo, String accessToken) {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
@@ -64,7 +64,7 @@ public class PaaSILVerificaAvvisoService {
     String nav = Utilities.iuv2Nav(request.getIdentificativoUnivocoVersamento());
 
     // search installments by IUV
-    List<InstallmentDTO> installments = debtPositionFacadeService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, accessToken);
+    List<InstallmentDTO> installments = installmentFacadeService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, accessToken);
 
     //filter installments to find if an unpaid installment exists
     // otherwise throw a SilFaultException
