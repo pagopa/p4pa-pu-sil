@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassificationsExportFileRequestMapper {
@@ -20,7 +21,9 @@ public class ClassificationsExportFileRequestMapper {
       .exportFileType(ClassificationsExportFileRequestDTO.ExportFileTypeEnum.CLASSIFICATIONS)
       .fileVersion(request.getVersioneTracciato())
       .filterFields(new ClassificationsExportFileFilter()
-        //TODO: arrrange missing fields that willbe implemented by https://pagopa.atlassian.net/browse/P4ADEV-3333
+        .label(request.getCodiceClassificazione().getClassificaziones().stream()
+          .map(ClassificationsExportFileFilter.LabelEnum::fromValue)
+          .collect(Collectors.toSet()))
         .iud(request.getIdUnivocoDovuto())
         .regionValueDate(mapToLocalDateIntervalFilter(request.getDataValutaDa(), request.getDataValutaA()))
         .billDate(mapToLocalDateIntervalFilter(request.getDataContabileDa(), request.getDataContabileA()))
