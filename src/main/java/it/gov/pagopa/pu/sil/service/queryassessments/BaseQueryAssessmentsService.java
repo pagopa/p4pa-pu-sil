@@ -13,19 +13,19 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.List;
 
 @Slf4j
-public abstract class BaseQueryAssessmentsService<RESP> {
+public abstract class BaseQueryAssessmentsService<R> {
   private static final List<String> PAYMENT_OUTCOME_CODES = List.of("8", "9");
 
   private final ClassificationService classificationService;
   private final InstallmentService installmentService;
 
-  public BaseQueryAssessmentsService(ClassificationService classificationService,
-                                     InstallmentService installmentService) {
+  protected BaseQueryAssessmentsService(ClassificationService classificationService,
+                                        InstallmentService installmentService) {
     this.classificationService = classificationService;
     this.installmentService = installmentService;
   }
 
-  public RESP getAssessment(
+  public R getAssessment(
     UserInfo userInfo,
     String accessToken,
     String orgIpaCode,
@@ -77,5 +77,5 @@ public abstract class BaseQueryAssessmentsService<RESP> {
   }
 
   protected abstract RuntimeException handleException(SilFaults fault, String message);
-  protected abstract RESP mapToResponse(List<AssessmentsBalanceView> balances);
+  protected abstract R mapToResponse(List<AssessmentsBalanceView> balances);
 }

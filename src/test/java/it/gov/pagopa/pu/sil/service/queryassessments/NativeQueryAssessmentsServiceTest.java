@@ -81,7 +81,7 @@ class NativeQueryAssessmentsServiceTest {
 
   @ParameterizedTest
   @MethodSource("provideGetAssessmentInput")
-  void givenBillDataWhenGetAssessmentThenSuccess(String iuf, String billYear, String BillNumber) {
+  void givenBillDataWhenGetAssessmentThenSuccess(String iuf, String billYear, String billNumber) {
     // Given
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
@@ -106,7 +106,7 @@ class NativeQueryAssessmentsServiceTest {
     when(nativeAssessmentsBalanceMapper.map2BalanceDTO(assessmentsBalanceView)).thenReturn(balanceDTO);
 
     // When
-    GetAssessmentResponseDTO resp = service.getAssessment(userInfo, "token", orgIpaCode, iuf, billYear, BillNumber);
+    GetAssessmentResponseDTO resp = service.getAssessment(userInfo, "token", orgIpaCode, iuf, billYear, billNumber);
 
     // Then
     assertNotNull(resp);
