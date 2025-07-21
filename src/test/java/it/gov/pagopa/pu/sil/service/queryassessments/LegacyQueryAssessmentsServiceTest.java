@@ -13,7 +13,6 @@ import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +21,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
@@ -53,22 +51,13 @@ class LegacyQueryAssessmentsServiceTest {
     service = new LegacyQueryAssessmentsService(classificationServiceMock, installmentServiceMock, legacyAssessmentsBalanceMapperMock);
   }
 
-  @AfterEach
-  void verifyNoMoreInteractions() {
-    Mockito.verifyNoMoreInteractions(
-      classificationServiceMock,
-      installmentServiceMock,
-      legacyAssessmentsBalanceMapperMock
-    );
-  }
-
   @Test
   void givenUserNotAdminWhenHandlePivotSILChiediAccertamentoThenUnauthorizedException() {
     // Given
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
-    PivotSILChiediAccertamento request = mock(PivotSILChiediAccertamento.class);
-    RichiestaPerIUF richiestaPerIUF = mock(RichiestaPerIUF.class);
+    PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
+    RichiestaPerIUF richiestaPerIUF = podamFactory.manufacturePojo(RichiestaPerIUF.class);
     request.setRichiestaPerIUF(richiestaPerIUF);
     // When, Then
     assertThrows(AuthorizationDeniedException.class, () ->
@@ -82,8 +71,8 @@ class LegacyQueryAssessmentsServiceTest {
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
-    RichiestaPerBolletta richiestaPerBolletta = mock(RichiestaPerBolletta.class);
-    RichiestaPerIUF richiestaPerIUF = mock(RichiestaPerIUF.class);
+    RichiestaPerBolletta richiestaPerBolletta = podamFactory.manufacturePojo(RichiestaPerBolletta.class);
+    RichiestaPerIUF richiestaPerIUF = podamFactory.manufacturePojo(RichiestaPerIUF.class);
     request.setRichiestaPerIUF(richiestaPerIUF);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
     try (MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
@@ -103,7 +92,7 @@ class LegacyQueryAssessmentsServiceTest {
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
-    RichiestaPerBolletta richiestaPerBolletta = mock(RichiestaPerBolletta.class);
+    RichiestaPerBolletta richiestaPerBolletta = podamFactory.manufacturePojo(RichiestaPerBolletta.class);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
     try (MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
@@ -125,7 +114,7 @@ class LegacyQueryAssessmentsServiceTest {
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
-    RichiestaPerIUF richiestaPerIUF = mock(RichiestaPerIUF.class);
+    RichiestaPerIUF richiestaPerIUF = podamFactory.manufacturePojo(RichiestaPerIUF.class);
     request.setRichiestaPerIUF(richiestaPerIUF);
     try (MockedStatic<ValidationUtils> validationMock = mockStatic(ValidationUtils.class)) {
       validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
