@@ -556,14 +556,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /sil/organization/{orgFiscalCode}/assessment/{searchType}:
+  /sil/organization/{orgFiscalCode}/assessment/payment-reporting:
     get:
       tags:
         - Assessment
-      summary: retrieve the assessment data
+      summary: retrieve the assessment data by payment reporting unique identifier
       description: |
-        Service to retrieve the assessment data given the reporting id (IUF) or invoice data.
-      operationId: getAssessment
+        Service to retrieve the assessment data given the payment reporting id (IUF).
+      operationId: getAssessmentByPaymentReporting
       parameters:
         - name: orgFiscalCode
           description: the fiscal code of the organization
@@ -571,35 +571,48 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/OrgFiscalCode'
-        - name: searchType
-          description: the type of identifier used to identify the assessment
-          in: path
+        - name: iuf
+          in: query
+          description: payment reporting unique identifier
           required: true
           schema:
             type: string
-            enum:
-              - REPORTING
-              - BILL
-        - name: searchParams
-          in: query
-          description: |
-            If type = REPORTING, then only iuf must be set;
-            if type = BILL, then only billYear and billNumber must be set.
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAssessmentResponseDTO'
+  /sil/organization/{orgFiscalCode}/assessment/bill:
+    get:
+      tags:
+        - Assessment
+      summary: retrieve the assessment data by bill data
+      description: |
+        Service to retrieve the assessment data given the reporting id (IUF) or invoice data.
+      operationId: getAssessmentByBill
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
           required: true
-          style: form
-          explode: true
           schema:
-            type: object
-            properties:
-              iuf:
-                type: string
-              billYear:
-                type: number
-              billNumber:
-                type: string
-            oneOf:
-              - required: [iuf]
-              - required: [billYear , billNumber]
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: billYear
+          in: query
+          description: the year of the bill to retrieve the assessment data for
+          required: true
+          schema:
+            type: integer
+            format: int32
+            pattern: '^\d{4}$'
+        - name: billNumber
+          in: query
+          description: the bill code to retrieve the assessment data for
+          required: true
+          schema:
+            type: string
       responses:
         '200':
           description: Ok
