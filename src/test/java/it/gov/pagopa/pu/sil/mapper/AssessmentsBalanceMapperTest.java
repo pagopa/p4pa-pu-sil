@@ -5,8 +5,8 @@ import it.gov.pagopa.pu.sil.dto.generated.BalanceDTO;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class NativeAssessmentsBalanceMapperTest {
-  private final NativeAssessmentsBalanceMapper mapper = new NativeAssessmentsBalanceMapper();
+class AssessmentsBalanceMapperTest {
+  private final AssessmentsBalanceMapper mapper = new AssessmentsBalanceMapper();
 
   @Test
   void testMap2BalanceDTO() {

@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.sil.dto.generated.AssessmentDTO;
 import org.springframework.stereotype.Service;
 
 @Service
-public class NativeAssessmentsBalanceMapper {
+public class AssessmentsBalanceMapper {
 
   public BalanceDTO map2BalanceDTO(AssessmentsBalanceView balance) {
     BalanceDTO balanceDTO = new BalanceDTO();

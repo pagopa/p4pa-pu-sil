@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.dto.generated.BalanceDTO;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
-import it.gov.pagopa.pu.sil.mapper.NativeAssessmentsBalanceMapper;
+import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,20 +33,20 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class NativeQueryAssessmentsServiceTest {
+class QueryAssessmentsServiceTest {
   @Mock
   private ClassificationService classificationService;
   @Mock
   private InstallmentService installmentService;
   @Mock
-  private NativeAssessmentsBalanceMapper nativeAssessmentsBalanceMapper;
+  private AssessmentsBalanceMapper assessmentsBalanceMapper;
 
-  private NativeQueryAssessmentsService service;
+  private QueryAssessmentsService service;
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
-    service = new NativeQueryAssessmentsService(classificationService, installmentService, nativeAssessmentsBalanceMapper);
+    service = new QueryAssessmentsService(classificationService, installmentService, assessmentsBalanceMapper);
   }
 
   @Test
@@ -103,7 +103,7 @@ class NativeQueryAssessmentsServiceTest {
     when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any())).thenReturn(List.of(paymentsReporting));
     when(installmentService.findAuthorizedByTransferSemanticKey(anyLong(), any(), any(), anyInt(), any(), any())).thenReturn(installmentNoPII);
     when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(anyLong(), anyList(), any())).thenReturn(List.of(assessmentsBalanceView));
-    when(nativeAssessmentsBalanceMapper.map2BalanceDTO(assessmentsBalanceView)).thenReturn(balanceDTO);
+    when(assessmentsBalanceMapper.map2BalanceDTO(assessmentsBalanceView)).thenReturn(balanceDTO);
 
     // When
     GetAssessmentResponseDTO resp = service.getAssessment(userInfo, "token", orgIpaCode, iuf, billYear, billNumber);

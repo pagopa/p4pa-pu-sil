@@ -4,7 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
-import it.gov.pagopa.pu.sil.service.queryassessments.NativeQueryAssessmentsService;
+import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AssessmentControllerTest {
   @Mock
-  private NativeQueryAssessmentsService nativeQueryAssessmentsServiceMock;
+  private QueryAssessmentsService queryAssessmentsServiceMock;
 
   @InjectMocks
   private AssessmentController controller;
@@ -50,7 +50,7 @@ class AssessmentControllerTest {
     String billNumber = "12345";
     GetAssessmentResponseDTO expectedResult = new GetAssessmentResponseDTO();
 
-    when(nativeQueryAssessmentsServiceMock.getAssessment(
+    when(queryAssessmentsServiceMock.getAssessment(
         userInfo,
         accessToken,
         orgFiscalCode,
@@ -72,7 +72,7 @@ class AssessmentControllerTest {
     String iuf = "IUF12345";
     GetAssessmentResponseDTO expectedResult = new GetAssessmentResponseDTO();
 
-    when(nativeQueryAssessmentsServiceMock.getAssessment(
+    when(queryAssessmentsServiceMock.getAssessment(
         userInfo,
         accessToken,
         orgFiscalCode,

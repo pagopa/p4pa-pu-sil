@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
-import it.gov.pagopa.pu.sil.mapper.NativeAssessmentsBalanceMapper;
+import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -14,12 +14,12 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class NativeQueryAssessmentsService extends BaseQueryAssessmentsService<GetAssessmentResponseDTO> {
-  private final NativeAssessmentsBalanceMapper assessmentsBalanceMapper;
+public class QueryAssessmentsService extends BaseQueryAssessmentsService<GetAssessmentResponseDTO> {
+  private final AssessmentsBalanceMapper assessmentsBalanceMapper;
 
-  public NativeQueryAssessmentsService(ClassificationService classificationService,
-                                       InstallmentService installmentService,
-                                       NativeAssessmentsBalanceMapper assessmentsBalanceMapper) {
+  public QueryAssessmentsService(ClassificationService classificationService,
+                                 InstallmentService installmentService,
+                                 AssessmentsBalanceMapper assessmentsBalanceMapper) {
     super(classificationService, installmentService);
     this.assessmentsBalanceMapper = assessmentsBalanceMapper;
   }
