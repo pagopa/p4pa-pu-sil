@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
+import it.gov.pagopa.pu.sil.mapper.LegacyAssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
@@ -17,6 +17,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -27,26 +30,27 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class QueryAssessmentsServiceTest {
+class LegacyQueryAssessmentsServiceTest {
   @Mock
   private ClassificationService classificationServiceMock;
   @Mock
   private InstallmentService installmentServiceMock;
   @Mock
-  private AssessmentsBalanceMapper assessmentsBalanceMapperMock;
+  private LegacyAssessmentsBalanceMapper legacyAssessmentsBalanceMapperMock;
 
-  private QueryAssessmentsService service;
+  private LegacyQueryAssessmentsService service;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
-    service = new QueryAssessmentsService(classificationServiceMock, installmentServiceMock, assessmentsBalanceMapperMock);
+    service = new LegacyQueryAssessmentsService(classificationServiceMock, installmentServiceMock, legacyAssessmentsBalanceMapperMock);
   }
 
   @AfterEach
@@ -54,7 +58,7 @@ class QueryAssessmentsServiceTest {
     Mockito.verifyNoMoreInteractions(
       classificationServiceMock,
       installmentServiceMock,
-      assessmentsBalanceMapperMock
+      legacyAssessmentsBalanceMapperMock
     );
   }
 
@@ -64,7 +68,8 @@ class QueryAssessmentsServiceTest {
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
     PivotSILChiediAccertamento request = mock(PivotSILChiediAccertamento.class);
-
+    RichiestaPerIUF richiestaPerIUF = mock(RichiestaPerIUF.class);
+    request.setRichiestaPerIUF(richiestaPerIUF);
     // When, Then
     assertThrows(AuthorizationDeniedException.class, () ->
       service.handlePivotSILChiediAccertamento(userInfo, "token", orgIpaCode, request)
@@ -116,7 +121,7 @@ class QueryAssessmentsServiceTest {
 
   @Test
   void givenRichiestaPerIUFWhenHandlePivotSILChiediAccertamentoThenSilFaultException() {
-    // Ginve
+    // Given
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
@@ -136,16 +141,20 @@ class QueryAssessmentsServiceTest {
     }
   }
 
-  @Test
-  void givenRichiestaPerBollettaWhenHandlePivotSILChiediAccertamentoThenSuccess() {
+  @ParameterizedTest
+  @MethodSource("provideGetAssessmentInput")
+  void givenRichiestaPerBollettaWhenHandlePivotSILChiediAccertamentoThenSuccess(RichiestaPerIUF richiestaPerIUF, RichiestaPerBolletta richiestaPerBolletta) {
     // Given
     String orgIpaCode = "org";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
-    RichiestaPerBolletta richiestaPerBolletta = podamFactory.manufacturePojo(RichiestaPerBolletta.class);
     request.setRichiestaPerBolletta(richiestaPerBolletta);
+    request.setRichiestaPerIUF(richiestaPerIUF);
+
     Treasury treasury = mock(Treasury.class);
-    treasury.setIuf("iuf");
+    if (richiestaPerIUF == null) {
+      treasury.setIuf("iuf");
+    }
     AssessmentsBalanceView assessmentsBalanceView = new AssessmentsBalanceView()
       .officeCode("OFF1")
       .debtPositionTypeOrgCode("TYP1")
@@ -159,15 +168,17 @@ class QueryAssessmentsServiceTest {
       validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
         .thenReturn(true);
 
-      when(classificationServiceMock.findTreasuryBySemanticKey(anyLong(), any(), any(), any()))
-        .thenReturn(Optional.of(treasury));
+      if (richiestaPerIUF == null) {
+        when(classificationServiceMock.findTreasuryBySemanticKey(anyLong(), any(), any(), any()))
+          .thenReturn(Optional.of(treasury));
+      }
       when(classificationServiceMock.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any()))
         .thenReturn(List.of(paymentsReporting));
       when(installmentServiceMock.findAuthorizedByTransferSemanticKey(anyLong(), any(), any(), anyInt(), any(), any()))
         .thenReturn(installmentNoPII);
       when(classificationServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(anyLong(), anyList(), any()))
         .thenReturn(List.of(assessmentsBalanceView));
-      when(assessmentsBalanceMapperMock.map2CtBilancio(assessmentsBalanceView)).thenReturn(expectedCtBilancio);
+      when(legacyAssessmentsBalanceMapperMock.map2CtBilancio(assessmentsBalanceView)).thenReturn(expectedCtBilancio);
 
       // When
       PivotSILChiediAccertamentoRisposta resp = service.handlePivotSILChiediAccertamento(userInfo, "token", "org", request);
@@ -176,5 +187,18 @@ class QueryAssessmentsServiceTest {
       assertNotNull(resp);
       assertEquals(expectedCtBilancio, resp.getBilancios().getFirst());
     }
+
+  }
+
+  private static Stream<Arguments> provideGetAssessmentInput() {
+    RichiestaPerBolletta billRequest = new RichiestaPerBolletta();
+    billRequest.setAnnoBolletta("2024");
+    billRequest.setNumeroBolletta("123");
+    RichiestaPerIUF iufRequest = new RichiestaPerIUF();
+    iufRequest.setIdentificativoUnivocoFlusso("IUF123");
+    return Stream.of(
+      Arguments.of( null, billRequest),
+      Arguments.of(iufRequest, null)
+    );
   }
 }
