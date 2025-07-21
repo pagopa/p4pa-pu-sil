@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import it.veneto.regione.pagamenti.pivot.ente.CodiceClassificazioneType;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazioneRisposta;
 import org.junit.jupiter.api.AfterEach;
@@ -29,6 +30,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -99,6 +101,9 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     request.setImportoTesoreria("100,00");
     request.setDataUltimoAggiornamentoDa(fromXml);
     request.setDataUltimoAggiornamentoA(toXml);
+    CodiceClassificazioneType type = new CodiceClassificazioneType();
+    type.getClassificaziones().addAll(List.of("RT_IUF"));
+    request.setCodiceClassificazione(type);
 
     ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
     when(exportFileServiceMock.createClassificationsExportFile(classificationsExportFileRequestDTO, accessToken)).thenReturn(456L);
@@ -183,6 +188,9 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     String accessToken = "token5";
     PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
     request.setImportoTesoreria("100,00");
+    CodiceClassificazioneType type = new CodiceClassificazioneType();
+    type.getClassificaziones().addAll(List.of("RT_IUF"));
+    request.setCodiceClassificazione(type);
 
     ExportFileClientException errorException = new ExportFileClientException(
       ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");

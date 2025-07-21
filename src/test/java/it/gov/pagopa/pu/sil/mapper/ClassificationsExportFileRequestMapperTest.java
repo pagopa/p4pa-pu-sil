@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
+import it.veneto.regione.pagamenti.pivot.ente.CodiceClassificazioneType;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +43,9 @@ class ClassificationsExportFileRequestMapperTest {
     request.setDataEsitoA(to);
     request.setDataUltimoAggiornamentoDa(from);
     request.setDataUltimoAggiornamentoA(to);
-    request.getCodiceClassificazione().getClassificaziones().addAll(List.of("RT_IUF"));
+    CodiceClassificazioneType type = new CodiceClassificazioneType();
+    type.getClassificaziones().addAll(List.of("RT_IUF"));
+    request.setCodiceClassificazione(type);
 
     Long orgId = 123L;
     ClassificationsExportFileRequestDTO dto = mapper.mapToExportFileRequest(orgId, request);
