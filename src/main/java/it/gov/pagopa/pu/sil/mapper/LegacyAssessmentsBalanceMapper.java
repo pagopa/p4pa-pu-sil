@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class AssessmentsBalanceMapper {
+public class LegacyAssessmentsBalanceMapper {
 
   public CtBilancio map2CtBilancio(AssessmentsBalanceView balance) {
     Map<String, Map<String, Map<String, Map<String, BigDecimal>>>> grouped = new HashMap<>();

@@ -11,8 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AssessmentsBalanceMapperTest {
-  AssessmentsBalanceMapper mapper = new AssessmentsBalanceMapper();
+class LegacyAssessmentsBalanceMapperTest {
+  LegacyAssessmentsBalanceMapper mapper = new LegacyAssessmentsBalanceMapper();
 
   @Test
   void whenMap2CtBilancioThenReturnCtBilancio() {
