@@ -81,6 +81,11 @@ public class PuSilExceptionHandler {
     return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
   }
 
+  @ExceptionHandler(AssessmentNotFoundException.class)
+  public ResponseEntity<PuSilErrorDTO> handleAssessmentNotFoundException(AssessmentNotFoundException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.NOT_FOUND);
+  }
+
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {
     logException(ex, request, httpStatus);
 

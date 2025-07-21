@@ -23,7 +23,7 @@ import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
+import it.gov.pagopa.pu.sil.service.queryassessments.LegacyQueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
@@ -54,7 +54,7 @@ public class PuForOrganizationReconciliationEndpoint {
   private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService;
   private final ExportFileProcessingStatusService exportFileProcessingStatusService;
-  private final QueryAssessmentsService queryAssessmentsService;
+  private final LegacyQueryAssessmentsService queryAssessmentsService;
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "pivotSILChiediAccertamento")
   @ResponsePayload

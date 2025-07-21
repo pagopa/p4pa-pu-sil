@@ -16,6 +16,9 @@
     "name" : "Massive",
     "description" : "the Massive API"
   }, {
+    "name" : "Assessment",
+    "description" : "the Assessment API"
+  }, {
     "name" : "SendNotification",
     "description" : "the SendNotification API"
   } ],
@@ -393,6 +396,108 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ExportStatusResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/assessment/payment-reporting" : {
+      "get" : {
+        "tags" : [ "Assessment" ],
+        "summary" : "retrieve the assessment data by payment reporting unique identifier",
+        "description" : "Service to retrieve the assessment data given the payment reporting id (IUF). ",
+        "operationId" : "getAssessmentByPaymentReporting",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        }, {
+          "name" : "iuf",
+          "in" : "query",
+          "description" : "payment reporting unique identifier",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetAssessmentResponseDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/assessment/bill" : {
+      "get" : {
+        "tags" : [ "Assessment" ],
+        "summary" : "retrieve the assessment data by bill data",
+        "description" : "Service to retrieve the assessment data given the reporting id (IUF) or invoice data. ",
+        "operationId" : "getAssessmentByBill",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        }, {
+          "name" : "billYear",
+          "in" : "query",
+          "description" : "the year of the bill to retrieve the assessment data for",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32",
+            "pattern" : "^\\d{4}$"
+          }
+        }, {
+          "name" : "billNumber",
+          "in" : "query",
+          "description" : "the bill code to retrieve the assessment data for",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/GetAssessmentResponseDTO"
                 }
               }
             }
@@ -836,6 +941,75 @@
       "StatusEnum" : {
         "type" : "string",
         "enum" : [ "TO_PROCESS", "PROCESSING", "PROCESSED_OK", "PROCESSED_ERROR", "PROCESSED_NO_DATA", "PROCESSED_MAX_ROWS_EXCEEDED" ]
+      },
+      "AssessmentDTO" : {
+        "type" : "object",
+        "properties" : {
+          "assessmentCode" : {
+            "type" : "string"
+          },
+          "amountCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "amountCents", "assessmentCode" ]
+      },
+      "BalanceDTO" : {
+        "type" : "object",
+        "properties" : {
+          "office" : {
+            "type" : "string"
+          },
+          "debtPositionTypeOrgs" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DebtPositionTypeOrgDTO"
+            }
+          }
+        },
+        "required" : [ "debtPositionTypeOrgs", "office" ]
+      },
+      "DebtPositionTypeOrgDTO" : {
+        "type" : "object",
+        "properties" : {
+          "debtPositionTypeOrgCode" : {
+            "type" : "string"
+          },
+          "sections" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/SectionDTO"
+            }
+          }
+        },
+        "required" : [ "debtPositionTypeOrgCode", "sections" ]
+      },
+      "GetAssessmentResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "balances" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/BalanceDTO"
+            }
+          }
+        }
+      },
+      "SectionDTO" : {
+        "type" : "object",
+        "properties" : {
+          "sectionCode" : {
+            "type" : "string"
+          },
+          "assessments" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/AssessmentDTO"
+            }
+          }
+        },
+        "required" : [ "assessments", "sectionCode" ]
       }
     },
     "securitySchemes" : {

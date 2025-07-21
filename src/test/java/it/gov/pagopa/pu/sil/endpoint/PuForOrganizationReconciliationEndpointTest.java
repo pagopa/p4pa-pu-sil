@@ -24,7 +24,7 @@ import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
+import it.gov.pagopa.pu.sil.service.queryassessments.LegacyQueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
@@ -68,7 +68,7 @@ class PuForOrganizationReconciliationEndpointTest {
   @Mock
   private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
   @Mock
-  private QueryAssessmentsService queryAssessmentsServiceMock;
+  private LegacyQueryAssessmentsService queryAssessmentsServiceMock;
 
   @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
