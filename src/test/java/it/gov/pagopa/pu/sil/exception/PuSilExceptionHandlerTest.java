@@ -249,4 +249,13 @@ class PuSilExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("UNAUTHORIZED"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
   }
+
+  @Test
+  void handleAssessmentNotFoundException() throws Exception {
+    doThrow(new AssessmentNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"));
+  }
 }
