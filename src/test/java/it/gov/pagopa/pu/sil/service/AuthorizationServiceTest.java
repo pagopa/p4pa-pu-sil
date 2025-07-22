@@ -20,12 +20,31 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AuthorizationServiceTest {
+public class AuthorizationServiceTest {
+
+  @Mock
+  private AuthnClient authClientImplMock;
 
   @InjectMocks
   private AuthorizationService authorizationService;
-  @Mock
-  private AuthnClient authClientImplMock;
+
+  public static UserInfo buildAdminUser() {
+    return buildAdminUser(1L, "ORGFC", "ORGIPA");
+  }
+
+  public static UserInfo buildAdminUser(Long organizationId, String orgFiscalCode, String orgIpaCode) {
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(organizationId);
+    userAdminRole.setOrganizationFiscalCode(orgFiscalCode);
+    userAdminRole.setOrganizationIpaCode(orgIpaCode);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    return userInfo;
+  }
 
   @Test
   void givenValidAccessTokenWhenValidateTokenThenOk() {
@@ -47,45 +66,41 @@ class AuthorizationServiceTest {
 
   @Test
   void givenAdminRoleWhenValidateAdminRoleThenOK() {
-    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
-    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
-    userAdminRole.setOrganizationId(1L);
-    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
-    userTestRole.setRoles(List.of("TEST"));
-    userTestRole.setOrganizationId(2L);
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
-    authorizationService.validateAdminRole(1L,userInfo);
+    UserInfo userInfo = buildAdminUser();
+    AuthorizationService.validateAdminRole(1L,userInfo);
   }
 
   @Test
   void givenNoAdminRoleWhenValidateAdminRoleThenAuthorizationDeniedException() {
-    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
-    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
-    userAdminRole.setOrganizationId(1L);
-    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
-    userTestRole.setRoles(List.of("TEST"));
-    userTestRole.setOrganizationId(2L);
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    UserInfo userInfo = buildAdminUser();
     userInfo.setMappedExternalUserId("externalUserId");
     AuthorizationDeniedException result = Assertions.assertThrows(
       AuthorizationDeniedException.class,
-      () -> authorizationService.validateAdminRole(2L,userInfo));
+      () -> AuthorizationService.validateAdminRole(2L,userInfo));
 
     Assertions.assertEquals("Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
   }
 
   @Test
+  void givenAdminRoleWhenValidateAdminOrgIpaCOdeRoleThenOK() {
+    UserInfo userInfo = buildAdminUser();
+    AuthorizationService.validateAdminRole("ORGIPA", userInfo);
+  }
+
+  @Test
+  void givenNoAdminRoleWhenValidateAdminRoleOrgIpaCodeThenAuthorizationDeniedException() {
+    UserInfo userInfo = buildAdminUser();
+    userInfo.setMappedExternalUserId("externalUserId");
+    AuthorizationDeniedException result = Assertions.assertThrows(
+      AuthorizationDeniedException.class,
+      () -> AuthorizationService.validateAdminRole("OTHERIPACODE",userInfo));
+
+    Assertions.assertEquals("Access denied on orgIpaCode OTHERIPACODE to user externalUserId", result.getMessage());
+  }
+
+  @Test
   void givenAdminRoleWhenIsAdminRoleThenOK() {
-    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
-    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
-    userAdminRole.setOrganizationId(1L);
-    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
-    userTestRole.setRoles(List.of("TEST"));
-    userTestRole.setOrganizationId(2L);
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    UserInfo userInfo = buildAdminUser();
     boolean adminRole = AuthorizationService.isAdminRole(1L, userInfo);
 
     Assertions.assertTrue(adminRole);
@@ -93,14 +108,7 @@ class AuthorizationServiceTest {
 
   @Test
   void givenNoAdminRoleWhenIsAdminRoleThenAuthorizationDeniedException() {
-    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
-    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
-    userAdminRole.setOrganizationId(1L);
-    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
-    userTestRole.setRoles(List.of("TEST"));
-    userTestRole.setOrganizationId(2L);
-    UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    UserInfo userInfo = buildAdminUser();
     userInfo.setMappedExternalUserId("externalUserId");
     boolean adminRole = AuthorizationService.isAdminRole(2L, userInfo);
 
@@ -315,5 +323,32 @@ class AuthorizationServiceTest {
 
     // Then
     Assertions.assertEquals(organizationFiscalCode, result);
+  }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, CF_1, IPA_1",
+    "USERID, CF_2, IPA_2",
+    "USERID, CF_3, null",
+    "null, CF_1, null",
+    "USERID, null, null"
+  }, nullValues={"null"})
+  void testgetOrgIpaCodeFromUserInfo(String userId, String organizationFiscalCode, String organizationIpaCode) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    String result = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, organizationFiscalCode);
+
+    // Then
+    Assertions.assertEquals(organizationIpaCode, result);
   }
 }

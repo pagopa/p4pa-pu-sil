@@ -63,7 +63,7 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
 
     return installmentIds.stream()
       //search for the debt position by installmentId
-      .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionByInstallmentId(installmentId, accessToken)))
+      .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
       //find the installment in the debt position
       .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
         installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))

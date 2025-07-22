@@ -2,12 +2,11 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
@@ -25,7 +24,7 @@ public class PagatiMapper {
   public static final String PAGATI_VERSIONE_OGGETTO = "6.2.0";
 
   private final JAXBTransformService jaxbTransformService;
-  private final DebtPositionService debtPositionService;
+  private final ReceiptService receiptService;
 
   /**
    * Maps a debt position and installment to an encoded PagatiConRicevuta object.
@@ -61,7 +60,7 @@ public class PagatiMapper {
   private PagatiConRicevuta mapToPagatiConRicevuta(InstallmentDTO installment, Organization organization, boolean withReceiptFields, String accessToken) {
     log.debug("mapping installment[{}] org[{}] withReceipt[{}] with PagatiConRicevuta",
       installment.getInstallmentId(), organization.getOrganizationId(), withReceiptFields);
-    ReceiptDTO receipt = debtPositionService.getReceiptById(installment.getReceiptId(), accessToken);
+    ReceiptDTO receipt = receiptService.getReceiptById(installment.getReceiptId(), accessToken);
 
     PagatiConRicevuta pagatiConRicevuta = new PagatiConRicevuta();
 

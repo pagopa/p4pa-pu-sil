@@ -5,9 +5,10 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,8 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
   private final ExportFileService exportFileService;
 
   public PaaSILPrenotaExportFlussoService(ExportFileService exportFileService,
-                                          DebtPositionService debtPositionService) {
-    super(debtPositionService);
+                                          DebtPositionTypeService debtPositionTypeService) {
+    super(debtPositionTypeService);
     this.exportFileService = exportFileService;
   }
 
@@ -32,9 +33,10 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
     String fileVersion,
     OffsetDateTime from,
     OffsetDateTime to,
-    String debtPositionTypeOrgCode) {
+    String debtPositionTypeOrgCode
+  ) {
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
 
-    checkAdminRole(orgIpaCode, userInfo);
     Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     DebtPositionTypeOrg debtPositionTypeOrg = getAndValidateDebtPositionTypeOrg(
       organizationId,

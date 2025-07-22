@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -27,11 +27,11 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
   private final SecondaryTransferMapper secondaryTransferMapper;
 
   public PaaSILInviaCarrelloDovutiMapper(JAXBTransformService jaxbTransformService,
-                                         DebtPositionService debtPositionService,
+                                         DebtPositionTypeService debtPositionTypeService,
                                          PersonMapper personMapper,
                                          ValidationService validationService,
                                          SecondaryTransferMapper secondaryTransferMapper) {
-    super(jaxbTransformService, debtPositionService, validationService, personMapper);
+    super(jaxbTransformService, debtPositionTypeService, validationService, personMapper);
     this.secondaryTransferMapper = secondaryTransferMapper;
   }
 

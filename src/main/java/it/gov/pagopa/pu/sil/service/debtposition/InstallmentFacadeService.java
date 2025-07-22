@@ -1,15 +1,15 @@
-package it.gov.pagopa.pu.sil.service.debtpositions;
+package it.gov.pagopa.pu.sil.service.debtposition;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class DebtPositionFacadeService {
+public class InstallmentFacadeService {
   public static final List<DebtPositionOrigin> ALLOWED_ORIGINS = List.of(
     DebtPositionOrigin.ORDINARY,
     DebtPositionOrigin.ORDINARY_SIL,
@@ -17,14 +17,14 @@ public class DebtPositionFacadeService {
     DebtPositionOrigin.SPONTANEOUS_SIL
   );
 
-  private final DebtPositionService debtPositionService;
+  private final InstallmentService installmentService;
 
-  public DebtPositionFacadeService(DebtPositionService debtPositionService) {
-    this.debtPositionService = debtPositionService;
+  public InstallmentFacadeService(InstallmentService installmentService) {
+    this.installmentService = installmentService;
   }
 
   public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, String accessToken) {
-    return debtPositionService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, ALLOWED_ORIGINS, accessToken)
+    return installmentService.getInstallmentsByOrganizationIdAndNav(organizationId, nav, ALLOWED_ORIGINS, accessToken)
       .stream()
       .filter(i -> i.getStatus() != InstallmentStatus.CANCELLED)
       .toList();

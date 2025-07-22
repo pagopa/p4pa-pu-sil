@@ -4,7 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -41,7 +41,7 @@ class PaaSILImportaDovutoMapperTest {
   private PaaSILImportaDovutoMapper mapper;
 
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private DebtPositionTypeService debtPositionTypeServiceMock;
   @Mock
   private JAXBTransformService jaxbTransformServiceMock;
   @Mock
@@ -87,7 +87,7 @@ class PaaSILImportaDovutoMapperTest {
     PaaSILImportaDovuto request = new PaaSILImportaDovuto();
     Versamento versamento = podamFactory.manufacturePojo(Versamento.class);
     when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenReturn(versamento);
-    when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento.getDatiVersamento().getIdentificativoTipoDovuto(), ACCESS_TOKEN))
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento.getDatiVersamento().getIdentificativoTipoDovuto(), ACCESS_TOKEN))
       .thenReturn(podamFactory.manufacturePojo(DebtPositionTypeOrg.class));
     when(personMapperMock.getAndValidateDebtor(versamento.getSoggettoPagatore())).thenReturn(podamFactory.manufacturePojo(PersonDTO.class));
     when(jaxbTransformServiceMock.marshallingNoNamespace(versamento.getDatiVersamento().getBilancio(), Bilancio.class)).thenThrow(new RuntimeException("simulated error"));
@@ -103,7 +103,7 @@ class PaaSILImportaDovutoMapperTest {
     Versamento versamento = podamFactory.manufacturePojo(Versamento.class);
     when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenReturn(versamento);
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-    when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento.getDatiVersamento().getIdentificativoTipoDovuto(), ACCESS_TOKEN))
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento.getDatiVersamento().getIdentificativoTipoDovuto(), ACCESS_TOKEN))
       .thenReturn(debtPositionTypeOrg);
     when(personMapperMock.getAndValidateDebtor(versamento.getSoggettoPagatore())).thenReturn(podamFactory.manufacturePojo(PersonDTO.class));
     when(jaxbTransformServiceMock.marshallingNoNamespace(versamento.getDatiVersamento().getBilancio(), Bilancio.class)).thenReturn("bilancioString");
@@ -126,7 +126,7 @@ class PaaSILImportaDovutoMapperTest {
       po.getInstallments().forEach(i -> {
         TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa",
           "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
-          "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "sourceFlowName",
+          "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "sourceFlowName", "switchToExpired",
           "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
         if (i.getTransfers() != null) {
           i.getTransfers().forEach(t -> {

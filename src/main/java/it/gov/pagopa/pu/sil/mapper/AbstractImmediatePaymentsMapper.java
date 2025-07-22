@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -28,7 +28,7 @@ import java.util.Optional;
 abstract class AbstractImmediatePaymentsMapper {
 
   protected final JAXBTransformService jaxbTransformService;
-  protected final DebtPositionService debtPositionService;
+  protected final DebtPositionTypeService debtPositionTypeService;
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
 
@@ -85,7 +85,7 @@ abstract class AbstractImmediatePaymentsMapper {
                                                                                   Organization org, CtDatiSingoloVersamentoDovuti versamento,
                                                                                   String cartId, String accessToken) {
 
-    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
+    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
 
     validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, versamento.getIdentificativoTipoDovuto());

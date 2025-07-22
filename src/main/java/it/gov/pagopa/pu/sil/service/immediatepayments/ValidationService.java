@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.util.Constants;
@@ -19,10 +19,10 @@ import java.math.BigDecimal;
 @Service
 public class ValidationService {
 
-  private final DebtPositionService debtPositionService;
+  private final InstallmentService installmentService;
 
-  public ValidationService(DebtPositionService debtPositionService) {
-    this.debtPositionService = debtPositionService;
+  public ValidationService(InstallmentService installmentService) {
+    this.installmentService = installmentService;
   }
 
   public void validateDebtPositionTypeOrg(DebtPositionTypeOrg debtPositionTypeOrg, String debtPositionTypeOrgCode) {
@@ -50,7 +50,7 @@ public class ValidationService {
   }
 
   public void validateIud(Long orgId, String iud, String accessToken) {
-    Long existingInstallmentWithIud = debtPositionService.countExistingInstallmentsByIudIuvNav(
+    Long existingInstallmentWithIud = installmentService.countExistingInstallmentsByIudIuvNav(
       orgId, iud, null, null, accessToken);
     if (existingInstallmentWithIud > 0) {
       throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "IUD duplicato: " + iud);

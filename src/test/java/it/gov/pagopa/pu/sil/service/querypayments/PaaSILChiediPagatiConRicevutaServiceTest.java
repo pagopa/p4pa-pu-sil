@@ -11,7 +11,7 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.debtpositions.DebtPositionFacadeService;
+import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -110,18 +110,18 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
       request.setIdSession(sessionId);
       when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
       pairList.forEach(pair ->
-        when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
+        when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
       );
     } else if ("iuv".equals(testCase)) {
       String iuv = pairList.getFirst().getRight().getIuv();
       request.setIdentificativoUnivocoVersamento(iuv);
       when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(organization.getOrganizationId(),
-        iuv, DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
+        iuv, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
     } else if ("iud".equals(testCase)) {
       String iud = pairList.getFirst().getRight().getIud();
       request.setIdentificativoUnivocoDovuto(iud);
       when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(organization.getOrganizationId(),
-        iud, DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
+        iud, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
     }
 
     when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
@@ -220,7 +220,7 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
            "unpaidToSyncInstallment", "expiredInstallment",
            "invalidOrgDebtPosition":
         pairList.forEach(pair ->
-          when(debtPositionServiceMock.getDebtPositionByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
+          when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
       case "emptyDebtPositionList":
         when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
@@ -228,7 +228,7 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
            "emptyDebtPositionListIuv", "invalidOrgStatus", "noSearchCriteria",
            "multipleSearchCriteria":
         if ("invalidOrgDebtPositionIud".equals(testCase)) {
-          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(organization.getOrganizationId(), pairList.getFirst().getRight().getIud(), DebtPositionFacadeService.ALLOWED_ORIGINS, accessToken))
+          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(organization.getOrganizationId(), pairList.getFirst().getRight().getIud(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken))
             .thenReturn(List.of(pairList.getFirst().getLeft()));
         }
         when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));

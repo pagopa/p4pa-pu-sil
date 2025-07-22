@@ -210,7 +210,12 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   typeMappings.set(mapOf(
     "CreateNotificationRequest" to "it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest",
     "CreateNotificationResponse" to "it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse",
-    "SendNotificationDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO"
+    "SendNotificationDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO",
+    "ImportFileType" to "it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum",
+    "ExportFileType" to "it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTypeEnum",
+    "ImportStatusType" to "it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus",
+    "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
+    "InstallmentDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO",
   ))
 }
 
@@ -594,6 +599,9 @@ jaxb {
       "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
     ))
     library.set("resttemplate")
+    typeMappings.set(mapOf(
+      "LocalDateTime" to "java.time.LocalDateTime"
+    ))
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {

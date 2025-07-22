@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
@@ -42,7 +42,7 @@ class SecondaryTransferMapperTest {
   @Mock
   JAXBTransformService jaxbTransformServiceMock;
   @Mock
-  DebtPositionService debtPositionServiceMock;
+  DebtPositionTypeService debtPositionTypeServiceMock;
 
   @InjectMocks
   SecondaryTransferMapper secondaryTransferMapper;
@@ -51,7 +51,7 @@ class SecondaryTransferMapperTest {
 
   @BeforeEach
   void setup() {
-    Mockito.reset(taxonomyServiceMock, jaxbTransformServiceMock, debtPositionServiceMock);
+    Mockito.reset(taxonomyServiceMock, jaxbTransformServiceMock, debtPositionTypeServiceMock);
   }
 
   //region: mapToCtDatiVersamentoDovutiEntiSecondari
@@ -128,9 +128,9 @@ class SecondaryTransferMapperTest {
       DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
       DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
       debtPositionType.setTaxonomyCode("1234567IM");
-      when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(debtPosition.getOrganizationId(), "ORG_CODE", "accessToken"))
+      when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(debtPosition.getOrganizationId(), "ORG_CODE", "accessToken"))
         .thenReturn(debtPositionTypeOrg);
-      when(debtPositionServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), "accessToken"))
+      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), "accessToken"))
         .thenReturn(debtPositionType);
     }
     Taxonomy taxonomy = podamFactory.manufacturePojo(Taxonomy.class);
@@ -162,9 +162,9 @@ class SecondaryTransferMapperTest {
       DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
       DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
       debtPositionType.setTaxonomyCode("");
-      when(debtPositionServiceMock.getDebtPositionTypeOrgByOrgIdAndType(debtPosition.getOrganizationId(), "ORG_CODE", "accessToken"))
+      when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(debtPosition.getOrganizationId(), "ORG_CODE", "accessToken"))
         .thenReturn(debtPositionTypeOrg);
-      when(debtPositionServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), "accessToken"))
+      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), "accessToken"))
         .thenReturn(debtPositionType);
     } else {
       when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234567IM", "accessToken"))

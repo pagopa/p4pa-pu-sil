@@ -1,68 +1,33 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
-import it.gov.pagopa.pu.sil.util.ConversionUtils;
-import it.veneto.regione.pagamenti.pivot.ente.CtAccertamento;
-import it.veneto.regione.pagamenti.pivot.ente.CtBilancio;
-import it.veneto.regione.pagamenti.pivot.ente.CtCapitolo;
-import it.veneto.regione.pagamenti.pivot.ente.CtTipoDovuto;
+import it.gov.pagopa.pu.sil.dto.generated.BalanceDTO;
+import it.gov.pagopa.pu.sil.dto.generated.DebtPositionTypeOrgDTO;
+import it.gov.pagopa.pu.sil.dto.generated.SectionDTO;
+import it.gov.pagopa.pu.sil.dto.generated.AssessmentDTO;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class AssessmentsBalanceMapper {
 
-  public CtBilancio map2CtBilancio(AssessmentsBalanceView balance) {
-    Map<String, Map<String, Map<String, Map<String, BigDecimal>>>> grouped = new HashMap<>();
-    grouped
-      .computeIfAbsent(balance.getOfficeCode(), k -> new HashMap<>())
-      .computeIfAbsent(balance.getDebtPositionTypeOrgCode(), k -> new HashMap<>())
-      .computeIfAbsent(balance.getAssessmentCode(), k -> new HashMap<>())
-      .merge(balance.getSectionCode(),
-        ConversionUtils.centsAmountToBigDecimalEuroAmount(balance.getAmountCents()),
-        BigDecimal::add
-      );
-    return toCtBilancio(grouped.entrySet().iterator().next());
-  }
+  public BalanceDTO map2BalanceDTO(AssessmentsBalanceView balance) {
+    BalanceDTO balanceDTO = new BalanceDTO();
+    balanceDTO.setOffice(balance.getOfficeCode());
 
-  private CtBilancio toCtBilancio(Map.Entry<String, Map<String, Map<String, Map<String, BigDecimal>>>> ufficioEntry) {
-    CtBilancio ctBilancio = new CtBilancio();
-    ctBilancio.setUfficio(ufficioEntry.getKey());
-    List<CtTipoDovuto> tipoDovutoList = ufficioEntry.getValue().entrySet().stream()
-      .map(this::toCtTipoDovuto)
-      .toList();
-    ctBilancio.getTipoDovutos().addAll(tipoDovutoList);
-    return ctBilancio;
-  }
+    DebtPositionTypeOrgDTO debtPositionTypeOrgDTO = new DebtPositionTypeOrgDTO();
+    debtPositionTypeOrgDTO.setDebtPositionTypeOrgCode(balance.getDebtPositionTypeOrgCode());
 
-  private CtTipoDovuto toCtTipoDovuto(Map.Entry<String, Map<String, Map<String, BigDecimal>>> tipoDovutoEntry) {
-    CtTipoDovuto ctTipoDovuto = new CtTipoDovuto();
-    ctTipoDovuto.setCodTipoDovuto(tipoDovutoEntry.getKey());
-    List<CtCapitolo> capitoloList = tipoDovutoEntry.getValue().entrySet().stream()
-      .map(this::toCtCapitolo)
-      .toList();
-    ctTipoDovuto.getCapitolos().addAll(capitoloList);
-    return ctTipoDovuto;
-  }
+    SectionDTO sectionDTO = new SectionDTO();
+    sectionDTO.setSectionCode(balance.getSectionCode());
 
-  private CtCapitolo toCtCapitolo(Map.Entry<String, Map<String, BigDecimal>> capitoloEntry) {
-    CtCapitolo ctCapitolo = new CtCapitolo();
-    ctCapitolo.setCodCapitolo(capitoloEntry.getKey());
-    List<CtAccertamento> accertamentoList = capitoloEntry.getValue().entrySet().stream()
-      .map(this::toCtAccertamento)
-      .toList();
-    ctCapitolo.getAccertamentos().addAll(accertamentoList);
-    return ctCapitolo;
-  }
+    AssessmentDTO assessmentDTO = new AssessmentDTO();
+    assessmentDTO.setAssessmentCode(balance.getAssessmentCode());
+    assessmentDTO.setAmountCents(balance.getAmountCents());
 
-  private CtAccertamento toCtAccertamento(Map.Entry<String, BigDecimal> accertamentoEntry) {
-    CtAccertamento ctAccertamento = new CtAccertamento();
-    ctAccertamento.setCodAccertamento(accertamentoEntry.getKey());
-    ctAccertamento.setImporto(accertamentoEntry.getValue());
-    return ctAccertamento;
+    sectionDTO.addAssessmentsItem(assessmentDTO);
+    debtPositionTypeOrgDTO.addSectionsItem(sectionDTO);
+    balanceDTO.addDebtPositionTypeOrgsItem(debtPositionTypeOrgDTO);
+
+    return balanceDTO;
   }
 }

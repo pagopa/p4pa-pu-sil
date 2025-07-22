@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -31,7 +31,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaaSILImportaDovutoMapper {
 
-  private final DebtPositionService debtPositionService;
+  private final DebtPositionTypeService debtPositionTypeService;
   private final JAXBTransformService jaxbTransformService;
   private final PersonMapper personMapper;
   private final SecondaryTransferMapper secondaryTransferMapper;
@@ -54,7 +54,7 @@ public class PaaSILImportaDovutoMapper {
     //all debt-position data validations are made on DEBT-POSITION API (see task P4ADEV-3458)
 
     CtDatiVersamento datiVersamento = versamento.getDatiVersamento();
-    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
+    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       organization.getOrganizationId(), datiVersamento.getIdentificativoTipoDovuto(), accessToken);
 
     long amountCents = ConversionUtils.bigDecimalEuroAmountToCentsAmount(datiVersamento.getImportoSingoloVersamento());

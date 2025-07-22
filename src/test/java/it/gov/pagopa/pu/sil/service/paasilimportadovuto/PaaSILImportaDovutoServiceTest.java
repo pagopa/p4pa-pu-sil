@@ -3,8 +3,7 @@ package it.gov.pagopa.pu.sil.service.paasilimportadovuto;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
@@ -14,15 +13,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 class PaaSILImportaDovutoServiceTest {
@@ -35,9 +30,8 @@ class PaaSILImportaDovutoServiceTest {
   @Test
   void givenValidRequestWhenPaaSILImportaDovutoServiceThenOk() {
     //given
-    UserInfo userInfo = podamFactory.manufacturePojo(UserInfo.class);
-    String orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
-    userInfo.getOrganizations().getFirst().setRoles(List.of("ROLE_X","ROLE_ADMIN"));
+    String orgIpaCode = "orgIpaCode";
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
 
     //when
@@ -55,16 +49,13 @@ class PaaSILImportaDovutoServiceTest {
   @Test
   void givenNotAuthorizedUserWhenPaaSILImportaDovutoServiceThenOk() {
     //given
-    UserInfo userInfo = podamFactory.manufacturePojo(UserInfo.class);
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(-1L, "ORGFC", "OTHERIPACODE");
     String orgIpaCode = podamFactory.manufacturePojo(String.class);
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
 
-    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
-      authMock.when(() -> AuthorizationService.isAdminRole(eq(orgIpaCode), eq(userInfo))).thenReturn(false);
 
-      //when then
-      assertThrows(UnauthorizedException.class, () ->
-        paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request));
-    }
+    //when then
+    assertThrows(AuthorizationDeniedException.class, () ->
+      paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request));
   }
 }

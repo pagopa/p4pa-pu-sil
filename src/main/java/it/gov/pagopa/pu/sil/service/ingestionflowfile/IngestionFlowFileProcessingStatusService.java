@@ -5,78 +5,74 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService;
-import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
+import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
+import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.veneto.regione.pagamenti.ente.PaaSILChiediStatoImportFlusso;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 @Slf4j
 @Service
 public class IngestionFlowFileProcessingStatusService {
-  private final IngestionFlowFileService ingestionFlowFileService;
   private final String fileShareBaseUrl;
+  private final IngestionFlowFileService ingestionFlowFileService;
 
-  @Autowired
-  public IngestionFlowFileProcessingStatusService(IngestionFlowFileService ingestionFlowFileService,
-                                                  @Value("${public-base-url.fileshare}") String fileShareBaseUrl) {
-    this.ingestionFlowFileService = ingestionFlowFileService;
+  public IngestionFlowFileProcessingStatusService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+                                                  IngestionFlowFileService ingestionFlowFileService) {
     this.fileShareBaseUrl = fileShareBaseUrl;
+    this.ingestionFlowFileService = ingestionFlowFileService;
   }
 
-  public IngestionFlowFile getIngestionFlowFile(UserInfo userInfo,
-                                                String accessToken,
-                                                String orgIpaCode,
-                                                Long ingestionFlowFileId,
-                                                IngestionFlowFileTypeEnum... expectedTypes) {
-    String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
+  public ImportStatusResponseDTO getProcessingStatus(
+    UserInfo userInfo,
+    String accessToken,
+    String orgIpaCode,
+    Long ingestionFlowFileId,
+    IngestionFlowFile.IngestionFlowFileTypeEnum... expectedTypes
+  ) {
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
 
-    if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call ingestion flow file for organization {}", clientId, orgIpaCode);
-      throw new UnauthorizedException("Utente non autorizzato");
-    }
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
     log.debug("Retrieved IngestionFlowFile: {}", ingestionFlowFile);
 
-    if (Arrays.stream(expectedTypes).noneMatch(ingestionFlowFile.getIngestionFlowFileType()::equals)) {
+    verifyMatchingTypes(ingestionFlowFile, expectedTypes);
+
+    ImportStatusResponseDTO responseDTO = ImportStatusResponseDTO.builder()
+      .status(ingestionFlowFile.getStatus())
+      .build();
+
+    if (IngestionFlowFileStatus.COMPLETED.equals(ingestionFlowFile.getStatus())) {
+      addDownloadUrlsToResponse(responseDTO, ingestionFlowFile);
+    }
+    return responseDTO;
+  }
+
+  private void verifyMatchingTypes(IngestionFlowFile ingestionFlowFile, IngestionFlowFileTypeEnum... expectedTypes) {
+    if (expectedTypes == null || expectedTypes.length == 0) {
+      return;
+    }
+    if (Arrays.stream(expectedTypes).noneMatch(type -> type == ingestionFlowFile.getIngestionFlowFileType())) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
-        .formatted(expectedTypes, ingestionFlowFile.getIngestionFlowFileType()));
-    } else {
-      return ingestionFlowFile;
+        .formatted(Arrays.toString(expectedTypes), ingestionFlowFile.getIngestionFlowFileType()));
     }
   }
 
-  public PaymentsProcessingStatusDTO getProcessingStatus(PaaSILChiediStatoImportFlusso request,
-                                                         UserInfo userInfo,
-                                                         String accessToken,
-                                                         String orgIpaCode,
-                                                         Long ingestionFlowFileId,
-                                                         IngestionFlowFileTypeEnum... expectedTypes) {
-    IngestionFlowFile ingestionFlowFile = getIngestionFlowFile(userInfo, accessToken, orgIpaCode, ingestionFlowFileId, expectedTypes);
-    PaymentsProcessingStatusDTO statusDTO = PaymentsProcessingStatusDTO.builder()
-      .status(ingestionFlowFile.getStatus())
-      .build();
-    if (!IngestionFlowFileStatus.COMPLETED.equals(ingestionFlowFile.getStatus())) {
-      log.debug("IngestionFlowFile type {} with ID {} is not completed, returning status only: {}",
-        ingestionFlowFile.getIngestionFlowFileType(), ingestionFlowFileId, statusDTO);
-      return statusDTO;
+  private void addDownloadUrlsToResponse(ImportStatusResponseDTO responseDTO, IngestionFlowFile ingestionFlowFile) {
+    responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.OUTPUT_FILE, composeUrl(ingestionFlowFile, "/imported")));
+    if (ingestionFlowFile.getDiscardFileName() != null) {
+      responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.DISCARDED_FILE, composeUrl(ingestionFlowFile, "/errors")));
     }
-    return statusDTO.toBuilder()
-      .urlErrors(Boolean.TRUE.equals(request.isFileScarti()) ? composeUrl(ingestionFlowFile, "/errors") : null)
-      .urlNotice(Boolean.TRUE.equals(request.isFileAvvisi()) ? composeUrl(ingestionFlowFile, "/notice") : null)
-      .urlImported(Boolean.TRUE.equals(request.isFileIUV()) ? composeUrl(ingestionFlowFile, "/imported") : null)
-      .build();
+    if (ingestionFlowFile.getPdfGeneratedId() != null) {
+      responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.PAYMENT_NOTICE_FILE, composeUrl(ingestionFlowFile, "/notice")));
+    }
   }
 
   private String composeUrl(IngestionFlowFile ingestionFlowFile, String suffixPath) {
-    log.debug("Creating download URL for IngestionFlowFile: {}", ingestionFlowFile);
     return UriComponentsBuilder.fromUriString(fileShareBaseUrl)
       .path("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}")
       .path(suffixPath)
@@ -84,4 +80,3 @@ public class IngestionFlowFileProcessingStatusService {
       .toUriString();
   }
 }
-

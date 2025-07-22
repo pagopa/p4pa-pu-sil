@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.sil.service.paymentnotification.PaymentNotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,12 +41,12 @@ class PaymentNotificationControllerTest {
   void whenNotifyPaymentThenOk() {
     // Given
     Long orgSilServiceId = 1L;
-    String nav = "NAV123";
+    InstallmentDTO installmentDTO = new InstallmentDTO();
 
     doNothing().when(paymentNotificationServiceMock)
-      .notifyPayment(orgSilServiceId, nav, userInfo, "fakeAccessToken");
+      .notifyPayment(orgSilServiceId, installmentDTO, userInfo, "fakeAccessToken");
 
     // When Then
-    assertDoesNotThrow(() -> controller.notifyPayment(orgSilServiceId, nav));
+    assertDoesNotThrow(() -> controller.notifyPayment(orgSilServiceId, installmentDTO));
   }
 }

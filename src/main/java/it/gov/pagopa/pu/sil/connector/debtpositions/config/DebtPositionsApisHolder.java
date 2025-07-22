@@ -13,14 +13,13 @@ import org.springframework.web.client.RestTemplate;
 public class DebtPositionsApisHolder {
 
   private final DebtPositionTypeOrgSearchControllerApi debtPositionTypeOrgSearchControllerApi;
-
   private final DebtPositionTypeEntityControllerApi debtPositionTypeEntityControllerApi;
 
   private final InstallmentApi installmentApi;
-
   private final InstallmentNoPiiSearchControllerApi installmentNoPiiSearchControllerApi;
 
   private final DebtPositionApi debtPositionApi;
+  private final DebtPositionSearchControllerApi debtPositionSearchControllerApi;
 
   private final ReceiptApi receiptApi;
 
@@ -40,11 +39,15 @@ public class DebtPositionsApisHolder {
       restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("DEBT-POSITIONS"));
     }
 
-    this.installmentApi = new InstallmentApi(apiClient);
     this.debtPositionTypeOrgSearchControllerApi = new DebtPositionTypeOrgSearchControllerApi(apiClient);
     this.debtPositionTypeEntityControllerApi = new DebtPositionTypeEntityControllerApi(apiClient);
+
+    this.installmentApi = new InstallmentApi(apiClient);
     this.installmentNoPiiSearchControllerApi = new InstallmentNoPiiSearchControllerApi(apiClient);
+
     this.debtPositionApi = new DebtPositionApi(apiClient);
+    this.debtPositionSearchControllerApi = new DebtPositionSearchControllerApi(apiClient);
+
     this.receiptApi = new ReceiptApi(apiClient);
   }
 
@@ -71,6 +74,10 @@ public class DebtPositionsApisHolder {
 
   public DebtPositionApi getDebtPositionApi(String accessToken) {
     return getApi(accessToken, debtPositionApi);
+  }
+
+  public DebtPositionSearchControllerApi getDebtPositionSearchControllerApi(String accessToken) {
+    return getApi(accessToken, debtPositionSearchControllerApi);
   }
 
   public ReceiptApi getReceiptApi(String accessToken) {

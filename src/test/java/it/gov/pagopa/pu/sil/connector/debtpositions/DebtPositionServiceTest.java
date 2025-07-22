@@ -1,6 +1,9 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -34,93 +37,19 @@ class DebtPositionServiceTest {
   }
 
   @Test
-  void whenGetDebtPositionTypeOrgByIdThenInvokeClient() {
-    // Given
-    Long debtPositionTypeOrgId = 1L;
-    String debtPositionTypeOrgCode = "CODE";
-    String accessToken = "ACCESSTOKEN";
-    DebtPositionTypeOrg expectedResult = new DebtPositionTypeOrg();
-
-    Mockito.when(clientMock.getDebtPositionTypeOrgByOrganizationIdAndCode(Mockito.same(debtPositionTypeOrgId), Mockito.same(debtPositionTypeOrgCode), Mockito.same(accessToken)))
-      .thenReturn(expectedResult);
-
-    // When
-    DebtPositionTypeOrg result = service.getDebtPositionTypeOrgByOrgIdAndType(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
-
-    // Then
-    Assertions.assertSame(expectedResult, result);
-  }
-
-  @Test
-  void whenCountExistingInstallmentsByIudIuvNavThenReturnCorrectCount() {
-    // Given
-    Long organizationId = 1L;
-    String iud = "IUD";
-    String iuv = "IUV";
-    String nav = "NAV";
-    String accessToken = "ACCESSTOKEN";
-    Long expectedCount = 10L;
-
-    Mockito.when(clientMock.countExistingInstallmentsByIudIuvNav(
-        Mockito.same(organizationId),
-        Mockito.same(iud),
-        Mockito.same(iuv),
-        Mockito.same(nav),
-        Mockito.same(accessToken)))
-      .thenReturn(expectedCount);
-
-    // When
-    Long result = service.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
-
-    // Then
-    Assertions.assertEquals(expectedCount, result);
-  }
-
-  @Test
-  void whenGetDebtPositionTypeByIdThenReturnDebtPositionType() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    Long debtPositionTypeId = 1L;
-    DebtPositionType expectedResult = new DebtPositionType();
-
-    Mockito.when(clientMock.getDebtPositionTypeById(debtPositionTypeId, accessToken)).thenReturn(expectedResult);
-
-    //when
-    DebtPositionType result = service.getDebtPositionTypeById(debtPositionTypeId, accessToken);
-
-    //then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void whenGetInstallmentsByOrganizationIdAndNavThenReturnListOfInstallmentDTO() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    List<InstallmentDTO> expectedResult = List.of(new InstallmentDTO());
-
-    Mockito.when(clientMock.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken)).thenReturn(expectedResult);
-
-    //when
-    List<InstallmentDTO> result = service.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken);
-
-    //then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void whenGetDebtPositionByInstallmentIdThenReturnDebtPositionDTO() {
+  void whenGetDebtPositionDTOByInstallmentIdThenReturnDebtPositionDTODTO() {
     // Given
     Long installmentId = 1L;
     String accessToken = "ACCESSTOKEN";
     DebtPositionDTO expectedResult = new DebtPositionDTO();
 
-    Mockito.when(clientMock.getDebtPositionByInstallmentId(installmentId, accessToken)).thenReturn(expectedResult);
+    Mockito.when(clientMock.getDebtPositionDTOByInstallmentId(installmentId, accessToken)).thenReturn(expectedResult);
 
     // When
-    DebtPositionDTO result = service.getDebtPositionByInstallmentId(installmentId, accessToken);
+    DebtPositionDTO result = service.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
 
     // Then
-    Assertions.assertEquals(expectedResult, result);
+    Assertions.assertSame(expectedResult, result);
   }
 
   @Test
@@ -138,7 +67,7 @@ class DebtPositionServiceTest {
     List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin, accessToken);
 
     // Then
-    Assertions.assertEquals(expectedResult, result);
+    Assertions.assertSame(expectedResult, result);
   }
 
   @Test
@@ -156,23 +85,7 @@ class DebtPositionServiceTest {
     List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndIud(organizationId, iud, debtPositionOrigin, accessToken);
 
     // Then
-    Assertions.assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void whenGetReceiptByIdThenReturnReceiptDTO() {
-    // Given
-    Long receiptId = 1L;
-    String accessToken = "ACCESSTOKEN";
-    ReceiptDTO expectedResult = new ReceiptDTO();
-
-    Mockito.when(clientMock.getReceiptById(receiptId, accessToken)).thenReturn(expectedResult);
-
-    // When
-    ReceiptDTO result = service.getReceiptById(receiptId, accessToken);
-
-    // Then
-    Assertions.assertEquals(expectedResult, result);
+    Assertions.assertSame(expectedResult, result);
   }
 
   @Test
@@ -189,37 +102,13 @@ class DebtPositionServiceTest {
 
     // Then
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(expectedResult.getBody(), result.getLeft());
-    Assertions.assertEquals("workflow-id", result.getRight());
-  }
-
-  @Test
-  void whenFindAuthorizedByTransferSemanticKeyThenReturnInstallment() {
-    // Given
-    String accessToken = "ACCESSTOKEN";
-    Long organizationId = 1L;
-    String iuv = "IUV";
-    String iur = "IUR";
-    int transferIndex = 1;
-    String operatorExternalUserId = "OPERATOR_ID";
-
-    InstallmentNoPII expectedResult = new InstallmentNoPII();
-
-    Mockito.when(clientMock.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken))
-      .thenReturn(expectedResult);
-
-    // When
-    InstallmentNoPII result = service.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
-    // Then
-    Assertions.assertEquals(expectedResult, result);
+    Assertions.assertSame(expectedResult.getBody(), result.getLeft());
+    Assertions.assertSame("workflow-id", result.getRight());
   }
 
   @Test
   void whenManageDebtPositionInstallmentsThenReturnDebtPositionDTO() {
     // Given
-    DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
     Long debtPositionId = 1L;
     String accessToken = "ACCESSTOKEN";
     ManageDebtPositionDTO manageDebtPositionDTO = new ManageDebtPositionDTO();
@@ -232,7 +121,23 @@ class DebtPositionServiceTest {
 
     // Then
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(expectedResult.getBody(), result.getLeft());
-    Assertions.assertEquals("workflow-id", result.getRight());
+    Assertions.assertSame(expectedResult.getBody(), result.getLeft());
+    Assertions.assertSame("workflow-id", result.getRight());
+  }
+
+  @Test
+  void whenGetDebtPositionByInstallmentIdThenReturnDebtPositionDTODTO() {
+    // Given
+    Long installmentId = 1L;
+    String accessToken = "ACCESSTOKEN";
+    DebtPosition expectedResult = new DebtPosition();
+
+    Mockito.when(clientMock.getDebtPositionByInstallmentId(installmentId, accessToken)).thenReturn(expectedResult);
+
+    // When
+    DebtPosition result = service.getDebtPositionByInstallmentId(installmentId, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
   }
 }

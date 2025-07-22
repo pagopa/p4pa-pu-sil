@@ -4,16 +4,16 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -24,7 +24,7 @@ import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
+import it.gov.pagopa.pu.sil.service.queryassessments.LegacyQueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
@@ -38,6 +38,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
@@ -67,7 +68,7 @@ class PuForOrganizationReconciliationEndpointTest {
   @Mock
   private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
   @Mock
-  private QueryAssessmentsService queryAssessmentsServiceMock;
+  private LegacyQueryAssessmentsService queryAssessmentsServiceMock;
 
   @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
@@ -218,7 +219,7 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+    ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
     IngestionFlowFileTypeEnum[] ingestionFlowFileTypeEnums = {IngestionFlowFileTypeEnum.TREASURY_OPI,
@@ -226,7 +227,7 @@ class PuForOrganizationReconciliationEndpointTest {
       IngestionFlowFileTypeEnum.TREASURY_XLS,
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
 
@@ -251,10 +252,10 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    IngestionFlowFile ingestionFlowFile = podamFactory.manufacturePojo(IngestionFlowFile.class)
+    ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getIngestionFlowFile(
+    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
 
@@ -279,10 +280,13 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
-
+    ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
+      .importId(String.valueOf(expectedToken))
+      .uploadUrl(expectedUrl)
+      .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
-    )).thenReturn(Pair.of(expectedToken, expectedUrl));
+    )).thenReturn(importFileResponseDTO);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
@@ -315,10 +319,13 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
-
+    ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
+      .importId(String.valueOf(expectedToken))
+      .uploadUrl(expectedUrl)
+      .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
-    )).thenReturn(Pair.of(expectedToken, expectedUrl));
+    )).thenReturn(importFileResponseDTO);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
@@ -380,7 +387,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(INVALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
-    )).thenThrow(new UnauthorizedException("Utente non autorizzato"));
+    )).thenThrow(new AuthorizationDeniedException("Utente non autorizzato"));
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)

@@ -1,17 +1,19 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -23,10 +25,15 @@ import static org.mockito.Mockito.when;
 class ValidationServiceTest {
 
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private InstallmentService installmentServiceMock;
 
   @InjectMocks
   private ValidationService validationService;
+
+  @AfterEach
+  void verifyNoMoreInteractions(){
+    Mockito.verifyNoMoreInteractions(installmentServiceMock);
+  }
 
   //region: validateDebtPositionTypeOrg
   @Test
@@ -138,7 +145,7 @@ class ValidationServiceTest {
     String iud = "DUPLICATE_IUD";
     String accessToken = "TOKEN";
 
-    when(debtPositionServiceMock.countExistingInstallmentsByIudIuvNav(orgId, iud, null, null, accessToken)).thenReturn(1L);
+    when(installmentServiceMock.countExistingInstallmentsByIudIuvNav(orgId, iud, null, null, accessToken)).thenReturn(1L);
 
     SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateIud(orgId, iud, accessToken));
 
@@ -152,7 +159,7 @@ class ValidationServiceTest {
     String iud = "UNIQUE_IUD";
     String accessToken = "TOKEN";
 
-    when(debtPositionServiceMock.countExistingInstallmentsByIudIuvNav(orgId, iud, null, null, accessToken)).thenReturn(0L);
+    when(installmentServiceMock.countExistingInstallmentsByIudIuvNav(orgId, iud, null, null, accessToken)).thenReturn(0L);
 
     Assertions.assertDoesNotThrow(() -> validationService.validateIud(orgId, iud, accessToken));
   }
