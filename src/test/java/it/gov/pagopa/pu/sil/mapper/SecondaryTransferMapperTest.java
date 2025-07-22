@@ -76,7 +76,7 @@ class SecondaryTransferMapperTest {
   }
 
   @Test
-  void mapToCtDatiVersamentoDovutiEntiSecondari_shouldReturnOptional() throws Exception {
+  void mapToCtDatiVersamentoDovutiEntiSecondari_shouldReturnOptional() {
     ListaDovutiEntiSecondari list = new ListaDovutiEntiSecondari();
     ElementoListaDovutiEntiSecondari el = new ElementoListaDovutiEntiSecondari();
     el.setDovutiEntiSecondari(new byte[]{1, 2, 3});
@@ -96,7 +96,7 @@ class SecondaryTransferMapperTest {
   }
 
   @Test
-  void mapToCtDatiVersamentoDovutiEntiSecondari_shouldThrowOnUnmarshalException() throws Exception {
+  void mapToCtDatiVersamentoDovutiEntiSecondari_shouldThrowOnUnmarshalException() {
     ListaDovutiEntiSecondari list = new ListaDovutiEntiSecondari();
     ElementoListaDovutiEntiSecondari el = new ElementoListaDovutiEntiSecondari();
     el.setDovutiEntiSecondari(new byte[]{1, 2, 3});

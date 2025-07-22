@@ -148,7 +148,8 @@ public class PaaSILImportaDovutoMapper {
 
     PaymentOptionDTO paymentOptionOnDb = debtPositionOnDb.getPaymentOptions().stream()
       .filter(po -> Objects.equals(po.getPaymentOptionId(), installmentToSync.getPaymentOptionId()))
-      .findFirst().get();
+      .findFirst()
+      .orElseThrow(); //should never happen, since it has been checked in the previous step; just used to satisfy SonarQube
 
     if(action.equals(Constants.LEGACY_IMPORT_ACTION_MODIFY)){
       //this is necessary only for action M (modify), for action A (cancel) the only relevant field is installmentId
