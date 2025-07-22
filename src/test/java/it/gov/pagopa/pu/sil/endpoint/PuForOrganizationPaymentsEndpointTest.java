@@ -30,10 +30,10 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
+import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -281,7 +281,7 @@ class PuForOrganizationPaymentsEndpointTest {
       RegistryOutcome.OK
     );
 
-    Mockito.when(paaSILImportaDovutoServiceMock.paaSILImportaDovuto(Mockito.same(userInfo), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(request)))
+    Mockito.when(paaSILImportaDovutoServiceMock.paaSILImportaDovuto(Mockito.same(request), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(userInfo), Mockito.any()))
       .thenReturn(tripleResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()

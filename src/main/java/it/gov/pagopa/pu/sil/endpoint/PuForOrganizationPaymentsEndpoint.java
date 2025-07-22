@@ -29,10 +29,10 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
+import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -213,6 +213,7 @@ public class PuForOrganizationPaymentsEndpoint {
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
     response.setEsito(RegistryOutcome.KO.getValue());
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
     String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
       IntestazionePPT.class,
       IntestazionePPT::getCodIpaEnte,
@@ -227,7 +228,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
+      () -> paaSILImportaDovutoService.paaSILImportaDovuto(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         response,
         PaaSILImportaDovutoRisposta::setFault,
