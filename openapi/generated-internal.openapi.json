@@ -258,6 +258,9 @@
             "type" : "string",
             "format" : "date"
           },
+          "switchToExpired" : {
+            "type" : "boolean"
+          },
           "notificationFeeCents" : {
             "type" : "integer",
             "format" : "int64"

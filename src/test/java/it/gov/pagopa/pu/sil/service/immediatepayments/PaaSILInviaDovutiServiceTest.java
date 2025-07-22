@@ -15,7 +15,7 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
+import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
@@ -51,7 +51,7 @@ class PaaSILInviaDovutiServiceTest {
   @Mock
   private CheckoutService checkoutServiceMock;
   @Mock
-  private CreateDebtPositionService createDebtPositionServiceMock;
+  private ManageDebtPositionService manageDebtPositionServiceMock;
   @Mock
   private CartRequestMapper cartRequestMapperMock;
   @Mock
@@ -73,7 +73,7 @@ class PaaSILInviaDovutiServiceTest {
 
   @BeforeEach
   void setUp() {
-    Mockito.reset(paaSILInviaDovutiMapperMock, checkoutServiceMock, createDebtPositionServiceMock, organizationServiceMock, cartRequestMapperMock, sessionIdMapperMock);
+    Mockito.reset(paaSILInviaDovutiMapperMock, checkoutServiceMock, manageDebtPositionServiceMock, organizationServiceMock, cartRequestMapperMock, sessionIdMapperMock);
 
     userInfo = podamFactory.manufacturePojo(UserInfo.class);
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
@@ -154,7 +154,7 @@ class PaaSILInviaDovutiServiceTest {
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), any(), eq(TOKEN)))
       .thenReturn(debtPositionDTOList);
-    when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
+    when(manageDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
       .thenThrow(new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "system error"));
 
     //when
@@ -176,7 +176,7 @@ class PaaSILInviaDovutiServiceTest {
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), argThat(c -> {cartId.set(c); return true;}), eq(TOKEN)))
       .thenReturn(debtPositionDTOList);
-    when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
+    when(manageDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
       .thenReturn(debtPositionDTOList);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
@@ -208,7 +208,7 @@ class PaaSILInviaDovutiServiceTest {
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), argThat(c -> {cartId.set(c); return true;}), eq(TOKEN)))
       .thenReturn(debtPositionDTOList);
-    when(createDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
+    when(manageDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
       .thenReturn(debtPositionDTOList);
     when(sessionIdMapperMock.mapDebtPositionsToSessionId(debtPositionDTOList)).thenReturn(sessionId);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))

@@ -141,7 +141,7 @@ class PaaSILInviaDovutiMapperTest {
         po.getInstallments().forEach(i -> {
           TestUtils.checkNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa",
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
-            "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId",
+            "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
             "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
           if(i.getTransfers()!=null) {
             i.getTransfers().forEach(t -> {
