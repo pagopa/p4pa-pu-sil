@@ -86,6 +86,16 @@ public class PuSilExceptionHandler {
     return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.NOT_FOUND);
   }
 
+  @ExceptionHandler(ExportFileClientException.class)
+  public ResponseEntity<PuSilErrorDTO> handleExportFileClientException(ExportFileClientException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ExportFileServiceException.class)
+  public ResponseEntity<PuSilErrorDTO> handleExportFileServiceException(ExportFileServiceException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+  }
+
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {
     logException(ex, request, httpStatus);
 

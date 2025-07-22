@@ -746,27 +746,11 @@ components:
         exportFilters:
           type: object
           additionalProperties:
-            type: object
-            required:
-              - key
-              - value
-            properties:
-              key:
-                type: string
-              value:
-                type: string
+            type: string
         exportFlags:
           type: object
-          required:
-            - key
-            - value
           additionalProperties:
-            type: object
-            properties:
-              key:
-                type: string
-              value:
-                type: boolean
+            type: boolean
     ExportFileResponseDTO:
       type: object
       required:

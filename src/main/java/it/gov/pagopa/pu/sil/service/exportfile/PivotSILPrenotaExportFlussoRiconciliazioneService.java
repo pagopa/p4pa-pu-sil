@@ -10,7 +10,13 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazioneRisposta;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -27,21 +33,43 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService extends AbstractE
   }
 
   public PivotSILPrenotaExportFlussoRiconciliazioneRisposta doReservation(UserInfo userInfo, String accessToken, String orgIpaCode, PivotSILPrenotaExportFlussoRiconciliazione request) {
+    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response = new PivotSILPrenotaExportFlussoRiconciliazioneRisposta();
+
+    Pair<Long, OffsetDateTime> reservationResponse = doReservation(userInfo, accessToken, orgIpaCode,
+      request.getIdUnivocoDovuto(),
+      Optional.ofNullable(request.getDataUltimoAggiornamentoDa()).map(d -> d.toGregorianCalendar().toZonedDateTime().toOffsetDateTime()).orElse(null),
+      Optional.ofNullable(request.getDataUltimoAggiornamentoA()).map(d -> d.toGregorianCalendar().toZonedDateTime().toOffsetDateTime()).orElse(null),
+      () -> classificationsExportFileRequestMapper.mapToExportFileRequest(null, request));
+
+    XMLGregorianCalendar lastUpdateXMLGregorianFrom = request.getDataUltimoAggiornamentoDa();
+    XMLGregorianCalendar lastUpdateXMLGregorianTo = request.getDataUltimoAggiornamentoA();
+
+    response.setDataA(lastUpdateXMLGregorianFrom != null && lastUpdateXMLGregorianTo != null ? lastUpdateXMLGregorianTo : null);
+    response.setRequestToken(reservationResponse.getLeft().toString());
+
+    return response;
+  }
+
+  public Pair<Long, OffsetDateTime> doReservation(UserInfo userInfo, String accessToken, String orgIpaCode,
+                              String iud, OffsetDateTime lastUpdateDateFrom, OffsetDateTime lastUpdateDateTo,
+                              Supplier<ClassificationsExportFileRequestDTO> requestDTOSupplier) {
     AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
     Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     getAndValidateDebtPositionTypeOrg(
       organizationId,
-      request.getIdUnivocoDovuto(),
+      iud,
       accessToken,
       SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
       SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO
     );
-    ClassificationsExportFileRequestDTO requestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
+
+    ClassificationsExportFileRequestDTO requestDTO = requestDTOSupplier.get();
+    requestDTO.organizationId(organizationId);
+
     Long exportFileId = exportFileService.createClassificationsExportFile(requestDTO, accessToken);
+
     log.debug("Export file created with ID: {}", exportFileId);
-    PivotSILPrenotaExportFlussoRiconciliazioneRisposta response = new PivotSILPrenotaExportFlussoRiconciliazioneRisposta();
-    response.setDataA(request.getDataUltimoAggiornamentoDa() != null && request.getDataUltimoAggiornamentoA() != null ? request.getDataUltimoAggiornamentoA() : null);
-    response.setRequestToken(exportFileId.toString());
-    return response;
+
+    return Pair.of(exportFileId, lastUpdateDateFrom != null && lastUpdateDateTo != null ? lastUpdateDateTo : null);
   }
 }

@@ -2,8 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
-import it.veneto.regione.pagamenti.pivot.ente.CodiceClassificazioneType;
-import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
+import it.veneto.regione.pagamenti.pivot.ente.*;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -43,9 +42,18 @@ class ClassificationsExportFileRequestMapperTest {
     request.setDataEsitoA(to);
     request.setDataUltimoAggiornamentoDa(from);
     request.setDataUltimoAggiornamentoA(to);
-    CodiceClassificazioneType type = new CodiceClassificazioneType();
-    type.getClassificaziones().addAll(List.of("RT_IUF"));
-    request.setCodiceClassificazione(type);
+    TipoDovutoType tipoDovutoType = new TipoDovutoType();
+    tipoDovutoType.getTipos().addAll(List.of("TIPO_DOVUTO"));
+    request.setTipoDovuto(tipoDovutoType);
+    CodiceClassificazioneType codiceClassificazioneType = new CodiceClassificazioneType();
+    codiceClassificazioneType.getClassificaziones().addAll(List.of("RT_IUF"));
+    request.setCodiceClassificazione(codiceClassificazioneType);
+    IdUnivocoVersamentoType idUnivocoVersamentoType = new IdUnivocoVersamentoType();
+    idUnivocoVersamentoType.getIuvs().addAll(List.of("IUV123"));
+    request.setIdUnivocoVersamento(idUnivocoVersamentoType);
+    IdUnivocoRendicontazioneType idUnivocoRendicontazioneType = new IdUnivocoRendicontazioneType();
+    idUnivocoRendicontazioneType.getIurs().addAll(List.of("IUR123"));
+    request.setIdUnivocoRendicontazione(idUnivocoRendicontazioneType);
 
     Long orgId = 123L;
     ClassificationsExportFileRequestDTO dto = mapper.mapToExportFileRequest(orgId, request);
