@@ -7,7 +7,9 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
-import it.veneto.regione.schemas._2012.pagamenti.ente.*;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -67,21 +69,6 @@ public class ValidationService {
     }
     if (StringUtils.isBlank(versamento.getCausaleVersamento())) {
       throw new SilFaultException(SilFaults.PAA_CAUSALE_NON_PRESENTE, "Causale versamento non presente o non valida");
-    }
-  }
-
-  public void validateFiscalCodeDebtor(CtIdentificativoUnivocoPersonaFG personIdentifier) {
-    if (personIdentifier == null) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Identificativo univoco persona non presente");
-    } else if (StringUtils.isBlank(personIdentifier.getCodiceIdentificativoUnivoco()) ||
-      personIdentifier.getTipoIdentificativoUnivoco() == null) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Identificativo univoco persona non valido");
-    } else if (personIdentifier.getTipoIdentificativoUnivoco() == StTipoIdentificativoUnivocoPersFG.F &&
-      !ValidationUtils.isValidFiscalCodeNaturalPerson(personIdentifier.getCodiceIdentificativoUnivoco())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale persona fisica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
-    } else if (personIdentifier.getTipoIdentificativoUnivoco() == StTipoIdentificativoUnivocoPersFG.G &&
-      !ValidationUtils.isValidFiscalCodeLegalEntity(personIdentifier.getCodiceIdentificativoUnivoco())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale persona giuridica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
     }
   }
 

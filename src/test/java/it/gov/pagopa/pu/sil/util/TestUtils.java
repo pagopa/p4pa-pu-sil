@@ -59,6 +59,21 @@ public class TestUtils {
       f -> !excludedFieldsSet.contains(f.getName()));
   }
 
+  public static void checkAllNotNullFields(Object o, String... excludedFields) {
+    Set<String> excludedFieldsSet = new HashSet<>(Arrays.asList(excludedFields));
+    Set<String> nullFields = new HashSet<>();
+    ReflectionUtils.doWithFields(o.getClass(),
+      f -> {
+        f.setAccessible(true);
+        if(f.get(o) == null) {
+          nullFields.add(f.getName());
+        }
+      },
+      f -> !excludedFieldsSet.contains(f.getName()));
+    Assertions.assertTrue(nullFields.isEmpty(),
+      "The following fields of the input object of type "+o.getClass()+" are null: " + String.join(", ", nullFields));
+  }
+
   public static void checkNotNullFieldsUsingNullableAnnotation(Object o, String... excludedFields) {
     Set<String> excludedFieldsSet = new HashSet<>(Arrays.asList(excludedFields));
     ReflectionUtils.doWithFields(o.getClass(),

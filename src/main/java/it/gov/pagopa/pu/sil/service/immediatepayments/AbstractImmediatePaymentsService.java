@@ -14,7 +14,7 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
+import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +30,18 @@ import java.util.stream.Collectors;
 public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
 
   protected final CheckoutService checkoutService;
-  protected final CreateDebtPositionService createDebtPositionService;
+  protected final ManageDebtPositionService manageDebtPositionService;
   protected final CartRequestMapper cartRequestMapper;
   protected final OrganizationService organizationService;
   protected final SessionIdMapper sessionIdMapper;
 
   protected AbstractImmediatePaymentsService(CheckoutService checkoutService,
-                                             CreateDebtPositionService createDebtPositionService,
+                                             ManageDebtPositionService manageDebtPositionService,
                                              OrganizationService organizationService,
                                              CartRequestMapper cartRequestMapper,
                                              SessionIdMapper sessionIdMapper) {
     this.checkoutService = checkoutService;
-    this.createDebtPositionService = createDebtPositionService;
+    this.manageDebtPositionService = manageDebtPositionService;
     this.cartRequestMapper = cartRequestMapper;
     this.organizationService = organizationService;
     this.sessionIdMapper = sessionIdMapper;
@@ -78,7 +78,7 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
     List<DebtPositionDTO> mappedRequest = mapRequestToDebtPositions(request, organization, cartId, accessToken);
 
     //create debt positions
-    List<DebtPositionDTO> debtPositions = createDebtPositionService.createSyncedDebtPositions(mappedRequest, accessToken);
+    List<DebtPositionDTO> debtPositions = manageDebtPositionService.createSyncedDebtPositions(mappedRequest, accessToken);
 
     String iuvs = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())

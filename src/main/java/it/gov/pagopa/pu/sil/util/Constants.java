@@ -27,5 +27,12 @@ public class Constants {
   public static final String SESSION_ID_SEPARATOR = "-";
 
   public static final String LEGACY_PAYMENT_OUTCOME_CODE_OK = "0";
+
+  public static final String LEGACY_IMPORT_ACTION_INSERT = "I";
+  public static final String LEGACY_IMPORT_ACTION_MODIFY = "M";
+  public static final String LEGACY_IMPORT_ACTION_CANCEL = "A";
+  public static final String LEGACY_IMPORT_ACTION_PRINT = "S";
+
+
 }
 

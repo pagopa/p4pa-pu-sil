@@ -1,10 +1,12 @@
 package it.gov.pagopa.pu.sil.service.debtposition;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.workflow.service.WorkflowService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
 
@@ -21,16 +24,19 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CreateDebtPositionServiceTest {
+class ManageDebtPositionServiceTest {
 
   @InjectMocks
-  private CreateDebtPositionService createDebtPositionService;
+  private ManageDebtPositionService manageDebtPositionService;
 
   @Mock
   private DebtPositionService debtPositionServiceMock;
   @Mock
   private WorkflowService workflowServiceMock;
 
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
+
+  //region: createSyncedDebtPositions
   @Test
   void testCreateSyncedDebtPositions_AllSyncedSuccessfully() {
     // Arrange
@@ -47,7 +53,7 @@ class CreateDebtPositionServiceTest {
       .thenReturn(WORKFLOW_STATUS_COMPLETED_VALUE);
 
     // Act
-    List<DebtPositionDTO> result = createDebtPositionService.createSyncedDebtPositions(
+    List<DebtPositionDTO> result = manageDebtPositionService.createSyncedDebtPositions(
       List.of(debtPosition1, debtPosition2), "accessToken");
 
     // Assert
@@ -73,11 +79,50 @@ class CreateDebtPositionServiceTest {
 
     // Act
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPosition1, debtPosition2);
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> createDebtPositionService.createSyncedDebtPositions(
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> manageDebtPositionService.createSyncedDebtPositions(
       debtPositionDTOList, "accessToken"));
 
     // Assert
     assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
     assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
   }
+  //endregion
+
+  //region: manageDebtPositionInstallments
+  @Test
+  void testManageDebtPositionInstallments_Ok() {
+    long debtPositionId = 1L;
+    ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
+    DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
+
+    when(debtPositionServiceMock.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, "accessToken"))
+      .thenReturn(Pair.of(debtPosition, "workflow1"));
+
+    when(workflowServiceMock.waitWorkflowCompletion(eq("workflow1"), anyInt(), anyInt(), eq("accessToken")))
+      .thenReturn(WORKFLOW_STATUS_COMPLETED_VALUE);
+
+    DebtPositionDTO response = manageDebtPositionService.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, "accessToken");
+
+    Assertions.assertEquals(debtPosition, response);
+  }
+
+  @Test
+  void testManageDebtPositionInstallments_Ko() {
+    long debtPositionId = 1L;
+    ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
+    DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
+
+    when(debtPositionServiceMock.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, "accessToken"))
+      .thenReturn(Pair.of(debtPosition, "workflow1"));
+
+    when(workflowServiceMock.waitWorkflowCompletion(eq("workflow1"), anyInt(), anyInt(), eq("accessToken")))
+      .thenReturn("FAILED");
+
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,
+      () -> manageDebtPositionService.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, "accessToken"));
+
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+    assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
+  }
+  //endregion
 }

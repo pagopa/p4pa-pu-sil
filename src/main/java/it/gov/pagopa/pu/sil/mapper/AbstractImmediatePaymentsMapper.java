@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.gov.pagopa.pu.sil.util.PersonValidationUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
@@ -60,7 +61,7 @@ abstract class AbstractImmediatePaymentsMapper {
   }
 
 
-  protected DebtPositionDTO initDebtPosition(Long orgId) {
+  private DebtPositionDTO initDebtPosition(Long orgId) {
     return DebtPositionDTO.builder()
       .status(DebtPositionStatus.UNPAID)
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
@@ -79,7 +80,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .build();
   }
 
-  protected void fillAndValidateVersamentoFieldsOfDebtPosition(RegistryEventType operationType, int idx,
+  private void fillAndValidateVersamentoFieldsOfDebtPosition(RegistryEventType operationType, int idx,
                                                                                   DebtPositionDTO debtPosition, PersonDTO debtor,
                                                                                   Organization org, CtDatiSingoloVersamentoDovuti versamento,
                                                                                   String cartId, String accessToken) {
@@ -88,7 +89,7 @@ abstract class AbstractImmediatePaymentsMapper {
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
 
     validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, versamento.getIdentificativoTipoDovuto());
-    personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
+    PersonValidationUtils.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
     validationService.validateStamp(versamento.getDatiMarcaBolloDigitale(), versamento.getIdentificativoTipoDovuto());
     validationService.validatePaymentData(versamento);
     validationService.validateIud(org.getOrganizationId(), versamento.getIdentificativoUnivocoDovuto(), accessToken);
