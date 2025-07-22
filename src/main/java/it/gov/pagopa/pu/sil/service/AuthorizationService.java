@@ -3,11 +3,12 @@ package it.gov.pagopa.pu.sil.service;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -25,7 +26,7 @@ public class AuthorizationService {
     return authClientImpl.getUserInfo(accessToken);
   }
 
-  public void validateAdminRole(Long organizationId, UserInfo loggedUser) {
+  public static void validateAdminRole(Long organizationId, UserInfo loggedUser) {
     boolean roleAdmin = isAdminRole(organizationId, loggedUser);
     if (!roleAdmin) {
       handleUnauthorizedUser(organizationId, loggedUser);

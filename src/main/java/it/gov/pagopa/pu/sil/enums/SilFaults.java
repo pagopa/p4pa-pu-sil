@@ -30,6 +30,11 @@ public enum SilFaults {
   PAA_PAGAMENTO_NON_INIZIATO("Pagamento non effettuato"),
   PAA_PAGAMENTO_SCADUTO("Pagamento scaduto"),
   PAA_DOVUTO_NON_PAGABILE("Dovuto non pagabile"),
+  PAA_AZIONE_NON_VALIDA("Azione non valida"),
+  PAA_LIMITAZIONE_ENTI_SECONDARI_ERROR("Limite massimo dovuti enti secondari superato"),
+  PAA_IMPORT_DOVUTO_NON_PRESENTE("Dovuto non presente"),
+  PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile"),
+
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),

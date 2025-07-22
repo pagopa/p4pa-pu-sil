@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service.debtposition;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.workflow.service.WorkflowService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class CreateDebtPositionService {
+public class ManageDebtPositionService {
 
   private final DebtPositionService debtPositionService;
   private final WorkflowService workflowService;
@@ -59,4 +60,24 @@ public class CreateDebtPositionService {
       .map(Pair::getLeft)
       .toList();
   }
+
+  public DebtPositionDTO manageDebtPositionInstallments(Long debtPositionId, ManageDebtPositionDTO manageDebtPositionDTO, String accessToken) {
+    //synchronize the installment
+    Pair<DebtPositionDTO, String> debtPositionWithWorkflowId = debtPositionService.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, accessToken);
+    String workflowId = debtPositionWithWorkflowId.getRight();
+
+    //wait for the debt positions to be synced
+    log.debug("Waiting for workflow completion for manageDebtPositionInstallments[{}] with workflowId: [{}]", debtPositionId, workflowId);
+    String result = workflowService.waitWorkflowCompletion(workflowId, 10, 1000, accessToken);
+    log.info("Workflow completed for manageDebtPositionInstallments[{}] with workflowId[{}] - result[{}]", debtPositionId, workflowId, result);
+
+    //if any of the debt positions failed to sync, return a fault response
+    if (!Constants.WORKFLOW_STATUS_COMPLETED_VALUE.equals(result)) {
+      log.error("error syncing manageDebtPositionInstallments[{}] with workflowId[{}] - result[{}]", debtPositionId, workflowId, result);
+      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore sincronizzando le posizioni debitorie");
+    }
+
+    return debtPositionWithWorkflowId.getLeft();
+  }
+
 }

@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaCarrelloDovutiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtposition.CreateDebtPositionService;
+import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +23,12 @@ public class PaaSILInviaCarrelloDovutiService extends AbstractImmediatePaymentsS
   private final PaaSILInviaCarrelloDovutiMapper paaSILInviaCarrelloDovutiMapper;
 
   public PaaSILInviaCarrelloDovutiService(CheckoutService checkoutService,
-                                          CreateDebtPositionService createDebtPositionService,
+                                          ManageDebtPositionService manageDebtPositionService,
                                           CartRequestMapper cartRequestMapper,
                                           OrganizationService organizationService,
                                           PaaSILInviaCarrelloDovutiMapper paaSILInviaCarrelloDovutiMapper,
                                           SessionIdMapper sessionIdMapper) {
-    super(checkoutService, createDebtPositionService, organizationService, cartRequestMapper, sessionIdMapper);
+    super(checkoutService, manageDebtPositionService, organizationService, cartRequestMapper, sessionIdMapper);
     this.paaSILInviaCarrelloDovutiMapper = paaSILInviaCarrelloDovutiMapper;
   }
 
