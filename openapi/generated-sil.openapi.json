@@ -13,14 +13,17 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
-    "name" : "Massive",
-    "description" : "the Massive API"
+    "name" : "MassiveImport",
+    "description" : "the MassiveImport API"
   }, {
     "name" : "Assessment",
     "description" : "the Assessment API"
   }, {
     "name" : "SendNotification",
     "description" : "the SendNotification API"
+  }, {
+    "name" : "MassiveExport",
+    "description" : "the MassiveExport API"
   } ],
   "paths" : {
     "/sil/organization/{organizationId}/send-notification" : {
@@ -96,7 +99,7 @@
     },
     "/sil/organization/{orgFiscalCode}/import" : {
       "post" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "MassiveImport" ],
         "summary" : "request a massive import operation",
         "description" : "Service to request a massive import operation. The upload of the file is done invoking the url returned by this service. ",
         "operationId" : "massiveImportRequest",
@@ -146,7 +149,7 @@
     },
     "/sil/organization/{orgFiscalCode}/export" : {
       "post" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "MassiveExport" ],
         "summary" : "request a massive export operation",
         "description" : "Service to request a massive export operation.",
         "operationId" : "massiveExportRequest",
@@ -317,7 +320,7 @@
     },
     "/sil/organization/{orgFiscalCode}/import/{importId}" : {
       "get" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "MassiveImport" ],
         "summary" : "request processing status of massive import operation",
         "description" : "Service to request the processing status of massive import operation and the url to download output files (where applicable, based on processing status and import type). ",
         "operationId" : "massiveImportStatus",
@@ -368,7 +371,7 @@
     },
     "/sil/organization/{orgFiscalCode}/export/{exportId}" : {
       "get" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "MassiveExport" ],
         "summary" : "request processing status of export operation",
         "description" : "Service to request the processing status of export operation and the url to download output files (where applicable, based on processing status and export type). ",
         "operationId" : "massiveExportStatus",
@@ -790,40 +793,17 @@
           "exportFilters" : {
             "type" : "object",
             "additionalProperties" : {
-              "$ref" : "#/components/schemas/ExportRequestDTOExportFiltersValue"
+              "type" : "string"
             }
           },
           "exportFlags" : {
             "type" : "object",
             "additionalProperties" : {
-              "$ref" : "#/components/schemas/ExportRequestDTOExportFlagsValue"
+              "type" : "boolean"
             }
           }
         },
         "required" : [ "exportFileType", "exportFilters", "exportId" ]
-      },
-      "ExportRequestDTOExportFiltersValue" : {
-        "type" : "object",
-        "properties" : {
-          "key" : {
-            "type" : "string"
-          },
-          "value" : {
-            "type" : "string"
-          }
-        },
-        "required" : [ "key", "value" ]
-      },
-      "ExportRequestDTOExportFlagsValue" : {
-        "type" : "object",
-        "properties" : {
-          "key" : {
-            "type" : "string"
-          },
-          "value" : {
-            "type" : "boolean"
-          }
-        }
       },
       "NotificationStatus" : {
         "type" : "string",

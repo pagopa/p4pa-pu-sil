@@ -208,7 +208,7 @@ paths:
   /sil/organization/{orgFiscalCode}/import:
     post:
       tags:
-        - Massive
+        - MassiveImport
       summary: request a massive import operation
       description: |
         Service to request a massive import operation. The upload of the file
@@ -242,7 +242,7 @@ paths:
   /sil/organization/{orgFiscalCode}/import/{importId}:
     get:
       tags:
-        - Massive
+        - MassiveImport
       summary: request processing status of massive import operation
       description: |
         Service to request the processing status of massive import operation and the url to download
@@ -277,7 +277,7 @@ paths:
   /sil/organization/{orgFiscalCode}/export:
     post:
       tags:
-        - Massive
+        - MassiveExport
       summary: request a massive export operation
       description: Service to request a massive export operation.
       operationId: massiveExportRequest
@@ -310,7 +310,7 @@ paths:
   /sil/organization/{orgFiscalCode}/export/{exportId}:
     get:
       tags:
-        - Massive
+        - MassiveExport
       summary: request processing status of export operation
       description: |
         Service to request the processing status of export operation and the url to download

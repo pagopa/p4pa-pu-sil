@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
-import it.gov.pagopa.pu.sil.controller.generated.MassiveApi;
+import it.gov.pagopa.pu.sil.controller.generated.MassiveExportApi;
 import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportRequestDTO;
 import it.gov.pagopa.pu.sil.mapper.MassiveExportRequestMapper;
@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @RestController
-public class MassiveExportController implements MassiveApi {
+public class MassiveExportController implements MassiveExportApi {
 
   private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
   private final PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService;
