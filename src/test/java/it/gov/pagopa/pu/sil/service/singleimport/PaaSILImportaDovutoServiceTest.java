@@ -109,8 +109,7 @@ class PaaSILImportaDovutoServiceTest {
       case Constants.LEGACY_IMPORT_ACTION_INSERT:
         Mockito.when(manageDebtPositionServiceMock.createSyncedDebtPositions(List.of(debtPositionDTO), TOKEN)).thenReturn(List.of(processedDebtPositionDTO));
         break;
-      case Constants.LEGACY_IMPORT_ACTION_MODIFY:
-      case Constants.LEGACY_IMPORT_ACTION_CANCEL:
+      case Constants.LEGACY_IMPORT_ACTION_MODIFY, Constants.LEGACY_IMPORT_ACTION_CANCEL:
         Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
@@ -124,6 +123,9 @@ class PaaSILImportaDovutoServiceTest {
           .thenReturn(List.of(processedDebtPositionDTO));
         Mockito.when(noticeServiceMock.generateNotice(processedInstallmentDTO.getIuv(), processedDebtPositionDTO, TOKEN))
           .thenReturn("PDF NOTICE".getBytes());
+        break;
+      default:
+        Assertions.fail("Unexpected action: " + action);
     }
 
     // When
@@ -210,6 +212,9 @@ class PaaSILImportaDovutoServiceTest {
         processedInstallmentDTO.setIud("invalid_iud");
         Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
+        break;
+      default:
+        Assertions.fail("Unexpected testCase: " + testCase);
     }
 
     // When
@@ -220,10 +225,11 @@ class PaaSILImportaDovutoServiceTest {
       case "invalidAction":
         assertEquals(SilFaults.PAA_AZIONE_NON_VALIDA, response.getFault());
         break;
-      case "invalidDpStatus":
-      case "installmentNotFound":
+      case "invalidDpStatus", "installmentNotFound":
         assertEquals(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, response.getFault());
         break;
+      default:
+        Assertions.fail("Unexpected testCase: " + testCase);
     }
   }
 
