@@ -188,9 +188,6 @@ rest:
     wait-time-millis: "\${PAGOPA_PAYMENTS_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR:true}"
 
-iuv:
-  informationSystemId: "00"
-
 legacy-auth:
   basic-legacy-expiration-seconds: "\${BASIC_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:300}" # 5 minutes
   jwt-legacy-expiration-seconds: "${JWT_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:3600}" # 1 hour
