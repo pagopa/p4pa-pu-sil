@@ -170,7 +170,7 @@ public class PaaSILImportaDovutoService {
 
     private Pair<DebtPositionDTO, InstallmentDTO> findSyncableDebtPositionByIud(Long organizationId, String iud, String accessToken) {
         DebtPositionDTO debtPositionOnDb = debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-                        organizationId, iud, Constants.SYNCABLE_DEBT_POSITION_ORIGINS, accessToken).stream()
+                        organizationId, iud, Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken).stream()
                 .filter(dp -> Constants.SYNCABLE_DEBT_POSITION_STATUSES.contains(dp.getStatus()))
                 .findFirst()
                 .orElseThrow(() -> {
