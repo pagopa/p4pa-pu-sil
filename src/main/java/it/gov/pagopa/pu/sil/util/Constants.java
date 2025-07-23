@@ -42,10 +42,16 @@ public class Constants {
     DebtPositionOrigin.ORDINARY_SIL,
     DebtPositionOrigin.SPONTANEOUS
   );
+  public static final List<DebtPositionOrigin> SYNCABLE_DEBT_POSITION_ORIGINS = List.of(
+    DebtPositionOrigin.ORDINARY,
+    DebtPositionOrigin.ORDINARY_SIL
+  );
 
-  public static final List<DebtPositionOrigin> SYNCABLE_DEBT_POSITION_ORIGINS = List.of(DebtPositionOrigin.ORDINARY, DebtPositionOrigin.ORDINARY_SIL);
   public static final List<DebtPositionStatus> SYNCABLE_DEBT_POSITION_STATUSES = List.of(
-    DebtPositionStatus.DRAFT, DebtPositionStatus.UNPAID,
-    DebtPositionStatus.PARTIALLY_PAID, DebtPositionStatus.EXPIRED);
+    DebtPositionStatus.DRAFT,
+    DebtPositionStatus.UNPAID,
+    DebtPositionStatus.PARTIALLY_PAID,
+    DebtPositionStatus.EXPIRED
+  );
 }
 
