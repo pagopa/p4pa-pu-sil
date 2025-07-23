@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.service.singleimport;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
@@ -36,11 +38,6 @@ import java.util.zip.ZipOutputStream;
 @Service
 @Slf4j
 public class PaaSILImportaDovutoService {
-
-    private static final List<DebtPositionOrigin> SYNCABLE_DEBT_POSITION_ORIGINS = List.of(DebtPositionOrigin.ORDINARY, DebtPositionOrigin.ORDINARY_SIL);
-    private static final List<DebtPositionStatus> SYNCABLE_DEBT_POSITION_STATUSES = List.of(
-            DebtPositionStatus.DRAFT, DebtPositionStatus.UNPAID,
-            DebtPositionStatus.PARTIALLY_PAID, DebtPositionStatus.EXPIRED);
 
     private final OrganizationService organizationService;
     private final PaaSILImportaDovutoMapper paaSILImportaDovutoMapper;
@@ -173,8 +170,8 @@ public class PaaSILImportaDovutoService {
 
     private Pair<DebtPositionDTO, InstallmentDTO> findSyncableDebtPositionByIud(Long organizationId, String iud, String accessToken) {
         DebtPositionDTO debtPositionOnDb = debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-                        organizationId, iud, SYNCABLE_DEBT_POSITION_ORIGINS, accessToken).stream()
-                .filter(dp -> SYNCABLE_DEBT_POSITION_STATUSES.contains(dp.getStatus()))
+                        organizationId, iud, Constants.SYNCABLE_DEBT_POSITION_ORIGINS, accessToken).stream()
+                .filter(dp -> Constants.SYNCABLE_DEBT_POSITION_STATUSES.contains(dp.getStatus()))
                 .findFirst()
                 .orElseThrow(() -> {
                     log.error("Debt position not found for organizationId[{}] and iud[{}]", organizationId, iud);

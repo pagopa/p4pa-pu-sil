@@ -1,6 +1,10 @@
 package it.gov.pagopa.pu.sil.util;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
+
 import java.time.ZoneId;
+import java.util.List;
 
 public class Constants {
 
@@ -33,6 +37,15 @@ public class Constants {
   public static final String LEGACY_IMPORT_ACTION_CANCEL = "A";
   public static final String LEGACY_IMPORT_ACTION_PRINT = "S";
 
+  public static final List<DebtPositionOrigin> PRINT_NOTICE_ALLOWED_ORIGINS = List.of(
+    DebtPositionOrigin.ORDINARY,
+    DebtPositionOrigin.ORDINARY_SIL,
+    DebtPositionOrigin.SPONTANEOUS
+  );
 
+  public static final List<DebtPositionOrigin> SYNCABLE_DEBT_POSITION_ORIGINS = List.of(DebtPositionOrigin.ORDINARY, DebtPositionOrigin.ORDINARY_SIL);
+  public static final List<DebtPositionStatus> SYNCABLE_DEBT_POSITION_STATUSES = List.of(
+    DebtPositionStatus.DRAFT, DebtPositionStatus.UNPAID,
+    DebtPositionStatus.PARTIALLY_PAID, DebtPositionStatus.EXPIRED);
 }
 
