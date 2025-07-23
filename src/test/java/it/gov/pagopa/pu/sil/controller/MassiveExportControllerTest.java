@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -66,7 +63,7 @@ class MassiveExportControllerTest {
       PaidExportFileRequestDTO paidExportFileRequestDTO = new PaidExportFileRequestDTO();
 
       when(paaSILPrenotaExportFlussoIncrementaleConRicevutaService
-        .doReservation(eq(userInfo), eq(accessToken), eq(userIpaCode), eq(paidExportFileRequestDTO)))
+        .doReservation(userInfo, accessToken, userIpaCode, paidExportFileRequestDTO))
         .thenReturn(Long.valueOf(expectedExportId));
 
       // When
@@ -97,7 +94,7 @@ class MassiveExportControllerTest {
       ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO = new ClassificationsExportFileRequestDTO();
 
       when(pivotSILPrenotaExportFlussoRiconciliazioneService
-        .doReservation(eq(userInfo), eq(accessToken), eq(userIpaCode), eq(classificationsExportFileRequestDTO)))
+        .doReservation(userInfo, accessToken, userIpaCode, classificationsExportFileRequestDTO))
         .thenReturn(Long.valueOf(expectedExportId));
 
       // When
