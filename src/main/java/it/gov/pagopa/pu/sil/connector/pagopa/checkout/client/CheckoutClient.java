@@ -8,8 +8,10 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.config.CheckoutApiClientCo
 import it.gov.pagopa.pu.sil.util.StatusModifyingClientHttpResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -30,6 +32,8 @@ public class CheckoutClient {
 
   static final HttpStatus FAKE_REDIRECT_STATUS = HttpStatus.IM_USED; // 226 IM Used is used to indicate a redirect in this context
 
+
+
   public CheckoutClient(CheckoutApiClientConfig clientConfig,
                         RestTemplateBuilder restTemplateBuilder) {
 
@@ -42,15 +46,7 @@ public class CheckoutClient {
      * The interceptor modifies the response status code to a 2xx one [HttpStatus.IM_USED (226)] when it is 3xx redirection...
      */
     List<ClientHttpRequestInterceptor> newInterceptors = new ArrayList<>(restTemplate.getInterceptors());
-    newInterceptors.add((request, body, execution) -> {
-      ClientHttpResponse response = execution.execute(request, body);
-      if (response.getStatusCode().is3xxRedirection()) {
-        StatusModifyingClientHttpResponseWrapper modifiedResponse = new StatusModifyingClientHttpResponseWrapper(response);
-        modifiedResponse.setStatusCode(FAKE_REDIRECT_STATUS);
-        response = modifiedResponse;
-      }
-      return response;
-    });
+    newInterceptors.add(this::redirectInterceptor);
     restTemplate.setInterceptors(newInterceptors);
 
     //... and the custom request factory disables automatic redirects, allowing this class to handle them (and return the redirect url).
@@ -71,6 +67,16 @@ public class CheckoutClient {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     this.checkoutApiClient = new DefaultApi(apiClient);
+  }
+
+  ClientHttpResponse redirectInterceptor(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
+    ClientHttpResponse response = execution.execute(request, body);
+    if (response.getStatusCode().is3xxRedirection()) {
+      StatusModifyingClientHttpResponseWrapper modifiedResponse = new StatusModifyingClientHttpResponseWrapper(response);
+      modifiedResponse.setStatusCode(FAKE_REDIRECT_STATUS);
+      response = modifiedResponse;
+    }
+    return response;
   }
 
   public String checkoutCart(CartRequest cartRequest) {
