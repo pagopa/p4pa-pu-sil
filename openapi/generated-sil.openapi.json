@@ -97,19 +97,20 @@
         } ]
       }
     },
-    "/sil/organization/{organizationId}/printpaymentnotice/{iuv}" : {
+    "/sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}" : {
       "post" : {
         "tags" : [ "PrintPaymentNotice" ],
         "summary" : "Print payment notice as PDF",
         "description" : "Print payment notice as PDF",
         "operationId" : "generateNotice",
         "parameters" : [ {
-          "name" : "organizationId",
+          "name" : "orgFiscalCode",
           "in" : "path",
+          "description" : "the fiscal code of the organization",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
           }
         }, {
           "name" : "iuv",
