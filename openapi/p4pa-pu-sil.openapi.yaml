@@ -97,6 +97,39 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
+  /sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}:
+    post:
+      tags:
+        - PrintPaymentNotice
+      operationId: generateNotice
+      summary: Print payment notice as PDF
+      description: Print payment notice as PDF
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+        - name: iuv
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid request
+        '404':
+          description: Notification not found
+        '500':
+          description: Internal server error
   /internal/orgSilService/{orgSilServiceId}/actualization:
     get:
       tags:
