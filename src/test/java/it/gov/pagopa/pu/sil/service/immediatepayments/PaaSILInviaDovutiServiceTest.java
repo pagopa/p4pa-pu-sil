@@ -190,6 +190,33 @@ class PaaSILInviaDovutiServiceTest {
   }
 
   @Test
+  void givenInvalidCheckoutUrlWhenPaaSILInviaDovutiThenException() {
+    //given
+    DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
+    AtomicReference<String> cartId = new AtomicReference<>();
+    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
+
+    String sessionId = "SESSION_ID";
+
+    when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
+    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), argThat(c -> {cartId.set(c); return true;}), eq(TOKEN)))
+      .thenReturn(debtPositionDTOList);
+    when(manageDebtPositionServiceMock.createSyncedDebtPositions(debtPositionDTOList, TOKEN))
+      .thenReturn(debtPositionDTOList);
+    when(sessionIdMapperMock.mapDebtPositionsToSessionId(debtPositionDTOList)).thenReturn(sessionId);
+    when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
+      .thenReturn(cartRequest);
+    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn(null);
+
+    //when
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
+
+    //verify
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+  }
+
+  @Test
   void givenValidRequestWhenPaaSILInviaDovutiThenOk() {
     //given
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);

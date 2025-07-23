@@ -94,6 +94,9 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
 
     //invoke carts API to trigger the payment on Checkout
     String checkoutUrl = checkoutService.checkoutCart(cartRequest);
+    if(StringUtils.isBlank(checkoutUrl)){
+      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore durante la creazione del carrello di pagamento");
+    }
 
     RESP response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
     return Triple.of(response, iuvs, RegistryOutcome.OK);

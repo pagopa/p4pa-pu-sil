@@ -82,6 +82,9 @@ public class PaaSILVerificaAvvisoService {
 
     //invoke carts API to trigger the payment on Checkout
     String checkoutUrl = checkoutService.checkoutCart(cartRequest);
+    if(StringUtils.isBlank(checkoutUrl)){
+      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore durante la creazione del carrello di pagamento");
+    }
 
     // Prepare the response
     PaaSILVerificaAvvisoRisposta response = new PaaSILVerificaAvvisoRisposta();
