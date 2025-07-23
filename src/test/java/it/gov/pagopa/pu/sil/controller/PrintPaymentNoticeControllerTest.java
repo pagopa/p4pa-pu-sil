@@ -33,6 +33,7 @@ class PrintPaymentNoticeControllerTest {
   private PrintPaymentNoticeController controller;
 
   private final Long orgId = 123L;
+  private final String orgFiscalCode = "fakeFiscalCode";
   private final String accessToken = "fakeAccessToken";
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
@@ -41,6 +42,7 @@ class PrintPaymentNoticeControllerTest {
   void setUp() {
     UserInfo userInfo = podamFactory.manufacturePojo(UserInfo.class);
     userInfo.getOrganizations().getFirst().setOrganizationId(orgId);
+    userInfo.getOrganizations().getFirst().setOrganizationFiscalCode(orgFiscalCode);
     userInfo.getOrganizations().getFirst().setRoles(List.of(AuthorizationService.ROLE_ADMIN));
 
     Authentication authentication = new UsernamePasswordAuthenticationToken(userInfo, accessToken);
@@ -61,7 +63,7 @@ class PrintPaymentNoticeControllerTest {
 
 
     // When Then
-    ResponseEntity<Resource> response = controller.generateNotice(orgId, iuv);
+    ResponseEntity<Resource> response = controller.generateNotice(orgFiscalCode, iuv);
 
     //Verify
     Assertions.assertEquals(expectedResource, response.getBody());

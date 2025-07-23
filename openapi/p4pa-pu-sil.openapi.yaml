@@ -97,7 +97,7 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
-  /sil/organization/{organizationId}/printpaymentnotice/{iuv}:
+  /sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}:
     post:
       tags:
         - PrintPaymentNotice
@@ -105,12 +105,12 @@ paths:
       summary: Print payment notice as PDF
       description: Print payment notice as PDF
       parameters:
-        - name: organizationId
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            $ref: '#/components/schemas/OrgFiscalCode'
         - name: iuv
           in: path
           required: true
