@@ -195,8 +195,6 @@ class PaaSILVerificaAvvisoServiceTest {
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
     CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
 
-    String sessionId = String.valueOf(installmentDTO.getInstallmentId());
-
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));

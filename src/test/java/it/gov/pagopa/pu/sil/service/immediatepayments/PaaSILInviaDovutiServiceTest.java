@@ -197,12 +197,6 @@ class PaaSILInviaDovutiServiceTest {
     AtomicReference<String> cartId = new AtomicReference<>();
     CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
 
-    String iuvs = debtPositionDTOList.stream()
-      .flatMap(dp -> dp.getPaymentOptions().stream())
-      .flatMap(option -> option.getInstallments().stream())
-      .map(InstallmentDTO::getIuv)
-      .collect(Collectors.joining(Utilities.IUV_SEPARATOR));
-
     String sessionId = "SESSION_ID";
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
