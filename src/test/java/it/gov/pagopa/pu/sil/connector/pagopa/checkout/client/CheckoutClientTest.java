@@ -14,13 +14,10 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.net.URI;
-import java.util.function.Supplier;
 
 @ExtendWith(MockitoExtension.class)
 class CheckoutClientTest {
@@ -37,8 +34,6 @@ class CheckoutClientTest {
   void setUp() {
     CheckoutApiClientConfig apiClientConfig = new CheckoutApiClientConfig();
     apiClientConfig.setBaseUrl("http://example.com");
-    Mockito.when(restTemplateBuilderMock.additionalInterceptors((ClientHttpRequestInterceptor) Mockito.any())).thenReturn(restTemplateBuilderMock);
-    Mockito.when(restTemplateBuilderMock.requestFactory((Supplier<ClientHttpRequestFactory>) Mockito.any())).thenReturn(restTemplateBuilderMock);
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     checkoutClient = new CheckoutClient(apiClientConfig, restTemplateBuilderMock);
   }
@@ -46,8 +41,7 @@ class CheckoutClientTest {
   @AfterEach
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(
-      restTemplateBuilderMock,
-      restTemplateMock
+      restTemplateBuilderMock
     );
   }
 
