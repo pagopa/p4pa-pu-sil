@@ -1,11 +1,13 @@
 package it.gov.pagopa.pu.sil.service.notice;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.pagopapayments.PagopaPaymentsService;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +37,11 @@ public class NoticeService {
       .orElseThrow(() -> new ApplicationException("notice not found for org["+debtPositionDTO.getOrganizationId()+"] iuv["+iuv+"]"));
   }
 
-  public Resource generateNoticeByIuv(Long organizationId, String iuv, String accessToken) {
+  public Resource generateNoticeByIuv(String orgFiscalCode, String iuv, UserInfo userInfo, String accessToken) {
+    //check user is authorized to access the resource
+    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
+    AuthorizationService.validateAdminRole(organizationId, userInfo);
+
     //retrieve debt position by organizationId and IUV
     DebtPositionDTO debtPosition = debtPositionService.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, Constants.PRINT_NOTICE_ALLOWED_ORIGINS, accessToken)
       .stream()

@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.notice.NoticeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,16 +31,16 @@ class PrintPaymentNoticeControllerTest {
   @InjectMocks
   private PrintPaymentNoticeController controller;
 
-  private final Long orgId = 123L;
-  private final String orgFiscalCode = "fakeFiscalCode";
-  private final String accessToken = "fakeAccessToken";
-
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
-  @BeforeEach
-  void setUp() {
+  @Test
+  void whenNotifyPaymentThenOk() {
+    // Given
+    String iuv = "IUV";
+    String orgFiscalCode = "fakeFiscalCode";
+    String accessToken = "fakeAccessToken";
     UserInfo userInfo = podamFactory.manufacturePojo(UserInfo.class);
-    userInfo.getOrganizations().getFirst().setOrganizationId(orgId);
+    userInfo.getOrganizations().getFirst().setOrganizationId(1L);
     userInfo.getOrganizations().getFirst().setOrganizationFiscalCode(orgFiscalCode);
     userInfo.getOrganizations().getFirst().setRoles(List.of(AuthorizationService.ROLE_ADMIN));
 
@@ -49,16 +48,10 @@ class PrintPaymentNoticeControllerTest {
     SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
     securityContext.setAuthentication(authentication);
     SecurityContextHolder.setContext(securityContext);
-  }
-
-  @Test
-  void whenNotifyPaymentThenOk() {
-    // Given
-    String iuv = "IUV";
 
     Resource expectedResource = new ByteArrayResource("fakePDFContent".getBytes());
 
-    when(noticeServiceMock.generateNoticeByIuv(orgId, iuv, accessToken))
+    when(noticeServiceMock.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken))
       .thenReturn(expectedResource);
 
 
