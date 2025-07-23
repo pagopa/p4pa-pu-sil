@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -51,7 +52,7 @@ class CheckoutClientTest {
   }
 
   @Test
-  void givenValidDebtPositionWhenPaCreatePositionThenOk(){
+  void givenValidRequestWhenCheckoutCartThenOk(){
     //given
     String expectedResponse = "http://location";
     CartRequest request = new CartRequest();
@@ -64,6 +65,36 @@ class CheckoutClientTest {
 
     //verify
     Assertions.assertSame(expectedResponse, response);
+  }
+
+  @Test
+  void givenRedirectUrlNullWhenCheckoutCartThenException(){
+    //given
+    CartRequest request = new CartRequest();
+    Mockito.when(restTemplateMock.exchange(Mockito.any(), Mockito.any(ParameterizedTypeReference.class)))
+      .thenReturn(ResponseEntity.status(CheckoutClient.FAKE_REDIRECT_STATUS).build());
+    Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
+
+    //when
+    String response = checkoutClient.checkoutCart(request);
+
+    //verify
+    Assertions.assertNull(response);
+  }
+
+  @Test
+  void givenNoRedirectionWhenCheckoutCartThenException(){
+    //given
+    CartRequest request = new CartRequest();
+    Mockito.when(restTemplateMock.exchange(Mockito.any(), Mockito.any(ParameterizedTypeReference.class)))
+      .thenReturn(ResponseEntity.status(HttpStatus.OK).build());
+    Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
+
+    //when
+    String response = checkoutClient.checkoutCart(request);
+
+    //verify
+    Assertions.assertNull(response);
   }
 
 }
