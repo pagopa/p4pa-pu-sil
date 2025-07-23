@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
-import it.gov.pagopa.pu.sil.dto.generated.ExportRequestDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
@@ -23,7 +23,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -62,13 +63,15 @@ class MassiveExportControllerTest {
       authMock.when(() -> AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode))
         .thenReturn(userIpaCode);
 
+      PaidExportFileRequestDTO paidExportFileRequestDTO = new PaidExportFileRequestDTO();
+
       when(paaSILPrenotaExportFlussoIncrementaleConRicevutaService
-        .doReservation(eq(userInfo), eq(accessToken), eq(userIpaCode), any(), any(), any(), any(), anyBoolean()))
+        .doReservation(eq(userInfo), eq(accessToken), eq(userIpaCode), eq(paidExportFileRequestDTO)))
         .thenReturn(Long.valueOf(expectedExportId));
 
       // When
       ResponseEntity<ExportFileResponseDTO> response = controller
-        .massiveExportRequest(orgFiscalCode, new ExportRequestDTO().exportFileType(ExportFile.ExportFileTypeEnum.PAID));
+        .massivePaidExportRequest(orgFiscalCode, paidExportFileRequestDTO);
 
       // Then
       Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -91,13 +94,15 @@ class MassiveExportControllerTest {
       authMock.when(() -> AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode))
         .thenReturn(userIpaCode);
 
+      ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO = new ClassificationsExportFileRequestDTO();
+
       when(pivotSILPrenotaExportFlussoRiconciliazioneService
-        .doReservation(eq(userInfo), eq(accessToken), eq(userIpaCode), any(), any(), any(), any()))
-        .thenReturn(Pair.of(Long.valueOf(expectedExportId), null));
+        .doReservation(eq(userInfo), eq(accessToken), eq(userIpaCode), eq(classificationsExportFileRequestDTO)))
+        .thenReturn(Long.valueOf(expectedExportId));
 
       // When
       ResponseEntity<ExportFileResponseDTO> response = controller
-        .massiveExportRequest(orgFiscalCode, new ExportRequestDTO().exportFileType(ExportFile.ExportFileTypeEnum.CLASSIFICATIONS));
+        .massiveClassificationsExportRequest(orgFiscalCode, classificationsExportFileRequestDTO);
 
       // Then
       Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());

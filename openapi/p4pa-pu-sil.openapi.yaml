@@ -241,7 +241,7 @@ paths:
   /sil/organization/{orgFiscalCode}/import:
     post:
       tags:
-        - MassiveImport
+        - Import
       summary: request a massive import operation
       description: |
         Service to request a massive import operation. The upload of the file
@@ -275,7 +275,7 @@ paths:
   /sil/organization/{orgFiscalCode}/import/{importId}:
     get:
       tags:
-        - MassiveImport
+        - Import
       summary: request processing status of massive import operation
       description: |
         Service to request the processing status of massive import operation and the url to download
@@ -307,13 +307,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /sil/organization/{orgFiscalCode}/export:
+  /sil/organization/{orgFiscalCode}/export/paid:
     post:
       tags:
-        - MassiveExport
+        - Export
       summary: request a massive export operation
       description: Service to request a massive export operation.
-      operationId: massiveExportRequest
+      operationId: massivePaidExportRequest
       parameters:
         - name: orgFiscalCode
           description: the fiscal code of the organization
@@ -325,7 +325,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ExportRequestDTO"
+              $ref: 'PaidExportRequest'
         required: true
       responses:
         '201':
@@ -340,10 +340,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /sil/organization/{orgFiscalCode}/export/{exportId}:
+  /sil/organization/{orgFiscalCode}/export/classifications:
+    post:
+      tags:
+        - Export
+      summary: request a massive export operation
+      description: Service to request a massive export operation.
+      operationId: massiveClassificationsExportRequest
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'ClassificationsExportRequest'
+        required: true
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /sil/organization/{orgFiscalCode}/export/status/{exportId}:
     get:
       tags:
-        - MassiveExport
+        - Export
       summary: request processing status of export operation
       description: |
         Service to request the processing status of export operation and the url to download
@@ -765,25 +798,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DownloadUrl'
-    ExportRequestDTO:
-      type: object
-      required:
-        - exportId
-        - exportFileType
-        - exportFilters
-      properties:
-        exportId:
-          type: string
-        exportFileType:
-          type: 'ExportFileType'
-        exportFilters:
-          type: object
-          additionalProperties:
-            type: string
-        exportFlags:
-          type: object
-          additionalProperties:
-            type: boolean
     ExportFileResponseDTO:
       type: object
       required:

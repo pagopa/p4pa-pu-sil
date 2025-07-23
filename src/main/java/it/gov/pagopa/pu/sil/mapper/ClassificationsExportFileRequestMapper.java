@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,7 +23,7 @@ public class ClassificationsExportFileRequestMapper {
       .exportFileType(ClassificationsExportFileRequestDTO.ExportFileTypeEnum.CLASSIFICATIONS)
       .fileVersion(request.getVersioneTracciato())
       .filterFields(new ClassificationsExportFileFilter()
-        .debtPositionTypeOrgCodes(Set.of(request.getTipoDovuto().getTipos().toArray(new String[0])))
+        .debtPositionTypeOrgCodes(new HashSet<>(request.getTipoDovuto().getTipos()))
         .label(request.getCodiceClassificazione().getClassificaziones().stream()
           .map(ClassificationsExportFileFilter.LabelEnum::fromValue)
           .collect(Collectors.toSet()))

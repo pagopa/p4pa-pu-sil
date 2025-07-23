@@ -48,10 +48,25 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService extends Abs
     );
 
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId(), incremental);
+
+    return doReservation(userInfo, accessToken, orgIpaCode, requestDTO);
+  }
+
+  public Long doReservation(
+    UserInfo userInfo,
+    String accessToken,
+    String orgIpaCode,
+    PaidExportFileRequestDTO requestDTO) {
+
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
+
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
+
     log.debug("Export file created with ID: {}", exportFileId);
+
     return exportFileId;
   }
+
 
   private PaidExportFileRequestDTO mapToExportRequest(Long organizationId,
                                                       String fileVersion,

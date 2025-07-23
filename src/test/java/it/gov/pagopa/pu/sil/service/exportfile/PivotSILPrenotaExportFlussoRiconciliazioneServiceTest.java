@@ -133,6 +133,9 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     userInfo.setUserId("admin4");
     String accessToken = "token4";
     PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+    request.getCodiceClassificazione().getClassificaziones().clear();
+    request.getCodiceClassificazione().getClassificaziones().add("RT_IUF");
+    request.setImportoTesoreria("100");
 
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
       .thenReturn(null);
@@ -160,6 +163,9 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     userInfo.setUserId("admin4");
     String accessToken = "token4";
     PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
+    request.getCodiceClassificazione().getClassificaziones().clear();
+    request.getCodiceClassificazione().getClassificaziones().add("RT_IUF");
+    request.setImportoTesoreria("100");
 
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
       .thenReturn(new DebtPositionTypeOrg().flagActive(false));
