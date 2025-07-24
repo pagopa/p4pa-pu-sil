@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 @Slf4j
@@ -44,6 +45,7 @@ public class IngestionFlowFileProcessingStatusService {
 
     ImportStatusResponseDTO responseDTO = ImportStatusResponseDTO.builder()
       .status(ingestionFlowFile.getStatus())
+      .downloadUrls(new ArrayList<>(3)) // eventually DISCARDED_FILE + OUTPUT_FILE + PAYMENT_NOTICE_FILE
       .build();
 
     if (IngestionFlowFileStatus.COMPLETED.equals(ingestionFlowFile.getStatus())) {
