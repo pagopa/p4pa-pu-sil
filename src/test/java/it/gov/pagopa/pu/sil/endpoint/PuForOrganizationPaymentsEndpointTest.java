@@ -58,6 +58,9 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.*;
+import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.*;
+
 @ExtendWith(MockitoExtension.class)
 class PuForOrganizationPaymentsEndpointTest {
 
@@ -204,14 +207,17 @@ class PuForOrganizationPaymentsEndpointTest {
                                                                                                   boolean flagError,
                                                                                                   boolean flagNotice,
                                                                                                   IngestionFlowFileStatus status,
-                                                                                                  List<DownloadUrl> downloadUrls) throws Exception {
+                                                                                                  List<DownloadUrl> downloadUrls,
+                                                                                                  boolean expectedImportedUrl,
+                                                                                                  boolean expectedErrorUrl,
+                                                                                                  boolean expectedNoticeUrl) throws Exception {
     // Given
     Long requestToken = 12345L;
     PaaSILChiediStatoImportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoImportFlusso.class);
     request.setRequestToken(String.valueOf(requestToken));
-    request.setFileAvvisi(flagImported);
+    request.setFileAvvisi(flagNotice);
     request.setFileScarti(flagError);
-    request.setFileIUV(flagNotice);
+    request.setFileIUV(flagImported);
     ImportStatusResponseDTO statusDTO = new ImportStatusResponseDTO();
     statusDTO.setDownloadUrls(downloadUrls);
     statusDTO.setStatus(status);
@@ -231,28 +237,31 @@ class PuForOrganizationPaymentsEndpointTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(statusDTO.getStatus()), response.getStato());
-    Assertions.assertEquals(statusDTO.getDownloadUrls(), response.getDownloadUrls());
+    Assertions.assertEquals(expectedImportedUrl, !response.getUrlFileIUV().isEmpty());
+    Assertions.assertEquals(expectedErrorUrl, !response.getUrlFileScarti().isEmpty());
+    Assertions.assertEquals(expectedNoticeUrl, !response.getUrlFileAvvisi().isEmpty());
   }
 
   private static Stream<Arguments> paaSILChiediStatoImportFlussoProvider() {
     String expectedUrl = "https://upload.url";
-    DownloadUrl imported = new DownloadUrl(DownloadUrl.CodeEnum.OUTPUT_FILE, expectedUrl + "/imported");
-    DownloadUrl errors = new DownloadUrl(DownloadUrl.CodeEnum.DISCARDED_FILE, expectedUrl + "/errors");
-    DownloadUrl notice = new DownloadUrl(DownloadUrl.CodeEnum.PAYMENT_NOTICE_FILE, expectedUrl + "/notice");
+    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/imported");
+    DownloadUrl errors = new DownloadUrl(DISCARDED_FILE, expectedUrl + "/errors");
+    DownloadUrl notice = new DownloadUrl(PAYMENT_NOTICE_FILE, expectedUrl + "/notice");
+    DownloadUrl input = new DownloadUrl(INPUT_FILE, expectedUrl + "/input");
 
     return Stream.of(
-      Arguments.of(true, true, true, IngestionFlowFileStatus.PROCESSING, null),
-      Arguments.of(true, true, true, IngestionFlowFileStatus.COMPLETED, List.of(imported, errors, notice)),
-      Arguments.of(true, true, false, IngestionFlowFileStatus.COMPLETED, List.of(imported, errors)),
-      Arguments.of(true, false, true, IngestionFlowFileStatus.COMPLETED, List.of(imported, notice)),
-      Arguments.of(true, false, false, IngestionFlowFileStatus.COMPLETED, List.of(imported)),
-      Arguments.of(false, true, true, IngestionFlowFileStatus.COMPLETED, List.of(errors, notice)),
-      Arguments.of(false, true, false, IngestionFlowFileStatus.COMPLETED, List.of(errors)),
-      Arguments.of(false, false, true, IngestionFlowFileStatus.COMPLETED, List.of(notice)),
-      Arguments.of(false, false, false, IngestionFlowFileStatus.COMPLETED, List.of())
+      Arguments.of(true, true, true, PROCESSING, null, false, false, false),
+      Arguments.of(true, true, true, COMPLETED, List.of(imported, errors, notice), true, true, true),
+      Arguments.of(true, true, false, COMPLETED, List.of(imported, errors), true, true, false),
+      Arguments.of(true, false, true, COMPLETED, List.of(imported, notice), true, false, true),
+      Arguments.of(true, false, false, COMPLETED, List.of(imported), true, false, false),
+      Arguments.of(false, true, true, COMPLETED, List.of(errors, notice), false, true, true),
+      Arguments.of(false, true, false, COMPLETED, List.of(errors), false, true, false),
+      Arguments.of(false, false, true, COMPLETED, List.of(notice), false, false, true),
+      Arguments.of(false, false, false, COMPLETED, List.of(), false, false, false),
+      Arguments.of(false, false, false, COMPLETED, List.of(input), false, false, false)
     );
   }
-
 
   // endregion
 
