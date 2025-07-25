@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 public class NativePaymentNotificationServiceImpl implements NativePaymentNotificationService {
   private final NativePaymentNotificationClient nativePaymentNotificationClient;
 
-  public NativePaymentNotificationServiceImpl(NativePaymentNotificationClient NativePaymentNotificationClient) {
-    this.nativePaymentNotificationClient = NativePaymentNotificationClient;
+  public NativePaymentNotificationServiceImpl(NativePaymentNotificationClient nativePaymentNotificationClient) {
+    this.nativePaymentNotificationClient = nativePaymentNotificationClient;
   }
 
   @Override
