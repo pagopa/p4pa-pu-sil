@@ -62,13 +62,14 @@ class PaidExportFileReservationServiceTest {
     userInfo.setUserId("userId1");
     String accessToken = "token1";
 
+    PaidExportRequestDTO paidExportRequestDTO = new PaidExportRequestDTO();
     // When, Then
     assertThrows(AuthorizationDeniedException.class, () ->
       service.doReservation(
         userInfo,
         accessToken,
         orgIpaCode,
-        new PaidExportRequestDTO())
+        paidExportRequestDTO)
     );
   }
 
@@ -92,18 +93,19 @@ class PaidExportFileReservationServiceTest {
     when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken)))
       .thenReturn(456L);
 
+    PaidExportRequestDTO paidExportRequestDTO = new PaidExportRequestDTO()
+      .fileVersion(fileVersion)
+      .exportFilters(new PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
+          .from(from)
+          .to(to))
+        .debtPositionTypeOrgCode(debtPositionTypeOrgCode));
     // When
     Long result = service.doReservation(
       userInfo,
       accessToken,
       orgIpaCode,
-      new PaidExportRequestDTO()
-        .fileVersion(fileVersion)
-        .exportFilters(new PaidExportFileFilter()
-          .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
-            .from(from)
-            .to(to))
-          .debtPositionTypeOrgCode(debtPositionTypeOrgCode))
+      paidExportRequestDTO
     );
 
     // Then
@@ -122,24 +124,23 @@ class PaidExportFileReservationServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
-    String debtPositionTypeOrgCode = "code";
 
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
       .thenReturn(null);
 
+    PaidExportRequestDTO paidExportRequestDTO = new PaidExportRequestDTO()
+      .fileVersion(fileVersion)
+      .exportFilters(new PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
+          .from(from)
+          .to(to)));
     // When
     ExportFileServiceException exception = assertThrows(ExportFileServiceException.class, () ->
       service.doReservation(
         userInfo,
         accessToken,
         orgIpaCode,
-        new PaidExportRequestDTO()
-          .fileVersion(fileVersion)
-          .exportFilters(new PaidExportFileFilter()
-            .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
-              .from(from)
-              .to(to))
-            .debtPositionTypeOrgCode(debtPositionTypeOrgCode))
+        paidExportRequestDTO
       )
     );
 
