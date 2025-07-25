@@ -140,15 +140,15 @@ public class PuForOrganizationPaymentsEndpoint {
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
       PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
       response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
-      processingStatusDTO.getDownloadUrls().forEach(
-        url -> {
+      Optional.ofNullable(processingStatusDTO.getDownloadUrls()).ifPresent(downloadUrls ->
+        downloadUrls.forEach(url -> {
           switch (url.getCode()) {
-            case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti())? url.getUrl() : null);
-            case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(Boolean.TRUE.equals(request.isFileAvvisi())? url.getUrl() : null);
-            case OUTPUT_FILE -> response.setUrlFileIUV(Boolean.TRUE.equals(request.isFileIUV())? url.getUrl() : null);
+            case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti()) ? url.getUrl() : null);
+            case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(Boolean.TRUE.equals(request.isFileAvvisi()) ? url.getUrl() : null);
+            case OUTPUT_FILE -> response.setUrlFileIUV(Boolean.TRUE.equals(request.isFileIUV()) ? url.getUrl() : null);
             case INPUT_FILE -> log.debug("Ignoring INPUT_FILE download URL in response, as it is not relevant for this operation.");
           }
-        }
+        })
       );
       return response;
     } catch (Exception e) {
