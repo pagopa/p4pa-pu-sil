@@ -57,9 +57,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.DISCARDED_FILE;
-import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.OUTPUT_FILE;
-
 @Endpoint
 @RequiredArgsConstructor
 @Slf4j
