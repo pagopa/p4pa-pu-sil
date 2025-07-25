@@ -39,4 +39,15 @@ public class DebtPositionTypeClient {
     }
   }
 
+  public DebtPositionTypeOrg getDebtPositionTypeOrgByInstallmentId(Long installmentId, String accessToken) {
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionTypeOrgSearchControllerApi(accessToken)
+        .crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DeptPositionTypeOrg for installmentId[{}]", installmentId, e);
+      return null;
+    }
+  }
+
 }
