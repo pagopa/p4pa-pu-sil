@@ -189,6 +189,27 @@ class PaaSILVerificaAvvisoServiceTest {
   }
 
   @Test
+  void givenNullCheckoutUrlWhenPaaSILVerificaAvvisoThenException() {
+    //given
+    InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
+    installmentDTO.setStatus(InstallmentStatus.UNPAID);
+    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
+
+    when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
+      .thenReturn(List.of(installmentDTO));
+    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
+      .thenReturn(cartRequest);
+    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn(null);
+
+    //when
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, TOKEN));
+
+    //verify
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+  }
+
+  @Test
   void givenValidRequestWhenPaaSILVerificaAvvisoThenOk() {
     //given
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
@@ -215,4 +236,5 @@ class PaaSILVerificaAvvisoServiceTest {
     Assertions.assertEquals(1, response.getRedirect());
     Assertions.assertEquals(sessionId, response.getIdSession());
   }
+
 }
