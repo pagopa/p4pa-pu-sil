@@ -208,9 +208,9 @@ class PuForOrganizationPaymentsEndpointTest {
                                                                                                   boolean flagNotice,
                                                                                                   IngestionFlowFileStatus status,
                                                                                                   List<DownloadUrl> downloadUrls,
-                                                                                                  boolean expectedImportedUrl,
-                                                                                                  boolean expectedErrorUrl,
-                                                                                                  boolean expectedNoticeUrl) throws Exception {
+                                                                                                  String expectedImportedUrl,
+                                                                                                  String expectedErrorUrl,
+                                                                                                  String expectedNoticeUrl) throws Exception {
     // Given
     Long requestToken = 12345L;
     PaaSILChiediStatoImportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoImportFlusso.class);
@@ -237,9 +237,9 @@ class PuForOrganizationPaymentsEndpointTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(statusDTO.getStatus()), response.getStato());
-    Assertions.assertEquals(expectedImportedUrl, !response.getUrlFileIUV().isEmpty());
-    Assertions.assertEquals(expectedErrorUrl, !response.getUrlFileScarti().isEmpty());
-    Assertions.assertEquals(expectedNoticeUrl, !response.getUrlFileAvvisi().isEmpty());
+    Assertions.assertEquals(expectedImportedUrl, response.getUrlFileIUV());
+    Assertions.assertEquals(expectedErrorUrl, response.getUrlFileScarti());
+    Assertions.assertEquals(expectedNoticeUrl, response.getUrlFileAvvisi());
   }
 
   private static Stream<Arguments> paaSILChiediStatoImportFlussoProvider() {
@@ -250,16 +250,16 @@ class PuForOrganizationPaymentsEndpointTest {
     DownloadUrl input = new DownloadUrl(INPUT_FILE, expectedUrl + "/input");
 
     return Stream.of(
-      Arguments.of(true, true, true, PROCESSING, null, false, false, false),
-      Arguments.of(true, true, true, COMPLETED, List.of(imported, errors, notice), true, true, true),
-      Arguments.of(true, true, false, COMPLETED, List.of(imported, errors), true, true, false),
-      Arguments.of(true, false, true, COMPLETED, List.of(imported, notice), true, false, true),
-      Arguments.of(true, false, false, COMPLETED, List.of(imported), true, false, false),
-      Arguments.of(false, true, true, COMPLETED, List.of(errors, notice), false, true, true),
-      Arguments.of(false, true, false, COMPLETED, List.of(errors), false, true, false),
-      Arguments.of(false, false, true, COMPLETED, List.of(notice), false, false, true),
-      Arguments.of(false, false, false, COMPLETED, List.of(), false, false, false),
-      Arguments.of(false, false, false, COMPLETED, List.of(input), false, false, false)
+      Arguments.of(true, true, true, PROCESSING, null, null, null, null),
+      Arguments.of(true, true, true, COMPLETED, List.of(imported, errors, notice), imported.getUrl(), errors.getUrl(), notice.getUrl()),
+      Arguments.of(true, true, false, COMPLETED, List.of(imported, errors), imported.getUrl(), errors.getUrl(), null),
+      Arguments.of(true, false, true, COMPLETED, List.of(imported, notice), imported.getUrl(), null, notice.getUrl()),
+      Arguments.of(true, false, false, COMPLETED, List.of(imported), imported.getUrl(), null, null),
+      Arguments.of(false, true, true, COMPLETED, List.of(errors, notice), null, errors.getUrl(), notice.getUrl()),
+      Arguments.of(false, true, false, COMPLETED, List.of(errors), null, errors.getUrl(), null),
+      Arguments.of(false, false, true, COMPLETED, List.of(notice), null, null, notice.getUrl()),
+      Arguments.of(false, false, false, COMPLETED, List.of(), null, null, null),
+      Arguments.of(false, false, false, COMPLETED, List.of(input), null, null, null)
     );
   }
 
