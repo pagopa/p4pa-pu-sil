@@ -1,14 +1,14 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
-import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
 import it.gov.pagopa.pu.sil.controller.generated.ExportApi;
+import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.PaidExportRequestDTO;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
-import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
+import it.gov.pagopa.pu.sil.service.exportfile.ClassificationsExportFileReservationService;
+import it.gov.pagopa.pu.sil.service.exportfile.PaidExportFileReservationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,17 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MassiveExportController implements ExportApi {
 
-  private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
-  private final PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService;
+  private final PaidExportFileReservationService paidExportFileReservationService;
+  private final ClassificationsExportFileReservationService classificationsExportFileReservationService;
 
-  public MassiveExportController(PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService,
-                                 PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService) {
-    this.paaSILPrenotaExportFlussoIncrementaleConRicevutaService = paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
-    this.pivotSILPrenotaExportFlussoRiconciliazioneService = pivotSILPrenotaExportFlussoRiconciliazioneService;
+  public MassiveExportController(PaidExportFileReservationService paidExportFileReservationService,
+                                 ClassificationsExportFileReservationService classificationsExportFileReservationService) {
+    this.paidExportFileReservationService = paidExportFileReservationService;
+    this.classificationsExportFileReservationService = classificationsExportFileReservationService;
   }
 
   @Override
-  public ResponseEntity<ExportFileResponseDTO> massivePaidExportRequest(String orgFiscalCode, PaidExportFileRequestDTO paidExportFileRequestDTO) {
+  public ResponseEntity<ExportFileResponseDTO> massivePaidExportRequest(String orgFiscalCode, PaidExportRequestDTO paidExportRequestDTO) {
 
     log.info("Received massive export request for orgFiscalCode: {}, fileType: PAID", orgFiscalCode);
 
@@ -39,7 +39,7 @@ public class MassiveExportController implements ExportApi {
 
     log.debug("Processing PAID export request for orgIpaCode: {}", orgIpaCode);
 
-    Long exportFileId = paaSILPrenotaExportFlussoIncrementaleConRicevutaService.doReservation(userInfo, accessToken, orgIpaCode, paidExportFileRequestDTO);
+    Long exportFileId = paidExportFileReservationService.doReservation(userInfo, accessToken, orgIpaCode, paidExportRequestDTO);
 
     ret.exportId(exportFileId.toString());
 
@@ -47,7 +47,7 @@ public class MassiveExportController implements ExportApi {
   }
 
   @Override
-  public ResponseEntity<ExportFileResponseDTO> massiveClassificationsExportRequest(String orgFiscalCode, ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO) {
+  public ResponseEntity<ExportFileResponseDTO> massiveClassificationsExportRequest(String orgFiscalCode, ClassificationsExportRequestDTO classificationsExportRequestDTO) {
 
     log.info("Received massive export request for orgFiscalCode: {}, fileType: CLASSIFICATIONS", orgFiscalCode);
 
@@ -59,8 +59,7 @@ public class MassiveExportController implements ExportApi {
 
     log.debug("Processing CLASSIFICATIONS export request for orgIpaCode: {}", orgIpaCode);
 
-    Long exportFileId = pivotSILPrenotaExportFlussoRiconciliazioneService.doReservation(
-        userInfo, accessToken, orgIpaCode, classificationsExportFileRequestDTO);
+    Long exportFileId = classificationsExportFileReservationService.doReservation(userInfo, accessToken, orgIpaCode, classificationsExportRequestDTO);
 
     ret.exportId(exportFileId.toString());
 

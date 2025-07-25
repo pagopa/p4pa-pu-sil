@@ -325,7 +325,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: 'PaidExportRequest'
+              $ref: "#/components/schemas/PaidExportRequestDTO"
         required: true
       responses:
         '201':
@@ -358,7 +358,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: 'ClassificationsExportRequest'
+              $ref: "#/components/schemas/ClassificationsExportRequestDTO"
         required: true
       responses:
         '201':
@@ -798,6 +798,41 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DownloadUrl'
+    PaidExportFileFilter:
+      type: object
+      properties:
+        paymentDateTime:
+          type: 'OffsetDateTimeIntervalFilter'
+        installmentUpdateDateTime:
+          type: 'OffsetDateTimeIntervalFilter'
+        debtPositionTypeOrgCode:
+          type: string
+    PaidExportRequestDTO:
+      type: object
+      required:
+        - orgFiscalCode
+        - fileVersion
+        - exportFilters
+      properties:
+        orgFiscalCode:
+          type: string
+        fileVersion:
+          type: string
+        exportFilters:
+          $ref: '#/components/schemas/PaidExportFileFilter'
+    ClassificationsExportRequestDTO:
+      type: object
+      required:
+        - orgFiscalCode
+        - fileVersion
+        - exportFilters
+      properties:
+        orgFiscalCode:
+          type: string
+        fileVersion:
+          type: string
+        exportFilters:
+          type: 'ClassificationsExportFileFilter'
     ExportFileResponseDTO:
       type: object
       required:

@@ -244,7 +244,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/PaidExportFileRequestDTO"
+                "$ref" : "#/components/schemas/PaidExportRequestDTO"
               }
             }
           },
@@ -297,7 +297,7 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ClassificationsExportFileRequestDTO"
+                "$ref" : "#/components/schemas/ClassificationsExportRequestDTO"
               }
             }
           },
@@ -907,10 +907,6 @@
         },
         "required" : [ "exportId" ]
       },
-      "ExportFileTypeEnum" : {
-        "type" : "string",
-        "enum" : [ "PAID", "CLASSIFICATIONS", "PAYMENTS_REPORTING", "RECEIPTS_ARCHIVING" ]
-      },
       "OffsetDateTimeIntervalFilter" : {
         "type" : "object",
         "properties" : {
@@ -933,30 +929,25 @@
           "installmentUpdateDateTime" : {
             "$ref" : "#/components/schemas/OffsetDateTimeIntervalFilter"
           },
-          "debtPositionTypeOrgId" : {
-            "type" : "integer",
-            "format" : "int64"
+          "debtPositionTypeOrgCode" : {
+            "type" : "string"
           }
         }
       },
-      "PaidExportFileRequestDTO" : {
+      "PaidExportRequestDTO" : {
         "type" : "object",
         "properties" : {
-          "organizationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "exportFileType" : {
-            "$ref" : "#/components/schemas/ExportFileTypeEnum"
+          "orgFiscalCode" : {
+            "type" : "string"
           },
           "fileVersion" : {
             "type" : "string"
           },
-          "filterFields" : {
+          "exportFilters" : {
             "$ref" : "#/components/schemas/PaidExportFileFilter"
           }
         },
-        "required" : [ "exportFileType", "fileVersion", "filterFields", "organizationId" ]
+        "required" : [ "exportFilters", "fileVersion", "orgFiscalCode" ]
       },
       "ClassificationsExportFileFilter" : {
         "type" : "object",
@@ -1032,24 +1023,20 @@
           }
         }
       },
-      "ClassificationsExportFileRequestDTO" : {
+      "ClassificationsExportRequestDTO" : {
         "type" : "object",
         "properties" : {
-          "organizationId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "exportFileType" : {
-            "$ref" : "#/components/schemas/ExportFileTypeEnum"
+          "orgFiscalCode" : {
+            "type" : "string"
           },
           "fileVersion" : {
             "type" : "string"
           },
-          "filterFields" : {
+          "exportFilters" : {
             "$ref" : "#/components/schemas/ClassificationsExportFileFilter"
           }
         },
-        "required" : [ "exportFileType", "fileVersion", "filterFields", "organizationId" ]
+        "required" : [ "exportFilters", "fileVersion", "orgFiscalCode" ]
       },
       "LabelEnum" : {
         "type" : "string",
