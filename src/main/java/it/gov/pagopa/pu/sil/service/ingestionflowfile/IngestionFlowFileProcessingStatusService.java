@@ -45,7 +45,7 @@ public class IngestionFlowFileProcessingStatusService {
 
     ImportStatusResponseDTO responseDTO = ImportStatusResponseDTO.builder()
       .status(ingestionFlowFile.getStatus())
-      .downloadUrls(new ArrayList<>(3)) // eventually DISCARDED_FILE + OUTPUT_FILE + PAYMENT_NOTICE_FILE
+      .downloadUrls(new ArrayList<>()) // eventually DISCARDED_FILE + OUTPUT_FILE + PAYMENT_NOTICE_FILE
       .build();
 
     if (IngestionFlowFileStatus.COMPLETED.equals(ingestionFlowFile.getStatus())) {
