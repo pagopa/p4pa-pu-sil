@@ -300,7 +300,6 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
-    "useOneOfInterfaces" to "true",
     "useBeanValidation" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",

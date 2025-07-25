@@ -44,6 +44,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -53,6 +56,10 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+import java.util.stream.Stream;
+
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.*;
+import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.*;
 
 @ExtendWith(MockitoExtension.class)
 class PuForOrganizationPaymentsEndpointTest {
@@ -194,30 +201,33 @@ class PuForOrganizationPaymentsEndpointTest {
 
   // region PaaSILChiediStatoImportFlusso
 
-  @Test
-  void givenValidRequestWhenPaaSILChiediStatoImportFlussoThenResponseContainsExpectedStatusAndUrl() throws Exception {
+  @ParameterizedTest
+  @MethodSource("paaSILChiediStatoImportFlussoProvider")
+  void givenValidRequestWhenPaaSILChiediStatoImportFlussoThenResponseContainsExpectedStatusAndUrl(boolean flagImported,
+                                                                                                  boolean flagError,
+                                                                                                  boolean flagNotice,
+                                                                                                  IngestionFlowFileStatus status,
+                                                                                                  List<DownloadUrl> downloadUrls,
+                                                                                                  String expectedImportedUrl,
+                                                                                                  String expectedErrorUrl,
+                                                                                                  String expectedNoticeUrl) throws Exception {
     // Given
     Long requestToken = 12345L;
-    String expectedUrl = "https://upload.url";
     PaaSILChiediStatoImportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoImportFlusso.class);
     request.setRequestToken(String.valueOf(requestToken));
-    request.setFileAvvisi(Boolean.FALSE);
-    request.setFileScarti(Boolean.TRUE);
-    request.setFileIUV(Boolean.TRUE);
+    request.setFileAvvisi(flagNotice);
+    request.setFileScarti(flagError);
+    request.setFileIUV(flagImported);
     ImportStatusResponseDTO statusDTO = new ImportStatusResponseDTO();
-    List<DownloadUrl> downloadUrls = List.of(
-      new DownloadUrl(DownloadUrl.CodeEnum.OUTPUT_FILE, expectedUrl + "/imported"),
-      new DownloadUrl(DownloadUrl.CodeEnum.DISCARDED_FILE, expectedUrl + "/errors"),
-      new DownloadUrl(DownloadUrl.CodeEnum.PAYMENT_NOTICE_FILE, expectedUrl + "/notice")
-    );
     statusDTO.setDownloadUrls(downloadUrls);
-    statusDTO.setStatus(IngestionFlowFileStatus.COMPLETED);
+    statusDTO.setStatus(status);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
-      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken),
+      Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
 
     // When
@@ -227,8 +237,32 @@ class PuForOrganizationPaymentsEndpointTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(statusDTO.getStatus()), response.getStato());
-    Assertions.assertFalse(statusDTO.getDownloadUrls().isEmpty());
+    Assertions.assertEquals(expectedImportedUrl, response.getUrlFileIUV());
+    Assertions.assertEquals(expectedErrorUrl, response.getUrlFileScarti());
+    Assertions.assertEquals(expectedNoticeUrl, response.getUrlFileAvvisi());
   }
+
+  private static Stream<Arguments> paaSILChiediStatoImportFlussoProvider() {
+    String expectedUrl = "https://upload.url";
+    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/imported");
+    DownloadUrl errors = new DownloadUrl(DISCARDED_FILE, expectedUrl + "/errors");
+    DownloadUrl notice = new DownloadUrl(PAYMENT_NOTICE_FILE, expectedUrl + "/notice");
+    DownloadUrl input = new DownloadUrl(INPUT_FILE, expectedUrl + "/input");
+
+    return Stream.of(
+      Arguments.of(true, true, true, PROCESSING, null, null, null, null),
+      Arguments.of(true, true, true, COMPLETED, List.of(imported, errors, notice), imported.getUrl(), errors.getUrl(), notice.getUrl()),
+      Arguments.of(true, true, false, COMPLETED, List.of(imported, errors), imported.getUrl(), errors.getUrl(), null),
+      Arguments.of(true, false, true, COMPLETED, List.of(imported, notice), imported.getUrl(), null, notice.getUrl()),
+      Arguments.of(true, false, false, COMPLETED, List.of(imported), imported.getUrl(), null, null),
+      Arguments.of(false, true, true, COMPLETED, List.of(errors, notice), null, errors.getUrl(), notice.getUrl()),
+      Arguments.of(false, true, false, COMPLETED, List.of(errors), null, errors.getUrl(), null),
+      Arguments.of(false, false, true, COMPLETED, List.of(notice), null, null, notice.getUrl()),
+      Arguments.of(false, false, false, COMPLETED, List.of(), null, null, null),
+      Arguments.of(false, false, false, COMPLETED, List.of(input), null, null, null)
+    );
+  }
+
   // endregion
 
   // region PaaSILAutorizzaImportFlusso
