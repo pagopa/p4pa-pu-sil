@@ -124,6 +124,7 @@ class PaidExportFileReservationServiceTest {
     String fileVersion = "1.0";
     OffsetDateTime from = OffsetDateTime.now();
     OffsetDateTime to = OffsetDateTime.now();
+    String debtPositionTypeOrgCode = "code";
 
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
       .thenReturn(null);
@@ -133,8 +134,10 @@ class PaidExportFileReservationServiceTest {
       .exportFilters(new PaidExportFileFilter()
         .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
           .from(from)
-          .to(to)));
+          .to(to))
+        .debtPositionTypeOrgCode(debtPositionTypeOrgCode));
     // When
+
     ExportFileServiceException exception = assertThrows(ExportFileServiceException.class, () ->
       service.doReservation(
         userInfo,
