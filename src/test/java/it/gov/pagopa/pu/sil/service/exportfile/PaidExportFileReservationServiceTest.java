@@ -173,19 +173,20 @@ class PaidExportFileReservationServiceTest {
     when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken)))
       .thenThrow(errorException);
 
+    PaidExportRequestDTO paidExportRequestDTO = new PaidExportRequestDTO()
+      .fileVersion(fileVersion)
+      .exportFilters(new PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
+          .from(from)
+          .to(to))
+        .debtPositionTypeOrgCode(debtPositionTypeOrgCode));
     // When
     ExportFileClientException exception = assertThrows(ExportFileClientException.class, () ->
       service.doReservation(
         userInfo,
         accessToken,
         orgIpaCode,
-        new PaidExportRequestDTO()
-          .fileVersion(fileVersion)
-          .exportFilters(new PaidExportFileFilter()
-            .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter()
-              .from(from)
-              .to(to))
-            .debtPositionTypeOrgCode(debtPositionTypeOrgCode))
+        paidExportRequestDTO
       )
     );
 
