@@ -16,9 +16,6 @@
     "name" : "Payment",
     "description" : "the Payment API"
   }, {
-    "name" : "Massive",
-    "description" : "the Massive API"
-  }, {
     "name" : "Assessment",
     "description" : "the Assessment API"
   }, {
