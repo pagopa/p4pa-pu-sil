@@ -24,7 +24,6 @@ public class ClassificationsExportFileReservationService extends AbstractExportF
     this.exportFileService = exportFileService;
   }
 
-  @SuppressWarnings("java:S107")
   public Long doReservation(UserInfo userInfo, String accessToken, String orgIpaCode,
                             ClassificationsExportRequestDTO classificationsExportRequestDTO) {
 

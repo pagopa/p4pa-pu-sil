@@ -26,7 +26,6 @@ public class PaidExportFileReservationService extends AbstractExportFileReservat
     this.exportFileService = exportFileService;
   }
 
-  @SuppressWarnings("java:S107")
   public Long doReservation(
     UserInfo userInfo,
     String accessToken,
