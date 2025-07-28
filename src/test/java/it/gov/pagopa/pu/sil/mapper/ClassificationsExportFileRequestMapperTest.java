@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import org.junit.jupiter.api.Test;
 
@@ -58,11 +59,13 @@ class ClassificationsExportFileRequestMapperTest {
     Long orgId = 123L;
     ClassificationsExportFileRequestDTO dto = mapper.mapToExportFileRequest(orgId, request);
     assertNotNull(dto);
+    TestUtils.checkNotNullFields(dto);
     assertEquals(orgId, dto.getOrganizationId());
     assertEquals(ClassificationsExportFileRequestDTO.ExportFileTypeEnum.CLASSIFICATIONS, dto.getExportFileType());
     assertEquals("v1", dto.getFileVersion());
     ClassificationsExportFileFilter filter = dto.getFilterFields();
     assertNotNull(filter);
+    TestUtils.checkNotNullFields(filter, "iuf");
     assertEquals("IUD123", filter.getIud());
     assertEquals(LocalDate.of(2023, 1, 1), filter.getRegionValueDate().getFrom());
     assertEquals(LocalDate.of(2023, 12, 31), filter.getRegionValueDate().getTo());
