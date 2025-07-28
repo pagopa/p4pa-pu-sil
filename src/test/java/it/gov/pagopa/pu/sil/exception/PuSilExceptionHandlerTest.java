@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.config.json.JsonConfig;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -257,5 +259,25 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"));
+  }
+
+  @Test
+  void handleExportFileClientException() throws Exception {
+    doThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_BAD_REQUEST, "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
+  void handleExportFileServiceException() throws Exception {
+    doThrow(new ExportFileServiceException(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO, "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
   }
 }
