@@ -30,6 +30,17 @@ class TransferMapperTest {
 
     // Then
     assertNotNull(result);
+    assertEquals(silTransferDTO.getAmountCents(), result.getAmountCents());
+    assertEquals(silTransferDTO.getCategory(), result.getCategory());
+    assertEquals(silTransferDTO.getOrgFiscalCode(), result.getOrgFiscalCode());
+    assertEquals(silTransferDTO.getOrgName(), result.getOrgName());
+    assertEquals(silTransferDTO.getRemittanceInformation(), result.getRemittanceInformation());
+    assertEquals(silTransferDTO.getTransferIndex(), result.getTransferIndex());
+    assertEquals(silTransferDTO.getStampHashDocument(), result.getStampHashDocument());
+    assertEquals(silTransferDTO.getStampType(), result.getStampType());
+    assertEquals(silTransferDTO.getStampProvincialResidence(), result.getStampProvincialResidence());
+    assertEquals(silTransferDTO.getIban(), result.getIban());
+
     TestUtils.checkNotNullFields(result, "transferId", "installmentId", "postalIban",
       "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "mbdAttachment");
   }
