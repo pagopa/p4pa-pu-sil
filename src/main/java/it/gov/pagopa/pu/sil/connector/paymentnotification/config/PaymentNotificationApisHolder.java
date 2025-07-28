@@ -14,15 +14,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class NativePaymentNotificationApisHolder {
+public class PaymentNotificationApisHolder {
   private final PaymentNotificationApiClientConfig clientConfig;
   private final RestTemplate restTemplate;
   private final Map<String, DefaultApi> nativePaymentNotificationApisMap = new ConcurrentHashMap<>();
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
-  public NativePaymentNotificationApisHolder(PaymentNotificationApiClientConfig clientConfig,
-                                             PuIntegrityDataConfig puIntegrityDataConfig,
-                                             RestTemplateBuilder restTemplateBuilder) {
+  public PaymentNotificationApisHolder(PaymentNotificationApiClientConfig clientConfig,
+                                       PuIntegrityDataConfig puIntegrityDataConfig,
+                                       RestTemplateBuilder restTemplateBuilder) {
     this.restTemplate = restTemplateBuilder.build();
     this.clientConfig = clientConfig;
 

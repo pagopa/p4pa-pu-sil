@@ -17,11 +17,11 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NativePaymentNotificationApisHolderTest extends BaseApiHolderTest {
+class PaymentNotificationApisHolderTest extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
-  private NativePaymentNotificationApisHolder apisHolder;
+  private PaymentNotificationApisHolder apisHolder;
 
   @BeforeEach
   void setUp() {
@@ -31,7 +31,7 @@ class NativePaymentNotificationApisHolderTest extends BaseApiHolderTest {
     PuIntegrityDataConfig puIntegrityDataConfig = PuIntegrityDataConfig.builder()
       .privateKey(CertUtilsTest.PRIVATE_KEY)
       .build();
-    apisHolder = new NativePaymentNotificationApisHolder(clientConfig, puIntegrityDataConfig, restTemplateBuilderMock);
+    apisHolder = new PaymentNotificationApisHolder(clientConfig, puIntegrityDataConfig, restTemplateBuilderMock);
   }
 
   @Test
