@@ -14,8 +14,7 @@ import org.springframework.context.annotation.Configuration;
 @NoArgsConstructor
 @SuperBuilder
 public class PuIntegrityDataConfig {
-  private String audience;
-  private String clientId;
+  private String issuer;
   private String privateKey;
   private String publicKey;
   private Long expirationMinutes;

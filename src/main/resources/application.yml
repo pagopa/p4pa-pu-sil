@@ -129,8 +129,7 @@ rest:
       connect-millis: "\${DEFAULT_REST_TIMEOUT_CONNECT_MILLIS:120000}"
       read-millis: "\${DEFAULT_REST_TIMEOUT_READ_MILLIS:120000}"
   integrity-data:
-    audience: "\${REST_AGID_INTEGRITY_PU_AUDIENCE:pu-audience}"
-    client-id: "\${REST_AGID_INTEGRITY_PU_CLIENTID:pu-client-id}"
+    issuer: "\${REST_AGID_INTEGRITY_PU_ISSUER:piattaforma-unitaria}"
     private-key: "\${REST_AGID_INTEGRITY_PU_PRIVATEKEY:}"
     public-key: "\${REST_AGID_INTEGRITY_PU_PUBLICKEY:}"
     expirationMinutes: "\${REST_AGID_INTEGRITY_PU_EXPIRATION_MINUTES:10}"

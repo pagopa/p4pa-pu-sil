@@ -22,18 +22,11 @@ import java.security.spec.InvalidKeySpecException;
 public class AgidDataIntegrityInterceptor implements ClientHttpRequestInterceptor {
 
   private final PuIntegrityDataConfig puIntegrityDataConfig;
-  private RSASSASigner jwsRsaSigner = null;
+  private final RSASSASigner jwsRsaSigner; // now final
 
   public AgidDataIntegrityInterceptor(PuIntegrityDataConfig puIntegrityDataConfig) {
     this.puIntegrityDataConfig = puIntegrityDataConfig;
-  }
-
-  // This method lazily builds the JWS signer using the private key from the configuration.
-  private RSASSASigner getJwsRsaSigner() {
-    if(this.jwsRsaSigner == null) {
-      this.jwsRsaSigner = buildJwsSigner(puIntegrityDataConfig);
-    }
-    return this.jwsRsaSigner;
+    this.jwsRsaSigner = buildJwsSigner(puIntegrityDataConfig); // eager initialization
   }
 
   @Override
@@ -43,7 +36,7 @@ public class AgidDataIntegrityInterceptor implements ClientHttpRequestIntercepto
 
     HttpHeaders headers = request.getHeaders();
     headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
-    headers.add("Agid-JWT-Signature", AgidUtils.buildAgidJwtSignature(digest, puIntegrityDataConfig, getJwsRsaSigner()));
+    headers.add("Agid-JWT-Signature", AgidUtils.buildAgidJwtSignature(digest, puIntegrityDataConfig, this.jwsRsaSigner));
     headers.add("Digest", digest);
 
     return execution.execute(request, body);
@@ -53,7 +46,7 @@ public class AgidDataIntegrityInterceptor implements ClientHttpRequestIntercepto
     try {
       return new RSASSASigner(CertUtils.<PrivateKey>pemKey2PrivateKey("RSA", puIntegrityDataConfig.getPrivateKey()));
     } catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException e) {
-      throw new IllegalStateException("Cannot build JWS Signer for PU service having clientId:" + puIntegrityDataConfig.getClientId(), e);
+      throw new IllegalStateException("Cannot build JWS Signer for PU service having issuer:" + puIntegrityDataConfig.getIssuer(), e);
     }
   }
 }

@@ -40,15 +40,14 @@ public class AgidUtils {
   }
 
   private static JWTClaimsSet buildAgidJwtSignatureClaims(String digest, PuIntegrityDataConfig puIntegrityDataConfig) {
-    String clientId = puIntegrityDataConfig.getClientId();
+    String issuer = puIntegrityDataConfig.getIssuer();
     long currentMillis = System.currentTimeMillis();
     long expirationMillis = currentMillis + (puIntegrityDataConfig.getExpirationMinutes() * 60 * 1000);
 
     return new JWTClaimsSet.Builder()
       .jwtID(UUID.randomUUID().toString())
-      .issuer(clientId)
-      .subject(clientId)
-      .audience(puIntegrityDataConfig.getAudience())
+      .issuer(issuer)
+      .subject(issuer)
       .issueTime(new Date(currentMillis))
       .expirationTime(new Date(expirationMillis))
       .claim("signed_headers", List.of(

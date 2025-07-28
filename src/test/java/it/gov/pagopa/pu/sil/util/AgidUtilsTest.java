@@ -27,8 +27,7 @@ public class AgidUtilsTest {
   }
 
   private final PuIntegrityDataConfig puIntegrityDataConfig = PuIntegrityDataConfig.builder()
-    .clientId("CLIENTID")
-    .audience("SERVICEAUDIENCE")
+    .issuer("ISSUER")
     .expirationMinutes(1L)
     .publicKey(CertUtilsTest.PUBLIC_KEY)
     .build();
@@ -49,9 +48,7 @@ public class AgidUtilsTest {
     JsonAssert.comparator(JsonCompareMode.STRICT).assertIsMatch(
       Map.of(
         RegisteredClaims.JWT_ID, decoded.getClaim(RegisteredClaims.JWT_ID),
-        RegisteredClaims.SUBJECT, puIntegrityDataConfig.getClientId(),
-        RegisteredClaims.ISSUER, puIntegrityDataConfig.getClientId(),
-        RegisteredClaims.AUDIENCE, puIntegrityDataConfig.getAudience(),
+        RegisteredClaims.ISSUER, puIntegrityDataConfig.getIssuer(),
         RegisteredClaims.ISSUED_AT, decoded.getClaim(RegisteredClaims.ISSUED_AT),
         RegisteredClaims.EXPIRES_AT, decoded.getClaim(RegisteredClaims.ISSUED_AT).asLong() + 60,
         "signed_headers", List.of(

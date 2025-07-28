@@ -70,4 +70,14 @@ class AgidDataIntegrityInterceptorTest {
     Assertions.assertEquals("test-signature", mockRequest.getHeaders().getFirst("Agid-JWT-Signature"));
   }
 
+  @Test
+  void testHeadersAreMutable() {
+    HttpHeaders headers = new HttpHeaders();
+    when(mockRequest.getHeaders()).thenReturn(headers);
+    headers.add("X-Test-Header", "test-value");
+    // Mutate headers after retrieval
+    headers.set("X-Test-Header", "new-value");
+    Assertions.assertEquals("new-value", mockRequest.getHeaders().getFirst("X-Test-Header"));
+  }
+
 }
