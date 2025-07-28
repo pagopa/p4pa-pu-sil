@@ -16,17 +16,20 @@
     "name" : "Payment",
     "description" : "the Payment API"
   }, {
-    "name" : "Massive",
-    "description" : "the Massive API"
-  }, {
     "name" : "Assessment",
     "description" : "the Assessment API"
+  }, {
+    "name" : "Export",
+    "description" : "the Export API"
   }, {
     "name" : "PrintPaymentNotice",
     "description" : "the PrintPaymentNotice API"
   }, {
     "name" : "SendNotification",
     "description" : "the SendNotification API"
+  }, {
+    "name" : "Import",
+    "description" : "the Import API"
   } ],
   "paths" : {
     "/sil/organization/{organizationId}/send-notification" : {
@@ -229,7 +232,7 @@
     },
     "/sil/organization/{orgFiscalCode}/import" : {
       "post" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "Import" ],
         "summary" : "request a massive import operation",
         "description" : "Service to request a massive import operation. The upload of the file is done invoking the url returned by this service. ",
         "operationId" : "massiveImportRequest",
@@ -277,12 +280,12 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/export" : {
+    "/sil/organization/{orgFiscalCode}/export/paid" : {
       "post" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "Export" ],
         "summary" : "request a massive export operation",
         "description" : "Service to request a massive export operation.",
-        "operationId" : "massiveExportRequest",
+        "operationId" : "massivePaidExportRequest",
         "parameters" : [ {
           "name" : "orgFiscalCode",
           "in" : "path",
@@ -297,7 +300,60 @@
           "content" : {
             "application/json" : {
               "schema" : {
-                "$ref" : "#/components/schemas/ExportRequestDTO"
+                "$ref" : "#/components/schemas/PaidExportRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ExportFileResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/export/classifications" : {
+      "post" : {
+        "tags" : [ "Export" ],
+        "summary" : "request a massive export operation",
+        "description" : "Service to request a massive export operation.",
+        "operationId" : "massiveClassificationsExportRequest",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ClassificationsExportRequestDTO"
               }
             }
           },
@@ -569,7 +625,7 @@
     },
     "/sil/organization/{orgFiscalCode}/import/{importId}" : {
       "get" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "Import" ],
         "summary" : "request processing status of massive import operation",
         "description" : "Service to request the processing status of massive import operation and the url to download output files (where applicable, based on processing status and import type). ",
         "operationId" : "massiveImportStatus",
@@ -618,9 +674,9 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/export/{exportId}" : {
+    "/sil/organization/{orgFiscalCode}/export/status/{exportId}" : {
       "get" : {
-        "tags" : [ "Massive" ],
+        "tags" : [ "Export" ],
         "summary" : "request processing status of export operation",
         "description" : "Service to request the processing status of export operation and the url to download output files (where applicable, based on processing status and export type). ",
         "operationId" : "massiveExportStatus",
@@ -1195,33 +1251,153 @@
         },
         "required" : [ "exportId" ]
       },
-      "ExportFileTypeEnum" : {
-        "type" : "string",
-        "enum" : [ "PAID", "CLASSIFICATIONS", "PAYMENTS_REPORTING", "RECEIPTS_ARCHIVING" ]
-      },
-      "ExportRequestDTO" : {
+      "OffsetDateTimeIntervalFilter" : {
         "type" : "object",
         "properties" : {
-          "exportId" : {
+          "from" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "PaidExportFileFilter" : {
+        "type" : "object",
+        "properties" : {
+          "paymentDateTime" : {
+            "$ref" : "#/components/schemas/OffsetDateTimeIntervalFilter"
+          },
+          "installmentUpdateDateTime" : {
+            "$ref" : "#/components/schemas/OffsetDateTimeIntervalFilter"
+          },
+          "debtPositionTypeOrgCode" : {
+            "type" : "string"
+          }
+        }
+      },
+      "PaidExportRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "orgFiscalCode" : {
             "type" : "string"
           },
-          "exportFileType" : {
-            "$ref" : "#/components/schemas/ExportFileTypeEnum"
+          "fileVersion" : {
+            "type" : "string"
           },
           "exportFilters" : {
-            "type" : "object",
-            "additionalProperties" : {
+            "$ref" : "#/components/schemas/PaidExportFileFilter"
+          }
+        },
+        "required" : [ "exportFilters", "fileVersion", "orgFiscalCode" ]
+      },
+      "ClassificationsExportFileFilter" : {
+        "type" : "object",
+        "properties" : {
+          "iuf" : {
+            "type" : "string"
+          },
+          "iud" : {
+            "type" : "string"
+          },
+          "iuv" : {
+            "type" : "array",
+            "items" : {
               "type" : "string"
             }
           },
-          "exportFlags" : {
-            "type" : "object",
-            "additionalProperties" : {
-              "type" : "boolean"
+          "iur" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
             }
+          },
+          "label" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/LabelEnum"
+            },
+            "uniqueItems" : true
+          },
+          "lastClassificationDate" : {
+            "$ref" : "#/components/schemas/LocalDateIntervalFilter"
+          },
+          "payDate" : {
+            "$ref" : "#/components/schemas/LocalDateIntervalFilter"
+          },
+          "paymentDate" : {
+            "$ref" : "#/components/schemas/LocalDateIntervalFilter"
+          },
+          "regulationDate" : {
+            "$ref" : "#/components/schemas/LocalDateIntervalFilter"
+          },
+          "billDate" : {
+            "$ref" : "#/components/schemas/LocalDateIntervalFilter"
+          },
+          "regionValueDate" : {
+            "$ref" : "#/components/schemas/LocalDateIntervalFilter"
+          },
+          "regulationUniqueIdentifier" : {
+            "type" : "string"
+          },
+          "accountRegistryCode" : {
+            "type" : "string"
+          },
+          "billAmountCents" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "remittanceInformation" : {
+            "type" : "string"
+          },
+          "pspCompanyName" : {
+            "type" : "string"
+          },
+          "pspLastName" : {
+            "type" : "string"
+          },
+          "debtPositionTypeOrgCodes" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            },
+            "uniqueItems" : true
+          }
+        }
+      },
+      "ClassificationsExportRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "orgFiscalCode" : {
+            "type" : "string"
+          },
+          "fileVersion" : {
+            "type" : "string"
+          },
+          "exportFilters" : {
+            "$ref" : "#/components/schemas/ClassificationsExportFileFilter"
           }
         },
-        "required" : [ "exportFileType", "exportFilters", "exportId" ]
+        "required" : [ "exportFilters", "fileVersion", "orgFiscalCode" ]
+      },
+      "LabelEnum" : {
+        "type" : "string",
+        "enum" : [ "DOPPI", "RT_NO_IUF", "RT_NO_IUD", "IUV_NO_RT", "TES_NO_IUF_OR_IUV", "IUF_NO_TES", "IUD_RT_IUF", "RT_IUF", "RT_TES", "IUD_RT_IUF_TES", "RT_IUF_TES", "IUF_TES_DIV_IMP", "IUD_NO_RT", "TES_NO_MATCH", "UNKNOWN" ]
+      },
+      "LocalDateIntervalFilter" : {
+        "type" : "object",
+        "properties" : {
+          "from" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "to" : {
+            "type" : "string",
+            "format" : "date"
+          }
+        }
       },
       "NotificationStatus" : {
         "type" : "string",

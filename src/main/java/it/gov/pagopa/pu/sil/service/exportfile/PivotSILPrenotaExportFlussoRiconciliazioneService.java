@@ -9,8 +9,11 @@ import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazioneRisposta;
+import it.veneto.regione.pagamenti.pivot.ente.TipoDovutoType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -29,13 +32,18 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService extends AbstractE
   public PivotSILPrenotaExportFlussoRiconciliazioneRisposta doReservation(UserInfo userInfo, String accessToken, String orgIpaCode, PivotSILPrenotaExportFlussoRiconciliazione request) {
     AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
     Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
-    getAndValidateDebtPositionTypeOrg(
-      organizationId,
-      request.getIdUnivocoDovuto(),
-      accessToken,
-      SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
-      SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO
-    );
+
+    Optional.ofNullable(request.getTipoDovuto())
+      .map(TipoDovutoType::getTipos)
+      .ifPresent(debtPositionTypeOrgCodes ->
+        debtPositionTypeOrgCodes.forEach(debtPositionTypeOrgCode ->
+          getAndValidateDebtPositionTypeOrg(
+            organizationId,
+            debtPositionTypeOrgCode,
+            accessToken,
+            SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
+            SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO)));
+
     ClassificationsExportFileRequestDTO requestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
     Long exportFileId = exportFileService.createClassificationsExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);

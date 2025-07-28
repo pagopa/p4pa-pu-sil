@@ -450,7 +450,7 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
-        .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request)))
       .thenThrow(new ExportFileClientException(
         CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
 
@@ -468,7 +468,7 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
-        .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+        .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request)))
       .thenThrow(new ExportFileClientException(
         CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
 
@@ -486,7 +486,7 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
-      .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+      .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request))
     ).thenThrow(new RuntimeException("Unexpected error"));
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
