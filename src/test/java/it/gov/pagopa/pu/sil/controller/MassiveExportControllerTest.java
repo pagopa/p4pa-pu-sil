@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.PaidExportRequestDTO;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.exportfile.ClassificationsExportFileReservationService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaidExportFileReservationService;
@@ -16,12 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,25 +76,20 @@ class MassiveExportControllerTest {
     // Given
     String expectedExportId = "1";
 
-    try (MockedStatic<AuthorizationService> authMock = mockStatic(AuthorizationService.class)) {
-      authMock.when(() -> AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode))
-        .thenReturn(orgIpaCode);
+    ClassificationsExportRequestDTO classificationsExportRequestDTO = new ClassificationsExportRequestDTO();
 
-      ClassificationsExportRequestDTO classificationsExportRequestDTO = new ClassificationsExportRequestDTO();
+    when(classificationsExportFileReservationServiceMock
+      .doReservation(userInfo, accessToken, orgIpaCode, classificationsExportRequestDTO))
+      .thenReturn(Long.valueOf(expectedExportId));
 
-      when(classificationsExportFileReservationServiceMock
-        .doReservation(userInfo, accessToken, orgIpaCode, classificationsExportRequestDTO))
-        .thenReturn(Long.valueOf(expectedExportId));
+    // When
+    ResponseEntity<ExportFileResponseDTO> response = controller
+      .massiveClassificationsExportRequest(orgFiscalCode, classificationsExportRequestDTO);
 
-      // When
-      ResponseEntity<ExportFileResponseDTO> response = controller
-        .massiveClassificationsExportRequest(orgFiscalCode, classificationsExportRequestDTO);
-
-      // Then
-      Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-      Assertions.assertNotNull(response.getBody());
-      Assertions.assertEquals(expectedExportId, response.getBody().getExportId());
-    }
+    // Then
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertNotNull(response.getBody());
+    Assertions.assertEquals(expectedExportId, response.getBody().getExportId());
 
   }
 
