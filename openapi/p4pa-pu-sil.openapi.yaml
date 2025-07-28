@@ -470,11 +470,11 @@ paths:
     post:
       tags:
         - Payment
-      summary: request an immediate payment operation
+      summary: request an instant payment operation
       description: |
-        Request an immediate payment operation, passing in input payment data,
+        Request an instant payment operation, passing in input payment data,
         and receiving in output the url to trigger the payment operation.
-      operationId: requestImmediatePayment
+      operationId: requestInstantPayment
       parameters:
         - name: orgFiscalCode
           description: the fiscal code of the organization
@@ -486,7 +486,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ImmediatePaymentRequest"
+              $ref: "#/components/schemas/InstantPaymentRequest"
         required: true
       responses:
         '201':
@@ -816,9 +816,9 @@ components:
     PaymentDTO:
       required:
         - debtPositionTypeOrgCode
-        - amountCents
-        - debtor
+        - totalAmountCents
         - remittanceInformation
+        - debtor
         - transfers
       type: object
       properties:
@@ -829,52 +829,22 @@ components:
         notificationFeeCents:
           type: integer
           format: int64
-        amountCents:
+        totalAmountCents:
           type: integer
           format: int64
-        remittanceInformation:
+        description:
           type: string
         balance:
           type: string
         debtor:
-          $ref: "#/components/schemas/PersonDTO"
+          type: 'PersonDTO'
         transfers:
           type: array
           minItems: 1
           maxItems: 5
           items:
             $ref: "#/components/schemas/TransferDTO"
-    PersonDTO:
-      required:
-        - fullName
-        - entityType
-        - fiscalCode
-      type: object
-      properties:
-        entityType:
-          type: string
-          enum:
-            - F
-            - G
-        fiscalCode:
-          type: string
-        fullName:
-          type: string
-        address:
-          type: string
-        civic:
-          type: string
-        postalCode:
-          type: string
-        location:
-          type: string
-        province:
-          type: string
-        nation:
-          type: string
-        email:
-          type: string
-    ImmediatePaymentRequest:
+    InstantPaymentRequest:
       required:
         - payments
       type: object
@@ -1001,9 +971,9 @@ components:
         standin:
           type: boolean
         debtor:
-          $ref: "#/components/schemas/PersonDTO"
+          type: 'PersonDTO'
         payer:
-          $ref: "#/components/schemas/PersonDTO"
+          type: 'PersonDTO'
     ReceiptTransferDTO:
       required:
         - idTransfer
@@ -1194,7 +1164,7 @@ components:
         legacyPaymentMetadata:
           type: string
         debtor:
-          $ref: "#/components/schemas/PersonDTO"
+          type: 'PersonDTO'
         transfers:
           type: array
           items:
