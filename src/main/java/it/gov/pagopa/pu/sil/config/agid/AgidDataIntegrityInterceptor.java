@@ -36,7 +36,7 @@ public class AgidDataIntegrityInterceptor implements ClientHttpRequestIntercepto
 
     HttpHeaders headers = request.getHeaders();
     headers.add(HttpHeaders.CONTENT_ENCODING, StandardCharsets.UTF_8.name());
-    headers.add("Agid-JWT-Signature", AgidUtils.buildAgidJwtSignature(digest, puIntegrityDataConfig, this.jwsRsaSigner));
+    headers.add("Agid-JWT-Signature", AgidUtils.buildAgidJwtSignature(digest, puIntegrityDataConfig, jwsRsaSigner));
     headers.add("Digest", digest);
 
     return execution.execute(request, body);

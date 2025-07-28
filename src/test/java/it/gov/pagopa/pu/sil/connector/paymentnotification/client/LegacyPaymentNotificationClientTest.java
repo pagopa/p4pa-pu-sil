@@ -4,7 +4,7 @@ import it.gov.pagopa.paymentnotification.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
-import it.gov.pagopa.pu.sil.connector.paymentnotification.config.PaymentNotificationApisHolder;
+import it.gov.pagopa.pu.sil.connector.paymentnotification.config.LegacyPaymentNotificationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 class LegacyPaymentNotificationClientTest {
   @Mock
-  private PaymentNotificationApisHolder paymentNotificationApisHolderMock;
+  private LegacyPaymentNotificationApisHolder legacyPaymentNotificationApisHolderMock;
   @Mock
   private DefaultApi paymentNotificationLegacyApiClientMock;
   @Mock
@@ -34,12 +34,12 @@ class LegacyPaymentNotificationClientTest {
 
   @BeforeEach
   void setUp() {
-    client = new LegacyPaymentNotificationClient(paymentNotificationApisHolderMock, registryLoggerMock);
+    client = new LegacyPaymentNotificationClient(legacyPaymentNotificationApisHolderMock, registryLoggerMock);
   }
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(paymentNotificationApisHolderMock,
+    Mockito.verifyNoMoreInteractions(legacyPaymentNotificationApisHolderMock,
                                       paymentNotificationLegacyApiClientMock,
                                       registryLoggerMock);
   }
@@ -70,7 +70,7 @@ class LegacyPaymentNotificationClientTest {
       .build();
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, paymentNotification, false, false);
 
-    Mockito.when(paymentNotificationApisHolderMock.getPaymentNotificationLegacyApi(accessToken, serviceUrl))
+    Mockito.when(legacyPaymentNotificationApisHolderMock.getPaymentNotificationLegacyApi(accessToken, serviceUrl))
       .thenReturn(paymentNotificationLegacyApiClientMock);
     Mockito.doNothing().when(paymentNotificationLegacyApiClientMock)
       .paymentNotification(paymentNotification);

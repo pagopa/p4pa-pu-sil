@@ -4,7 +4,7 @@ import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotificatio
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.connector.paymentnotification.config.PaymentNotificationApisHolder;
+import it.gov.pagopa.pu.sil.connector.paymentnotification.config.LegacyPaymentNotificationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -16,12 +16,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class LegacyPaymentNotificationClient {
-  private final PaymentNotificationApisHolder paymentNotificationApisHolder;
+  private final LegacyPaymentNotificationApisHolder legacyPaymentNotificationApisHolder;
   private final RegistryLogger registryLogger;
 
-  public LegacyPaymentNotificationClient(PaymentNotificationApisHolder paymentNotificationApisHolder,
+  public LegacyPaymentNotificationClient(LegacyPaymentNotificationApisHolder legacyPaymentNotificationApisHolder,
                                          RegistryLogger registryLogger) {
-    this.paymentNotificationApisHolder = paymentNotificationApisHolder;
+    this.legacyPaymentNotificationApisHolder = legacyPaymentNotificationApisHolder;
     this.registryLogger = registryLogger;
   }
 
@@ -38,7 +38,7 @@ public class LegacyPaymentNotificationClient {
       contextData,
       paymentNotification,
       () -> {
-        paymentNotificationApisHolder.getPaymentNotificationLegacyApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/payment-notification", ""))
+        legacyPaymentNotificationApisHolder.getPaymentNotificationLegacyApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/payment-notification", ""))
           .paymentNotification(paymentNotification);
         return Triple.of(Void.TYPE,
           null,

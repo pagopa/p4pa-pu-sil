@@ -49,6 +49,7 @@ public class AgidUtilsTest {
       Map.of(
         RegisteredClaims.JWT_ID, decoded.getClaim(RegisteredClaims.JWT_ID),
         RegisteredClaims.ISSUER, puIntegrityDataConfig.getIssuer(),
+        RegisteredClaims.SUBJECT, puIntegrityDataConfig.getIssuer(),
         RegisteredClaims.ISSUED_AT, decoded.getClaim(RegisteredClaims.ISSUED_AT),
         RegisteredClaims.EXPIRES_AT, decoded.getClaim(RegisteredClaims.ISSUED_AT).asLong() + 60,
         "signed_headers", List.of(

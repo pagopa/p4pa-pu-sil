@@ -4,7 +4,7 @@ import it.gov.pagopa.paymentnotification.dto.generated.PaymentNotificationReques
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.connector.paymentnotification.config.PaymentNotificationApisHolder;
+import it.gov.pagopa.pu.sil.connector.paymentnotification.config.NativePaymentNotificationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -15,12 +15,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class NativePaymentNotificationClient {
-  private final PaymentNotificationApisHolder paymentNotificationApisHolder;
+  private final NativePaymentNotificationApisHolder nativePaymentNotificationApisHolder;
   private final RegistryLogger registryLogger;
 
-  public NativePaymentNotificationClient(PaymentNotificationApisHolder paymentNotificationApisHolder,
+  public NativePaymentNotificationClient(NativePaymentNotificationApisHolder nativePaymentNotificationApisHolder,
                                          RegistryLogger registryLogger) {
-    this.paymentNotificationApisHolder = paymentNotificationApisHolder;
+    this.nativePaymentNotificationApisHolder = nativePaymentNotificationApisHolder;
     this.registryLogger = registryLogger;
   }
 
@@ -37,7 +37,7 @@ public class NativePaymentNotificationClient {
       contextData,
       paymentNotificationRequest,
       () -> {
-        paymentNotificationApisHolder.getPaymentNotificationNativeApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/payment-notification", ""))
+        nativePaymentNotificationApisHolder.getPaymentNotificationNativeApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/payment-notification", ""))
           .paymentNotification(paymentNotificationRequest);
         return Triple.of(Void.TYPE,
           null,
