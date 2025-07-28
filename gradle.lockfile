@@ -120,7 +120,6 @@ org.springframework.security:spring-security-core:6.5.1=compileClasspath
 org.springframework.security:spring-security-crypto:6.5.1=compileClasspath
 org.springframework.security:spring-security-oauth2-core:6.5.1=compileClasspath
 org.springframework.security:spring-security-oauth2-jose:6.5.1=compileClasspath
-org.springframework.security:spring-security-oauth2-resource-server:6.5.1=compileClasspath
 org.springframework.security:spring-security-web:6.5.1=compileClasspath
 org.springframework.ws:spring-ws-core:4.1.0=compileClasspath
 org.springframework.ws:spring-xml:4.1.0=compileClasspath
