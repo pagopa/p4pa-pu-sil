@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
+import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -51,6 +52,7 @@ import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -140,16 +142,9 @@ public class PuForOrganizationPaymentsEndpoint {
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
       PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
       response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
-      processingStatusDTO.getDownloadUrls().forEach(
-        url -> {
-          switch (url.getCode()) {
-            case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti())? url.getUrl() : null);
-            case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(Boolean.TRUE.equals(request.isFileAvvisi())? url.getUrl() : null);
-            case OUTPUT_FILE -> response.setUrlFileIUV(Boolean.TRUE.equals(request.isFileIUV())? url.getUrl() : null);
-            case INPUT_FILE -> log.debug("Ignoring INPUT_FILE download URL in response, as it is not relevant for this operation.");
-          }
-        }
-      );
+      if (processingStatusDTO.getDownloadUrls() != null) {
+        setDownloadUrls(response, processingStatusDTO.getDownloadUrls(), request);
+      }
       return response;
     } catch (Exception e) {
       return FaultUtils.unauthorizedOrSystemExceptionHandler(
@@ -611,5 +606,16 @@ public class PuForOrganizationPaymentsEndpoint {
         SilFaults.PAA_SYSTEM_ERROR
       ).apply(e);
     };
+  }
+
+  private void setDownloadUrls(PaaSILChiediStatoImportFlussoRisposta response, List<DownloadUrl> urls, PaaSILChiediStatoImportFlusso request) {
+    urls.forEach(url -> {
+      switch (url.getCode()) {
+        case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti()) ? url.getUrl() : null);
+        case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(Boolean.TRUE.equals(request.isFileAvvisi()) ? url.getUrl() : null);
+        case OUTPUT_FILE -> response.setUrlFileIUV(Boolean.TRUE.equals(request.isFileIUV()) ? url.getUrl() : null);
+        case INPUT_FILE -> log.debug("Ignoring INPUT_FILE download URL in response, as it is not relevant for this operation.");
+      }
+    });
   }
 }
