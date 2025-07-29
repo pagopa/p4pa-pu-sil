@@ -30,4 +30,8 @@ public class DebtPositionTypeServiceImpl implements DebtPositionTypeService {
     return client.getDebtPositionTypeById(debtPositionType, accessToken);
   }
 
+  @Override
+  public DebtPositionTypeOrg getDebtPositionTypeOrgByInstallmentId(Long installmentId, String accessToken) {
+    return client.getDebtPositionTypeOrgByInstallmentId(installmentId, accessToken);
+  }
 }

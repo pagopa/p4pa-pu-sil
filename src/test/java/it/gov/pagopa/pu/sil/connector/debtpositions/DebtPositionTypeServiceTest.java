@@ -64,4 +64,21 @@ class DebtPositionTypeServiceTest {
     Assertions.assertSame(expectedResult, result);
   }
 
+  @Test
+  void whenGetDebtPositionTypeOrgByInstallmentIdThenInvokeClient() {
+    // Given
+    Long installmentId = 1L;
+    String accessToken = "ACCESSTOKEN";
+    DebtPositionTypeOrg expectedResult = new DebtPositionTypeOrg();
+
+    Mockito.when(clientMock.getDebtPositionTypeOrgByInstallmentId(Mockito.same(installmentId), Mockito.same(accessToken)))
+      .thenReturn(expectedResult);
+
+    // When
+    DebtPositionTypeOrg result = service.getDebtPositionTypeOrgByInstallmentId(installmentId, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
+  }
+
 }

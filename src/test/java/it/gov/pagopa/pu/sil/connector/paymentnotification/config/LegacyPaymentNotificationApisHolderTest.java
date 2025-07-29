@@ -1,10 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.paymentnotification.config;
 
-import it.gov.pagopa.paymentnotification.dto.generated.PaymentDataDTO;
-import it.gov.pagopa.paymentnotification.dto.generated.PaymentNotificationRequest;
-import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
+import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
-import it.gov.pagopa.pu.sil.util.CertUtilsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,29 +14,26 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentNotificationApisHolderTest extends BaseApiHolderTest {
+class LegacyPaymentNotificationApisHolderTest extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
-  private PaymentNotificationApisHolder apisHolder;
+  private LegacyPaymentNotificationApisHolder apisHolder;
 
   @BeforeEach
   void setUp() {
     when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
     PaymentNotificationApiClientConfig clientConfig = new PaymentNotificationApiClientConfig();
-    PuIntegrityDataConfig puIntegrityDataConfig = PuIntegrityDataConfig.builder()
-      .privateKey(CertUtilsTest.PRIVATE_KEY)
-      .build();
-    apisHolder = new PaymentNotificationApisHolder(clientConfig, puIntegrityDataConfig, restTemplateBuilderMock);
+    apisHolder = new LegacyPaymentNotificationApisHolder(clientConfig, restTemplateBuilderMock);
   }
 
   @Test
-  void whenGetPaymentNotificationNativeApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+  void whenGetPaymentNotificationLegacyApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> {
-        apisHolder.getPaymentNotificationNativeApi(accessToken, "http://example.com")
-          .paymentNotification(new PaymentNotificationRequest("RT123", new PaymentDataDTO()));
+        apisHolder.getPaymentNotificationLegacyApi(accessToken, "http://example.com")
+          .paymentNotification(new PaymentNotification("RT123", "OK"));
         return voidMock;
       },
       new ParameterizedTypeReference<>() {},

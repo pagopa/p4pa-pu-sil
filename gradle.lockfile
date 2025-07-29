@@ -24,6 +24,7 @@ com.google.guava:guava-parent:32.1.2-jre=compileClasspath
 com.google.guava:guava:32.1.2-jre=compileClasspath
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava=compileClasspath
 com.google.j2objc:j2objc-annotations:2.8=compileClasspath
+com.nimbusds:nimbus-jose-jwt:10.4=compileClasspath
 com.sun.xml.messaging.saaj:saaj-impl:3.0.4=compileClasspath
 io.github.springwolf:springwolf-asyncapi:1.13.0=compileClasspath
 io.github.springwolf:springwolf-cloud-stream:1.13.0=compileClasspath

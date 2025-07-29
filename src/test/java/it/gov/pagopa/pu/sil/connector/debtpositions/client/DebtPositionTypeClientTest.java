@@ -107,4 +107,29 @@ class DebtPositionTypeClientTest {
     Assertions.assertEquals(expectedResult, result);
   }
 
+  @ParameterizedTest
+  @ValueSource(longs = {1L, 2L})
+  void whenGetDebtPositionTypeOrgByIdThenInvokeApi(Long installmentId) {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    DebtPositionTypeOrg expectedResult;
+
+    Mockito.when(apisHolderMock.getDebtPositionTypeOrgSearchControllerApi(accessToken))
+      .thenReturn(debtPositionTypeOrgSearchControllerApiMock);
+    if(installmentId == 2L) {
+      Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new DebtPositionTypeOrg();
+      Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId)).thenReturn(expectedResult);
+    }
+
+    //when
+    DebtPositionTypeOrg result = client.getDebtPositionTypeOrgByInstallmentId(installmentId, accessToken);
+
+    //then
+    Assertions.assertEquals(expectedResult, result);
+  }
+
 }

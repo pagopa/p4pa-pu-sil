@@ -55,6 +55,7 @@ val caffeineVersion = "3.2.1"
 val javaJwtVersion = "4.5.0"
 val jwksRsaVersion = "0.22.2"
 val bouncycastleVersion = "1.81"
+val nimbusVersion = "10.4"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -64,6 +65,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web-services")
   implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation("com.nimbusds:nimbus-jose-jwt:$nimbusVersion")
   implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
@@ -167,6 +169,7 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateFILESHARE",
     "openApiGeneratePAGOPAPAYMENTS",
     "openApiGenerateNodeCheckout",
+    "openApiGeneratePaymentNofication",
     "openApiGenerateLegacyPaymentNofication",
     "openApiGenerateActualizationLegacy",
     "jaxbJavaGenPuForOrganizationPayments",
@@ -546,6 +549,34 @@ jaxb {
     library.set("resttemplate")
   }
 
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePaymentNofication") {
+    group = "openapi"
+    description = "openapi"
+
+    generatorName.set("java")
+    inputSpec.set("$rootDir/openapi/payment-notification.yaml")
+    outputDir.set("$projectDir/build/generated")
+    apiPackage.set("it.gov.pagopa.paymentnotification.controller.generated")
+    modelPackage.set("it.gov.pagopa.paymentnotification.dto.generated")
+    configOptions.set(mapOf(
+      "swaggerAnnotations" to "false",
+      "openApiNullable" to "false",
+      "dateLibrary" to "java8",
+      "serializableModel" to "true",
+      "useSpringBoot3" to "true",
+      "useJakartaEe" to "true",
+      "useOneOfInterfaces" to "true",
+      "useBeanValidation" to "true",
+      "serializationLibrary" to "jackson",
+      "generateSupportingFiles" to "true",
+      "generateConstructorWithAllArgs" to "true",
+      "generatedConstructorWithRequiredArgs" to "true",
+      "enumPropertyNaming" to "original",
+      "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    ))
+    library.set("resttemplate")
+  }
+
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyPaymentNofication") {
     group = "openapi"
     description = "openapi"
@@ -575,7 +606,7 @@ jaxb {
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateCLASSIFICATION") {
-    group = "AutomaticallyGeneratedCode"
+    group = "openapi"
     description = "openapi"
 
     generatorName.set("java")

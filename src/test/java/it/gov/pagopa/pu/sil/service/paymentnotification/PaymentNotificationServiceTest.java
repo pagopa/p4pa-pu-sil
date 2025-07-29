@@ -1,19 +1,20 @@
 package it.gov.pagopa.pu.sil.service.paymentnotification;
 
+import it.gov.pagopa.paymentnotification.dto.generated.PaymentDataDTO;
 import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
+import it.gov.pagopa.pu.sil.connector.paymentnotification.NativePaymentNotificationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
+import it.gov.pagopa.pu.sil.mapper.PaymentNotificationMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
@@ -23,6 +24,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -35,6 +38,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +50,8 @@ class PaymentNotificationServiceTest {
   @Mock
   LegacyPaymentNotificationService legacyPaymentNotificationServiceMock;
   @Mock
+  NativePaymentNotificationService nativePaymentNotificationServiceMock;
+  @Mock
   private SilAccessTokenService silAccessTokenServiceMock;
   @Mock
   private OrganizationService organizationServiceMock;
@@ -54,6 +61,10 @@ class PaymentNotificationServiceTest {
   private PagatiMapper pagatiMapperMock;
   @Mock
   private ReceiptService receiptServiceMock;
+  @Mock
+  private DebtPositionTypeService debtPositionTypeServiceMock;
+  @Mock
+  private PaymentNotificationMapper paymentNotificationMapperMock;
 
   @InjectMocks
   private PaymentNotificationService service;
@@ -65,11 +76,14 @@ class PaymentNotificationServiceTest {
     service = new PaymentNotificationService(
       orgSilServiceComponentMock,
       legacyPaymentNotificationServiceMock,
+      nativePaymentNotificationServiceMock,
       silAccessTokenServiceMock,
       organizationServiceMock,
       pagatiMapperMock,
       receiptServiceMock,
-      debtPositionServiceMock
+      debtPositionServiceMock,
+      debtPositionTypeServiceMock,
+      paymentNotificationMapperMock
     );
   }
 
@@ -86,8 +100,9 @@ class PaymentNotificationServiceTest {
     );
   }
 
-  @Test
-  void whenNotifyPaymentThenOk() {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void whenLegacyNotifyPaymentThenOk(boolean legacy) {
     // Given
     Long organizationId = 1L;
     String orgFiscalCode = "FISCALCODE";
@@ -103,7 +118,7 @@ class PaymentNotificationServiceTest {
     OrgSilServiceDTO orgSilService = new OrgSilServiceDTO()
       .organizationId(organizationId)
       .orgSilServiceId(orgSilServiceId)
-      .flagLegacy(true)
+      .flagLegacy(legacy)
       .serviceUrl("http://service.url");
     PaymentNotification paymentNotification = new PaymentNotification()
       .rt(Base64.getEncoder().encodeToString(encodedReceipt))
@@ -125,14 +140,28 @@ class PaymentNotificationServiceTest {
       .thenReturn(Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionByInstallmentId(installmentDTO.getInstallmentId(), accessToken.getAccessToken()))
       .thenReturn(debtPosition);
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(installmentDTO, organization, accessToken.getAccessToken()))
-      .thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken.getAccessToken()))
       .thenReturn(encodedReceipt);
-    when(silAccessTokenServiceMock.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, token))
-      .thenReturn(accessToken.getAccessToken());
-    doNothing().when(legacyPaymentNotificationServiceMock)
-      .notifyPayment(organization.getOrgFiscalCode(), orgSilService, nav, loggedUser, accessToken.getAccessToken(), paymentNotification);
+    if(legacy) {
+      when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(installmentDTO, organization, accessToken.getAccessToken()))
+        .thenReturn(encodedPagati);
+      when(silAccessTokenServiceMock.getSilAccessToken(organization.getOrgFiscalCode(), nav, loggedUser, orgSilService, token))
+        .thenReturn(accessToken.getAccessToken());
+      doNothing().when(legacyPaymentNotificationServiceMock)
+        .notifyPayment(organization.getOrgFiscalCode(), orgSilService, nav, loggedUser, accessToken.getAccessToken(), paymentNotification);
+    } else {
+      DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+      PaymentDataDTO paymentDataDTO = podamFactory.manufacturePojo(PaymentDataDTO.class);
+      when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByInstallmentId(installmentDTO.getInstallmentId(), accessToken.getAccessToken()))
+        .thenReturn(debtPositionTypeOrg);
+      when(paymentNotificationMapperMock.mapPaymentData(installmentDTO, orgFiscalCode, debtPositionTypeOrg.getCode(), accessToken.getAccessToken()))
+        .thenReturn(paymentDataDTO);
+      doNothing().when(nativePaymentNotificationServiceMock)
+        .notifyPayment(eq(orgSilService), eq(loggedUser), eq(accessToken.getAccessToken()), argThat(paymentNotificationRequest -> {
+          return paymentNotificationRequest.getPaymentData().equals(paymentDataDTO) &&
+                 paymentNotificationRequest.getEncodedReceipt().equals(Base64.getEncoder().encodeToString(encodedReceipt));
+        }));
+    }
 
     // When, Then
     assertDoesNotThrow(() -> service.notifyPayment(orgSilServiceId, installmentDTO, loggedUser, token));

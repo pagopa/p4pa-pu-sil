@@ -128,6 +128,11 @@ rest:
     timeout:
       connect-millis: "\${DEFAULT_REST_TIMEOUT_CONNECT_MILLIS:120000}"
       read-millis: "\${DEFAULT_REST_TIMEOUT_READ_MILLIS:120000}"
+  integrity-data:
+    issuer: "\${REST_AGID_INTEGRITY_PU_ISSUER:piattaforma-unitaria}"
+    private-key: "\${REST_AGID_INTEGRITY_PU_PRIVATEKEY:}"
+    public-key: "\${REST_AGID_INTEGRITY_PU_PUBLICKEY:}"
+    expirationMinutes: "\${REST_AGID_INTEGRITY_PU_EXPIRATION_MINUTES:10}"
   auth:
     base-url: "\${AUTH_SERVER_BASE_URL:}/payhub"
     max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt

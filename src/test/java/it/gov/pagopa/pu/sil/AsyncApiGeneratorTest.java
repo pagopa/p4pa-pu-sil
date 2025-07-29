@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil;
 
+import it.gov.pagopa.pu.sil.util.CertUtilsTest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.json.JsonAssert;
 import org.springframework.test.json.JsonCompareMode;
@@ -29,6 +32,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 })
 @Slf4j
 class AsyncApiGeneratorTest {
+
+  @DynamicPropertySource
+  static void configureProperties(DynamicPropertyRegistry registry) {
+    registry.add("rest.integrity-data.private-key", () -> CertUtilsTest.PRIVATE_KEY);
+  }
 
   @Autowired
   private MockMvc mockMvc;
