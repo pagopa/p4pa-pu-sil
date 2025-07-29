@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.config.agid;
 
+import it.gov.pagopa.pu.sil.config.rest.agid.AgidDataIntegrityInterceptor;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import it.gov.pagopa.pu.sil.util.AgidUtils;
 import it.gov.pagopa.pu.sil.util.CertUtilsTest;
 import org.junit.jupiter.api.AfterEach;

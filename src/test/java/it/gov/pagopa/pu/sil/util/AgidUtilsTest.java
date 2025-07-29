@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.RegisteredClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.nimbusds.jose.crypto.RSASSASigner;
-import it.gov.pagopa.pu.sil.config.agid.PuIntegrityDataConfig;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.json.JsonAssert;

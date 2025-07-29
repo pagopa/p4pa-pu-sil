@@ -4,7 +4,7 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import it.gov.pagopa.pu.sil.config.agid.PuIntegrityDataConfig;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 

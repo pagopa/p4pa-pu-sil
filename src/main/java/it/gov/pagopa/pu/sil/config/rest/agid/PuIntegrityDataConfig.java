@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.config.agid;
+package it.gov.pagopa.pu.sil.config.rest.agid;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

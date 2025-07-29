@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.config.agid;
+package it.gov.pagopa.pu.sil.config.rest.agid;
 
 import com.nimbusds.jose.crypto.RSASSASigner;
 import it.gov.pagopa.pu.sil.util.AgidUtils;

@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.connector.paymentnotification.config;
 
 import it.gov.pagopa.paymentnotification.dto.generated.PaymentDataDTO;
 import it.gov.pagopa.paymentnotification.dto.generated.PaymentNotificationRequest;
-import it.gov.pagopa.pu.sil.config.agid.PuIntegrityDataConfig;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.sil.util.CertUtilsTest;
 import org.junit.jupiter.api.BeforeEach;

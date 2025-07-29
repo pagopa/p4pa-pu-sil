@@ -4,7 +4,7 @@ import it.gov.pagopa.paymentnotification.controller.generated.DefaultApi;
 import it.gov.pagopa.paymentnotification.dto.generated.PaymentNotificationRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
-import it.gov.pagopa.pu.sil.connector.paymentnotification.config.NativePaymentNotificationApisHolder;
+import it.gov.pagopa.pu.sil.connector.paymentnotification.config.PaymentNotificationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class NativePaymentNotificationClientTest {
+class PaymentNotificationClientTest {
   @Mock
-  private NativePaymentNotificationApisHolder nativePaymentNotificationApisHolderMock;
+  private PaymentNotificationApisHolder paymentNotificationApisHolderMock;
   @Mock
   private DefaultApi paymentNotificationNativeApiClientMock;
   @Mock
@@ -37,12 +37,12 @@ class NativePaymentNotificationClientTest {
 
   @BeforeEach
   void setUp() {
-    client = new NativePaymentNotificationClient(nativePaymentNotificationApisHolderMock, registryLoggerMock);
+    client = new NativePaymentNotificationClient(paymentNotificationApisHolderMock, registryLoggerMock);
   }
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(nativePaymentNotificationApisHolderMock,
+    Mockito.verifyNoMoreInteractions(paymentNotificationApisHolderMock,
       paymentNotificationNativeApiClientMock,
       registryLoggerMock);
   }
@@ -64,7 +64,7 @@ class NativePaymentNotificationClientTest {
       .build();
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, paymentNotification, false, false);
 
-    Mockito.when(nativePaymentNotificationApisHolderMock.getPaymentNotificationNativeApi(accessToken, orgSilServiceDTO.getServiceUrl()))
+    Mockito.when(paymentNotificationApisHolderMock.getPaymentNotificationNativeApi(accessToken, orgSilServiceDTO.getServiceUrl()))
       .thenReturn(paymentNotificationNativeApiClientMock);
     Mockito.doNothing().when(paymentNotificationNativeApiClientMock)
       .paymentNotification(paymentNotification);

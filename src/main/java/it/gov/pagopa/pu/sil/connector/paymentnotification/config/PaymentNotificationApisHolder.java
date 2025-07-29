@@ -2,8 +2,8 @@ package it.gov.pagopa.pu.sil.connector.paymentnotification.config;
 
 import it.gov.pagopa.paymentnotification.controller.ApiClient;
 import it.gov.pagopa.paymentnotification.controller.generated.DefaultApi;
-import it.gov.pagopa.pu.sil.config.agid.AgidDataIntegrityInterceptor;
-import it.gov.pagopa.pu.sil.config.agid.PuIntegrityDataConfig;
+import it.gov.pagopa.pu.sil.config.rest.agid.AgidDataIntegrityInterceptor;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PaymentNotificationApisHolder {
   private final PaymentNotificationApiClientConfig clientConfig;
   private final RestTemplate restTemplate;
-  private final Map<String, DefaultApi> nativePaymentNotificationApisMap = new ConcurrentHashMap<>();
+  private final Map<String, DefaultApi> paymentNotificationApisMap = new ConcurrentHashMap<>();
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
   public PaymentNotificationApisHolder(PaymentNotificationApiClientConfig clientConfig,
@@ -40,7 +40,7 @@ public class PaymentNotificationApisHolder {
 
   public DefaultApi getPaymentNotificationNativeApi(String accessToken, String serviceUrl) {
     bearerTokenHolder.set(accessToken);
-    return nativePaymentNotificationApisMap.computeIfAbsent(serviceUrl, url -> {
+    return paymentNotificationApisMap.computeIfAbsent(serviceUrl, url -> {
       ApiClient apiClient = new ApiClient(restTemplate);
       apiClient.setBasePath(serviceUrl);
       apiClient.setBearerToken(bearerTokenHolder::get);

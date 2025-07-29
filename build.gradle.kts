@@ -55,6 +55,7 @@ val caffeineVersion = "3.2.1"
 val javaJwtVersion = "4.5.0"
 val jwksRsaVersion = "0.22.2"
 val bouncycastleVersion = "1.81"
+val nimbusVersion = "10.4"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -64,7 +65,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-web-services")
   implementation("org.springframework.boot:spring-boot-starter-cache")
-  implementation("org.springframework.security:spring-security-oauth2-jose")
+  implementation("com.nimbusds:nimbus-jose-jwt:$nimbusVersion")
   implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
