@@ -1,15 +1,16 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.controller.generated.ExportApi;
-import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
-import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
-import it.gov.pagopa.pu.sil.dto.generated.PaidExportRequestDTO;
+import it.gov.pagopa.pu.sil.dto.generated.*;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.exportfile.ClassificationsExportFileReservationService;
+import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.exportfile.PaidExportFileReservationService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,11 +20,14 @@ public class MassiveExportController implements ExportApi {
 
   private final PaidExportFileReservationService paidExportFileReservationService;
   private final ClassificationsExportFileReservationService classificationsExportFileReservationService;
+  private final ExportFileProcessingStatusService exportFileProcessingStatusService;
 
   public MassiveExportController(PaidExportFileReservationService paidExportFileReservationService,
-                                 ClassificationsExportFileReservationService classificationsExportFileReservationService) {
+                                 ClassificationsExportFileReservationService classificationsExportFileReservationService,
+                                 ExportFileProcessingStatusService exportFileProcessingStatusService) {
     this.paidExportFileReservationService = paidExportFileReservationService;
     this.classificationsExportFileReservationService = classificationsExportFileReservationService;
+    this.exportFileProcessingStatusService = exportFileProcessingStatusService;
   }
 
   @Override
@@ -65,4 +69,28 @@ public class MassiveExportController implements ExportApi {
 
     return ResponseEntity.ok(ret);
   }
+
+  @Override
+  public ResponseEntity<ExportStatusResponseDTO> massiveExportStatus(String orgFiscalCode, Long exportId) {
+
+    log.info("Received massive export status request for orgFiscalCode: {}", orgFiscalCode);
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode);
+
+    ExportStatusResponseDTO ret = new ExportStatusResponseDTO();
+
+    log.debug("Processing export status request for orgIpaCode: {}", orgIpaCode);
+
+    Pair<ExportFileStatus, String> response = exportFileProcessingStatusService.getProcessingStatus(
+      userInfo, accessToken, orgIpaCode, exportId, null);
+
+    ret.setExportId(exportId);
+    ret.status(response.getLeft());
+    ret.downloadUrl(new DownloadUrl(response.getRight()));
+
+    return ResponseEntity.ok(ret);
+  }
+
 }

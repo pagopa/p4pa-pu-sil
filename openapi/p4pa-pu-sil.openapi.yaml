@@ -373,7 +373,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /sil/organization/{orgFiscalCode}/export/status/{exportId}:
+  /sil/organization/{orgFiscalCode}/export/{exportId}:
     get:
       tags:
         - Export
@@ -393,7 +393,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: Ok
@@ -847,19 +848,10 @@ components:
         - status
       properties:
         exportId:
-          type: string
+          type: integer
+          format: int64
         status:
-          type: string
-          enum:
-            - TO_PROCESS
-            - PROCESSING
-            - PROCESSED_OK
-            - PROCESSED_ERROR
-            - PROCESSED_NO_DATA
-            - PROCESSED_MAX_ROWS_EXCEEDED
-        lastUpdateDateTime:
-          type: string
-          format: date-time
+          type: 'ExportFileStatus'
         downloadUrl:
           $ref: "#/components/schemas/DownloadUrl"
     PaymentDTO:

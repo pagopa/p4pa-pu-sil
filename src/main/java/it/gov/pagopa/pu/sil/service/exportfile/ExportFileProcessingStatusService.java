@@ -33,7 +33,7 @@ public class ExportFileProcessingStatusService  {
     ExportFile exportFile = exportFileService.getExportFile(exportFileId, accessToken);
     log.debug("Retrieved ExportFile: {}", exportFile);
 
-    if (!expectedType.equals(exportFile.getExportFileType())) {
+    if (expectedType != null && !expectedType.equals(exportFile.getExportFileType())) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, exportFile.getExportFileType()));
     }
