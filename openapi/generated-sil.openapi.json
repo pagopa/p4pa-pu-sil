@@ -674,7 +674,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/export/status/{exportId}" : {
+    "/sil/organization/{orgFiscalCode}/export/{exportId}" : {
       "get" : {
         "tags" : [ "Export" ],
         "summary" : "request processing status of export operation",
@@ -1615,7 +1615,7 @@
       },
       "StatusEnum" : {
         "type" : "string",
-        "enum" : [ "TO_PROCESS", "PROCESSING", "PROCESSED_OK", "PROCESSED_ERROR", "PROCESSED_NO_DATA", "PROCESSED_MAX_ROWS_EXCEEDED" ]
+        "enum" : [ "NOT_PAID", "PAID" ]
       },
       "DownloadUrl" : {
         "type" : "object",
@@ -1656,6 +1656,10 @@
         "type" : "string",
         "enum" : [ "UPLOADED", "PROCESSING", "COMPLETED", "ERROR", "WAITING_FILE" ]
       },
+      "ExportFileStatus" : {
+        "type" : "string",
+        "enum" : [ "REQUESTED", "PROCESSING", "COMPLETED", "EXPIRED", "ERROR" ]
+      },
       "ExportStatusResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -1663,11 +1667,7 @@
             "type" : "string"
           },
           "status" : {
-            "$ref" : "#/components/schemas/StatusEnum"
-          },
-          "lastUpdateDateTime" : {
-            "type" : "string",
-            "format" : "date-time"
+            "$ref" : "#/components/schemas/ExportFileStatus"
           },
           "downloadUrl" : {
             "$ref" : "#/components/schemas/DownloadUrl"
