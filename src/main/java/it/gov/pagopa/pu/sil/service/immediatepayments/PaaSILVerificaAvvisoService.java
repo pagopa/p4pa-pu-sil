@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvvisoRisposta;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,8 @@ public class PaaSILVerificaAvvisoService extends BaseVerifyNoticeService<PaaSILV
   }
 
   @Override
-  protected String getIuv(PaaSILVerificaAvviso request) {
-    return request.getIdentificativoUnivocoVersamento();
+  protected String getNav(PaaSILVerificaAvviso request) {
+    return Utilities.iuv2Nav(request.getIdentificativoUnivocoVersamento());
   }
 
   @Override

@@ -8,7 +8,6 @@ import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse.OutcomeEnum;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
-import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,8 +29,8 @@ public class VerifyNoticeService extends BaseVerifyNoticeService<Pair<String, St
   }
 
   @Override
-  protected String getIuv(Pair<String, String> request) {
-    return Utilities.nav2Iuv(request.getLeft()); // nav
+  protected String getNav(Pair<String, String> request) {
+    return request.getLeft(); // nav
   }
 
   @Override

@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
@@ -13,6 +12,7 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
@@ -67,7 +67,7 @@ class PaaSILVerificaAvvisoServiceTest {
   void setUp() {
     Mockito.reset(installmentFacadeServiceMock, checkoutServiceMock, organizationServiceMock, cartRequestMapperMock);
 
-    userInfo = podamFactory.manufacturePojo(UserInfo.class);
+    userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
     userInfo.getOrganizations().getFirst().setRoles(List.of("ROLE_X", "ROLE_ADMIN"));
     orgId = userInfo.getOrganizations().getFirst().getOrganizationId();

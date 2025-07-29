@@ -13,6 +13,7 @@ import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse.OutcomeEnum;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -58,7 +59,6 @@ class VerifyNoticeServiceTest {
   private static final String TOKEN = "ACCESS_TOKEN";
   private Organization org = null;
   private Long orgId = null;
-  private String iuv = "0123456789";
 
   @BeforeEach
   void setUp() {
@@ -71,7 +71,7 @@ class VerifyNoticeServiceTest {
       installmentFacadeServiceMock,
       "https://example.com/pu-sil");
 
-    userInfo = podamFactory.manufacturePojo(UserInfo.class);
+    userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
     userInfo.getOrganizations().getFirst().setRoles(List.of("ROLE_X", "ROLE_ADMIN"));
     orgId = userInfo.getOrganizations().getFirst().getOrganizationId();
@@ -80,7 +80,7 @@ class VerifyNoticeServiceTest {
     org.setIpaCode(orgIpaCode);
     org.setStatus(OrganizationStatus.ACTIVE);
 
-    String nav = "3" + iuv;
+    String nav = "30123456789";
     String callbackUrl = "https://example.com/callback";
     request = Pair.of(nav, callbackUrl);
   }
@@ -107,7 +107,7 @@ class VerifyNoticeServiceTest {
 
   @Test
   void givenInvalidUrlWhenVerifyNoticeServiceThenFault() {
-    request = Pair.of(iuv, "http://");
+    request = Pair.of(request.getLeft(), "http://");
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
     //verify
@@ -129,7 +129,7 @@ class VerifyNoticeServiceTest {
   void givenNotFoundIUVWhenVerifyNoticeServiceThenFault() {
     //given
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, iuv, TOKEN))
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN))
       .thenReturn(List.of());
 
     //when
@@ -145,7 +145,7 @@ class VerifyNoticeServiceTest {
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.EXPIRED);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, iuv, TOKEN))
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN))
       .thenReturn(List.of(installmentDTO));
 
     PaymentResponse response = service.processRequest(request, orgIpaCode, userInfo, TOKEN);
@@ -158,7 +158,7 @@ class VerifyNoticeServiceTest {
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, iuv, TOKEN)).thenReturn(List.of(installmentDTO));
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getRight())))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
     //when
@@ -176,7 +176,7 @@ class VerifyNoticeServiceTest {
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
     CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, iuv, TOKEN)).thenReturn(List.of(installmentDTO));
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getRight())))
       .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn(null);
@@ -196,7 +196,7 @@ class VerifyNoticeServiceTest {
     String sessionId = String.valueOf(installmentDTO.getInstallmentId());
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, iuv, TOKEN)).thenReturn(List.of(installmentDTO));
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getRight())))
       .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");

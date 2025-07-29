@@ -55,7 +55,7 @@ public abstract class BaseVerifyNoticeService<I, O> {
       throw new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "URL di callback non valida");
     }
 
-    String iuv = getIuv(request);
+    String iuv = getNav(request);
     if (StringUtils.isBlank(iuv)) {
       throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Identificativo univoco del versamento non indicato");
     }
@@ -68,7 +68,7 @@ public abstract class BaseVerifyNoticeService<I, O> {
     return handleInstallmentsStatus(installmentDTO, organization, callbackUrl);
   }
 
-  protected abstract String getIuv(I request);
+  protected abstract String getNav(I request);
   protected abstract String getCallbackUrl(I request);
   protected abstract O mapToResponse(String outcome, String checkoutUrl, String sessionId);
   protected abstract O handleInstallmentsStatus(InstallmentDTO installment, Organization organization, String callbackUrl);
