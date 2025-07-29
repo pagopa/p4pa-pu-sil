@@ -102,11 +102,11 @@ class MassiveExportControllerTest {
   @Test
   void whenMassiveExportStatusThenOk() {
     // Given
-    String exportId = "1";
+    Long exportId = 1L;
     String downloadUrl = "http://example.com/download";
 
     when(exportFileProcessingStatusServiceMock
-      .getProcessingStatus(userInfo, accessToken, orgIpaCode, Long.valueOf(exportId), null))
+      .getProcessingStatus(userInfo, accessToken, orgIpaCode, exportId, null))
       .thenReturn(Pair.of(ExportFileStatus.COMPLETED, downloadUrl));
 
     // When

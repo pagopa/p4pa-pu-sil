@@ -393,7 +393,8 @@ paths:
           in: path
           required: true
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: Ok
@@ -847,7 +848,8 @@ components:
         - status
       properties:
         exportId:
-          type: string
+          type: integer
+          format: int64
         status:
           type: 'ExportFileStatus'
         downloadUrl:

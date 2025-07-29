@@ -694,7 +694,8 @@
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "type" : "integer",
+            "format" : "int64"
           }
         } ],
         "responses" : {
@@ -1664,7 +1665,8 @@
         "type" : "object",
         "properties" : {
           "exportId" : {
-            "type" : "string"
+            "type" : "integer",
+            "format" : "int64"
           },
           "status" : {
             "$ref" : "#/components/schemas/ExportFileStatus"

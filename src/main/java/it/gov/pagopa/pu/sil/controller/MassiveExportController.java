@@ -71,7 +71,7 @@ public class MassiveExportController implements ExportApi {
   }
 
   @Override
-  public ResponseEntity<ExportStatusResponseDTO> massiveExportStatus(String orgFiscalCode, String exportId) {
+  public ResponseEntity<ExportStatusResponseDTO> massiveExportStatus(String orgFiscalCode, Long exportId) {
 
     log.info("Received massive export status request for orgFiscalCode: {}", orgFiscalCode);
 
@@ -84,7 +84,7 @@ public class MassiveExportController implements ExportApi {
     log.debug("Processing export status request for orgIpaCode: {}", orgIpaCode);
 
     Pair<ExportFileStatus, String> response = exportFileProcessingStatusService.getProcessingStatus(
-      userInfo, accessToken, orgIpaCode, Long.valueOf(exportId), null);
+      userInfo, accessToken, orgIpaCode, exportId, null);
 
     ret.setExportId(exportId);
     ret.status(response.getLeft());
