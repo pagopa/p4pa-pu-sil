@@ -559,6 +559,16 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/NoticeNumber'
+        - name: callbackUrl
+          description: |
+            If the nav is payable, this parameter is used to specify
+            the url to redirect the navigation flow to, after completing the payment operation.
+            If not set, a generic PU page will be used. The parameters paymentId and outcome (OK/KO)
+            will be added to query string of url.
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Ok
