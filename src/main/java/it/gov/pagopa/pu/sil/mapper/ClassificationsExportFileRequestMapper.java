@@ -53,7 +53,9 @@ public class ClassificationsExportFileRequestMapper {
 
   private LocalDateIntervalFilter mapToLocalDateIntervalFilter(XMLGregorianCalendar from, XMLGregorianCalendar to) {
     Function<XMLGregorianCalendar, LocalDate> toLocalDate = xmlGregorianCalendar ->
-      xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+      Optional.ofNullable(xmlGregorianCalendar)
+        .map(x -> x.toGregorianCalendar().toZonedDateTime().toLocalDate())
+        .orElse(null);
     return LocalDateIntervalFilter.builder()
       .from(toLocalDate.apply(from))
       .to(toLocalDate.apply(to))

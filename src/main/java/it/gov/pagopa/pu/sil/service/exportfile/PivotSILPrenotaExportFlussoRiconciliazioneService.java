@@ -9,7 +9,6 @@ import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazioneRisposta;
-import it.veneto.regione.pagamenti.pivot.ente.TipoDovutoType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +33,7 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService extends AbstractE
     Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
     Optional.ofNullable(request.getTipoDovuto())
-      .map(TipoDovutoType::getTipos)
+      .flatMap(t -> Optional.ofNullable(t.getTipos()))
       .ifPresent(debtPositionTypeOrgCodes ->
         debtPositionTypeOrgCodes.forEach(debtPositionTypeOrgCode ->
           getAndValidateDebtPositionTypeOrg(
