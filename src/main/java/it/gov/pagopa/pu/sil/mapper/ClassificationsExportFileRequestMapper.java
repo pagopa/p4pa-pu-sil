@@ -55,8 +55,8 @@ public class ClassificationsExportFileRequestMapper {
     }
 
     return LocalDateIntervalFilter.builder()
-      .from(from != null ? from.toGregorianCalendar().toZonedDateTime().toLocalDate() : null)
-      .to(to != null ? to.toGregorianCalendar().toZonedDateTime().toLocalDate() : null)
+      .from(ConversionUtils.toLocalDate(from))
+      .to(ConversionUtils.toLocalDate(to))
       .build();
   }
 }
