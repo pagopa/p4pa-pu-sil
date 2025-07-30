@@ -525,7 +525,7 @@
           "description" : "the type of identifier used to identify the payment operation",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "$ref" : "#/components/schemas/QueryPaymentStatusType"
           }
         }, {
           "name" : "id",
@@ -1624,7 +1624,11 @@
       },
       "StatusEnum" : {
         "type" : "string",
-        "enum" : [ "NOT_PAID", "PAID" ]
+        "enum" : [ "UNPAID", "PAID", "EXPIRED", "UNPAYABLE" ]
+      },
+      "QueryPaymentStatusType" : {
+        "type" : "string",
+        "enum" : [ "PAYMENT_ID", "NOTICE_NUMBER", "IUD" ]
       },
       "DownloadUrl" : {
         "type" : "object",
