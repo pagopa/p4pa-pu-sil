@@ -593,11 +593,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            enum:
-              - PAYMENT_ID
-              - NOTICE_NUMBER
-              - IUD
+            $ref: '#/components/schemas/QueryPaymentStatusType'
         - name: id
           description: the identifier used to identify the payment
           in: path
@@ -934,8 +930,10 @@ components:
         status:
           type: string
           enum:
-            - NOT_PAID
+            - UNPAID
             - PAID
+            - EXPIRED
+            - UNPAYABLE
         receipt:
           $ref: "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
         receiptBytes:
@@ -1279,6 +1277,12 @@ components:
           $ref: "#/components/schemas/Action"
         installment:
           $ref: "#/components/schemas/InstallmentDTO"
+    QueryPaymentStatusType:
+      type: string
+      enum:
+        - PAYMENT_ID
+        - NOTICE_NUMBER
+        - IUD
   securitySchemes:
     BearerAuth:
       type: http
