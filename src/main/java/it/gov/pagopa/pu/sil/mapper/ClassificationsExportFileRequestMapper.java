@@ -11,7 +11,6 @@ import it.veneto.regione.pagamenti.pivot.ente.TipoDovutoType;
 import org.springframework.stereotype.Service;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,17 +50,13 @@ public class ClassificationsExportFileRequestMapper {
   }
 
   private LocalDateIntervalFilter mapToLocalDateIntervalFilter(XMLGregorianCalendar from, XMLGregorianCalendar to) {
-    LocalDate localDateFrom = Optional.ofNullable(from)
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toLocalDate())
-      .orElse(null);
-    LocalDate localDateTo = Optional.ofNullable(to)
-      .map(x -> x.toGregorianCalendar().toZonedDateTime().toLocalDate())
-      .orElse(null);
-
-    if (localDateFrom != null && localDateTo != null) {
-      return LocalDateIntervalFilter.builder().from(localDateFrom).to(localDateTo).build();
+    if (from == null && to == null) {
+      return null;
     }
 
-    return null;
+    return LocalDateIntervalFilter.builder()
+      .from(from != null ? from.toGregorianCalendar().toZonedDateTime().toLocalDate() : null)
+      .to(to != null ? to.toGregorianCalendar().toZonedDateTime().toLocalDate() : null)
+      .build();
   }
 }
