@@ -11,7 +11,9 @@ import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.immediatepayments.InstantPaymentService;
+import it.gov.pagopa.pu.sil.service.immediatepayments.VerifyNoticeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -29,6 +31,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentControllerTest {
+  @Mock
+  private VerifyNoticeService verifyNoticeServiceMock;
   @Mock
   private InstantPaymentService instantPaymentServiceMock;
   @Mock
@@ -83,5 +87,35 @@ class PaymentControllerTest {
     // Then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertSame(expectedResult.getLeft(), response.getBody());
+  }
+
+  @Test
+  void whenRequestNoticePaymentThenOk() {
+    // Given
+    String nav = "30123456789";
+    String callbackUrl = "https://example.com/callback";
+    RegistryContextData expectedContextData = RegistryContextData.builder()
+      .orgFiscalCode(orgFiscalCode)
+      .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
+      .loggedUser(userInfo)
+      .build();
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, nav, false, false);
+
+    PaymentResponse expectedResult = PaymentResponse.builder()
+        .outcome(PaymentResponse.OutcomeEnum.OK)
+        .triggerPaymentUrl("https://example.com/checkout")
+        .paymentId("sessionId123")
+        .build();
+
+    Pair<String, String> request = Pair.of(nav, callbackUrl);
+    when(verifyNoticeServiceMock.processRequest(request, orgIpaCode, userInfo, accessToken))
+      .thenReturn(expectedResult);
+
+    // When
+    ResponseEntity<PaymentResponse> response = controller.requestNoticePayment(orgFiscalCode, nav, callbackUrl);
+
+    // Then
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertSame(expectedResult, response.getBody());
   }
 }
