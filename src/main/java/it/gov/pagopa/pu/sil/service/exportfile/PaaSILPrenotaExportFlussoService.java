@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,15 +39,17 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
     AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
 
     Long organizationId = getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
-    DebtPositionTypeOrg debtPositionTypeOrg = getAndValidateDebtPositionTypeOrg(
-      organizationId,
-      debtPositionTypeOrgCode,
-      accessToken,
-      SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
-      SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO
-    );
+    Long debtPositionTypeOrgId = Optional.ofNullable(debtPositionTypeOrgCode)
+      .map(code -> getAndValidateDebtPositionTypeOrg(
+        organizationId,
+        code,
+        accessToken,
+        SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
+        SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO))
+      .map(DebtPositionTypeOrg::getDebtPositionTypeOrgId)
+      .orElse(null);
 
-    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrg.getDebtPositionTypeOrgId());
+    PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgId);
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
     return exportFileId;

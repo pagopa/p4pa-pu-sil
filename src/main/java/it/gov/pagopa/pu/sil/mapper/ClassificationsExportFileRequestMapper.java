@@ -52,13 +52,17 @@ public class ClassificationsExportFileRequestMapper {
   }
 
   private LocalDateIntervalFilter mapToLocalDateIntervalFilter(XMLGregorianCalendar from, XMLGregorianCalendar to) {
-    Function<XMLGregorianCalendar, LocalDate> toLocalDate = xmlGregorianCalendar ->
-      Optional.ofNullable(xmlGregorianCalendar)
-        .map(x -> x.toGregorianCalendar().toZonedDateTime().toLocalDate())
-        .orElse(null);
-    return LocalDateIntervalFilter.builder()
-      .from(toLocalDate.apply(from))
-      .to(toLocalDate.apply(to))
-      .build();
+    LocalDate localDateFrom = Optional.ofNullable(from)
+      .map(x -> x.toGregorianCalendar().toZonedDateTime().toLocalDate())
+      .orElse(null);
+    LocalDate localDateTo = Optional.ofNullable(to)
+      .map(x -> x.toGregorianCalendar().toZonedDateTime().toLocalDate())
+      .orElse(null);
+
+    if (localDateFrom != null && localDateTo != null) {
+      return LocalDateIntervalFilter.builder().from(localDateFrom).to(localDateTo).build();
+    }
+
+    return null;
   }
 }
