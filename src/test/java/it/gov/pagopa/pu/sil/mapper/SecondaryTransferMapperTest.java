@@ -25,6 +25,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -122,6 +124,8 @@ class SecondaryTransferMapperTest {
     debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().setTransfers(null);
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(defaultCollectionSize);
     CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = podamFactory.manufacturePojo(CtDatiVersamentoDovutiEntiSecondari.class);
+    BigDecimal scaled = secondaryTransferData.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
+    secondaryTransferData.setImportoSingoloVersamento(scaled);
     if (testCase.equals("validCategoryFromLegacyPaymentMetadata")) {
       secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
     } else if (testCase.equals("validCategoryFromDebtPositionOrgCode")) {
@@ -151,6 +155,8 @@ class SecondaryTransferMapperTest {
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(defaultCollectionSize);
     CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = podamFactory.manufacturePojo(CtDatiVersamentoDovutiEntiSecondari.class);
+    BigDecimal scaled = secondaryTransferData.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
+    secondaryTransferData.setImportoSingoloVersamento(scaled);
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
     Taxonomy taxonomy = podamFactory.manufacturePojo(Taxonomy.class);
     SilFaults expectedFault = SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO;
