@@ -18,7 +18,7 @@ class ClassificationsExportFileRequestMapperTest {
   private final ClassificationsExportFileRequestMapper mapper = new ClassificationsExportFileRequestMapper();
 
   @Test
-  void whenMapToExportFileRequestThenMapAllFieldsButIufAndLastClassificationDate() throws Exception {
+  void whenMapToExportFileRequestThenMapAllInputFields() throws Exception {
     PivotSILPrenotaExportFlussoRiconciliazione request = new PivotSILPrenotaExportFlussoRiconciliazione();
     request.setVersioneTracciato("v1");
     request.setIdUnivocoDovuto("IUD123");
