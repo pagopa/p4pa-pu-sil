@@ -93,8 +93,7 @@ public class PaaSILImportaDovutoMapper {
     long amountCents = ConversionUtils.bigDecimalEuroAmountToCentsAmount(datiVersamento.getImportoSingoloVersamento());
 
     LocalDate dueDate = Optional.ofNullable(datiVersamento.getDataEsecuzionePagamento())
-      .map(ConversionUtils::toOffsetDateTime)
-      .map(OffsetDateTime::toLocalDate)
+      .map(ConversionUtils::toLocalDate)
       .orElse(null);
 
     String balanceString;
