@@ -83,8 +83,7 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
 
   @Override
   protected PaaSILChiediEsitoCarrelloDovutiRisposta mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList,
-                                                         Organization organization, String accessToken) {
-
+                                                         Organization organization, String accessToken, PaaSILChiediEsitoCarrelloDovuti request) {
     // Prepare the response
     PaaSILChiediEsitoCarrelloDovutiRisposta response = new PaaSILChiediEsitoCarrelloDovutiRisposta();
     response.setListaCarrelli(new ListaCarrelli());

@@ -15,11 +15,10 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 @Slf4j
-public abstract class AbstractQueryPaymentsService<REQ, RESP> {
+public abstract class AbstractQueryPaymentsService<I, O> {
 
   private final OrganizationService organizationService;
 
@@ -27,29 +26,27 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
     this.organizationService = organizationService;
   }
 
-  protected abstract void validateRequest(REQ request);
+  protected abstract void validateRequest(I request);
 
-  protected abstract List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(REQ request, Organization organization, String accessToken);
+  protected abstract List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(I request, Organization organization, String accessToken);
 
-  protected abstract String getOrgIpaCode(REQ request);
+  protected abstract String getOrgIpaCode(I request);
 
-  protected abstract RESP mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList, Organization organization, String accessToken);
+  protected abstract O mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList, Organization organization, String accessToken, I request);
 
   protected abstract SilFaults getFaultForDebtPositionNotFound();
 
 
-  public RESP processRequest(REQ request, UserInfo userInfo, String accessToken) {
-    String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
-    //check if the logged user has the right to call this endpoint
+  public O processRequest(I request, UserInfo userInfo, String accessToken) {
     String orgIpaCode = getOrgIpaCode(request);
-    if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call {} for organization {}", clientId, request.getClass().getSimpleName(), orgIpaCode);
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
-    }
+
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
+
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
+      log.error("Organization [{}] is not valid or not enabled", organization);
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
 
@@ -74,7 +71,7 @@ public abstract class AbstractQueryPaymentsService<REQ, RESP> {
     });
 
     //map and prepare the response
-    return mapper(debtPositionWithInstallmentList, organization, accessToken);
+    return mapper(debtPositionWithInstallmentList, organization, accessToken, request);
   }
 
   protected InstallmentDTO findInstallmentOfDebtPosition(DebtPositionDTO debtPosition, Predicate<InstallmentDTO> installmentFinderPredicate) {
