@@ -1489,18 +1489,18 @@
       "ReceiptTransferDTO" : {
         "type" : "object",
         "properties" : {
-          "idTransfer" : {
+          "transferIndex" : {
             "type" : "integer",
             "format" : "int32"
           },
-          "transferAmountCents" : {
+          "amountCents" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "fiscalCodePA" : {
+          "orgFiscalCode" : {
             "type" : "string"
           },
-          "companyName" : {
+          "orgName" : {
             "type" : "string"
           },
           "mbdAttachment" : {
@@ -1513,7 +1513,7 @@
           "remittanceInformation" : {
             "type" : "string"
           },
-          "transferCategory" : {
+          "category" : {
             "type" : "string"
           },
           "metadata" : {
@@ -1523,7 +1523,7 @@
             }
           }
         },
-        "required" : [ "fiscalCodePA", "idTransfer", "remittanceInformation", "transferAmountCents", "transferCategory" ]
+        "required" : [ "amountCents", "category", "orgFiscalCode", "remittanceInformation", "transferIndex" ]
       },
       "ReceiptWithAdditionalNodeDataDTO" : {
         "type" : "object",
