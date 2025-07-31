@@ -26,6 +26,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.io.ByteArrayInputStream;
@@ -161,7 +162,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
 
   @ParameterizedTest
   @CsvSource(value = {
-    "userNotAuth,PAA_ENTE_NON_VALIDO,Utente non autorizzato",
+    "userNotAuth,PAA_ENTE_NON_VALIDO,null",
     "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
     "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
     "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
@@ -210,12 +211,19 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
         //do nothing
     }
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken));
+    if(testCase.equals("userNotAuth")) {
+      AuthorizationDeniedException authorizationDeniedException = Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken));
 
-    assertNotNull(result);
-    assertNotNull(result.getFault());
-    assertEquals(silFaultCode, result.getFault().code());
-    assertEquals(faultDescription, result.getDescription());
+      assertNotNull(authorizationDeniedException);
+      assertTrue(authorizationDeniedException.getMessage().contains("Access denied on orgIpaCode "));
+    } else {
+      SilFaultException silFaultException = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken));
+
+      assertNotNull(silFaultException);
+      assertNotNull(silFaultException.getFault());
+      assertEquals(silFaultCode, silFaultException.getFault().code());
+      assertEquals(faultDescription, silFaultException.getDescription());
+    }
   }
 
 }

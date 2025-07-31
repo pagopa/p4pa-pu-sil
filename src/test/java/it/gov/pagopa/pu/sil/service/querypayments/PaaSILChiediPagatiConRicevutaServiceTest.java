@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.io.ByteArrayInputStream;
@@ -222,8 +223,10 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
+        break;
       case "emptyDebtPositionList":
         when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+        break;
       case "invalidOrgDebtPositionIud", "emptyDebtPositionListIud",
            "emptyDebtPositionListIuv", "invalidOrgStatus", "noSearchCriteria",
            "multipleSearchCriteria":
@@ -232,17 +235,24 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
             .thenReturn(List.of(pairList.getFirst().getLeft()));
         }
         when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+        break;
       case "userNotAuth":
       default:
         //do nothing
     }
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
+    if(testCase.equals("userNotAuth")) {
+      AuthorizationDeniedException authorizationDeniedException = Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
 
-    assertNotNull(result);
-    assertNotNull(result.getFault());
-    assertEquals(silFaultCode, result.getFault().code());
-    assertEquals(faultDescription, result.getDescription());
+      assertNotNull(authorizationDeniedException);
+      assertTrue(authorizationDeniedException.getMessage().contains("Access denied on orgIpaCode "));
+    } else {
+      SilFaultException silFaultException = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
+
+      assertNotNull(silFaultException);
+      assertNotNull(silFaultException.getFault());
+      assertEquals(silFaultCode, silFaultException.getFault().code());
+      assertEquals(faultDescription, silFaultException.getDescription());
+    }
   }
-
 }
