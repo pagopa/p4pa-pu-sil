@@ -72,4 +72,12 @@ public class ConversionUtils {
     }
     return LocalDateTime.of(localDate, LocalTime.MAX);
   }
+
+  public static LocalDate toLocalDate(XMLGregorianCalendar xmlGregorianCalendar) {
+    if(xmlGregorianCalendar == null) {
+      return null;
+    }
+    return xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+  }
+
 }

@@ -18,7 +18,7 @@ class ClassificationsExportFileRequestMapperTest {
   private final ClassificationsExportFileRequestMapper mapper = new ClassificationsExportFileRequestMapper();
 
   @Test
-  void whenMapToExportFileRequestThenMapAllFields() throws Exception {
+  void whenMapToExportFileRequestThenMapAllInputFields() throws Exception {
     PivotSILPrenotaExportFlussoRiconciliazione request = new PivotSILPrenotaExportFlussoRiconciliazione();
     request.setVersioneTracciato("v1");
     request.setIdUnivocoDovuto("IUD123");
@@ -41,8 +41,6 @@ class ClassificationsExportFileRequestMapperTest {
     request.setDataEsecuzioneA(to);
     request.setDataEsitoDa(from);
     request.setDataEsitoA(to);
-    request.setDataUltimoAggiornamentoDa(from);
-    request.setDataUltimoAggiornamentoA(to);
     TipoDovutoType tipoDovutoType = new TipoDovutoType();
     tipoDovutoType.getTipos().addAll(List.of("TIPO_DOVUTO"));
     request.setTipoDovuto(tipoDovutoType);
@@ -65,7 +63,7 @@ class ClassificationsExportFileRequestMapperTest {
     assertEquals("v1", dto.getFileVersion());
     ClassificationsExportFileFilter filter = dto.getFilterFields();
     assertNotNull(filter);
-    TestUtils.checkNotNullFields(filter, "iuf");
+    TestUtils.checkNotNullFields(filter, "iuf","lastClassificationDate");
     assertEquals("IUD123", filter.getIud());
     assertEquals(LocalDate.of(2023, 1, 1), filter.getRegionValueDate().getFrom());
     assertEquals(LocalDate.of(2023, 12, 31), filter.getRegionValueDate().getTo());

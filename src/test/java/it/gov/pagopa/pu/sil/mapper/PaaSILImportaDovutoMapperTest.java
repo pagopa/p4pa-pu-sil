@@ -14,6 +14,7 @@ import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamento;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Versamento;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,6 +29,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,6 +89,9 @@ class PaaSILImportaDovutoMapperTest {
   void mapRequestToDebtPositionPair_BilancioUnmarshallingFailure_ReturnsError() {
     PaaSILImportaDovuto request = new PaaSILImportaDovuto();
     Versamento versamento = podamFactory.manufacturePojo(Versamento.class);
+    CtDatiVersamento datiVersamento = versamento.getDatiVersamento();
+    BigDecimal scaled = datiVersamento.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
+    datiVersamento.setImportoSingoloVersamento(scaled);
     when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenReturn(versamento);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento.getDatiVersamento().getIdentificativoTipoDovuto(), ACCESS_TOKEN))
       .thenReturn(podamFactory.manufacturePojo(DebtPositionTypeOrg.class));
@@ -101,6 +107,9 @@ class PaaSILImportaDovutoMapperTest {
   void mapRequestToDebtPositionPair_validData_ReturnsOk() {
     PaaSILImportaDovuto request = podamFactory.manufacturePojo(PaaSILImportaDovuto.class);
     Versamento versamento = podamFactory.manufacturePojo(Versamento.class);
+    CtDatiVersamento datiVersamento = versamento.getDatiVersamento();
+    BigDecimal scaled = datiVersamento.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
+    datiVersamento.setImportoSingoloVersamento(scaled);
     when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenReturn(versamento);
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento.getDatiVersamento().getIdentificativoTipoDovuto(), ACCESS_TOKEN))
