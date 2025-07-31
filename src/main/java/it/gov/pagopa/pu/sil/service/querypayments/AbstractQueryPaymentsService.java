@@ -46,7 +46,6 @@ public abstract class AbstractQueryPaymentsService<I, O> {
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      log.error("Organization [{}] is not valid or not enabled", organization);
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
 

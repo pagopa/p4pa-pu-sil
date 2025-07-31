@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
@@ -10,7 +9,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagati;
@@ -57,7 +56,7 @@ class PaaSILChiediPagatiServiceTest {
   private String accessToken;
   private String sessionId;
   private UserInfo userInfo;
-  private Organization organization;
+  private Organization org;
   private PaaSILChiediPagati request;
   private List<Long> installmentIds;
   private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList;
@@ -71,21 +70,17 @@ class PaaSILChiediPagatiServiceTest {
   void init() {
     accessToken = "accessToken";
     sessionId = "sessionId";
-    userInfo = podamFactory.manufacturePojo(UserInfo.class);
+    org = podamFactory.manufacturePojo(Organization.class);
+    org.setStatus(OrganizationStatus.ACTIVE);
+    userInfo = AuthorizationServiceTest.buildAdminUser(org.getOrganizationId(), org.getOrgFiscalCode(), org.getIpaCode());
     request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
-    organization = podamFactory.manufacturePojo(Organization.class);
-    organization.setStatus(OrganizationStatus.ACTIVE);
-    UserOrganizationRoles uor = userInfo.getOrganizations().getFirst();
-    uor.setOrganizationId(organization.getOrganizationId());
-    uor.setOrganizationIpaCode(organization.getIpaCode());
-    uor.setRoles(List.of(AuthorizationService.ROLE_ADMIN));
-    request.setCodIpaEnte(organization.getIpaCode());
+    request.setCodIpaEnte(org.getIpaCode());
     request.setIdSession(sessionId);
 
     installmentIds = List.of(1L, 2L);
     pairList = installmentIds.stream().map(i -> {
       DebtPositionDTO dp = podamFactory.manufacturePojo(DebtPositionDTO.class);
-      dp.setOrganizationId(organization.getOrganizationId());
+      dp.setOrganizationId(org.getOrganizationId());
       dp.setStatus(DebtPositionStatus.PAID);
       InstallmentDTO inst = dp.getPaymentOptions().getFirst().getInstallments().getFirst();
       inst.setInstallmentId(i);
@@ -99,14 +94,14 @@ class PaaSILChiediPagatiServiceTest {
   void testGetDebtPositionsAndInstallmentsOk() throws IOException {
     byte[] encodedPagati = "encodedPagati".getBytes(StandardCharsets.UTF_8);
 
-    when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
+    when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
     when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
     pairList.forEach(pair ->
       when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
     );
     //TODO currently support only one debt position and installment, but could be extended to support multiple
     Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(firstPair.getRight(), organization, accessToken)).thenReturn(encodedPagati);
+    when(pagatiMapperMock.mapDebtPositionsToEncodedPagati(firstPair.getRight(), org, accessToken)).thenReturn(encodedPagati);
 
     PaaSILChiediPagatiRisposta result = paaSILChiediPagatiService.processRequest(request, userInfo, accessToken);
 
@@ -120,7 +115,7 @@ class PaaSILChiediPagatiServiceTest {
 
   @ParameterizedTest
   @CsvSource(value = {
-    "userNotAuth,PAA_ENTE_NON_VALIDO,Utente non autorizzato",
+    "userNotAuth,Access denied on orgIpaCode,null",
     "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
     "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
     "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
@@ -140,13 +135,13 @@ class PaaSILChiediPagatiServiceTest {
           .ifPresent(o -> o.setRoles(List.of("NOT_ADMIN")));
         break;
       case "invalidOrgStatus":
-        organization.setStatus(OrganizationStatus.DRAFT);
+        org.setStatus(OrganizationStatus.DRAFT);
         break;
       case "emptyDebtPositionList":
         installmentIds = List.of();
         break;
       case "invalidOrgDebtPosition":
-        pairList.getFirst().getLeft().setOrganizationId(organization.getOrganizationId() + 1);
+        pairList.getFirst().getLeft().setOrganizationId(org.getOrganizationId() + 1);
         break;
       case "unpaidInstallment":
         pairList.getFirst().getRight().setStatus(InstallmentStatus.UNPAID);
@@ -167,16 +162,19 @@ class PaaSILChiediPagatiServiceTest {
 
     // mock only used methods of testCase
     switch (testCase) {
-      case "invalidStatusInstallment", "unpaidInstallment", "unpaidToSyncInstallment", "expiredInstallment", "invalidOrgDebtPosition":
+      case "invalidOrgStatus":
+        when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
+        break;
+      case "emptyDebtPositionList":
+        when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
+        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+        break;
+      case "invalidOrgDebtPosition", "unpaidInstallment", "unpaidToSyncInstallment", "expiredInstallment", "invalidStatusInstallment":
+        when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
+        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
         pairList.forEach(pair ->
           when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
         );
-        break;
-      case "emptyDebtPositionList":
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-        break;
-      case "invalidOrgStatus":
-        when(organizationServiceMock.getOrganizationById(organization.getOrganizationId(), accessToken)).thenReturn(Optional.of(organization));
         break;
       case "userNotAuth":
       default:
@@ -187,7 +185,7 @@ class PaaSILChiediPagatiServiceTest {
       AuthorizationDeniedException authorizationDeniedException = Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILChiediPagatiService.processRequest(request, userInfo, accessToken));
 
       assertNotNull(authorizationDeniedException);
-      assertTrue(authorizationDeniedException.getMessage().contains("Access denied on orgIpaCode "));
+      assertTrue(authorizationDeniedException.getMessage().contains(silFaultCode));
     } else {
       SilFaultException silFaultException = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediPagatiService.processRequest(request, userInfo, accessToken));
 
