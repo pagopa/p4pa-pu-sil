@@ -938,12 +938,7 @@ components:
         paymentId:
           type: string
         status:
-          type: string
-          enum:
-            - UNPAID
-            - PAID
-            - EXPIRED
-            - UNPAYABLE
+          type: 'InstallmentStatus'
         receipt:
           $ref: "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
         receiptBytes:

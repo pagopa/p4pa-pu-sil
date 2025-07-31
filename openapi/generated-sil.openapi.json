@@ -1463,6 +1463,10 @@
         },
         "required" : [ "debtPositionId", "navList" ]
       },
+      "InstallmentStatus" : {
+        "type" : "string",
+        "enum" : [ "TO_SYNC", "REPORTED", "PAID", "CANCELLED", "INVALID", "EXPIRED", "UNPAID", "UNPAYABLE", "DRAFT" ]
+      },
       "PaymentStatusResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -1470,7 +1474,7 @@
             "type" : "string"
           },
           "status" : {
-            "$ref" : "#/components/schemas/StatusEnum"
+            "$ref" : "#/components/schemas/InstallmentStatus"
           },
           "receipt" : {
             "$ref" : "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
@@ -1621,10 +1625,6 @@
           }
         },
         "required" : [ "channelDescription", "companyName", "creditorReferenceId", "debtor", "description", "idChannel", "idPsp", "noticeNumber", "orgFiscalCode", "outcome", "paymentAmountCents", "paymentReceiptId", "pspCompanyName", "transfers" ]
-      },
-      "StatusEnum" : {
-        "type" : "string",
-        "enum" : [ "UNPAID", "PAID", "EXPIRED", "UNPAYABLE" ]
       },
       "QueryPaymentStatusType" : {
         "type" : "string",

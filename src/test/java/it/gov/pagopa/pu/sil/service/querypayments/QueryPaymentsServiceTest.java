@@ -7,7 +7,7 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
-import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO.StatusEnum;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.ByteArrayResource;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
@@ -87,6 +88,12 @@ class QueryPaymentsServiceTest {
     DebtPositionDTO debtPosition = pairList.getFirst().getLeft();
     ReceiptWithAdditionalNodeDataDTO receiptDTO = podamFactory.manufacturePojo(ReceiptWithAdditionalNodeDataDTO.class);
     request = new PaymentStatusRequest(org.getIpaCode(), idType, installment.getInstallmentId().toString(), true);
+    PaymentStatusResponseDTO expectedResponse = new PaymentStatusResponseDTO()
+      .status(InstallmentStatus.PAID)
+      .receipt(receiptDTO)
+      .receiptBytes(new ByteArrayResource(encodedReceipt))
+      .paymentId(installment.getInstallmentId().toString())
+      .lastUpdateDateTime(installment.getUpdateDate());
 
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
     switch (idType) {
@@ -112,9 +119,7 @@ class QueryPaymentsServiceTest {
     PaymentStatusResponseDTO result = queryPaymentsService.processRequest(request, userInfo, accessToken);
     // Then
     assertNotNull(result);
-    assertEquals(StatusEnum.PAID, result.getStatus());
-    assertNotNull(result.getReceipt());
-    assertNotNull(result.getReceiptBytes());
+    assertEquals(expectedResponse, result);
   }
 
   @Test
@@ -137,6 +142,10 @@ class QueryPaymentsServiceTest {
     unpaidInstallment.setStatus(InstallmentStatus.UNPAID);
     DebtPositionDTO debtPosition = pairList.getFirst().getLeft();
     request = new PaymentStatusRequest(org.getIpaCode(), PAYMENT_ID, unpaidInstallment.getInstallmentId().toString(), true);
+    PaymentStatusResponseDTO expectedResponse = new PaymentStatusResponseDTO()
+      .status(InstallmentStatus.UNPAID)
+      .paymentId(unpaidInstallment.getInstallmentId().toString())
+      .lastUpdateDateTime(unpaidInstallment.getUpdateDate());
 
     when(sessionIdMapperMock.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
     when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(unpaidInstallment.getInstallmentId(), accessToken)).thenReturn(debtPosition);
@@ -144,7 +153,7 @@ class QueryPaymentsServiceTest {
     // When
     PaymentStatusResponseDTO result = queryPaymentsService.processRequest(request, userInfo, accessToken);
     // Then
-    assertEquals(StatusEnum.UNPAID, result.getStatus());
+    assertEquals(expectedResponse, result);
   }
 
   @Test
@@ -154,6 +163,10 @@ class QueryPaymentsServiceTest {
     expiredInstallment.setStatus(InstallmentStatus.EXPIRED);
     DebtPositionDTO debtPosition = pairList.getFirst().getLeft();
     request = new PaymentStatusRequest(org.getIpaCode(), PAYMENT_ID, expiredInstallment.getInstallmentId().toString(), true);
+    PaymentStatusResponseDTO expectedResponse = new PaymentStatusResponseDTO()
+      .status(InstallmentStatus.EXPIRED)
+      .paymentId(expiredInstallment.getInstallmentId().toString())
+      .lastUpdateDateTime(expiredInstallment.getUpdateDate());
 
     when(sessionIdMapperMock.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
     when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(expiredInstallment.getInstallmentId(), accessToken)).thenReturn(debtPosition);
@@ -161,7 +174,7 @@ class QueryPaymentsServiceTest {
     // When
     PaymentStatusResponseDTO result = queryPaymentsService.processRequest(request, userInfo, accessToken);
     // Then
-    assertEquals(StatusEnum.EXPIRED, result.getStatus());
+    assertEquals(expectedResponse, result);
   }
 
   @Test
@@ -171,6 +184,10 @@ class QueryPaymentsServiceTest {
     unpayableInstallment.setStatus(InstallmentStatus.UNPAYABLE);
     DebtPositionDTO debtPosition = pairList.getFirst().getLeft();
     request = new PaymentStatusRequest(org.getIpaCode(), PAYMENT_ID, unpayableInstallment.getInstallmentId().toString(), true);
+    PaymentStatusResponseDTO expectedResponse = new PaymentStatusResponseDTO()
+      .status(InstallmentStatus.UNPAYABLE)
+      .paymentId(unpayableInstallment.getInstallmentId().toString())
+      .lastUpdateDateTime(unpayableInstallment.getUpdateDate());
 
     when(sessionIdMapperMock.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
     when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(unpayableInstallment.getInstallmentId(), accessToken)).thenReturn(debtPosition);
@@ -178,6 +195,6 @@ class QueryPaymentsServiceTest {
     // When
     PaymentStatusResponseDTO result = queryPaymentsService.processRequest(request, userInfo, accessToken);
     // Then
-    assertEquals(StatusEnum.UNPAYABLE, result.getStatus());
+    assertEquals(expectedResponse, result);
   }
 }

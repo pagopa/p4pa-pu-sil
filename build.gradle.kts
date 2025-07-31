@@ -223,6 +223,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "ClassificationsExportFileFilter" to "it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter",
     "PersonDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO",
     "ExportFileStatus" to "it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus",
+    "InstallmentStatus" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus",
   ))
 }
 

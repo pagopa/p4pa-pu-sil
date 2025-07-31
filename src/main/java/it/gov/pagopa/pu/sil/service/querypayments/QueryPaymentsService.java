@@ -8,8 +8,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
-import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO.StatusEnum;
-import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
@@ -113,7 +111,6 @@ public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentSt
   @Override
   protected PaymentStatusResponseDTO mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList,
                                             Organization organization, String accessToken, PaymentStatusRequest request) {
-    //TODO currently support only one debt position and installment, but could be extended to support multiple
     InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
     PaymentStatusResponseDTO response = new PaymentStatusResponseDTO()
       .paymentId(installmentDTO.getInstallmentId().toString())
@@ -123,21 +120,17 @@ public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentSt
       ? installmentDTO.getSyncStatus().getSyncStatusTo()
       : installmentDTO.getStatus();
 
-    if (status == InstallmentStatus.UNPAID) {
-      response.setStatus(StatusEnum.UNPAID);
-    } else if (status == InstallmentStatus.EXPIRED) {
-      response.setStatus(StatusEnum.EXPIRED);
-    } else if (status != InstallmentStatus.PAID && status != InstallmentStatus.REPORTED) {
-      response.setStatus(StatusEnum.UNPAYABLE);
-    } else if (status == InstallmentStatus.PAID) {
-      response.setStatus(StatusEnum.PAID);
-      ReceiptWithAdditionalNodeDataDTO receiptDTO = receiptMapper.map2ReceiptWithAdditionalNodeDataDTO(installmentDTO, accessToken);
-      response.setReceipt(receiptDTO);
-
-      if (request.withReceiptBytes()) {
-        byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
-        response.setReceiptBytes(new ByteArrayResource(encodedReceipt));
-      }
+    if (status == InstallmentStatus.UNPAID || status == InstallmentStatus.EXPIRED) {
+      return response.status(status);
+    }
+    if (status != InstallmentStatus.PAID && status != InstallmentStatus.REPORTED) {
+      return response.status(InstallmentStatus.UNPAYABLE);
+    }
+    response.setStatus(status);
+    response.setReceipt(receiptMapper.map2ReceiptWithAdditionalNodeDataDTO(installmentDTO, accessToken));
+    if (request.withReceiptBytes()) {
+      byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
+      response.setReceiptBytes(new ByteArrayResource(encodedReceipt));
     }
     return response;
   }
