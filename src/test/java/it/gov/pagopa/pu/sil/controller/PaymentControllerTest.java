@@ -129,7 +129,6 @@ class PaymentControllerTest {
   @Test
   void whenPaymentStatusThenOk() {
     // Given
-    String paymentId = "sessionId123";
     QueryPaymentStatusType idType = QueryPaymentStatusType.PAYMENT_ID;
     String id = "ID_SESSION_123";
     boolean withReceiptBytes = true;
@@ -141,7 +140,7 @@ class PaymentControllerTest {
       .thenReturn(expectedResult);
 
     // When
-    ResponseEntity<PaymentStatusResponseDTO> response = controller.paymentStatus(orgFiscalCode, idType, paymentId, withReceiptBytes);
+    ResponseEntity<PaymentStatusResponseDTO> response = controller.paymentStatus(orgFiscalCode, idType, id, withReceiptBytes);
 
     // Then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
