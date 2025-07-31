@@ -5,6 +5,8 @@ import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.controller.generated.PaymentApi;
 import it.gov.pagopa.pu.sil.dto.generated.InstantPaymentRequest;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
+import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -12,29 +14,30 @@ import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.InstantPaymentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.VerifyNoticeService;
-import it.gov.pagopa.pu.sil.util.Utilities;
-import it.veneto.regione.pagamenti.ente.Risposta;
+import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
+import it.gov.pagopa.pu.sil.service.querypayments.QueryPaymentsService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.function.Function;
-
 @Slf4j
 @RestController
 public class PaymentController implements PaymentApi {
   private final InstantPaymentService instantPaymentService;
-  private final RegistryLogger registryLogger;
   private final VerifyNoticeService verifyNoticeService;
+  private final QueryPaymentsService queryPaymentsService;
+  private final RegistryLogger registryLogger;
 
   public PaymentController(InstantPaymentService instantPaymentService,
                            VerifyNoticeService verifyNoticeService,
+                           QueryPaymentsService queryPaymentsService,
                            RegistryLogger registryLogger) {
     this.instantPaymentService = instantPaymentService;
-    this.registryLogger = registryLogger;
     this.verifyNoticeService = verifyNoticeService;
+    this.queryPaymentsService = queryPaymentsService;
+    this.registryLogger = registryLogger;
   }
 
   @Override
@@ -94,5 +97,18 @@ public class PaymentController implements PaymentApi {
     );
   }
 
+  @Override
+  public ResponseEntity<PaymentStatusResponseDTO> paymentStatus(String orgFiscalCode, QueryPaymentStatusType idType, String id, Boolean withReceiptBytes) {
+    log.info("Received request for payment status for orgFiscalCode: {}, idType: {}, id: {}", orgFiscalCode, idType, id);
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode);
+    PaymentStatusRequest request = new PaymentStatusRequest(orgIpaCode, idType, id, Boolean.TRUE.equals(withReceiptBytes));
 
+    return ResponseEntity.ok(queryPaymentsService.processRequest(
+      request,
+      userInfo,
+      accessToken
+    ));
+  }
 }
