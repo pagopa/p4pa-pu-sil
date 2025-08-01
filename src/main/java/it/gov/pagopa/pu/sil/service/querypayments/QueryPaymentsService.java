@@ -8,7 +8,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
@@ -24,8 +23,6 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentStatusRequest, PaymentStatusResponseDTO> {
-  private SilFaults debtPositionNotFoundFault;
-
   private final DebtPositionService debtPositionService;
   private final ReceiptMapper receiptMapper;
   private final ReceiptService receiptService;
@@ -44,60 +41,47 @@ public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentSt
   }
 
   @Override
-  protected void validateRequest(PaymentStatusRequest request) {
-    // no validation needed, is mutually exclusive due to enum request.getIdType()
-  }
-
-  @Override
   protected void validateInstallmentStatus(InstallmentDTO installment) {
     // no validation needed for installment status in this context,
     // it's handled in mapper method returing the status itself in the response
   }
 
   @Override
-  protected SilFaults getFaultForDebtPositionNotFound() {
-    return debtPositionNotFoundFault;
-  }
-
-  @Override
   protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaymentStatusRequest request, Organization organization, String accessToken) {
-    String idParam = request.id();
+    String queryParam = request.id();
     switch (request.idType()) {
       case PAYMENT_ID -> {
-        debtPositionNotFoundFault = SilFaults.PAA_ID_SESSION_NON_VALIDO;
-        return sessionIdMapper.mapSessionIdToInstallmentIds(idParam).stream()
+
+        return sessionIdMapper.mapSessionIdToInstallmentIds(queryParam).stream()
           //search for the debt position by installmentId
           .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
           //find the installment in the debt position
-          .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
+          .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(request, debtPositionPair.getRight(),
             installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
           //return the pair of debt position and matching installment
           .toList();
       }
       case IUD -> {
-        debtPositionNotFoundFault = SilFaults.PAA_IUD_NON_VALIDO;
         return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-            organization.getOrganizationId(), idParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
+            organization.getOrganizationId(), queryParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
           .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
           .findFirst()
-          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
-            installment -> idParam.equals(installment.getIud()))))
+          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(request, debtPosition,
+            installment -> queryParam.equals(installment.getIud()))))
           .map(List::of)
           .orElse(List.of());
       }
       case NOTICE_NUMBER ->  {
-        debtPositionNotFoundFault = SilFaults.PAA_IUV_NON_VALIDO;
         return debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-            organization.getOrganizationId(), idParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
+            organization.getOrganizationId(), queryParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
           .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
           .findFirst()
-          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
-            installment -> idParam.equals(installment.getIuv()))))
+          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(request, debtPosition,
+            installment -> queryParam.equals(installment.getIuv()))))
           .map(List::of)
           .orElse(List.of());
       }
       default -> {
-        debtPositionNotFoundFault = SilFaults.PAA_SYSTEM_ERROR;
         return List.of();
       }
     }
@@ -133,5 +117,11 @@ public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentSt
       response.setReceiptBytes(new ByteArrayResource(encodedReceipt));
     }
     return response;
+  }
+
+  @Override
+  protected PaymentStatusRequest validateAndTransformRequest(PaymentStatusRequest request, String orgIpaCode) {
+    // no transformation needed, the request is already in the expected format in this scenario
+    return request;
   }
 }

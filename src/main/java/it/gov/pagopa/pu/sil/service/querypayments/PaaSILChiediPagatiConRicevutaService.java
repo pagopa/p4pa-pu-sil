@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
@@ -33,7 +34,6 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
   private final PagatiMapper pagatiMapper;
   private final SessionIdMapper sessionIdMapper;
   private final ReceiptService receiptService;
-  private SilFaults debtPositionNotFoundFault;
 
   public PaaSILChiediPagatiConRicevutaService(
     OrganizationService organizationService,
@@ -49,60 +49,45 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
   }
 
   @Override
-  protected void validateRequest(PaaSILChiediPagatiConRicevuta request) {
-    //validate that only one search field is present
-    if(Stream.of(request.getIdSession(), request.getIdentificativoUnivocoDovuto(), request.getIdentificativoUnivocoVersamento())
-      .filter(StringUtils::isNotBlank)
-      .count() != 1) {
-      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore, è obbligatorio specificare esattamente un parametro tra idSession, identificativoUnivocoVersamento e identificativoUnivocoDovuto.");
+  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaymentStatusRequest request, Organization organization, String accessToken) {
+    String queryParam = request.id();
+    switch (request.idType()) {
+      case PAYMENT_ID -> {
+        return sessionIdMapper.mapSessionIdToInstallmentIds(queryParam).stream()
+          //search for the debt position by installmentId
+          .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
+          //find the installment in the debt position
+          .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(request, debtPositionPair.getRight(),
+            installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
+          //return the pair of debt position and matching installment
+          .toList();
+      }
+      case IUD -> {
+        return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
+            organization.getOrganizationId(), queryParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
+          .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
+          .findFirst()
+          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(request, debtPosition,
+            installment -> queryParam.equals(installment.getIud()))))
+          .map(List::of)
+          .orElse(List.of());
+      }
+      case NOTICE_NUMBER ->  {
+        //search for the debt position by identificativoUnivocoVersamento
+        return debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
+            organization.getOrganizationId(), queryParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
+          .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
+          .findFirst()
+          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(request, debtPosition,
+            installment -> queryParam.equals(installment.getIuv()))))
+          .map(List::of)
+          .orElse(List.of());
+      }
+      default -> {
+        return List.of();
+      }
     }
   }
-
-  @Override
-  protected SilFaults getFaultForDebtPositionNotFound() {
-    return debtPositionNotFoundFault;
-  }
-
-  @Override
-  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaaSILChiediPagatiConRicevuta request, Organization organization, String accessToken) {
-
-    if (StringUtils.isNotBlank(request.getIdSession())) {
-      debtPositionNotFoundFault = SilFaults.PAA_ID_SESSION_NON_VALIDO;
-
-      return sessionIdMapper.mapSessionIdToInstallmentIds(request.getIdSession()).stream()
-        //search for the debt position by installmentId
-        .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
-        //find the installment in the debt position
-        .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
-          installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
-        //return the pair of debt position and matching installment
-        .toList();
-    } else if (StringUtils.isNotBlank(request.getIdentificativoUnivocoDovuto())) {
-      debtPositionNotFoundFault = SilFaults.PAA_IUD_NON_VALIDO;
-
-      return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-          organization.getOrganizationId(), request.getIdentificativoUnivocoDovuto(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
-        .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
-        .findFirst()
-        .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
-          installment -> request.getIdentificativoUnivocoDovuto().equals(installment.getIud()))))
-        .map(List::of)
-        .orElse(List.of());
-    } else {
-      debtPositionNotFoundFault = SilFaults.PAA_IUV_NON_VALIDO;
-
-      //search for the debt position by identificativoUnivocoVersamento
-      return debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-          organization.getOrganizationId(), request.getIdentificativoUnivocoVersamento(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
-        .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
-        .findFirst()
-        .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(debtPosition,
-          installment -> request.getIdentificativoUnivocoVersamento().equals(installment.getIuv()))))
-        .map(List::of)
-        .orElse(List.of());
-    }
-  }
-
 
   @Override
   protected String getOrgIpaCode(PaaSILChiediPagatiConRicevuta request) {
@@ -127,5 +112,29 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
     response.setPagati(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedPagati)));
     response.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedReceipt)));
     return response;
+  }
+
+  @Override
+  protected PaymentStatusRequest validateAndTransformRequest(PaaSILChiediPagatiConRicevuta request, String orgIpaCode) {
+    String id = null;
+    QueryPaymentStatusType type = null;
+
+    //validate that only one search field is present
+    if(Stream.of(request.getIdSession(), request.getIdentificativoUnivocoDovuto(), request.getIdentificativoUnivocoVersamento())
+      .filter(StringUtils::isNotBlank)
+      .count() != 1) {
+      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore, è obbligatorio specificare esattamente un parametro tra idSession, identificativoUnivocoVersamento e identificativoUnivocoDovuto.");
+    }
+    if (StringUtils.isNotBlank(request.getIdSession())) {
+      id = request.getIdSession();
+      type = QueryPaymentStatusType.PAYMENT_ID;
+    } else if (StringUtils.isNotBlank(request.getIdentificativoUnivocoVersamento())) {
+      id = request.getIdentificativoUnivocoVersamento();
+      type = QueryPaymentStatusType.NOTICE_NUMBER;
+    } else if (StringUtils.isNotBlank(request.getIdentificativoUnivocoDovuto())) {
+      id = request.getIdentificativoUnivocoDovuto();
+      type = QueryPaymentStatusType.IUD;
+    }
+    return new PaymentStatusRequest(orgIpaCode, type, id, false);
   }
 }

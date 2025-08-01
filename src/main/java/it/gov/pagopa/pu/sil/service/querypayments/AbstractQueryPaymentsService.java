@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
@@ -26,16 +27,21 @@ public abstract class AbstractQueryPaymentsService<I, O> {
     this.organizationService = organizationService;
   }
 
-  protected abstract void validateRequest(I request);
-
-  protected abstract List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(I request, Organization organization, String accessToken);
+  protected abstract List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaymentStatusRequest request, Organization organization, String accessToken);
 
   protected abstract String getOrgIpaCode(I request);
 
   protected abstract O mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList, Organization organization, String accessToken, I request);
 
-  protected abstract SilFaults getFaultForDebtPositionNotFound();
+  protected abstract PaymentStatusRequest validateAndTransformRequest(I request, String orgIpaCode);
 
+  protected SilFaults getFaultForDebtPositionNotFound(QueryPaymentStatusType idType) {
+    return switch (idType) {
+      case PAYMENT_ID -> SilFaults.PAA_ID_SESSION_NON_VALIDO;
+      case IUD -> SilFaults.PAA_IUD_NON_VALIDO;
+      case NOTICE_NUMBER -> SilFaults.PAA_IUV_NON_VALIDO;
+    };
+  }
 
   public O processRequest(I request, UserInfo userInfo, String accessToken) {
     String orgIpaCode = getOrgIpaCode(request);
@@ -49,21 +55,21 @@ public abstract class AbstractQueryPaymentsService<I, O> {
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
 
-    //validate the request
-    validateRequest(request);
+    //validate and transform the request
+    PaymentStatusRequest transformedRequest = validateAndTransformRequest(request, orgIpaCode);
 
     //ideally there could be multiple debt positions involved
-    List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList = getDebtPositionsAndInstallments(request, organization, accessToken);
+    List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList = getDebtPositionsAndInstallments(transformedRequest, organization, accessToken);
 
     if(debtPositionWithInstallmentList.isEmpty()){
-      throw new SilFaultException(getFaultForDebtPositionNotFound(), "Nessuna posizione debitoria trovata");
+      throw new SilFaultException(getFaultForDebtPositionNotFound(transformedRequest.idType()), "Nessuna posizione debitoria trovata");
     }
 
     //debt positions and installments validations
     debtPositionWithInstallmentList.forEach(debtPositionWithInstallment -> {
       //verify debt position is of the expected organization
       if (!debtPositionWithInstallment.getLeft().getOrganizationId().equals(organizationId)) {
-        throw new SilFaultException(getFaultForDebtPositionNotFound(), "Posizione debitoria non trovata");
+        throw new SilFaultException(getFaultForDebtPositionNotFound(transformedRequest.idType()), "Posizione debitoria non trovata");
       }
       //validate installment is paid
       validateInstallmentStatus(debtPositionWithInstallment.getRight());
@@ -73,12 +79,12 @@ public abstract class AbstractQueryPaymentsService<I, O> {
     return mapper(debtPositionWithInstallmentList, organization, accessToken, request);
   }
 
-  protected InstallmentDTO findInstallmentOfDebtPosition(DebtPositionDTO debtPosition, Predicate<InstallmentDTO> installmentFinderPredicate) {
+  protected InstallmentDTO findInstallmentOfDebtPosition(PaymentStatusRequest request, DebtPositionDTO debtPosition, Predicate<InstallmentDTO> installmentFinderPredicate) {
     return debtPosition.getPaymentOptions().stream()
       .flatMap(po -> po.getInstallments().stream())
       .filter(installmentFinderPredicate)
       .findFirst()
-      .orElseThrow(() -> new SilFaultException(getFaultForDebtPositionNotFound(), "Avviso non trovato"));
+      .orElseThrow(() -> new SilFaultException(getFaultForDebtPositionNotFound(request.idType()), "Avviso non trovato"));
   }
 
   protected void validateInstallmentStatus(InstallmentDTO installment) {

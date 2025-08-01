@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
@@ -39,25 +39,15 @@ public class PaaSILChiediPagatiService extends AbstractQueryPaymentsService<PaaS
   }
 
   @Override
-  protected void validateRequest(PaaSILChiediPagati request) {
-    //nothing to do here, no specific validation needed
-  }
-
-  @Override
-  protected SilFaults getFaultForDebtPositionNotFound() {
-    return SilFaults.PAA_ID_SESSION_NON_VALIDO;
-  }
-
-  @Override
-  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaaSILChiediPagati request, Organization organization, String accessToken) {
+  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaymentStatusRequest request, Organization organization, String accessToken) {
     //idSession is installmentId
-    List<Long> installmentIds = sessionIdMapper.mapSessionIdToInstallmentIds(request.getIdSession());
+    List<Long> installmentIds = sessionIdMapper.mapSessionIdToInstallmentIds(request.id());
 
     return installmentIds.stream()
       //search for the debt position by installmentId
       .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
       //find the installment in the debt position
-      .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
+      .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(request, debtPositionPair.getRight(),
         installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
       //return the pair of debt position and matching installment
       .toList();
@@ -84,5 +74,11 @@ public class PaaSILChiediPagatiService extends AbstractQueryPaymentsService<PaaS
     PaaSILChiediPagatiRisposta response = new PaaSILChiediPagatiRisposta();
     response.setPagati(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedPagati)));
     return response;
+  }
+
+  @Override
+  protected PaymentStatusRequest validateAndTransformRequest(PaaSILChiediPagati request, String orgIpaCode) {
+    // no validation needed in this scenario
+    return new PaymentStatusRequest(orgIpaCode, QueryPaymentStatusType.PAYMENT_ID, request.getIdSession(), false);
   }
 }

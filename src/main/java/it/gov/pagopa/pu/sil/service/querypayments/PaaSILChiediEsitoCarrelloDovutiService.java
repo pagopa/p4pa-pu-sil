@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.CartStatus;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
@@ -47,25 +48,15 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
   }
 
   @Override
-  protected void validateRequest(PaaSILChiediEsitoCarrelloDovuti request) {
-    //nothing to do here, no specific validation needed
-  }
-
-  @Override
-  protected SilFaults getFaultForDebtPositionNotFound() {
-    return SilFaults.PAA_ID_SESSION_NON_VALIDO;
-  }
-
-  @Override
-  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaaSILChiediEsitoCarrelloDovuti request, Organization organization, String accessToken) {
+  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaymentStatusRequest request, Organization organization, String accessToken) {
     //idSession is installmentId
-    List<Long> installmentIds = sessionIdMapper.mapSessionIdToInstallmentIds(request.getIdSessionCarrello());
+    List<Long> installmentIds = sessionIdMapper.mapSessionIdToInstallmentIds(request.id());
 
     return installmentIds.stream()
       //search for the debt position by installmentId
       .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
       //find the installment in the debt position
-      .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
+      .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(request, debtPositionPair.getRight(),
         installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
       //return the pair of debt position and matching installment
       .toList();
@@ -108,6 +99,12 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
     }
 
     return response;
+  }
+
+  @Override
+  protected PaymentStatusRequest validateAndTransformRequest(PaaSILChiediEsitoCarrelloDovuti request, String orgIpaCode) {
+    // no validation needed in this scenario
+    return new PaymentStatusRequest(orgIpaCode, QueryPaymentStatusType.PAYMENT_ID, request.getIdSessionCarrello(), false);
   }
 
   private CartStatus getCartStatus(InstallmentDTO installment) {
