@@ -1,16 +1,13 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
-import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -18,73 +15,26 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
 public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentStatusRequest, PaymentStatusResponseDTO> {
-  private final DebtPositionService debtPositionService;
   private final ReceiptMapper receiptMapper;
   private final ReceiptService receiptService;
-  private final SessionIdMapper sessionIdMapper;
 
   public QueryPaymentsService(OrganizationService organizationService,
-                              DebtPositionService debtPositionService,
+                              DebtPositionInstallmentFacadeService debtPositionInstallmentFacadeService,
                               ReceiptMapper receiptMapper,
-                              ReceiptService receiptService,
-                              SessionIdMapper sessionIdMapper) {
-    super(organizationService);
-    this.debtPositionService = debtPositionService;
+                              ReceiptService receiptService) {
+    super(organizationService, debtPositionInstallmentFacadeService);
     this.receiptMapper = receiptMapper;
     this.receiptService = receiptService;
-    this.sessionIdMapper = sessionIdMapper;
   }
 
   @Override
   protected void validateInstallmentStatus(InstallmentDTO installment) {
     // no validation needed for installment status in this context,
     // it's handled in mapper method returing the status itself in the response
-  }
-
-  @Override
-  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaymentStatusRequest request, Organization organization, String accessToken) {
-    String queryParam = request.id();
-    switch (request.idType()) {
-      case PAYMENT_ID -> {
-
-        return sessionIdMapper.mapSessionIdToInstallmentIds(queryParam).stream()
-          //search for the debt position by installmentId
-          .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken)))
-          //find the installment in the debt position
-          .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(request, debtPositionPair.getRight(),
-            installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
-          //return the pair of debt position and matching installment
-          .toList();
-      }
-      case IUD -> {
-        return debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-            organization.getOrganizationId(), queryParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
-          .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
-          .findFirst()
-          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(request, debtPosition,
-            installment -> queryParam.equals(installment.getIud()))))
-          .map(List::of)
-          .orElse(List.of());
-      }
-      case NOTICE_NUMBER ->  {
-        return debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-            organization.getOrganizationId(), queryParam, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)
-          .stream().filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
-          .findFirst()
-          .map(debtPosition -> Pair.of(debtPosition, findInstallmentOfDebtPosition(request, debtPosition,
-            installment -> queryParam.equals(installment.getIuv()))))
-          .map(List::of)
-          .orElse(List.of());
-      }
-      default -> {
-        return List.of();
-      }
-    }
   }
 
   @Override

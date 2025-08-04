@@ -4,12 +4,11 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
-import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -34,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
+import static it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType.INSTALLMENT_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -44,11 +44,9 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
   private PaaSILChiediEsitoCarrelloDovutiService paaSILChiediEsitoCarrelloDovutiService;
 
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private DebtPositionInstallmentFacadeService debtPositionInstallmentFacadeServiceMock;
   @Mock
   private PagatiMapper pagatiMapperMock;
-  @Mock
-  private SessionIdMapper sessionIdMapperMock;
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
@@ -63,6 +61,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
   private PaaSILChiediEsitoCarrelloDovuti request;
   private List<Long> installmentIds;
   private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList;
+  private PaymentStatusRequest transformedRequest;
 
   PaaSILChiediEsitoCarrelloDovutiServiceTest() {
     this.podamFactory = TestUtils.getPodamFactory();
@@ -123,12 +122,11 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
       default:
         //nothing to do
     }
+    transformedRequest = new PaymentStatusRequest(request.getCodIpaEnte(), INSTALLMENT_ID, request.getIdSessionCarrello(), false);
 
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-    when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-    pairList.forEach(pair ->
-      when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
-    );
+    when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
+      .thenReturn(pairList);
     if(testCase.equals("valid")) {
       //TODO currently support only one debt position and installment, but could be extended to support multiple
       Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
@@ -176,6 +174,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
         org.setStatus(OrganizationStatus.DRAFT);
         break;
       case "emptyDebtPositionList":
+        request.setIdSessionCarrello(null);
         installmentIds = List.of();
         break;
       case "invalidOrgDebtPosition":
@@ -184,6 +183,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
       default:
         //nothing to do
     }
+    transformedRequest = new PaymentStatusRequest(request.getCodIpaEnte(), INSTALLMENT_ID, request.getIdSessionCarrello(), false);
 
     // mock only used methods of testCase
     switch (testCase) {
@@ -192,14 +192,13 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
         break;
       case "emptyDebtPositionList":
         when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+        when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
+          .thenReturn(List.of());
         break;
       case "invalidOrgDebtPosition":
         when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-        pairList.forEach(pair ->
-          when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
-        );
+        when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
+          .thenReturn(pairList);
         break;
       case "userNotAuth":
       default:

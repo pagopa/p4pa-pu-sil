@@ -129,7 +129,7 @@ class PaymentControllerTest {
   @Test
   void whenPaymentStatusThenOk() {
     // Given
-    QueryPaymentStatusType idType = QueryPaymentStatusType.PAYMENT_ID;
+    QueryPaymentStatusType idType = QueryPaymentStatusType.INSTALLMENT_ID;
     String id = "ID_SESSION_123";
     boolean withReceiptBytes = true;
 

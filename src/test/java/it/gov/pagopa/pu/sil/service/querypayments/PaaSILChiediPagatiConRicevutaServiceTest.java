@@ -4,25 +4,23 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
-import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
-import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiConRicevuta;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiConRicevutaRisposta;
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -35,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
+import static it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -45,11 +44,9 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
   private PaaSILChiediPagatiConRicevutaService paaSILChiediPagatiConRicevutaService;
 
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private DebtPositionInstallmentFacadeService debtPositionInstallmentFacadeServiceMock;
   @Mock
   private PagatiMapper pagatiMapperMock;
-  @Mock
-  private SessionIdMapper sessionIdMapperMock;
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
@@ -58,12 +55,12 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
   private final PodamFactory podamFactory;
 
   private String accessToken;
-  private String sessionId;
   private UserInfo userInfo;
   private Organization org;
   private PaaSILChiediPagatiConRicevuta request;
   private List<Long> installmentIds;
   private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList;
+  private PaymentStatusRequest transformedRequest;
 
   PaaSILChiediPagatiConRicevutaServiceTest() {
     this.podamFactory = TestUtils.getPodamFactory();
@@ -73,7 +70,6 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
   @BeforeEach
   void init() {
     accessToken = "accessToken";
-    sessionId = "sessionId";
     org = podamFactory.manufacturePojo(Organization.class);
     org.setStatus(OrganizationStatus.ACTIVE);
     userInfo = AuthorizationServiceTest.buildAdminUser(org.getOrganizationId(), org.getOrgFiscalCode(), org.getIpaCode());
@@ -82,7 +78,6 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
     request.setIdSession(null);
     request.setIdentificativoUnivocoDovuto(null);
     request.setIdentificativoUnivocoVersamento(null);
-
     installmentIds = List.of(1L, 2L);
     pairList = installmentIds.stream().map(i -> {
       DebtPositionDTO dp = podamFactory.manufacturePojo(DebtPositionDTO.class);
@@ -97,30 +92,30 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
 
 
   @ParameterizedTest
-  @ValueSource(strings = {"sessionId", "iuv", "iud"})
-  void testGetDebtPositionsAndInstallmentsOk(String testCase) throws IOException {
+  @EnumSource(QueryPaymentStatusType.class)
+  void testGetDebtPositionsAndInstallmentsOk(QueryPaymentStatusType idType) throws IOException {
     byte[] encodedPagati = "encodedPagati".getBytes(StandardCharsets.UTF_8);
     byte[] encodedRt = "encodedRt".getBytes(StandardCharsets.UTF_8);
-
-    if ("sessionId".equals(testCase)) {
-      request.setIdSession(sessionId);
-      when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-      pairList.forEach(pair ->
-        when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
-      );
-    } else if ("iuv".equals(testCase)) {
-      String iuv = pairList.getFirst().getRight().getIuv();
-      request.setIdentificativoUnivocoVersamento(iuv);
-      when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(),
-        iuv, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
-    } else if ("iud".equals(testCase)) {
-      String iud = pairList.getFirst().getRight().getIud();
-      request.setIdentificativoUnivocoDovuto(iud);
-      when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(),
-        iud, InstallmentFacadeService.ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(pairList.getFirst().getLeft()));
+    String idParam = null;
+    switch (idType) {
+      case INSTALLMENT_ID -> {
+        request.setIdSession(pairList.getFirst().getRight().getInstallmentId().toString());
+        idParam = request.getIdSession();
+      }
+      case IUD -> {
+        request.setIdentificativoUnivocoDovuto(pairList.getFirst().getRight().getIud());
+        idParam = request.getIdentificativoUnivocoDovuto();
+      }
+      case NOTICE_NUMBER -> {
+        request.setIdentificativoUnivocoVersamento(pairList.getFirst().getRight().getIuv());
+        idParam = request.getIdentificativoUnivocoVersamento();
+      }
     }
+    transformedRequest = new PaymentStatusRequest(request.getCodIpaEnte(), idType, idParam, false);
 
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
+    when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
+      .thenReturn(pairList);
     //TODO currently support only one debt position and installment, but could be extended to support multiple
     Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
     when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(firstPair.getRight(), org, accessToken)).thenReturn(encodedPagati);
@@ -154,8 +149,8 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
     "invalidStatusInstallment,PAA_DOVUTO_NON_PAGABILE,Dovuto non pagabile"
   }, nullValues = {"null"})
   void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
-
-    request.setIdSession(sessionId);
+    QueryPaymentStatusType idType = INSTALLMENT_ID;
+    request.setIdSession(pairList.getFirst().getRight().getInstallmentId().toString());
 
     // change input data to fit testCase
     switch (testCase) {
@@ -178,10 +173,12 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
         installmentIds = List.of();
         break;
       case "emptyDebtPositionListIud":
+        idType = IUD;
         request.setIdSession(null);
         request.setIdentificativoUnivocoDovuto(pairList.getFirst().getRight().getIud());
         break;
       case "emptyDebtPositionListIuv":
+        idType = NOTICE_NUMBER;
         request.setIdSession(null);
         request.setIdentificativoUnivocoVersamento(pairList.getFirst().getRight().getIuv());
         break;
@@ -190,6 +187,7 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
         break;
       case "invalidOrgDebtPositionIud":
         request.setIdSession(null);
+        idType = IUD;
         request.setIdentificativoUnivocoDovuto(pairList.getFirst().getRight().getIud());
         pairList.getFirst().getLeft().setOrganizationId(org.getOrganizationId() + 1);
         break;
@@ -210,41 +208,26 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
         //nothing to do
     }
 
+    String idParam = switch (idType) {
+      case INSTALLMENT_ID -> request.getIdSession();
+      case IUD -> request.getIdentificativoUnivocoDovuto();
+      case NOTICE_NUMBER -> request.getIdentificativoUnivocoVersamento();
+    };
+    transformedRequest = new PaymentStatusRequest(request.getCodIpaEnte(), idType, idParam, false);
     // mock only used methods of testCase
     switch (testCase) {
       case "invalidStatusInstallment", "unpaidInstallment",
            "unpaidToSyncInstallment", "expiredInstallment",
-           "invalidOrgDebtPosition":
+           "invalidOrgDebtPosition", "invalidOrgDebtPositionIud":
         when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-        pairList.forEach(pair ->
-          when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(pair.getRight().getInstallmentId(), accessToken)).thenReturn(pair.getLeft())
-        );
+        when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
+          .thenReturn(pairList);
         break;
-      case "emptyDebtPositionList":
+      case "emptyDebtPositionList", "emptyDebtPositionListIud",
+           "emptyDebtPositionListIuv":
         when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-        break;
-      case "invalidOrgDebtPositionIud":
-        when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        pairList.forEach(pair ->
-          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), pairList.getFirst().getRight().getIud(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken))
-            .thenReturn(List.of(pairList.getFirst().getLeft()))
-        );
-        break;
-      case "emptyDebtPositionListIud":
-        when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        pairList.forEach(pair ->
-          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), pairList.getFirst().getRight().getIud(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken))
-            .thenReturn(List.of())
-        );
-        break;
-      case "emptyDebtPositionListIuv":
-        when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
-        pairList.forEach(pair ->
-          when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), pairList.getFirst().getRight().getIuv(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken))
-            .thenReturn(List.of())
-        );
+        when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
+          .thenReturn(List.of());
         break;
       case "invalidOrgStatus", "noSearchCriteria", "multipleSearchCriteria":
         when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
@@ -255,12 +238,12 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
     }
 
     if(testCase.equals("userNotAuth")) {
-      AuthorizationDeniedException authorizationDeniedException = Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
+      AuthorizationDeniedException authorizationDeniedException = assertThrows(AuthorizationDeniedException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
 
       assertNotNull(authorizationDeniedException);
       assertTrue(authorizationDeniedException.getMessage().contains(silFaultCode));
     } else {
-      SilFaultException silFaultException = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
+      SilFaultException silFaultException = assertThrows(SilFaultException.class, () -> paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken));
 
       assertNotNull(silFaultException);
       assertNotNull(silFaultException.getFault());
