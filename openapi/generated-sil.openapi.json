@@ -1628,7 +1628,7 @@
       },
       "QueryPaymentStatusType" : {
         "type" : "string",
-        "enum" : [ "PAYMENT_ID", "NOTICE_NUMBER", "IUD" ]
+        "enum" : [ "INSTALLMENT_ID", "NOTICE_NUMBER", "IUD" ]
       },
       "DownloadUrl" : {
         "type" : "object",

@@ -1285,7 +1285,7 @@ components:
     QueryPaymentStatusType:
       type: string
       enum:
-        - PAYMENT_ID
+        - INSTALLMENT_ID
         - NOTICE_NUMBER
         - IUD
   securitySchemes:
