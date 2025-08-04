@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.util.Constants;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
 import org.junit.jupiter.api.AfterEach;
@@ -68,73 +67,94 @@ class ValidationServiceTest {
 
   //region: validateStamp
   @Test
-  void validateStamp_NullStamp_ReturnsError() {
-    String debtPositionTypeOrgCode = Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE;
+  void validateStamp_NullStamp_DoesNothing() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
+    versamento.setDatiMarcaBolloDigitale(null);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(null, debtPositionTypeOrgCode));
-
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, result.getFault());
-    assertEquals("Dati marca da bollo digitale non presenti", result.getDescription());
+    Assertions.assertDoesNotThrow(() -> validationService.validateStamp(versamento));
+    Assertions.assertNull(versamento.getDatiMarcaBolloDigitale());
   }
 
   @Test
-  void validateStamp_NullStampWithNonStampDebtPositionTypeOrgCode_ReturnsError() {
-    String debtPositionTypeOrgCode = "NON_STAMP_CODE";
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(null, debtPositionTypeOrgCode));
-
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, result.getFault());
-    assertEquals("Dati marca da bollo digitale non previsti con tipo dovuto diverso da " + Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE, result.getDescription());
-  }
-
-  @Test
-  void validateStamp_InvalidStampFields_ReturnsError() {
+  void validateStamp_AllFieldsBlank_RemovesStamp() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
     CtDatiMarcaBolloDigitale stamp = new CtDatiMarcaBolloDigitale();
-    stamp.setTipoBollo(null);
-    stamp.setHashDocumento(null);
-    stamp.setProvinciaResidenza(null);
-    String debtPositionTypeOrgCode = Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE;
+    stamp.setTipoBollo(" ");
+    stamp.setHashDocumento(" ");
+    stamp.setProvinciaResidenza(" ");
+    versamento.setDatiMarcaBolloDigitale(stamp);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(stamp, debtPositionTypeOrgCode));
-
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, result.getFault());
-    assertEquals("Dati marca da bollo digitale non presenti", result.getDescription());
+    Assertions.assertDoesNotThrow(() -> validationService.validateStamp(versamento));
+    Assertions.assertNull(versamento.getDatiMarcaBolloDigitale());
   }
 
   @Test
-  void validateStamp_HashDocumentoTooLong_ReturnsError() {
+  void validateStamp_HashDocumentoTooShort_Throws() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
     CtDatiMarcaBolloDigitale stamp = new CtDatiMarcaBolloDigitale();
-    stamp.setTipoBollo("Valid");
-    stamp.setHashDocumento("A".repeat(73)); // Exceeds 72 characters
-    stamp.setProvinciaResidenza("Valid");
-    String debtPositionTypeOrgCode = Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE;
+    stamp.setHashDocumento("abc"); // too short
+    stamp.setProvinciaResidenza("VE");
+    stamp.setTipoBollo("01");
+    versamento.setDatiMarcaBolloDigitale(stamp);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(stamp, debtPositionTypeOrgCode));
-
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, result.getFault());
-    assertEquals("Hash documento marca da bollo digitale più lunga di 72 caratteri", result.getDescription());
+    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
+    Assertions.assertTrue(ex.getDescription().contains("hash documento"));
   }
 
   @Test
-  void validateStamp_ValidStampWithStampDebtPositionTypeOrgCode_ReturnsNull() {
+  void validateStamp_HashDocumentoTooLong_Throws() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
     CtDatiMarcaBolloDigitale stamp = new CtDatiMarcaBolloDigitale();
-    stamp.setTipoBollo("Valid");
-    stamp.setHashDocumento("ValidHash");
-    stamp.setProvinciaResidenza("Valid");
-    String debtPositionTypeOrgCode = Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE;
+    stamp.setHashDocumento("a".repeat(73)); // too long
+    stamp.setProvinciaResidenza("VE");
+    stamp.setTipoBollo("01");
+    versamento.setDatiMarcaBolloDigitale(stamp);
 
-    Assertions.assertDoesNotThrow(() -> validationService.validateStamp(stamp, debtPositionTypeOrgCode));
+    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
+    Assertions.assertTrue(ex.getDescription().contains("hash documento"));
   }
 
   @Test
-  void validateStamp_ValidStampWithNonStampDebtPositionTypeOrgCode_ReturnsNull() {
+  void validateStamp_ProvinciaResidenzaWrongLength_Throws() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
     CtDatiMarcaBolloDigitale stamp = new CtDatiMarcaBolloDigitale();
-    stamp.setTipoBollo("Valid");
-    stamp.setHashDocumento("ValidHash");
-    stamp.setProvinciaResidenza("Valid");
-    String debtPositionTypeOrgCode = "NON_STAMP_CODE";
+    stamp.setHashDocumento("abcd");
+    stamp.setProvinciaResidenza("V"); // too short
+    stamp.setTipoBollo("01");
+    versamento.setDatiMarcaBolloDigitale(stamp);
 
-    Assertions.assertDoesNotThrow(() -> validationService.validateStamp(stamp, debtPositionTypeOrgCode));
+    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
+    Assertions.assertTrue(ex.getDescription().contains("provincia residenza"));
+  }
+
+  @Test
+  void validateStamp_TipoBolloWrongLength_Throws() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
+    CtDatiMarcaBolloDigitale stamp = new CtDatiMarcaBolloDigitale();
+    stamp.setHashDocumento("abcd");
+    stamp.setProvinciaResidenza("VE");
+    stamp.setTipoBollo("1"); // too short
+    versamento.setDatiMarcaBolloDigitale(stamp);
+
+    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
+    Assertions.assertTrue(ex.getDescription().contains("tipo bollo"));
+  }
+
+  @Test
+  void validateStamp_ValidStamp_DoesNothing() {
+    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
+    CtDatiMarcaBolloDigitale stamp = new CtDatiMarcaBolloDigitale();
+    stamp.setHashDocumento("abcd");
+    stamp.setProvinciaResidenza("VE");
+    stamp.setTipoBollo("01");
+    versamento.setDatiMarcaBolloDigitale(stamp);
+
+    Assertions.assertDoesNotThrow(() -> validationService.validateStamp(versamento));
+    Assertions.assertNotNull(versamento.getDatiMarcaBolloDigitale());
   }
   //endregion
 
