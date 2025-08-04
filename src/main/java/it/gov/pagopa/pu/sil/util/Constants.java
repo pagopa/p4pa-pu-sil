@@ -14,8 +14,6 @@ public class Constants {
 
   public static final String AUX_DIGIT = "3";
 
-  public static final String STAMP_DEBT_POSITION_TYPE_ORG_CODE = "STAMP";
-
   public static final long EXPIRATION_SPONTANEOUS_SIL_DEBT_POSITION_MINUTES = 120L;
 
   public static final String ANONYMOUS_FISCAL_CODE = "ANONIMO";
