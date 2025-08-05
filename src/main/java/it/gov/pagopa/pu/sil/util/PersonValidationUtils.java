@@ -41,7 +41,15 @@ public class PersonValidationUtils {
      *
      * where 'X' means mandatory , 'o' means optional , '-' means not set
      */
-    if (StringUtils.isBlank(soggettoPagatore.getNazionePagatore()) && (
+    if (StringUtils.isBlank(soggettoPagatore.getIndirizzoPagatore()) &&
+      StringUtils.isBlank(soggettoPagatore.getCivicoPagatore()) &&
+      StringUtils.isBlank(soggettoPagatore.getCapPagatore()) &&
+      StringUtils.isBlank(soggettoPagatore.getLocalitaPagatore()) &&
+      StringUtils.isBlank(soggettoPagatore.getProvinciaPagatore()) &&
+      StringUtils.isBlank(soggettoPagatore.getNazionePagatore())
+    ) {
+      return; // no address provided, valid case
+    } else if (StringUtils.isBlank(soggettoPagatore.getNazionePagatore()) && (
       StringUtils.isNotBlank(soggettoPagatore.getIndirizzoPagatore()) ||
         StringUtils.isNotBlank(soggettoPagatore.getCivicoPagatore()) ||
         StringUtils.isNotBlank(soggettoPagatore.getCapPagatore()) ||
