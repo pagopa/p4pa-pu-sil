@@ -48,7 +48,7 @@ public class PersonValidationUtils {
       StringUtils.isBlank(soggettoPagatore.getProvinciaPagatore()) &&
       StringUtils.isBlank(soggettoPagatore.getNazionePagatore())
     ) {
-      return; // no address provided, valid case
+      // no address provided, valid case
     } else if (StringUtils.isBlank(soggettoPagatore.getNazionePagatore()) && (
       StringUtils.isNotBlank(soggettoPagatore.getIndirizzoPagatore()) ||
         StringUtils.isNotBlank(soggettoPagatore.getCivicoPagatore()) ||
