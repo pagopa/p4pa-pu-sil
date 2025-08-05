@@ -149,7 +149,7 @@ public class PaaSILImportaDovutoMapper {
       });
 
     PaymentOptionDTO paymentOptionOnDb = debtPositionOnDb.getPaymentOptions().stream()
-      .filter(po -> Objects.equals(po.getPaymentOptionId(), installmentToSync.getPaymentOptionId()))
+      .filter(po -> Objects.equals(po.getPaymentOptionId(), installmentOnDb.getPaymentOptionId()))
       .findFirst()
       .orElseThrow(); //should never happen, since it has been checked in the previous step; just used to satisfy SonarQube
 
