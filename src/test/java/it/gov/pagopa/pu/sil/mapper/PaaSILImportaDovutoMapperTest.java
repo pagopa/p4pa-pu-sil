@@ -157,7 +157,7 @@ class PaaSILImportaDovutoMapperTest {
     InstallmentDTO installmentToSync = podamFactory.manufacturePojo(InstallmentDTO.class);
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().getLast().getInstallments().getLast();
     installmentOnDb.setIud(installmentToSync.getIud());
-    debtPositionOnDb.getPaymentOptions().getLast().setPaymentOptionId(installmentToSync.getPaymentOptionId());
+    debtPositionOnDb.getPaymentOptions().getLast().setPaymentOptionId(installmentOnDb.getPaymentOptionId());
 
     if(action.equals(Constants.LEGACY_IMPORT_ACTION_MODIFY)){
       doNothing().when(secondaryTransferMapperMock).checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync);

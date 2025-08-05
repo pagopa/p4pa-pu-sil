@@ -65,12 +65,14 @@ public class PaaSILImportaDovutoMapper {
       .organizationId(organization.getOrganizationId())
       .debtPositionOrigin(DebtPositionOrigin.ORDINARY_SIL)
       .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
+      .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
       .flagPuPagoPaPayment(true)
       .flagIuvVolatile(true)
       .paymentOptions(List.of(PaymentOptionDTO.builder()
         .status(PaymentOptionStatus.UNPAID)
         .paymentOptionIndex(1)
         .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+        .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
         .totalAmountCents(amountCents)
         .installments(List.of(fillInstallmentFields(organization.getIpaCode(), versamento, new InstallmentDTO())))
         .build()))
@@ -149,7 +151,7 @@ public class PaaSILImportaDovutoMapper {
       });
 
     PaymentOptionDTO paymentOptionOnDb = debtPositionOnDb.getPaymentOptions().stream()
-      .filter(po -> Objects.equals(po.getPaymentOptionId(), installmentToSync.getPaymentOptionId()))
+      .filter(po -> Objects.equals(po.getPaymentOptionId(), installmentOnDb.getPaymentOptionId()))
       .findFirst()
       .orElseThrow(); //should never happen, since it has been checked in the previous step; just used to satisfy SonarQube
 

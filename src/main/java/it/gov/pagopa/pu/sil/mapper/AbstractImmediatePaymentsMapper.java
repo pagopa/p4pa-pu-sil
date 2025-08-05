@@ -43,6 +43,8 @@ abstract class AbstractImmediatePaymentsMapper {
     if (dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size() > Constants.MAX_CART_SIZE) {
       throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: " +
         dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size() + "/" + Constants.MAX_CART_SIZE);
+    } else if (dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().isEmpty()) {
+      throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
     }
 
     PersonDTO debtor = personMapper.getAndValidateDebtor(dovutiObj.getSoggettoPagatore());
@@ -65,6 +67,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .status(DebtPositionStatus.UNPAID)
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .organizationId(orgId)
+      .description("Posizione debitoria ") //debtPositionTypeOrg description will be added later, with method fillAndValidateVersamentoFieldsOfDebtPosition()
       .flagIuvVolatile(true)
       .flagPuPagoPaPayment(true)
       .multiDebtor(false)
@@ -105,9 +108,9 @@ abstract class AbstractImmediatePaymentsMapper {
 
     debtPosition.setIupdOrg(cartId + "-" + idx);
     debtPosition.setDebtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()));
-    debtPosition.setDescription(versamento.getCausaleVersamento());
+    debtPosition.setDescription(debtPosition.getDescription() + debtPositionTypeOrg.getDescription());
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
-    paymentOption.setDescription(versamento.getCausaleVersamento());
+    paymentOption.setDescription(debtPosition.getDescription());
     paymentOption.setTotalAmountCents(amount);
 
     paymentOption.setInstallments(List.of(
