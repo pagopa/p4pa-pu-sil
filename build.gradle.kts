@@ -218,12 +218,13 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "ExportFileType" to "it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTypeEnum",
     "ImportStatusType" to "it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus",
     "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
-    "InstallmentDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO",
+    "PaidInstallmentDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO",
     "OffsetDateTimeIntervalFilter" to "it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter",
     "ClassificationsExportFileFilter" to "it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter",
     "PersonDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO",
     "ExportFileStatus" to "it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus",
     "InstallmentStatus" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus",
+    "PaymentOptionType" to "it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType",
   ))
 }
 

@@ -210,7 +210,7 @@ paths:
         content:
           application/json:
             schema:
-              type: 'InstallmentDTO'
+              type: 'PaidInstallmentDTO'
       responses:
         '200':
           description: OK
@@ -1165,12 +1165,7 @@ components:
         description:
           type: string
         paymentOptionType:
-          type: string
-          enum:
-            - SINGLE_INSTALLMENT
-            - REDUCED_SINGLE_INSTALLMENT
-            - INSTALLMENTS
-            - DOWN_PAYMENT
+          type: 'PaymentOptionType'
         paymentOptionIndex:
           type: integer
           format: int32
