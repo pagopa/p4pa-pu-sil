@@ -21,7 +21,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,6 +29,8 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class PaaSILImportaDovutoMapper {
+
+  public static final String IMPORT_DOVUTO = "_IMPORT-DOVUTO";
 
   private final DebtPositionTypeService debtPositionTypeService;
   private final JAXBTransformService jaxbTransformService;
@@ -71,7 +72,7 @@ public class PaaSILImportaDovutoMapper {
         .paymentOptionIndex(1)
         .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
         .totalAmountCents(amountCents)
-        .installments(List.of(fillInstallmentFields(versamento, new InstallmentDTO())))
+        .installments(List.of(fillInstallmentFields(organization.getIpaCode(), versamento, new InstallmentDTO())))
         .build()))
       .build();
 
@@ -84,7 +85,7 @@ public class PaaSILImportaDovutoMapper {
     return Pair.of(debtPositionDTO, versamento.getAzione());
   }
 
-  private InstallmentDTO fillInstallmentFields(Versamento versamento, InstallmentDTO installmentDTO) {
+  private InstallmentDTO fillInstallmentFields(String ipaCode, Versamento versamento, InstallmentDTO installmentDTO) {
     CtDatiVersamento datiVersamento = versamento.getDatiVersamento();
 
     //the object Versamento is supposed to be validated before this mapping
@@ -114,7 +115,8 @@ public class PaaSILImportaDovutoMapper {
       .remittanceInformation(datiVersamento.getCausaleVersamento())
       .legacyPaymentMetadata(datiVersamento.getDatiSpecificiRiscossione())
       .balance(balanceString)
-      .debtor(debtor);
+      .debtor(debtor)
+      .sourceFlowName(ipaCode + IMPORT_DOVUTO);
   }
 
   private void fillInstallmentOnDbWithFieldsToSync(InstallmentDTO installmentOnDb, InstallmentDTO installmentToSync) {
@@ -127,6 +129,7 @@ public class PaaSILImportaDovutoMapper {
     installmentOnDb.setLegacyPaymentMetadata(installmentToSync.getLegacyPaymentMetadata());
     installmentOnDb.setBalance(installmentToSync.getBalance());
     installmentOnDb.setDebtor(installmentToSync.getDebtor());
+    installmentOnDb.setSourceFlowName(installmentToSync.getSourceFlowName());
 
     if(installmentToSync.getTransfers()!=null){
       //multi-beneficiary handling
