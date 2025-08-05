@@ -96,7 +96,8 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .status(IngestionFlowFileStatus.COMPLETED)
       .organizationId(1L)
       .ingestionFlowFileId(1L)
-      .discardFileName("discarded.csv")
+      .numCorrectlyImportedRows(12L)
+      .errorDescription(null)
       .pdfGeneratedId("pdfId");
 
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
@@ -107,14 +108,13 @@ class IngestionFlowFileProcessingStatusServiceTest {
 
     // Then
     List<DownloadUrl> urls = response.getDownloadUrls();
-    assertEquals(3, urls.size());
+    assertEquals(2, urls.size());
     assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.OUTPUT_FILE));
-    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.DISCARDED_FILE));
     assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.PAYMENT_NOTICE_FILE));
   }
 
   @Test
-  void testCompletedStatusWithOnlyOutputFileGeneratesOneUrl() {
+  void testErrorStatusWithOnlyOutputFileGeneratesOneUrl() {
     // Given
     Long ingestionFlowFileId = 1L;
     String orgIpaCode = "ORG1";
@@ -122,11 +122,11 @@ class IngestionFlowFileProcessingStatusServiceTest {
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     IngestionFlowFile file = podamFactory.manufacturePojo(IngestionFlowFile.class)
       .ingestionFlowFileType(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
-      .status(IngestionFlowFileStatus.COMPLETED)
+      .status(IngestionFlowFileStatus.ERROR)
       .organizationId(1L)
       .ingestionFlowFileId(1L)
-      .discardFileName(null)
-      .pdfGeneratedId(null);
+      .numCorrectlyImportedRows(12L)
+      .discardFileName("discarded");
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(file);
 
@@ -135,8 +135,9 @@ class IngestionFlowFileProcessingStatusServiceTest {
 
     //Then
     List<DownloadUrl> urls = response.getDownloadUrls();
-    assertEquals(1, urls.size());
-    assertEquals(CodeEnum.OUTPUT_FILE, urls.getFirst().getCode());
+    assertEquals(2, urls.size());
+    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.OUTPUT_FILE));
+    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.DISCARDED_FILE));
   }
 
   @Test

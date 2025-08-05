@@ -609,6 +609,9 @@ public class PuForOrganizationPaymentsEndpoint {
   }
 
   private void setDownloadUrls(PaaSILChiediStatoImportFlussoRisposta response, List<DownloadUrl> urls, PaaSILChiediStatoImportFlusso request) {
+    if (urls == null) {
+      return;
+    }
     urls.forEach(url -> {
       switch (url.getCode()) {
         case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti()) ? url.getUrl() : null);
