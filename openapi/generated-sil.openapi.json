@@ -525,7 +525,7 @@
           "description" : "the type of identifier used to identify the payment operation",
           "required" : true,
           "schema" : {
-            "type" : "string"
+            "$ref" : "#/components/schemas/QueryPaymentStatusType"
           }
         }, {
           "name" : "id",
@@ -1463,6 +1463,10 @@
         },
         "required" : [ "debtPositionId", "navList" ]
       },
+      "InstallmentStatus" : {
+        "type" : "string",
+        "enum" : [ "TO_SYNC", "REPORTED", "PAID", "CANCELLED", "INVALID", "EXPIRED", "UNPAID", "UNPAYABLE", "DRAFT" ]
+      },
       "PaymentStatusResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -1470,7 +1474,7 @@
             "type" : "string"
           },
           "status" : {
-            "$ref" : "#/components/schemas/StatusEnum"
+            "$ref" : "#/components/schemas/InstallmentStatus"
           },
           "receipt" : {
             "$ref" : "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
@@ -1489,18 +1493,18 @@
       "ReceiptTransferDTO" : {
         "type" : "object",
         "properties" : {
-          "idTransfer" : {
+          "transferIndex" : {
             "type" : "integer",
             "format" : "int32"
           },
-          "transferAmountCents" : {
+          "amountCents" : {
             "type" : "integer",
             "format" : "int64"
           },
-          "fiscalCodePA" : {
+          "orgFiscalCode" : {
             "type" : "string"
           },
-          "companyName" : {
+          "orgName" : {
             "type" : "string"
           },
           "mbdAttachment" : {
@@ -1513,7 +1517,7 @@
           "remittanceInformation" : {
             "type" : "string"
           },
-          "transferCategory" : {
+          "category" : {
             "type" : "string"
           },
           "metadata" : {
@@ -1523,7 +1527,7 @@
             }
           }
         },
-        "required" : [ "fiscalCodePA", "idTransfer", "remittanceInformation", "transferAmountCents", "transferCategory" ]
+        "required" : [ "amountCents", "category", "orgFiscalCode", "remittanceInformation", "transferIndex" ]
       },
       "ReceiptWithAdditionalNodeDataDTO" : {
         "type" : "object",
@@ -1622,9 +1626,9 @@
         },
         "required" : [ "channelDescription", "companyName", "creditorReferenceId", "debtor", "description", "idChannel", "idPsp", "noticeNumber", "orgFiscalCode", "outcome", "paymentAmountCents", "paymentReceiptId", "pspCompanyName", "transfers" ]
       },
-      "StatusEnum" : {
+      "QueryPaymentStatusType" : {
         "type" : "string",
-        "enum" : [ "NOT_PAID", "PAID" ]
+        "enum" : [ "INSTALLMENT_ID", "NOTICE_NUMBER", "IUD" ]
       },
       "DownloadUrl" : {
         "type" : "object",

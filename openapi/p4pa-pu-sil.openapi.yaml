@@ -603,11 +603,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            enum:
-              - PAYMENT_ID
-              - NOTICE_NUMBER
-              - IUD
+            $ref: '#/components/schemas/QueryPaymentStatusType'
         - name: id
           description: the identifier used to identify the payment
           in: path
@@ -942,10 +938,7 @@ components:
         paymentId:
           type: string
         status:
-          type: string
-          enum:
-            - NOT_PAID
-            - PAID
+          type: 'InstallmentStatus'
         receipt:
           $ref: "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
         receiptBytes:
@@ -1027,22 +1020,22 @@ components:
           type: 'PersonDTO'
     ReceiptTransferDTO:
       required:
-        - idTransfer
-        - transferAmountCents
-        - fiscalCodePA
+        - transferIndex
+        - amountCents
+        - orgFiscalCode
         - remittanceInformation
-        - transferCategory
+        - category
       type: object
       properties:
-        idTransfer:
+        transferIndex:
           type: integer
           format: int32
-        transferAmountCents:
+        amountCents:
           type: integer
           format: int64
-        fiscalCodePA:
+        orgFiscalCode:
           type: string
-        companyName:
+        orgName:
           type: string
         mbdAttachment:
           type: string
@@ -1051,7 +1044,7 @@ components:
           type: string
         remittanceInformation:
           type: string
-        transferCategory:
+        category:
           type: string
         metadata:
           type: object
@@ -1289,6 +1282,12 @@ components:
           $ref: "#/components/schemas/Action"
         installment:
           $ref: "#/components/schemas/InstallmentDTO"
+    QueryPaymentStatusType:
+      type: string
+      enum:
+        - INSTALLMENT_ID
+        - NOTICE_NUMBER
+        - IUD
   securitySchemes:
     BearerAuth:
       type: http
