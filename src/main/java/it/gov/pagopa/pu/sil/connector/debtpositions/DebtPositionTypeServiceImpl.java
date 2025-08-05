@@ -25,7 +25,7 @@ public class DebtPositionTypeServiceImpl implements DebtPositionTypeService {
   }
 
   @Override
-  @Cacheable(cacheNames = CacheConfig.Fields.debtPositionType, key = "#id", unless="#result == null")
+  @Cacheable(cacheNames = CacheConfig.Fields.debtPositionType, key = "#debtPositionType", unless="#result == null")
   public DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken) {
     return client.getDebtPositionTypeById(debtPositionType, accessToken);
   }

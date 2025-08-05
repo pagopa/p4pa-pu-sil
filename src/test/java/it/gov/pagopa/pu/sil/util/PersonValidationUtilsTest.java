@@ -155,6 +155,17 @@ class PersonValidationUtilsTest {
   }
 
   @Test
+  void validateAddress_ValidEmptyData_ReturnsPersonDTO() {
+    soggettoPagatore.setCapPagatore(null);
+    soggettoPagatore.setCivicoPagatore(null);
+    soggettoPagatore.setIndirizzoPagatore(null);
+    soggettoPagatore.setNazionePagatore(null);
+    soggettoPagatore.setLocalitaPagatore(null);
+    soggettoPagatore.setProvinciaPagatore(null);
+    Assertions.assertDoesNotThrow(() -> PersonValidationUtils.validateAddress(soggettoPagatore));
+  }
+
+  @Test
   void validateAddress_InvalidProvinceForNonItalianNation_ReturnsError() {
     soggettoPagatore.setNazionePagatore("US");
     soggettoPagatore.setProvinciaPagatore("RM");
