@@ -239,7 +239,7 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | REST_AGID_INTEGRITY_PU_EXPIRATION_MINUTES | AGID Data Integrity header - expiration of signature                                                                                                                                                           | 10        |
 | REST_AGID_INTEGRITY_PU_PRIVATEKEY         | AGID Data Integrity header - private key                                                                                                                                                                       |           |
 | REST_AGID_INTEGRITY_PU_PUBLICKEY          | AGID Data Integrity header - public key                                                                                                                                                                        |           |
-
+ 
 
 
 ## 🛠️ Getting Started
