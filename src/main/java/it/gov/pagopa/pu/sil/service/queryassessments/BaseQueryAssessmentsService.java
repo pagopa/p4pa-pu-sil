@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 public abstract class BaseQueryAssessmentsService<R> {
@@ -57,14 +58,14 @@ public abstract class BaseQueryAssessmentsService<R> {
   private List<AssessmentsBalanceView> getAssessmentsBalances(UserInfo userInfo, String accessToken, Long organizationId, String iuf, String organizationIpaCode) {
     List<String> iuds = classificationService.findPaymentsReportingByOrganizationIdAndIuf(organizationId, iuf, accessToken)
       .stream()
-      .filter(pr -> !PAYMENT_OUTCOME_CODES.contains(pr.getPaymentOutcomeCode()))
-      .map(pr -> installmentService.findAuthorizedByTransferSemanticKey(
+      .filter(pr -> pr != null && !PAYMENT_OUTCOME_CODES.contains(pr.getPaymentOutcomeCode()))
+      .flatMap(pr -> Optional.ofNullable(installmentService.findAuthorizedByTransferSemanticKey(
         pr.getOrganizationId(),
         pr.getIuv(),
         pr.getIur(),
         pr.getTransferIndex(),
         userInfo.getMappedExternalUserId(),
-        accessToken))
+        accessToken)).stream())
       .map(InstallmentNoPII::getIud)
       .toList();
     if (iuds.isEmpty()) {

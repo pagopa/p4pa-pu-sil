@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -100,7 +101,10 @@ class QueryAssessmentsServiceTest {
       treasury.setIuf("iuf123");
       when(classificationService.findTreasuryBySemanticKey(anyLong(), any(), any(), any())).thenReturn(Optional.of(treasury));
     }
-    when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any())).thenReturn(List.of(paymentsReporting));
+    List<PaymentsReporting> paymentsReportingList = new ArrayList<>();
+    paymentsReportingList.add(paymentsReporting);
+    paymentsReportingList.add(null);
+    when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any())).thenReturn(paymentsReportingList);
     when(installmentService.findAuthorizedByTransferSemanticKey(anyLong(), any(), any(), anyInt(), any(), any())).thenReturn(installmentNoPII);
     when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(anyLong(), anyList(), any())).thenReturn(List.of(assessmentsBalanceView));
     when(assessmentsBalanceMapper.map2BalanceDTO(assessmentsBalanceView)).thenReturn(balanceDTO);
