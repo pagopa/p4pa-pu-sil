@@ -24,31 +24,31 @@ public abstract class BaseQueryAssessmentsService<R> {
     String iuf,
     String billYear,
     String billNumber) {
-    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
 
+    AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
-    List<AssessmentsBalanceView> balances;
-    SilFaults fault;
-    String errorMessage;
     if (iuf == null) {
-      balances = classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(
-        organizationId,
-        billNumber,
-        billYear,
-        accessToken);
-      fault = SilFaults.PIVOT_BOLLETTA_NON_TROVATA;
-      errorMessage = "La bolletta per codIpaEnte [ %s ], annoBolletta [ %s ] e numeroBolletta [ %s ] non è stata trovata"
-        .formatted(orgIpaCode, billYear, billNumber);
-    } else {
-      balances = classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(
-        organizationId, iuf, accessToken);
-      fault = SilFaults.PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA;
-      errorMessage = "Nessuna rendicontazione trovata per l'organizzazione [ %s ] e IUF [ %s ]"
-        .formatted(orgIpaCode, iuf);
+      List<AssessmentsBalanceView> balances = classificationService
+        .findClosedAssessmentsBalanceViewByOrganizationIdAndBill(
+          organizationId, billNumber, billYear, accessToken);
+      if (balances.isEmpty()) {
+        throw handleException(
+          SilFaults.PIVOT_BOLLETTA_NON_TROVATA,
+          "La bolletta per codIpaEnte [ %s ], annoBolletta [ %s ] e numeroBolletta [ %s ] non è stata trovata"
+            .formatted(orgIpaCode, billYear, billNumber));
+      }
+      return mapToResponse(balances);
     }
+
+    List<AssessmentsBalanceView> balances = classificationService
+      .findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(
+        organizationId, iuf, accessToken);
     if (balances.isEmpty()) {
-      throw handleException(fault, errorMessage);
+      throw handleException(
+        SilFaults.PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA,
+        "Nessuna rendicontazione trovata per l'organizzazione [ %s ] e IUF [ %s ]"
+          .formatted(orgIpaCode, iuf));
     }
     return mapToResponse(balances);
   }
