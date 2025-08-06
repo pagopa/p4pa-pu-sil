@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.service.queryassessments;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
-import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.LegacyAssessmentsBalanceMapper;
@@ -22,9 +21,8 @@ public class LegacyQueryAssessmentsService extends BaseQueryAssessmentsService<P
   private final LegacyAssessmentsBalanceMapper legacyAssessmentsBalanceMapper;
 
   public LegacyQueryAssessmentsService(ClassificationService classificationService,
-                                       InstallmentService installmentService,
                                        LegacyAssessmentsBalanceMapper legacyAssessmentsBalanceMapper) {
-    super(classificationService, installmentService);
+    super(classificationService);
     this.legacyAssessmentsBalanceMapper = legacyAssessmentsBalanceMapper;
   }
 

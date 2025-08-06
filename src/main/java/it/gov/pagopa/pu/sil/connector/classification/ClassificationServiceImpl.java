@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 public class ClassificationServiceImpl implements ClassificationService {
@@ -17,18 +16,14 @@ public class ClassificationServiceImpl implements ClassificationService {
   }
 
   @Override
-  public Optional<Treasury> findTreasuryBySemanticKey(Long organizationId, String billCode, String billYear, String accessToken) {
-    return Optional.ofNullable(client.findTreasuryBySemanticKey(organizationId, billCode, billYear, accessToken));
+  public List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken) {
+    CollectionModelAssessmentsBalanceView collectionModelAssessmentsBalanceView = client.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(organizationId, iuf, accessToken);
+    return Objects.requireNonNull(collectionModelAssessmentsBalanceView.getEmbedded()).getAssessmentsBalanceViews();
   }
 
   @Override
-  public List<PaymentsReporting> findPaymentsReportingByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken) {
-    CollectionModelPaymentsReporting collectionModelPaymentsReporting = client.findPaymentsReportingByOrganizationIdAndIuf(organizationId, iuf, accessToken);
-    return Objects.requireNonNull(collectionModelPaymentsReporting.getEmbedded()).getPaymentsReportings();
-  }
-
-  public List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(Long organizationId, List<String> iuds, String accessToken) {
-    CollectionModelAssessmentsBalanceView collectionModelAssessmentsBalanceView = client.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(organizationId, iuds, accessToken);
+  public List<AssessmentsBalanceView> findClosedAssessmentsBalanceViewByOrganizationIdAndBill(Long organizationId, String billCode, String billYear, String accessToken) {
+    CollectionModelAssessmentsBalanceView collectionModelAssessmentsBalanceView = client.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(organizationId, billCode, billYear, accessToken);
     return Objects.requireNonNull(collectionModelAssessmentsBalanceView.getEmbedded()).getAssessmentsBalanceViews();
   }
 }
