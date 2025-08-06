@@ -1123,19 +1123,14 @@ components:
     DebtPositionDTO:
       required:
         - iupdOrg
-        - orgFiscalCode
         - debtPositionTypeOrgCode
         - paymentOptions
         - flagPagoPaPayment
       type: object
       properties:
-        action:
-          $ref: "#/components/schemas/Action"
         iupdOrg:
           type: string
         description:
-          type: string
-        orgFiscalCode:
           type: string
         debtPositionTypeOrgCode:
           type: string
@@ -1157,8 +1152,6 @@ components:
         - paymentOptionType
       type: object
       properties:
-        action:
-          $ref: "#/components/schemas/Action"
         totalAmountCents:
           type: integer
           format: int64
@@ -1181,8 +1174,6 @@ components:
         - transfers
       type: object
       properties:
-        action:
-          $ref: "#/components/schemas/Action"
         iud:
           type: string
         iuv:
@@ -1218,8 +1209,6 @@ components:
         - transferIndex
       type: object
       properties:
-        action:
-          $ref: "#/components/schemas/Action"
         orgFiscalCode:
           type: string
         orgName:
@@ -1244,12 +1233,6 @@ components:
         transferIndex:
           type: integer
           format: int32
-    Action:
-      type: string
-      enum:
-        - I
-        - M
-        - A
     ManageDebtPositionDTO:
       type: object
       required:
@@ -1274,7 +1257,7 @@ components:
         - installment
       properties:
         action:
-          $ref: "#/components/schemas/Action"
+          type: 'Action'
         installment:
           $ref: "#/components/schemas/InstallmentDTO"
     QueryPaymentStatusType:
