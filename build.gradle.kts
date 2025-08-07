@@ -169,9 +169,10 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateFILESHARE",
     "openApiGeneratePAGOPAPAYMENTS",
     "openApiGenerateNodeCheckout",
-    "openApiGeneratePaymentNofication",
-    "openApiGenerateLegacyPaymentNofication",
-    "openApiGenerateActualizationLegacy",
+    "openApiGeneratePaymentNotification",
+    "openApiGenerateLegacyPaymentNotification",
+    "openApiGenerateActualization",
+    "openApiGenerateLegacyActualization",
     "jaxbJavaGenPuForOrganizationPayments",
     "jaxbJavaGenPuForOrganizationReconciliation",
     "openApiGenerateCLASSIFICATION"
@@ -407,7 +408,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   library.set("resttemplate")
 }
 
-tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateActualizationLegacy") {
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyActualization") {
   group = "openapi"
   description = "openapi"
 
@@ -416,6 +417,35 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
   modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "serializableModel" to "true",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "useOneOfInterfaces" to "true",
+    "useBeanValidation" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "enumPropertyNaming" to "original",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
+  library.set("resttemplate")
+}
+
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateActualization") {
+  group = "openapi"
+  description = "openapi"
+
+  generatorName.set("java")
+  inputSpec.set("$rootDir/openapi/amount-updates.yaml")
+  outputDir.set("$projectDir/build/generated")
+  apiPackage.set("it.gov.pagopa.actualization.controller.generated")
+  modelPackage.set("it.gov.pagopa.actualization.dto.generated")
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
@@ -551,7 +581,7 @@ jaxb {
     library.set("resttemplate")
   }
 
-  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePaymentNofication") {
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePaymentNotification") {
     group = "openapi"
     description = "openapi"
 
@@ -579,7 +609,7 @@ jaxb {
     library.set("resttemplate")
   }
 
-  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyPaymentNofication") {
+  tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyPaymentNotification") {
     group = "openapi"
     description = "openapi"
 

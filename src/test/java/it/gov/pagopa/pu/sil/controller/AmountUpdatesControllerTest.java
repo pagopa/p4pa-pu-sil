@@ -52,4 +52,5 @@ class AmountUpdatesControllerTest {
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertSame(expectedResult, response.getBody());
   }
+
 }

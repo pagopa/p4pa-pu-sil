@@ -1,11 +1,11 @@
 package it.gov.pagopa.pu.sil.connector.actualization.client;
 
-import it.gov.pagopa.actualization.legacy.controller.generated.DefaultApi;
-import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
-import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
+import it.gov.pagopa.actualization.controller.generated.DefaultApi;
+import it.gov.pagopa.actualization.dto.generated.Payment;
+import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
-import it.gov.pagopa.pu.sil.connector.actualization.config.LegacyActualizationApisHolder;
+import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -23,24 +23,24 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class LegacyActualizationClientTest {
+class NativeActualizationClientTest {
   @Mock
-  private LegacyActualizationApisHolder legacyActualizationApisHolderMock;
+  private ActualizationApisHolder nativeActualizationApisHolderMock;
   @Mock
   private DefaultApi amountUpdatesLegacyApiClientMock;
   @Mock
   private RegistryLogger registryLoggerMock;
 
-  private LegacyActualizationClient client;
+  private NativeActualizationClient client;
 
   @BeforeEach
   void setUp() {
-    client = new LegacyActualizationClient(legacyActualizationApisHolderMock, registryLoggerMock);
+    client = new NativeActualizationClient(nativeActualizationApisHolderMock, registryLoggerMock);
   }
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(legacyActualizationApisHolderMock, amountUpdatesLegacyApiClientMock, registryLoggerMock);
+    Mockito.verifyNoMoreInteractions(nativeActualizationApisHolderMock, amountUpdatesLegacyApiClientMock, registryLoggerMock);
   }
 
   @Test
@@ -51,34 +51,33 @@ class LegacyActualizationClientTest {
     String nav = "31234567890";
     UserInfo loggedUser = mock(UserInfo.class);
     String accessToken = "accessToken";
-    Pagamento pagamento = new Pagamento()
-      .cfEnteCreditore(orgFiscalCode)
-      .importoPosizione(Pagamento.ImportoPosizioneEnum.S)
-      .numeroAvviso(nav);
-    PagamentoAggiornato expectedPagamentoAggiornato = new PagamentoAggiornato();
+    Payment payment = new Payment()
+      .orgFiscalCode(orgFiscalCode)
+      .nav(nav);
+    UpdatedPayment updatedPayment = new UpdatedPayment().nav(nav).amountCents(100L);
 
     Mockito.when(orgSilServiceDTO.getApplicationName()).thenReturn("TestApp");
-    Mockito.when(orgSilServiceDTO.getServiceUrl()).thenReturn("http://example.com/notification-price");
+    Mockito.when(orgSilServiceDTO.getServiceUrl()).thenReturn("http://example.com/amount-update");
 
     RegistryContextData expectedContextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName("TestApp")
-      .iuv(Utilities.nav2Iuv(pagamento.getNumeroAvviso()))
+      .iuv(Utilities.nav2Iuv(payment.getNav()))
       .loggedUser(loggedUser)
       .build();
 
-    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, pagamento, false, false);
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, payment, false, false);
 
-    Mockito.when(legacyActualizationApisHolderMock.getAmountUpdatesLegacyApi(accessToken, "http://example.com"))
+    Mockito.when(nativeActualizationApisHolderMock.getActualizationNativeApi(accessToken, "http://example.com"))
       .thenReturn(amountUpdatesLegacyApiClientMock);
-    Mockito.when(amountUpdatesLegacyApiClientMock.attualizzazione(pagamento))
-      .thenReturn(expectedPagamentoAggiornato);
+    Mockito.when(amountUpdatesLegacyApiClientMock.actualization(payment))
+      .thenReturn(updatedPayment);
 
     // When
-    PagamentoAggiornato result = client.actualization(orgFiscalCode, orgSilServiceDTO, loggedUser, accessToken, pagamento);
+    UpdatedPayment result = client.actualization(orgSilServiceDTO, loggedUser, accessToken, payment);
 
     // Then
-    assertSame(expectedPagamentoAggiornato, result);
+    assertSame(updatedPayment, result);
   }
 }
