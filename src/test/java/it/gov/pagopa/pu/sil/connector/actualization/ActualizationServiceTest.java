@@ -17,15 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class NativeActualizationServiceTest {
+class ActualizationServiceTest {
   @Mock
   private NativeActualizationClient nativeActualizationClientMock;
 
-  private NativeActualizationService nativeActualizationService;
+  private ActualizationService actualizationService;
 
   @BeforeEach
   void setUp() {
-    nativeActualizationService = new NativeActualizationServiceImpl(nativeActualizationClientMock);
+    actualizationService = new ActualizationServiceImpl(nativeActualizationClientMock);
   }
 
   @AfterEach
@@ -46,7 +46,7 @@ class NativeActualizationServiceTest {
            .thenReturn(updatedPayment);
 
     // When
-    UpdatedPayment result = nativeActualizationService.actualization(orgSilServiceDTO, loggedUser, accessToken, payment);
+    UpdatedPayment result = actualizationService.actualization(orgSilServiceDTO, loggedUser, accessToken, payment);
 
     // Then
     assertSame(updatedPayment, result);

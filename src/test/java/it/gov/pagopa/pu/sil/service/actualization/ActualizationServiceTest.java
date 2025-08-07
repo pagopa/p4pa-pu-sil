@@ -7,8 +7,8 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
+import it.gov.pagopa.pu.sil.connector.actualization.ActualizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
-import it.gov.pagopa.pu.sil.connector.actualization.NativeActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
@@ -42,19 +42,19 @@ class ActualizationServiceTest {
   @Mock
   private LegacyActualizationService legacyActualizationServiceMock;
   @Mock
-  private NativeActualizationService nativeActualizationServiceMock;
+  private ActualizationService actualizationServiceMock;
   @Mock
   private SilAccessTokenService silAccessTokenServiceMock;
   @Mock
   private AmountUpdatesMapper amountUpdatesMapperMock;
 
-  private ActualizationService service;
+  private it.gov.pagopa.pu.sil.service.actualization.ActualizationService service;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
-    service = new ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock, nativeActualizationServiceMock, silAccessTokenServiceMock, amountUpdatesMapperMock);
+    service = new it.gov.pagopa.pu.sil.service.actualization.ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock, actualizationServiceMock, silAccessTokenServiceMock, amountUpdatesMapperMock);
   }
 
   @AfterEach
@@ -62,7 +62,7 @@ class ActualizationServiceTest {
     Mockito.verifyNoMoreInteractions(
       orgSilServiceComponentMock,
       legacyActualizationServiceMock,
-      nativeActualizationServiceMock,
+      actualizationServiceMock,
       silAccessTokenServiceMock,
       amountUpdatesMapperMock);
   }
@@ -132,12 +132,12 @@ class ActualizationServiceTest {
 
     Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
     if (testCase.equals("happyCase")) {
-      Mockito.when(nativeActualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenReturn(updatedPayment);
+      Mockito.when(actualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenReturn(updatedPayment);
       Mockito.when(amountUpdatesMapperMock.updatedPayment2AmountUpdatesDTO(updatedPayment)).thenReturn(actualizationResultDTO);
     } else {
       HttpServerErrorException mockedException = Mockito.mock(HttpServerErrorException.class);
       Mockito.when(mockedException.getResponseBodyAs(Error.class)).thenReturn(Error.builder().code(testCase).message("error " + testCase).build());
-      Mockito.when(nativeActualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenThrow(mockedException);
+      Mockito.when(actualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenThrow(mockedException);
     }
 
     switch (testCase) {

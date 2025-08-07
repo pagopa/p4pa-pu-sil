@@ -8,7 +8,6 @@ import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
-import it.gov.pagopa.pu.sil.connector.actualization.NativeActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
@@ -28,18 +27,18 @@ import org.springframework.web.client.HttpServerErrorException;
 public class ActualizationService {
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyActualizationService legacyActualizationService;
-  private final NativeActualizationService nativeActualizationService;
+  private final it.gov.pagopa.pu.sil.connector.actualization.ActualizationService actualizationService;
   private final SilAccessTokenService silAccessTokenService;
   private final AmountUpdatesMapper amountUpdatesMapper;
 
   public ActualizationService(OrgSilServiceComponent orgSilServiceComponent,
                               LegacyActualizationService legacyActualizationService,
-                              NativeActualizationService nativeActualizationService,
+                              it.gov.pagopa.pu.sil.connector.actualization.ActualizationService actualizationService,
                               SilAccessTokenService silAccessTokenService,
                               AmountUpdatesMapper amountUpdatesMapper) {
     this.orgSilServiceComponent = orgSilServiceComponent;
     this.legacyActualizationService = legacyActualizationService;
-    this.nativeActualizationService = nativeActualizationService;
+    this.actualizationService = actualizationService;
     this.silAccessTokenService = silAccessTokenService;
     this.amountUpdatesMapper = amountUpdatesMapper;
   }
@@ -73,7 +72,7 @@ public class ActualizationService {
     } else {
       //native implementation
       try {
-        UpdatedPayment updatedPayment = nativeActualizationService.actualization(
+        UpdatedPayment updatedPayment = actualizationService.actualization(
           orgSilService,
           loggedUser,
           accessToken,

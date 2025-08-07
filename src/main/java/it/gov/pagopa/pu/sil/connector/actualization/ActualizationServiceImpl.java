@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class NativeActualizationServiceImpl implements NativeActualizationService {
+public class ActualizationServiceImpl implements ActualizationService {
   private final NativeActualizationClient nativeActualizationClient;
 
-  public NativeActualizationServiceImpl(NativeActualizationClient nativeActualizationClient) {
+  public ActualizationServiceImpl(NativeActualizationClient nativeActualizationClient) {
     this.nativeActualizationClient = nativeActualizationClient;
   }
 
