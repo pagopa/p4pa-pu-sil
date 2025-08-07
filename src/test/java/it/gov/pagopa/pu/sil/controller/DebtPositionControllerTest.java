@@ -66,7 +66,7 @@ class DebtPositionControllerTest {
       .build();
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, requestDebtPosition, false, false);
 
-    when(debtPositionCreationServiceMock.handleInsert(
+    when(debtPositionCreationServiceMock.handleAction(
       requestDebtPosition,
       orgIpaCode,
       userInfo,

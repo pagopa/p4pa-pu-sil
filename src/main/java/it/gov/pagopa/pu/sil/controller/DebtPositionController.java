@@ -42,7 +42,7 @@ public class DebtPositionController implements DebtPositionApi {
       registryLogger.execute(
         contextData,
         debtPositionDTO,
-        () -> debtPositionCreationService.handleInsert(
+        () -> debtPositionCreationService.handleAction(
           debtPositionDTO,
           orgIpaCode,
           userInfo,
