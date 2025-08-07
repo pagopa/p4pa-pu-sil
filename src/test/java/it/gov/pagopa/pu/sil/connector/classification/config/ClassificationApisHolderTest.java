@@ -12,8 +12,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.util.List;
-
 @ExtendWith(MockitoExtension.class)
 class ClassificationApisHolderTest extends BaseApiHolderTest {
   @Mock
@@ -40,28 +38,10 @@ class ClassificationApisHolderTest extends BaseApiHolderTest {
   }
 
   @Test
-  void whenGetTreasurySearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-    assertAuthenticationShouldBeSetInThreadSafeMode(
-        accessToken -> apisHolder.getTreasurySearchControllerApi(accessToken)
-            .crudTreasuryFindBySemanticKey(1L, "BILL_CODE", "2025"),
-        new ParameterizedTypeReference<>() {},
-        apisHolder::unload);
-  }
-
-  @Test
-  void whenGetPaymentsReportingSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-    assertAuthenticationShouldBeSetInThreadSafeMode(
-        accessToken -> apisHolder.getPaymentsReportingSearchControllerApi(accessToken)
-            .crudPaymentsReportingFindByOrganizationIdAndIuf(1L, "IUF"),
-        new ParameterizedTypeReference<>() {},
-        apisHolder::unload);
-  }
-
-  @Test
   void whenGetAssessmentsBalanceViewSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
         accessToken -> apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-            .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuds("1", List.of("IUD1", "IUD2")),
+            .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf("1", "IUF1"),
         new ParameterizedTypeReference<>() {},
         apisHolder::unload);
   }

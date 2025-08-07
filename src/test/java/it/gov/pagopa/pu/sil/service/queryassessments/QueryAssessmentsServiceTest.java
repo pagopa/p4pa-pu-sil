@@ -2,11 +2,7 @@ package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
-import it.gov.pagopa.pu.classification.dto.generated.PaymentsReporting;
-import it.gov.pagopa.pu.classification.dto.generated.Treasury;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
-import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.dto.generated.BalanceDTO;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
@@ -20,13 +16,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.co.jemos.podam.api.PodamFactory;
-import it.gov.pagopa.pu.sil.util.TestUtils;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,45 +31,40 @@ class QueryAssessmentsServiceTest {
   @Mock
   private ClassificationService classificationService;
   @Mock
-  private InstallmentService installmentService;
-  @Mock
   private AssessmentsBalanceMapper assessmentsBalanceMapper;
 
   private QueryAssessmentsService service;
-  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
+
+  private UserInfo userInfo;
+  private final String orgIpaCode = "ORG_IPA_CODE";
 
   @BeforeEach
   void setUp() {
-    service = new QueryAssessmentsService(classificationService, installmentService, assessmentsBalanceMapper);
+    service = new QueryAssessmentsService(classificationService, assessmentsBalanceMapper);
+    userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
   }
 
   @Test
-  void givenBillDataWhenGetAssessmentThenNoTreasuryThenThrowAssessmentNotFoundException() {
+  void givenUserNotAdminWhenWhenGetAssessmentThenNoTreasuryThenUnauthorizedException() {
     // Given
-    String orgIpaCode = "org";
-    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
-
-    when(classificationService.findTreasuryBySemanticKey(anyLong(), any(), any(), any()))
-      .thenReturn(Optional.empty());
-
+    String otherOrgIpaCode = "OTHER_ORG_IPA_CODE";
     // When Then
-    assertThrows(AssessmentNotFoundException.class, () ->
-      service.getAssessment(userInfo, "token", orgIpaCode, null, "2024", "123")
+    assertThrows(AuthorizationDeniedException.class, () ->
+      service.getAssessment(userInfo, "token", otherOrgIpaCode, null, "2024", "123")
     );
   }
 
   @Test
   void givenIufWhenGetAssessmentThenNoPaymentsReportingThenThrowAssessmentNotFoundException() {
     // Given
-    String orgIpaCode = "org";
-    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
+    String iuf = "IUF123";
 
-    when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any()))
+    when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
       .thenReturn(Collections.emptyList());
 
     // When Then
     assertThrows(AssessmentNotFoundException.class, () ->
-      service.getAssessment(userInfo, "token", orgIpaCode, "IUF123", null, null)
+      service.getAssessment(userInfo, "token", orgIpaCode, iuf, null, null)
     );
   }
 
@@ -84,10 +72,6 @@ class QueryAssessmentsServiceTest {
   @MethodSource("provideGetAssessmentInput")
   void givenBillDataWhenGetAssessmentThenSuccess(String iuf, String billYear, String billNumber) {
     // Given
-    String orgIpaCode = "org";
-    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
-    PaymentsReporting paymentsReporting = podamFactory.manufacturePojo(PaymentsReporting.class);
-    InstallmentNoPII installmentNoPII = podamFactory.manufacturePojo(InstallmentNoPII.class);
     AssessmentsBalanceView assessmentsBalanceView = new AssessmentsBalanceView()
       .officeCode("OFF1")
       .debtPositionTypeOrgCode("TYP1")
@@ -97,16 +81,13 @@ class QueryAssessmentsServiceTest {
     BalanceDTO balanceDTO = new BalanceDTO();
 
     if (iuf == null) {
-      Treasury treasury = new Treasury();
-      treasury.setIuf("iuf123");
-      when(classificationService.findTreasuryBySemanticKey(anyLong(), any(), any(), any())).thenReturn(Optional.of(treasury));
+      when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(
+          anyLong(), anyString(), anyString(), anyString()))
+        .thenReturn(List.of(assessmentsBalanceView));
+    } else {
+      when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), anyString(), anyString()))
+        .thenReturn(List.of(assessmentsBalanceView));
     }
-    List<PaymentsReporting> paymentsReportingList = new ArrayList<>();
-    paymentsReportingList.add(paymentsReporting);
-    paymentsReportingList.add(null);
-    when(classificationService.findPaymentsReportingByOrganizationIdAndIuf(anyLong(), any(), any())).thenReturn(paymentsReportingList);
-    when(installmentService.findAuthorizedByTransferSemanticKey(anyLong(), any(), any(), anyInt(), any(), any())).thenReturn(installmentNoPII);
-    when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(anyLong(), anyList(), any())).thenReturn(List.of(assessmentsBalanceView));
     when(assessmentsBalanceMapper.map2BalanceDTO(assessmentsBalanceView)).thenReturn(balanceDTO);
 
     // When

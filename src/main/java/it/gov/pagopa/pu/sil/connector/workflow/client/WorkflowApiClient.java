@@ -19,7 +19,7 @@ public class WorkflowApiClient {
 
   public String waitWorkflowCompletion(String workflowId, Integer maxAttempts, Integer retryDelayMs, String accessToken) {
     try {
-      return workflowApisHolder.getWorkflowApi(accessToken).waitWorkflowCompletion(workflowId, maxAttempts, retryDelayMs);
+      return workflowApisHolder.getWorkflowApi(accessToken).waitWorkflowCompletion(workflowId, maxAttempts, retryDelayMs).getStatus();
     } catch (HttpClientErrorException e) {
       return "WORKFLOW_" + (e.getStatusCode() instanceof HttpStatus status
         ? status.name()

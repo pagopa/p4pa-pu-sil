@@ -117,6 +117,32 @@ class PaaSILInviaDovutiMapperTest {
   }
 
   @ParameterizedTest
+  @ValueSource(strings = {"empty", "6dp"})
+  void mapRequestToDebtPositions_InvalidNumberOfDebtPositions_ReturnsError(String testCase) {
+    PaaSILInviaDovuti request = new PaaSILInviaDovuti();
+    Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    if(testCase.equals("6dp")) {
+      for(int i = 0; i < 6; i++) {
+        CtDatiSingoloVersamentoDovuti versamento = podamFactory.manufacturePojo(CtDatiSingoloVersamentoDovuti.class);
+        dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
+      }
+    }
+    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
+
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+
+    if(testCase.equals("6dp")){
+      assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, exception.getFault());
+      assertEquals("Numero massimo dovuti nel carrello superato: 6/5", exception.getDescription());
+    } else {
+      assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
+      assertEquals("Nessun dovuto presente", exception.getDescription());
+    }
+  }
+
+  @ParameterizedTest
   @ValueSource(strings = {"happyCase", "stamp", "customValidCategory", "customInvalidCategory"})
   void mapRequestToDebtPositionsOrFault_ValidFlow_ReturnsDebtPositions(String testCase) {
     //given

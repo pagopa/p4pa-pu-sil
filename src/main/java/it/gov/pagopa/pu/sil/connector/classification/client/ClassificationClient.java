@@ -19,26 +19,15 @@ public class ClassificationClient {
     this.classificationApisHolder = classificationApisHolder;
   }
 
-  public Treasury findTreasuryBySemanticKey(Long organizationId, String billCode, String billYear, String accessToken) {
-    log.info("Finding treasury by organization ID, bill code, and bill year");
-    try {
-      return classificationApisHolder.getTreasurySearchControllerApi(accessToken)
-          .crudTreasuryFindBySemanticKey(organizationId, billCode, billYear);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find Treasury having organizationId {}, billCode {} and billYear {}", organizationId, billCode, billYear, e);
-      return null;
-    }
-  }
-
-  public CollectionModelPaymentsReporting findPaymentsReportingByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken) {
-    log.info("Finding payments reporting by organization ID and IUF");
-    return classificationApisHolder.getPaymentsReportingSearchControllerApi(accessToken)
-        .crudPaymentsReportingFindByOrganizationIdAndIuf(organizationId, iuf);
-  }
-
-  public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndIuds(Long organizationId, List<String> iuds, String accessToken) {
-    log.info("Finding assessments balance view by organization ID and IUDs");
+  public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken) {
+    log.info("Finding assessments balance view by organization ID and IUF");
     return classificationApisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuds(String.valueOf(organizationId), iuds);
+      .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(String.valueOf(organizationId), iuf);
+  }
+
+  public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndBill(Long organizationId, String billCode, String billYear, String accessToken) {
+    log.info("Finding assessments balance view by organization ID, bill code and bill year");
+    return classificationApisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
+      .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndBill(String.valueOf(organizationId), billCode, billYear);
   }
 }
