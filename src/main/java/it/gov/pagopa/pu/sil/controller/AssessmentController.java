@@ -19,7 +19,7 @@ public class AssessmentController implements AssessmentApi {
   }
 
   @Override
-  public ResponseEntity<GetAssessmentResponseDTO> getAssessmentByBill(String orgFiscalCode, Integer billYear, String billNumber) {
+  public ResponseEntity<GetAssessmentResponseDTO> getAssessmentByBill(String orgFiscalCode, String billYear, String billNumber) {
     log.info("Received request to get assessment by bill for orgFiscalCode: {}, billYear: {}, billNumber: {}", orgFiscalCode, billYear, billNumber);
     String accessToken = SecurityUtils.getAccessToken();
     UserInfo userInfo = SecurityUtils.getLoggedUser();
@@ -28,7 +28,7 @@ public class AssessmentController implements AssessmentApi {
         accessToken,
         orgFiscalCode,
         null,
-        billYear.toString(),
+        billYear,
         billNumber
     ));
   }

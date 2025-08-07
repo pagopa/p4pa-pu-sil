@@ -46,7 +46,7 @@ class AssessmentControllerTest {
   @Test
   void whenGetAssessmentByBillThenOk() {
     // Given
-    Integer billYear = 2024;
+    String billYear = "2024";
     String billNumber = "12345";
     GetAssessmentResponseDTO expectedResult = new GetAssessmentResponseDTO();
 
@@ -55,7 +55,7 @@ class AssessmentControllerTest {
         accessToken,
         orgFiscalCode,
         null,
-        billYear.toString(),
+        billYear,
         billNumber
     )).thenReturn(expectedResult);
     // When
