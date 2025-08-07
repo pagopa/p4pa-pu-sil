@@ -67,7 +67,7 @@ public class ActualizationFacadeService {
           .build()
       );
       if (legacyResult.getCodice() != null) {
-        throwException(legacyResult.getCodice().getValue(), legacyResult.getDettaglio());
+        throw buildException(legacyResult.getCodice().getValue(), legacyResult.getDettaglio());
       }
       return amountUpdatesMapper.pagamentoAggiornato2AmountUpdatesDTO(legacyResult);
     } else {
@@ -86,25 +86,21 @@ public class ActualizationFacadeService {
       } catch (HttpServerErrorException e) {
         Error errorResponse = e.getResponseBodyAs(Error.class);
         if (errorResponse != null) {
-          throwException(errorResponse.getCode(), errorResponse.getMessage());
+          throw buildException(errorResponse.getCode(), errorResponse.getMessage());
         } else {
           throw new ApplicationException("Unexpected error: " + e.getMessage(), e);
         }
       }
     }
-    return null; // This line is unreachable but added to satisfy method return type
   }
 
-  private void throwException(String code, String message) {
-    switch (code) {
-      case "002":
-        throw new PaymentNotFoundException(message);
-      case "003":
-        throw new PaymentNotNotifiedException(message);
-      case "004":
-        throw new PaymentInvalidStatusException(message);
-      default:
-        throw new ApplicationException("Unexpected error code: " + code + " - " + message);
-    }
+  private RuntimeException buildException(String code, String message) {
+    return switch (code) {
+      case "002" -> new PaymentNotFoundException(message);
+      case "003" -> new PaymentNotNotifiedException(message);
+      case "004" -> new PaymentInvalidStatusException(message);
+      default ->
+        new ApplicationException("Unexpected error code: " + code + " - " + message);
+    };
   }
 }
