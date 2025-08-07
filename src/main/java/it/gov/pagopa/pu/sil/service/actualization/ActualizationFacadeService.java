@@ -7,6 +7,7 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
+import it.gov.pagopa.pu.sil.connector.actualization.ActualizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
@@ -24,18 +25,18 @@ import org.springframework.web.client.HttpServerErrorException;
 
 @Slf4j
 @Service
-public class ActualizationService {
+public class ActualizationFacadeService {
   private final OrgSilServiceComponent orgSilServiceComponent;
   private final LegacyActualizationService legacyActualizationService;
   private final it.gov.pagopa.pu.sil.connector.actualization.ActualizationService actualizationService;
   private final SilAccessTokenService silAccessTokenService;
   private final AmountUpdatesMapper amountUpdatesMapper;
 
-  public ActualizationService(OrgSilServiceComponent orgSilServiceComponent,
-                              LegacyActualizationService legacyActualizationService,
-                              it.gov.pagopa.pu.sil.connector.actualization.ActualizationService actualizationService,
-                              SilAccessTokenService silAccessTokenService,
-                              AmountUpdatesMapper amountUpdatesMapper) {
+  public ActualizationFacadeService(OrgSilServiceComponent orgSilServiceComponent,
+                                    LegacyActualizationService legacyActualizationService,
+                                    ActualizationService actualizationService,
+                                    SilAccessTokenService silAccessTokenService,
+                                    AmountUpdatesMapper amountUpdatesMapper) {
     this.orgSilServiceComponent = orgSilServiceComponent;
     this.legacyActualizationService = legacyActualizationService;
     this.actualizationService = actualizationService;

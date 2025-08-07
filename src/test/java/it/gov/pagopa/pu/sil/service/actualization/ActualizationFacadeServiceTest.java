@@ -36,7 +36,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class ActualizationServiceTest {
+class ActualizationFacadeServiceTest {
   @Mock
   private OrgSilServiceComponent orgSilServiceComponentMock;
   @Mock
@@ -48,13 +48,13 @@ class ActualizationServiceTest {
   @Mock
   private AmountUpdatesMapper amountUpdatesMapperMock;
 
-  private it.gov.pagopa.pu.sil.service.actualization.ActualizationService service;
+  private ActualizationFacadeService service;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
-    service = new it.gov.pagopa.pu.sil.service.actualization.ActualizationService(orgSilServiceComponentMock, legacyActualizationServiceMock, actualizationServiceMock, silAccessTokenServiceMock, amountUpdatesMapperMock);
+    service = new ActualizationFacadeService(orgSilServiceComponentMock, legacyActualizationServiceMock, actualizationServiceMock, silAccessTokenServiceMock, amountUpdatesMapperMock);
   }
 
   @AfterEach
