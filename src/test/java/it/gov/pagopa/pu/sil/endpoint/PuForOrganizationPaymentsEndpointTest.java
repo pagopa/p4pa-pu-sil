@@ -315,7 +315,7 @@ class PuForOrganizationPaymentsEndpointTest {
       RegistryOutcome.OK
     );
 
-    Mockito.when(paaSILImportaDovutoServiceMock.paaSILImportaDovuto(Mockito.same(request), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(userInfo), Mockito.any()))
+    Mockito.when(paaSILImportaDovutoServiceMock.handleAction(Mockito.same(request), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(userInfo), Mockito.any()))
       .thenReturn(tripleResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()

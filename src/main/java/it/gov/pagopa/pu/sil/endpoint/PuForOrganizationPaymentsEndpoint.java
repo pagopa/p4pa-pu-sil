@@ -223,7 +223,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILImportaDovutoService.paaSILImportaDovuto(request, orgIpaCode, userInfo, accessToken),
+      () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         response,
         PaaSILImportaDovutoRisposta::setFault,
