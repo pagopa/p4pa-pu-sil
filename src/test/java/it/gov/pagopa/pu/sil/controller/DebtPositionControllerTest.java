@@ -3,6 +3,10 @@ package it.gov.pagopa.pu.sil.controller;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
+import it.gov.pagopa.pu.sil.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ManageInstallmentDTO;
+import it.gov.pagopa.pu.sil.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -10,6 +14,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLoggerTest;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.singleimport.DebtPositionCreationService;
+import it.gov.pagopa.pu.sil.service.singleimport.DebtPositionInstallmentsHandlerService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +29,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.co.jemos.podam.api.PodamFactory;
 
+import java.util.List;
+
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,6 +39,8 @@ class DebtPositionControllerTest {
   private RegistryLogger registryLoggerMock;
   @Mock
   private DebtPositionCreationService debtPositionCreationServiceMock;
+  @Mock
+  private DebtPositionInstallmentsHandlerService debtPositionInstallmentsHandlerServiceMock;
 
   @InjectMocks
   private DebtPositionController controller;
@@ -74,6 +83,38 @@ class DebtPositionControllerTest {
 
     // When
     ResponseEntity<DebtPositionDTO> response = controller.createSingleDebtPosition(orgFiscalCode, requestDebtPosition);
+
+    // Then
+    Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    Assertions.assertSame(outcomeTriple.getLeft(), response.getBody());
+  }
+
+  @Test
+  void whenManageDebtPositionInstallmentsThenOk() {
+    // Given
+    ManageDebtPositionDTO requestManageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
+    String iud = requestManageDebtPositionDTO.getInstallments().getFirst().getInstallment().getIud();
+    String iuv = requestManageDebtPositionDTO.getInstallments().getFirst().getInstallment().getIuv();
+    DebtPositionDTO expectedDebtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
+
+    Triple<DebtPositionDTO, String, RegistryOutcome> outcomeTriple = Triple.of(expectedDebtPosition, iuv, RegistryOutcome.OK);
+
+    RegistryContextData expectedContextData = RegistryContextData.builder()
+      .orgFiscalCode(orgFiscalCode)
+      .eventType(RegistryEventType.PTDP_paaSILImportaDovuto)
+      .loggedUser(userInfo)
+      .iuv(iuv)
+      .build();
+    RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, requestManageDebtPositionDTO, false, false);
+
+    when(debtPositionInstallmentsHandlerServiceMock.handleAction(
+      requestManageDebtPositionDTO,
+      orgIpaCode,
+      userInfo,
+      accessToken)).thenReturn(outcomeTriple);
+
+    // When
+    ResponseEntity<DebtPositionDTO> response = controller.manageDebtPositionInstallments(orgFiscalCode, iud, requestManageDebtPositionDTO);
 
     // Then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
