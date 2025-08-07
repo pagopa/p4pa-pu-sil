@@ -4,7 +4,7 @@ import it.gov.pagopa.actualization.dto.generated.Payment;
 import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
-import it.gov.pagopa.pu.sil.connector.actualization.client.NativeActualizationClient;
+import it.gov.pagopa.pu.sil.connector.actualization.client.ActualizationClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,18 +19,18 @@ import static org.mockito.Mockito.mock;
 @ExtendWith(MockitoExtension.class)
 class ActualizationServiceTest {
   @Mock
-  private NativeActualizationClient nativeActualizationClientMock;
+  private ActualizationClient actualizationClientMock;
 
   private ActualizationService actualizationService;
 
   @BeforeEach
   void setUp() {
-    actualizationService = new ActualizationServiceImpl(nativeActualizationClientMock);
+    actualizationService = new ActualizationServiceImpl(actualizationClientMock);
   }
 
   @AfterEach
   void tearDown() {
-    Mockito.verifyNoMoreInteractions(nativeActualizationClientMock);
+    Mockito.verifyNoMoreInteractions(actualizationClientMock);
   }
 
   @Test
@@ -42,7 +42,7 @@ class ActualizationServiceTest {
     Payment payment = new Payment();
     UpdatedPayment updatedPayment = new UpdatedPayment();
 
-    Mockito.when(nativeActualizationClientMock.actualization(orgSilServiceDTO, loggedUser, accessToken, payment))
+    Mockito.when(actualizationClientMock.actualization(orgSilServiceDTO, loggedUser, accessToken, payment))
            .thenReturn(updatedPayment);
 
     // When

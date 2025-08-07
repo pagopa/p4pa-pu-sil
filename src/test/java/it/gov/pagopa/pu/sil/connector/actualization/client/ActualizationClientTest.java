@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
-class NativeActualizationClientTest {
+class ActualizationClientTest {
   @Mock
   private ActualizationApisHolder nativeActualizationApisHolderMock;
   @Mock
@@ -31,11 +31,11 @@ class NativeActualizationClientTest {
   @Mock
   private RegistryLogger registryLoggerMock;
 
-  private NativeActualizationClient client;
+  private ActualizationClient client;
 
   @BeforeEach
   void setUp() {
-    client = new NativeActualizationClient(nativeActualizationApisHolderMock, registryLoggerMock);
+    client = new ActualizationClient(nativeActualizationApisHolderMock, registryLoggerMock);
   }
 
   @AfterEach

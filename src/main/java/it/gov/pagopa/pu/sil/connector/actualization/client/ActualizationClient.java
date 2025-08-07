@@ -16,12 +16,12 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class NativeActualizationClient {
+public class ActualizationClient {
   private final ActualizationApisHolder actualizationApisHolder;
   private final RegistryLogger registryLogger;
 
-  public NativeActualizationClient(ActualizationApisHolder actualizationApisHolder,
-                                   RegistryLogger registryLogger) {
+  public ActualizationClient(ActualizationApisHolder actualizationApisHolder,
+                             RegistryLogger registryLogger) {
     this.actualizationApisHolder = actualizationApisHolder;
     this.registryLogger = registryLogger;
   }
