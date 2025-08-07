@@ -78,7 +78,7 @@ public class PaaSILImportaDovutoService {
 
         Pair<DebtPositionDTO, String> debtPositionWithAction = paaSILImportaDovutoMapper.mapRequestToDebtPosition(request, organization, accessToken);
         PaaSILImportaDovutoRisposta response = switch (debtPositionWithAction.getRight()) {
-            case Constants.LEGACY_IMPORT_ACTION_INSERT -> handleInsert(debtPositionWithAction.getLeft(), accessToken);
+            case Constants.LEGACY_IMPORT_ACTION_INSERT -> handleInsert(debtPositionWithAction.getLeft(), organization.getOrgFiscalCode(), accessToken);
             case Constants.LEGACY_IMPORT_ACTION_MODIFY,
                  Constants.LEGACY_IMPORT_ACTION_CANCEL ->
                     handleModifyAndCancel(debtPositionWithAction.getRight(), debtPositionWithAction.getLeft(), organization, accessToken);
@@ -91,7 +91,7 @@ public class PaaSILImportaDovutoService {
         return Triple.of(response, response.getIdentificativoUnivocoVersamento(), RegistryOutcome.OK);
     }
 
-    private PaaSILImportaDovutoRisposta handleInsert(DebtPositionDTO debtPosition, String accessToken) {
+    private PaaSILImportaDovutoRisposta handleInsert(DebtPositionDTO debtPosition, String orgFiscalCode, String accessToken) {
         //create debt position (and wait for the workflow to complete)
         DebtPositionDTO debtPositionDTO = manageDebtPositionService.createSyncedDebtPositions(List.of(debtPosition), accessToken).getFirst();
         //retrieve the IUV
@@ -100,7 +100,7 @@ public class PaaSILImportaDovutoService {
         PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
         response.setEsito(RegistryOutcome.OK.getValue());
         response.setIdentificativoUnivocoVersamento(debtPositionDTO.getPaymentOptions().getFirst().getInstallments().getFirst().getIuv());
-        response.setUrlFileAvviso(composeDownloadPdfNoticeUrl(debtPositionDTO.getOrganizationId(), iuv));
+        response.setUrlFileAvviso(composeDownloadPdfNoticeUrl(orgFiscalCode, iuv));
         return response;
     }
 
@@ -124,7 +124,7 @@ public class PaaSILImportaDovutoService {
         response.setEsito(RegistryOutcome.OK.getValue());
         response.setIdentificativoUnivocoVersamento(installmentOnDb.getIuv());
         if (action.equals(Constants.LEGACY_IMPORT_ACTION_MODIFY)) {
-            response.setUrlFileAvviso(composeDownloadPdfNoticeUrl(organization.getOrganizationId(), installmentOnDb.getIuv()));
+            response.setUrlFileAvviso(composeDownloadPdfNoticeUrl(organization.getOrgFiscalCode(), installmentOnDb.getIuv()));
         }
         return response;
     }
@@ -161,10 +161,10 @@ public class PaaSILImportaDovutoService {
         }
     }
 
-    private String composeDownloadPdfNoticeUrl(Long organizationId, String iuv) {
+    private String composeDownloadPdfNoticeUrl(String orgFiscalCode, String iuv) {
         return UriComponentsBuilder.fromUriString(puSilBaseUrl)
-                .path("/sil/organization/{organizationId}/printpaymentnotice/{iuv}")
-                .buildAndExpand(organizationId, iuv)
+                .path("/sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
+                .buildAndExpand(orgFiscalCode, iuv)
                 .toUriString();
     }
 
