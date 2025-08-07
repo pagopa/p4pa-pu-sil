@@ -48,12 +48,12 @@ public class DebtPositionMapper {
       .totalAmountCents(source.getTotalAmountCents())
       .status(PaymentOptionStatus.UNPAID)
       .installments(source.getInstallments().stream()
-        .map(i -> fillInstallmentFields(i, orgIpaCode))
+        .map(i -> mapSilInstallmentToInstallmentDTO(i, orgIpaCode))
         .toList())
       .build();
   }
 
-  private InstallmentDTO fillInstallmentFields(it.gov.pagopa.pu.sil.dto.generated.InstallmentDTO source, String orgIpaCode) {
+  public InstallmentDTO mapSilInstallmentToInstallmentDTO(it.gov.pagopa.pu.sil.dto.generated.InstallmentDTO source, String orgIpaCode) {
     return InstallmentDTO.builder()
       .status(InstallmentStatus.UNPAID)
       .iud(source.getIud())
