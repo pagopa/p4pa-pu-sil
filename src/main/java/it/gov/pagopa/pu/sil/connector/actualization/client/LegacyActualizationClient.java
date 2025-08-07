@@ -5,7 +5,7 @@ import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
+import it.gov.pagopa.pu.sil.connector.actualization.config.LegacyActualizationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class LegacyActualizationClient {
-  private final ActualizationApisHolder actualizationApisHolder;
+  private final LegacyActualizationApisHolder legacyActualizationApisHolder;
   private final RegistryLogger registryLogger;
 
-  public LegacyActualizationClient(ActualizationApisHolder actualizationApisHolder,
+  public LegacyActualizationClient(LegacyActualizationApisHolder legacyActualizationApisHolder,
                                    RegistryLogger registryLogger) {
-    this.actualizationApisHolder = actualizationApisHolder;
+    this.legacyActualizationApisHolder = legacyActualizationApisHolder;
     this.registryLogger = registryLogger;
   }
 
@@ -38,7 +38,7 @@ public class LegacyActualizationClient {
     return registryLogger.execute(
       contextData,
       pagamento,
-      () -> Triple.of(actualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/notification-price", ""))
+      () -> Triple.of(legacyActualizationApisHolder.getAmountUpdatesLegacyApi(accessToken, orgSilServiceDTO.getServiceUrl().replace("/notification-price", ""))
           .attualizzazione(pagamento),
         null,
         RegistryOutcome.OK

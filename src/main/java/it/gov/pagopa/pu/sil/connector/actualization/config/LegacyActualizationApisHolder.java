@@ -1,10 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.actualization.config;
 
-import it.gov.pagopa.actualization.controller.ApiClient;
-import it.gov.pagopa.actualization.controller.generated.DefaultApi;
+import it.gov.pagopa.actualization.legacy.controller.ApiClient;
+import it.gov.pagopa.actualization.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
-import it.gov.pagopa.pu.sil.config.rest.agid.AgidDataIntegrityInterceptor;
-import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
@@ -14,19 +12,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class ActualizationApisHolder {
+public class LegacyActualizationApisHolder {
   private final ActualizationApiClientConfig clientConfig;
   private final RestTemplate restTemplate;
   private final Map<String, DefaultApi> actualizationApisMap = new ConcurrentHashMap<>();
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
-  public ActualizationApisHolder(ActualizationApiClientConfig clientConfig,
-                                 PuIntegrityDataConfig puIntegrityDataConfig,
-                                 RestTemplateBuilder restTemplateBuilder) {
+  public LegacyActualizationApisHolder(ActualizationApiClientConfig clientConfig,
+                                       RestTemplateBuilder restTemplateBuilder) {
     this.restTemplate = restTemplateBuilder.build();
     this.clientConfig = clientConfig;
-
-    restTemplate.getInterceptors().add(new AgidDataIntegrityInterceptor(puIntegrityDataConfig));
 
     if (clientConfig.isPrintBodyWhenError()) {
       restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("ACTUALIZATION"));
@@ -34,11 +29,11 @@ public class ActualizationApisHolder {
   }
 
   @PreDestroy
-  public void unload(){
+  public void unload() {
     bearerTokenHolder.remove();
   }
 
-  public DefaultApi getActualizationNativeApi(String accessToken, String serviceUrl) {
+  public DefaultApi getAmountUpdatesLegacyApi(String accessToken, String serviceUrl) {
     bearerTokenHolder.set(accessToken);
     return actualizationApisMap.computeIfAbsent(serviceUrl, url -> {
       ApiClient apiClient = new ApiClient(restTemplate);

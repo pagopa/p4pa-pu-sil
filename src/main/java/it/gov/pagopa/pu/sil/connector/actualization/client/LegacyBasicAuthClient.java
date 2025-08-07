@@ -4,7 +4,7 @@ import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.connector.actualization.config.ActualizationApisHolder;
+import it.gov.pagopa.pu.sil.connector.actualization.config.LegacyActualizationApisHolder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -16,12 +16,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class LegacyBasicAuthClient {
-  private final ActualizationApisHolder actualizationApisHolder;
+  private final LegacyActualizationApisHolder legacyActualizationApisHolder;
   private final RegistryLogger registryLogger;
 
-  public LegacyBasicAuthClient(ActualizationApisHolder actualizationApisHolder,
+  public LegacyBasicAuthClient(LegacyActualizationApisHolder legacyActualizationApisHolder,
                                RegistryLogger registryLogger) {
-    this.actualizationApisHolder = actualizationApisHolder;
+    this.legacyActualizationApisHolder = legacyActualizationApisHolder;
     this.registryLogger = registryLogger;
   }
 
@@ -38,7 +38,7 @@ public class LegacyBasicAuthClient {
       contextData,
       credentials,
       () -> Triple.of(
-        actualizationApisHolder.getAmountUpdatesLegacyApi(null, authUrl.replace("/login", ""))
+        legacyActualizationApisHolder.getAmountUpdatesLegacyApi(null, authUrl.replace("/login", ""))
           .login(credentials),
         null,
         RegistryOutcome.OK

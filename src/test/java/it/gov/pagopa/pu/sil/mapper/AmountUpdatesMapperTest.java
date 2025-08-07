@@ -1,13 +1,20 @@
 package it.gov.pagopa.pu.sil.mapper;
 
+import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Test;
+import uk.co.jemos.podam.api.PodamFactory;
+
 import java.time.OffsetDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class AmountUpdatesMapperTest {
     private final AmountUpdatesMapper mapper = new AmountUpdatesMapper();
+
+    private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
     @Test
     void testPagamentoAggiornato2AmountUpdatesDTO() {
@@ -34,4 +41,22 @@ class AmountUpdatesMapperTest {
         assertEquals(now.plusDays(1), dto.getCompletionDeadlineDate());
         assertEquals("BILANCIO-JSON", dto.getBalance());
     }
+
+  @Test
+  void testUpdatedPayment2AmountUpdatesDTO() {
+    UpdatedPayment updatedPayment = podamFactory.manufacturePojo(UpdatedPayment.class);
+
+    ActualizationResultDTO dto = mapper.updatedPayment2AmountUpdatesDTO(updatedPayment);
+
+    assertNotNull(dto);
+    assertEquals(updatedPayment.getNav(), dto.getNav());
+    assertEquals(updatedPayment.getIun(), dto.getIun());
+    assertEquals(updatedPayment.getNotificationFeeCents(), dto.getNotificationFeeCents());
+    assertNull(dto.getDisplayDate());
+    assertEquals(updatedPayment.getAmountCents(), dto.getUpdatedAmountCents());
+    assertEquals(updatedPayment.getRetentionDate(), dto.getCompletionDeadlineDate());
+    assertEquals(updatedPayment.getBalance(), dto.getBalance());
+
+    TestUtils.checkAllNotNullFields(dto, "displayDate", "errorCode", "errorDescription");
+  }
 }
