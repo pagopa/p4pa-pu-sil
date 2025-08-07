@@ -53,7 +53,7 @@ class AssessmentControllerTest {
     when(queryAssessmentsServiceMock.getAssessment(
         userInfo,
         accessToken,
-        orgFiscalCode,
+        orgIpaCode,
         null,
         billYear.toString(),
         billNumber
@@ -75,7 +75,7 @@ class AssessmentControllerTest {
     when(queryAssessmentsServiceMock.getAssessment(
         userInfo,
         accessToken,
-        orgFiscalCode,
+        orgIpaCode,
         iuf,
         null,
         null

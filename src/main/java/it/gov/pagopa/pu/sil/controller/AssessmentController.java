@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.controller.generated.AssessmentApi;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.queryassessments.QueryAssessmentsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +24,11 @@ public class AssessmentController implements AssessmentApi {
     log.info("Received request to get assessment by bill for orgFiscalCode: {}, billYear: {}, billNumber: {}", orgFiscalCode, billYear, billNumber);
     String accessToken = SecurityUtils.getAccessToken();
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String orgIpaCode = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode);
     return ResponseEntity.ok(queryAssessmentsService.getAssessment(
         userInfo,
         accessToken,
-        orgFiscalCode,
+        orgIpaCode,
         null,
         billYear.toString(),
         billNumber
@@ -38,10 +40,11 @@ public class AssessmentController implements AssessmentApi {
     log.info("Received request to get assessment by payment reporting for orgFiscalCode: {}, iuf: {}", orgFiscalCode, iuf);
     String accessToken = SecurityUtils.getAccessToken();
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String orgIpaCode = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, orgFiscalCode);
     return ResponseEntity.ok(queryAssessmentsService.getAssessment(
         userInfo,
         accessToken,
-        orgFiscalCode,
+        orgIpaCode,
         iuf,
         null,
         null
