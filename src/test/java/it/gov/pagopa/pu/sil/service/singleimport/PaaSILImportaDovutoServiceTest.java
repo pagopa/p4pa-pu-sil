@@ -32,6 +32,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
@@ -73,8 +74,13 @@ class PaaSILImportaDovutoServiceTest {
 
     Mockito.reset(organizationServiceMock, paaSILImportaDovutoMapperMock, debtPositionServiceMock, manageDebtPositionServiceMock, noticeServiceMock);
 
-    this.paaSILImportaDovutoService = new PaaSILImportaDovutoService(organizationServiceMock, paaSILImportaDovutoMapperMock,
-      debtPositionServiceMock, manageDebtPositionServiceMock, noticeServiceMock, "PU_SIL_BASE_URL");
+    this.paaSILImportaDovutoService = new PaaSILImportaDovutoService(
+      organizationServiceMock,
+      debtPositionServiceMock,
+      manageDebtPositionServiceMock,
+      noticeServiceMock,
+      paaSILImportaDovutoMapperMock,
+      "PU_SIL_BASE_URL");
 
     userInfo = podamFactory.manufacturePojo(UserInfo.class);
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
@@ -129,7 +135,7 @@ class PaaSILImportaDovutoServiceTest {
     }
 
     // When
-    Triple<PaaSILImportaDovutoRisposta, String, RegistryOutcome> response = paaSILImportaDovutoService.paaSILImportaDovuto(request, orgIpaCode, userInfo, TOKEN);
+    Triple<PaaSILImportaDovutoRisposta, String, RegistryOutcome> response = paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN);
 
     // Then
     Assertions.assertNotNull(response);
@@ -158,11 +164,8 @@ class PaaSILImportaDovutoServiceTest {
     //given
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
-    //when
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.paaSILImportaDovuto(request, orgIpaCode, userInfo, TOKEN));
-
-    //verify
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
+    //when then
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
   }
 
   @ParameterizedTest
@@ -177,7 +180,7 @@ class PaaSILImportaDovutoServiceTest {
 
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.paaSILImportaDovuto(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
 
     assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
   }
@@ -218,7 +221,7 @@ class PaaSILImportaDovutoServiceTest {
     }
 
     // When
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.paaSILImportaDovuto(request, orgIpaCode, userInfo, TOKEN));
+    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
 
     // Then
     switch (testCase) {

@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
@@ -65,7 +66,7 @@ class DebtPositionCreationServiceTest {
   @Test
   void givenNotAuthorizedUserWhenHandleInsertThenError() {
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
-    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.handleInsert(request, IPA_CODE, userInfo, TOKEN));
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
   }
 
   @ParameterizedTest
@@ -78,7 +79,7 @@ class DebtPositionCreationServiceTest {
       org.setStatus(OrganizationStatus.DRAFT);
     }
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-    Assertions.assertThrows(IllegalArgumentException.class, () -> service.handleInsert(request, IPA_CODE, userInfo, TOKEN));
+    Assertions.assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
   }
 
   @Test
@@ -102,7 +103,7 @@ class DebtPositionCreationServiceTest {
       .thenReturn(List.of(createdDebtPositionDTO));
 
     // When
-    Triple<DebtPositionDTO, String, RegistryOutcome> result = service.handleInsert(request, IPA_CODE, userInfo, TOKEN);
+    Triple<DebtPositionDTO, String, RegistryOutcome> result = service.handleAction(request, IPA_CODE, userInfo, TOKEN);
 
     // Then
     assertEquals(expected.getLeft(), result.getLeft());
