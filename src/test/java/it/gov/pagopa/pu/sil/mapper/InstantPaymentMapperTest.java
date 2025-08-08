@@ -78,7 +78,6 @@ class InstantPaymentMapperTest {
     assertEquals(paymentDTO.getIud(), installmentDTO.getIud());
     assertEquals(paymentDTO.getTotalAmountCents(), installmentDTO.getAmountCents());
     assertEquals(paymentDTO.getDebtor(), installmentDTO.getDebtor());
-    assertEquals(transferDTO.getCategory(), installmentDTO.getLegacyPaymentMetadata());
     assertEquals(transferDTO.getRemittanceInformation(), installmentDTO.getRemittanceInformation());
     assertTrue(installmentDTO.getSourceFlowName().contains("CART_ID"));
 
@@ -90,7 +89,7 @@ class InstantPaymentMapperTest {
         TestUtils.checkNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa",
           "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "notificationDate", "ingestionFlowFileId",
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
-          "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+          "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "legacyPaymentMetadata");
         if(i.getTransfers()!=null) {
           i.getTransfers().forEach(t -> {
             TestUtils.checkNotNullFields(t, "transferId", "installmentId",
