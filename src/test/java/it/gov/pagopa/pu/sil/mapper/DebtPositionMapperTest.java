@@ -60,7 +60,7 @@ class DebtPositionMapperTest {
     result.getPaymentOptions().forEach(po -> {
       TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {
-        TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa",
+        TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
           "iur", "iuf", "iun", "notificationFeeCents", "notificationDate", "ingestionFlowFileId",
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
           "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
