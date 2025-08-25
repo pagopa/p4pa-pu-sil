@@ -118,6 +118,7 @@ public class PaaSILImportaDovutoMapper {
       .legacyPaymentMetadata(datiVersamento.getDatiSpecificiRiscossione())
       .balance(balanceString)
       .debtor(debtor)
+      .generateNotice(true)
       .sourceFlowName(ipaCode + IMPORT_DOVUTO);
   }
 

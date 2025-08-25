@@ -236,6 +236,9 @@
           "iupdPagopa" : {
             "type" : "string"
           },
+          "generateNotice" : {
+            "type" : "boolean"
+          },
           "iud" : {
             "type" : "string"
           },

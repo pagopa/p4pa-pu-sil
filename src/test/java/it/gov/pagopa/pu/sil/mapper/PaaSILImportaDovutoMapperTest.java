@@ -133,7 +133,7 @@ class PaaSILImportaDovutoMapperTest {
     dp.getPaymentOptions().forEach(po -> {
       TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "description", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {
-        TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa",
+        TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
           "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "sourceFlowName", "switchToExpired",
           "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
