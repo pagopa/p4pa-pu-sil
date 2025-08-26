@@ -55,6 +55,7 @@ public class InstantPaymentMapper {
           .legacyPaymentMetadata(transfer.getCategory())
           .remittanceInformation(transfer.getRemittanceInformation())
           .sourceFlowName(Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + cartId)
+          .generateNotice(false)
           .transfers(payment.getTransfers().stream().map(transferMapper::mapToDebtPositionTransferDTO).toList())
           .build()
       ))
