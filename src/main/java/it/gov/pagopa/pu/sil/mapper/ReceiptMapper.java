@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -60,7 +61,7 @@ public class ReceiptMapper {
       .amountCents(transfer.getAmountCents())
       .orgFiscalCode(transfer.getOrgFiscalCode())
       .orgName(transfer.getOrgName())
-      .mbdAttachment(transfer.getMbdAttachment().getBytes(StandardCharsets.UTF_8))
+      .mbdAttachment(Optional.ofNullable(transfer.getMbdAttachment()).map(String::getBytes).orElse(null))
       .iban(transfer.getIban())
       .remittanceInformation(transfer.getRemittanceInformation())
       .category(transfer.getCategory())
