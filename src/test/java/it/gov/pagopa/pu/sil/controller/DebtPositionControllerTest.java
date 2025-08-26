@@ -3,10 +3,7 @@ package it.gov.pagopa.pu.sil.controller;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO;
-import it.gov.pagopa.pu.sil.dto.generated.ManageInstallmentDTO;
-import it.gov.pagopa.pu.sil.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -28,8 +25,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.co.jemos.podam.api.PodamFactory;
-
-import java.util.List;
 
 import static org.mockito.Mockito.when;
 
