@@ -32,7 +32,7 @@ public class DebtPositionMapper {
       .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
       .description(source.getDescription())
       .flagPuPagoPaPayment(source.getFlagPagoPaPayment())
-      .flagIuvVolatile(true)
+      .flagIuvVolatile(false)
       .multiDebtor(source.getMultiDebtor())
       .paymentOptions(source.getPaymentOptions().stream()
         .map(po -> fillPaymentOptionFields(po, organization.getIpaCode()))
@@ -65,6 +65,7 @@ public class DebtPositionMapper {
       .legacyPaymentMetadata(source.getLegacyPaymentMetadata())
       .balance(source.getBalance())
       .debtor(source.getDebtor())
+      .generateNotice(false)
       .sourceFlowName(orgIpaCode + IMPORT_DOVUTO)
       .transfers(source.getTransfers().stream().map(transferMapper::mapToDebtPositionTransferDTO).toList())
       .build();

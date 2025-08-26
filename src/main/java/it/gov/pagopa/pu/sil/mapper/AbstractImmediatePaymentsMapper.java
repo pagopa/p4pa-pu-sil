@@ -124,6 +124,7 @@ abstract class AbstractImmediatePaymentsMapper {
         .legacyPaymentMetadata(versamento.getDatiSpecificiRiscossione())
         .remittanceInformation(versamento.getCausaleVersamento())
         .sourceFlowName(sourceFlowName)
+        .generateNotice(false)
         .build()
     ));
 
