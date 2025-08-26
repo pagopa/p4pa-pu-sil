@@ -942,8 +942,7 @@
           "description" : "the year of the bill to retrieve the assessment data for",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int32",
+            "type" : "string",
             "pattern" : "^\\d{4}$"
           }
         }, {

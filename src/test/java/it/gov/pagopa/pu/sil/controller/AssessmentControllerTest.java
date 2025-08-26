@@ -46,16 +46,16 @@ class AssessmentControllerTest {
   @Test
   void whenGetAssessmentByBillThenOk() {
     // Given
-    Integer billYear = 2024;
+    String billYear = "2024";
     String billNumber = "12345";
     GetAssessmentResponseDTO expectedResult = new GetAssessmentResponseDTO();
 
     when(queryAssessmentsServiceMock.getAssessment(
         userInfo,
         accessToken,
-        orgFiscalCode,
+        orgIpaCode,
         null,
-        billYear.toString(),
+        billYear,
         billNumber
     )).thenReturn(expectedResult);
     // When
@@ -75,7 +75,7 @@ class AssessmentControllerTest {
     when(queryAssessmentsServiceMock.getAssessment(
         userInfo,
         accessToken,
-        orgFiscalCode,
+        orgIpaCode,
         iuf,
         null,
         null
