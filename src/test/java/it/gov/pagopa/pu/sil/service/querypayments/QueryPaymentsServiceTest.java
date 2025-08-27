@@ -1,12 +1,14 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -25,7 +27,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.ByteArrayResource;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
@@ -89,7 +90,7 @@ class QueryPaymentsServiceTest {
     PaymentStatusResponseDTO expectedResponse = new PaymentStatusResponseDTO()
       .status(InstallmentStatus.PAID)
       .receipt(receiptDTO)
-      .receiptBytes(new ByteArrayResource(encodedReceipt))
+      .receiptBytes(encodedReceipt)
       .paymentId(installment.getInstallmentId().toString())
       .lastUpdateDateTime(installment.getUpdateDate());
 

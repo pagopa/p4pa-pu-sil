@@ -1941,7 +1941,7 @@
           },
           "receiptBytes" : {
             "type" : "string",
-            "format" : "binary"
+            "format" : "byte"
           },
           "lastUpdateDateTime" : {
             "type" : "string",
