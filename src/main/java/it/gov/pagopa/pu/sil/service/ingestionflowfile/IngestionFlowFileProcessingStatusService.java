@@ -14,9 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -67,7 +65,7 @@ public class IngestionFlowFileProcessingStatusService {
 
   private void addDownloadUrlsToResponse(ImportStatusResponseDTO responseDTO, IngestionFlowFile ingestionFlowFile) {
     boolean success = ingestionFlowFile.getErrorDescription() == null;
-    if (ingestionFlowFile.getNumCorrectlyImportedRows() > 0) {
+    if (ingestionFlowFile.getNumCorrectlyImportedRows()!= null && ingestionFlowFile.getNumCorrectlyImportedRows() > 0) {
       responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.OUTPUT_FILE, composeUrl(ingestionFlowFile, "/imported")));
     }
     if (!success && ingestionFlowFile.getDiscardFileName() != null) {
