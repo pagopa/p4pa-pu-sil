@@ -42,9 +42,9 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
     //search installment to sync based on IUD
     List<ManageInstallmentDTO> manageInstallmentDTOList = request.getInstallments().stream().filter(i -> request.getIud().equals(i.getInstallment().getIud())).toList();
     if(manageInstallmentDTOList.size()>1) {
-      throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "Installment con IUD " + request.getIud() + " non univoco");
+      throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "Dovuto con IUD " + request.getIud() + " non univoco");
     } else if(manageInstallmentDTOList.isEmpty()) {
-      throw new SilFaultException(SilFaults.PAA_IUD_NON_VALIDO, "Nessun installment trovato con IUD " + request.getIud());
+      throw new SilFaultException(SilFaults.PAA_IUD_NON_VALIDO, "Nessun dovuto trovato con IUD " + request.getIud());
     }
 
     ManageInstallmentDTO manageInstallmentDTO = manageInstallmentDTOList.getFirst();
