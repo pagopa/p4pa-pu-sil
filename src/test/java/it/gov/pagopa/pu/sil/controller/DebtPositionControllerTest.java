@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.controller;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -87,9 +87,10 @@ class DebtPositionControllerTest {
   @Test
   void whenManageDebtPositionInstallmentsThenOk() {
     // Given
-    ManageDebtPositionDTO requestManageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
+    ManageDebtPositionWithIudDTO requestManageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionWithIudDTO.class);
     String iud = requestManageDebtPositionDTO.getInstallments().getFirst().getInstallment().getIud();
     String iuv = requestManageDebtPositionDTO.getInstallments().getFirst().getInstallment().getIuv();
+    requestManageDebtPositionDTO.setIud(iud);
     DebtPositionDTO expectedDebtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
 
     Triple<DebtPositionDTO, String, RegistryOutcome> outcomeTriple = Triple.of(expectedDebtPosition, iuv, RegistryOutcome.OK);

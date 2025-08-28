@@ -141,6 +141,33 @@ class IngestionFlowFileProcessingStatusServiceTest {
   }
 
   @Test
+  void testNullNumCorrectlyImportedRowsReturnsNoOutputDownloadUrl() {
+    // Given
+    Long ingestionFlowFileId = 1L;
+    String orgIpaCode = "ORG1";
+    String accessToken = "accessToken";
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
+    IngestionFlowFile file = podamFactory.manufacturePojo(IngestionFlowFile.class)
+      .ingestionFlowFileType(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      .status(IngestionFlowFileStatus.ERROR)
+      .organizationId(1L)
+      .ingestionFlowFileId(1L)
+      .numCorrectlyImportedRows(null)
+      .discardFileName("discarded");
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(file);
+
+    //When
+    ImportStatusResponseDTO response = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+
+    // Then
+    List<DownloadUrl> urls = response.getDownloadUrls();
+    assertEquals(1, urls.size());
+    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.DISCARDED_FILE));
+  }
+
+  @Test
   void testNonCompletedStatusReturnsNoDownloadUrls() {
     // Given
     Long ingestionFlowFileId = 1L;

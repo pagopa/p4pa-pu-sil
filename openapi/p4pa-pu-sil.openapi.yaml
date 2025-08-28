@@ -942,7 +942,7 @@ components:
           $ref: "#/components/schemas/ReceiptWithAdditionalNodeDataDTO"
         receiptBytes:
           type: string
-          format: binary
+          format: byte
         lastUpdateDateTime:
           type: string
           format: date-time

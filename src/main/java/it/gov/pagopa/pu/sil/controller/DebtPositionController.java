@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.controller;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.sil.controller.generated.DebtPositionApi;
+import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
@@ -76,7 +77,8 @@ public class DebtPositionController implements DebtPositionApi {
         contextData,
         manageDebtPositionDTO,
         () -> debtPositionInstallmentsHandlerService.handleAction(
-          manageDebtPositionDTO,
+          //build enriched DTO with IUD
+          ManageDebtPositionWithIudDTO.fromManageDebtPositionDTO(manageDebtPositionDTO, iud),
           orgIpaCode,
           userInfo,
           accessToken

@@ -11,7 +11,6 @@ import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentFacadeSe
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -64,7 +63,7 @@ public class QueryPaymentsService extends AbstractQueryPaymentsService<PaymentSt
     response.setReceipt(receiptMapper.map2ReceiptWithAdditionalNodeDataDTO(installmentDTO, accessToken));
     if (request.withReceiptBytes()) {
       byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
-      response.setReceiptBytes(new ByteArrayResource(encodedReceipt));
+      response.setReceiptBytes(encodedReceipt);
     }
     return response;
   }

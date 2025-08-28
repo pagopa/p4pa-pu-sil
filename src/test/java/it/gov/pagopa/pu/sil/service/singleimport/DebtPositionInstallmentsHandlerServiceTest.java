@@ -7,6 +7,8 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILImportaDovutoMapper;
@@ -33,7 +35,8 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -60,14 +63,15 @@ class DebtPositionInstallmentsHandlerServiceTest {
 
   private UserInfo userInfo;
   private Organization org;
-  it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO request;
+  ManageDebtPositionWithIudDTO request;
+
   @BeforeEach
   void init() {
     org = podamFactory.manufacturePojo(Organization.class);
     org.setStatus(OrganizationStatus.ACTIVE);
     org.setIpaCode(IPA_CODE);
     userInfo = AuthorizationServiceTest.buildAdminUser(org.getOrganizationId(), org.getOrgFiscalCode(), org.getIpaCode());
-    request = podamFactory.manufacturePojo(it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO.class);
+    request = podamFactory.manufacturePojo(ManageDebtPositionWithIudDTO.class);
   }
 
   @Test
@@ -80,7 +84,7 @@ class DebtPositionInstallmentsHandlerServiceTest {
   @ValueSource(strings = {"not_active_ipa"})
   @NullSource
   void givenInvalidOrganizationWhenHandleActionThenError(String testCase) {
-    if(testCase==null){
+    if (testCase == null) {
       org = null;
     } else {
       org.setStatus(OrganizationStatus.DRAFT);
@@ -91,13 +95,16 @@ class DebtPositionInstallmentsHandlerServiceTest {
 
 
   @ParameterizedTest
-  @CsvSource({"TO_SYNC, M", "UNPAID, A"})
+  @CsvSource({
+    "TO_SYNC, M",
+    "UNPAID, A"
+  })
   void whenHandleActionThenDebtPositionNotFound(String status, String action) {
     // Arrange
     String requestIud = "requestIud";
-    request = podamFactory.manufacturePojo(it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO.class);
     request.getInstallments().getFirst().setAction(Action.fromValue(action));
     request.getInstallments().getFirst().getInstallment().setIud(requestIud);
+    request.setIud(requestIud);
     InstallmentDTO installment = podamFactory.manufacturePojo(InstallmentDTO.class);
     installment.setIud(requestIud);
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
@@ -115,14 +122,61 @@ class DebtPositionInstallmentsHandlerServiceTest {
     assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
   }
 
+  @Test
+  void givenNotCoherentIudWhenHandleActionThenError() {
+    // Arrange
+    String requestIud = "requestIud";
+    request.getInstallments().getFirst().setAction(Action.M);
+    request.getInstallments().getFirst().getInstallment().setIud(requestIud+"invalid");
+    request.setIud(requestIud);
+
+    when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), TOKEN)).thenReturn(Optional.ofNullable(org));
+    // Act &Assert
+    SilFaultException response = assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertEquals(SilFaults.PAA_IUD_NON_VALIDO, response.getFault());
+  }
+
+  @Test
+  void givenNotUniqueIudWhenHandleActionThenError() {
+    // Arrange
+    String requestIud = "requestIud";
+    Assertions.assertTrue(request.getInstallments().size()>1);
+    request.getInstallments().getFirst().setAction(Action.M);
+    request.getInstallments().getFirst().getInstallment().setIud(requestIud);
+    request.getInstallments().getLast().setAction(Action.M);
+    request.getInstallments().getLast().getInstallment().setIud(requestIud);
+    request.setIud(requestIud);
+
+    when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), TOKEN)).thenReturn(Optional.ofNullable(org));
+    // Act &Assert
+    SilFaultException response = assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertEquals(SilFaults.PAA_IUD_DUPLICATO, response.getFault());
+  }
+
+  @Test
+  void givenInvalidActionWhenHandleActionThenError() {
+    // Arrange
+    String requestIud = "requestIud";
+    request.getInstallments().getFirst().setAction(Action.I);
+    request.getInstallments().getFirst().getInstallment().setIud(requestIud);
+    request.setIud(requestIud);
+
+    when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), TOKEN)).thenReturn(Optional.ofNullable(org));
+
+    // Act &Assert
+    SilFaultException response = assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertEquals(SilFaults.PAA_AZIONE_NON_VALIDA, response.getFault());
+  }
+
   @ParameterizedTest
   @EnumSource(value = Action.class, names = {"A", "M"})
   void whenHendleActionThenOk(Action action) {
     // Arrange
     String iud = "iud";
     String iuv = "iuv";
-    request = podamFactory.manufacturePojo(it.gov.pagopa.pu.sil.dto.generated.ManageDebtPositionDTO.class);
     request.getInstallments().getFirst().setAction(action);
+    request.getInstallments().getFirst().getInstallment().setIud(iud);
+    request.setIud(iud);
     InstallmentDTO installment = podamFactory.manufacturePojo(InstallmentDTO.class);
     installment.setIud(iud);
     installment.setIuv(iuv);
