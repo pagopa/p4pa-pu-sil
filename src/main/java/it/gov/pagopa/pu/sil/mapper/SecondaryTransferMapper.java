@@ -85,7 +85,7 @@ public class SecondaryTransferMapper {
 
   public void checkAndFillSupportedTransfersConfigurationForModify(InstallmentDTO installmentOnDb, InstallmentDTO installmentToSync, boolean legacyMode) {
 
-    final int numTransfersOnDb = installmentOnDb.getTransfers()!=null ? installmentOnDb.getTransfers().size() : 0;;
+    final int numTransfersOnDb = installmentOnDb.getTransfers()!=null ? installmentOnDb.getTransfers().size() : 0;
     final int numTransfersToSync;
     final long amountFirstTransfer;
     if(legacyMode){

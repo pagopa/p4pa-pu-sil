@@ -39,8 +39,6 @@ class ManageDebtPositionMapperTest {
   UserInfo userInfo;
   Organization org;
 
-  private static final String ACCESS_TOKEN = "token";
-
   private static final String ORG_IPA_CODE = "ORG_IPA";
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
