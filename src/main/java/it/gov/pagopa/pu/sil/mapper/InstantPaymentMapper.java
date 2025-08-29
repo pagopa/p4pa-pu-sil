@@ -52,7 +52,6 @@ public class InstantPaymentMapper {
           .balance(Optional.ofNullable(payment.getBalance()).orElse(debtPositionTypeOrg.getBalance()))
           .dueDate(Utilities.getSpontaneousSilExpirationDate())
           .debtor(payment.getDebtor())
-          .legacyPaymentMetadata(transfer.getCategory())
           .remittanceInformation(transfer.getRemittanceInformation())
           .sourceFlowName(Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + cartId)
           .generateNotice(false)

@@ -1121,7 +1121,6 @@ components:
           format: int64
     DebtPositionDTO:
       required:
-        - iupdOrg
         - debtPositionTypeOrgCode
         - paymentOptions
         - flagPagoPaPayment
