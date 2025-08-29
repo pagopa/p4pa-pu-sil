@@ -9,7 +9,7 @@ import it.gov.pagopa.pu.sil.dto.generated.ManageInstallmentDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
-import it.gov.pagopa.pu.sil.mapper.PaaSILImportaDovutoMapper;
+import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.notice.NoticeService;
 import jakarta.activation.DataHandler;
@@ -23,17 +23,17 @@ import java.util.List;
 @Service
 public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHandler<ManageDebtPositionWithIudDTO, DebtPositionDTO> {
   private final DebtPositionMapper debtPositionMapper;
-  private final PaaSILImportaDovutoMapper paaSILImportaDovutoMapper;
+  private final ManageDebtPositionMapper manageDebtPositionMapper;
 
   public DebtPositionInstallmentsHandlerService(OrganizationService organizationService,
                                                 DebtPositionService debtPositionService,
                                                 ManageDebtPositionService manageDebtPositionService,
                                                 NoticeService noticeService,
                                                 DebtPositionMapper debtPositionMapper,
-                                                PaaSILImportaDovutoMapper paaSILImportaDovutoMapper) {
+                                                ManageDebtPositionMapper manageDebtPositionMapper) {
     super(organizationService, debtPositionService, manageDebtPositionService, noticeService);
     this.debtPositionMapper = debtPositionMapper;
-    this.paaSILImportaDovutoMapper = paaSILImportaDovutoMapper;
+    this.manageDebtPositionMapper = manageDebtPositionMapper;
   }
 
   @Override
@@ -67,8 +67,9 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
   }
 
   @Override
-  protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, InstallmentDTO installmentToSync, String action) {
-    return paaSILImportaDovutoMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action);
+  protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action) {
+    InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
+    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action, false);
   }
 
   private DebtPositionDTO initDebtPosition(Long orgId, InstallmentDTO installmentDTO) {

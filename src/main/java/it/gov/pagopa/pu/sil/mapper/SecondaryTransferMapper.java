@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -82,50 +83,73 @@ public class SecondaryTransferMapper {
     paymentOption.setTotalAmountCents(installment.getAmountCents());
   }
 
-  public void checkAndFillSupportedTransfersConfigurationForModify(InstallmentDTO installmentOnDb, InstallmentDTO installmentToSync) {
-    if (CollectionUtils.isEmpty(installmentToSync.getTransfers()) && installmentOnDb.getTransfers().size() == 1) {
-      //single transfer, nothing to do
-      return;
+  public void checkAndFillSupportedTransfersConfigurationForModify(InstallmentDTO installmentOnDb, InstallmentDTO installmentToSync, boolean legacyMode) {
+
+    final int numTransfersOnDb = installmentOnDb.getTransfers()!=null ? installmentOnDb.getTransfers().size() : 0;;
+    final int numTransfersToSync;
+    final long amountFirstTransfer;
+    if(legacyMode){
+      /* in legacy mode the first transfer is implicit, so the only supported configurations are:
+       * - no transfers (i.e. single transfer)
+       * - one transfer (i.e. multi-transfer with only one secondary transfer)
+       */
+      numTransfersToSync = ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1;
+      if(numTransfersToSync>2){
+        log.error("more than 2 transfers to sync in legacy mode [{}] for installment: {}", numTransfersToSync, installmentOnDb.getInstallmentId());
+        throw new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
+          "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId());
+      }
+
+      //populate first transfer data from installmentToSync
+      amountFirstTransfer = installmentToSync.getAmountCents() - Optional.ofNullable(installmentToSync.getTransfers()).stream()
+        .flatMap(Collection::stream)
+        .filter(transfer -> transfer.getTransferIndex() != 1)
+        .map(TransferDTO::getAmountCents)
+        .reduce(Long::sum)
+        .orElse(0L);
+    } else {
+      // in native mode all transfer are explicitly passed
+      numTransfersToSync = ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size();
+      amountFirstTransfer = -1L; //not used
     }
-    if (installmentOnDb.getTransfers().size() != ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1) {
+
+    if(numTransfersOnDb != numTransfersToSync) {
       log.error("installmentOnDb transfers: {}, installmentToSync transfers: {}", installmentOnDb.getTransfers().size(),
         ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1);
       throw new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
         "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId());
     }
 
-    //multi-transfer
-    long amountFirstTransfer = installmentToSync.getAmountCents() - installmentToSync.getTransfers().stream()
-      .filter(transfer -> transfer.getTransferIndex() != 1)
-      .map(TransferDTO::getAmountCents)
-      .reduce(Long::sum).orElse(0L);
-
-    //check the only modificable fields of transfers are different
+    //check that only modifiable fields of transfers are different
     installmentOnDb.getTransfers().forEach(transferOnDb -> {
-      if (transferOnDb.getTransferIndex() == 1) {
-        //special handling for the first transfer
+      if (legacyMode && transferOnDb.getTransferIndex() == 1) {
+        //special handling for the first transfer in legacy mode
         transferOnDb.setAmountCents(amountFirstTransfer);
         transferOnDb.setRemittanceInformation(installmentToSync.getRemittanceInformation());
       } else {
-        TransferDTO transferToSync = installmentToSync.getTransfers().stream()
+        TransferDTO transferToSync = Optional.ofNullable(installmentToSync.getTransfers()).stream()
+          .flatMap(Collection::stream)
           .filter(t -> t.getTransferIndex().equals(transferOnDb.getTransferIndex()))
           .findFirst()
           .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
             "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId()));
         if (Objects.equals(transferOnDb.getOrgFiscalCode(), transferToSync.getOrgFiscalCode()) &&
           Objects.equals(transferOnDb.getCategory(), transferToSync.getCategory()) &&
+          Objects.equals(transferOnDb.getStampHashDocument(), transferToSync.getStampHashDocument()) &&
+          Objects.equals(transferOnDb.getStampType(), transferToSync.getStampType()) &&
+          Objects.equals(transferOnDb.getStampProvincialResidence(), transferToSync.getStampProvincialResidence()) &&
           Objects.equals(transferOnDb.getIban(), transferToSync.getIban()) &&
           Objects.equals(transferOnDb.getPostalIban(), transferToSync.getPostalIban())
         ) {
           transferOnDb.setAmountCents(transferToSync.getAmountCents());
           transferOnDb.setRemittanceInformation(transferToSync.getRemittanceInformation());
-          transferOnDb.setCategory(transferToSync.getCategory());
         } else {
-          throw new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
-            "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId());
+          throw new SilFaultException(SilFaults.PAA_CAMPO_NON_MODIFICABILE,
+            "Sono stati modificati campi non modificabili per il dovuto: " + installmentOnDb.getInstallmentId());
         }
       }
     });
+
   }
 
   private String retrieveAndValidateSecondaryTransferCategory(String legacyPaymentMetadata, Long organizationId, String debtPositionTypeOrgCode, String accessToken) {

@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILImportaDovutoMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.notice.NoticeService;
@@ -53,6 +54,8 @@ class PaaSILImportaDovutoServiceTest {
   @Mock
   private PaaSILImportaDovutoMapper paaSILImportaDovutoMapperMock;
   @Mock
+  private ManageDebtPositionMapper manageDebtPositionMapperMock;
+  @Mock
   private DebtPositionService debtPositionServiceMock;
   @Mock
   private ManageDebtPositionService manageDebtPositionServiceMock;
@@ -80,6 +83,7 @@ class PaaSILImportaDovutoServiceTest {
       manageDebtPositionServiceMock,
       noticeServiceMock,
       paaSILImportaDovutoMapperMock,
+      manageDebtPositionMapperMock,
       "PU_SIL_BASE_URL");
 
     userInfo = podamFactory.manufacturePojo(UserInfo.class);
@@ -105,6 +109,7 @@ class PaaSILImportaDovutoServiceTest {
     String iud = installmentDTO.getIud();
     String iuv = installmentDTO.getIuv();
     DebtPositionDTO processedDebtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    processedDebtPositionDTO.setDebtPositionTypeOrgId(debtPositionDTO.getDebtPositionTypeOrgId());
     processedDebtPositionDTO.setStatus(DebtPositionStatus.UNPAID);
     InstallmentDTO processedInstallmentDTO = processedDebtPositionDTO.getPaymentOptions().getLast().getInstallments().getLast();
     processedInstallmentDTO.setIud(iud);
@@ -119,7 +124,7 @@ class PaaSILImportaDovutoServiceTest {
         Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
-        Mockito.when(paaSILImportaDovutoMapperMock.mapToManageDebtPositionDTO(processedDebtPositionDTO, installmentDTO, action))
+        Mockito.when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(processedDebtPositionDTO, installmentDTO, action, true))
           .thenReturn(manageDebtPositionDTO);
         Mockito.when(manageDebtPositionServiceMock.manageDebtPositionInstallments(processedDebtPositionDTO.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
           .thenReturn(processedDebtPositionDTO);

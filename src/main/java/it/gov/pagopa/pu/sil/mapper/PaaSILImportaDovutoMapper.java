@@ -8,7 +8,6 @@ import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
-import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -120,59 +118,6 @@ public class PaaSILImportaDovutoMapper {
       .debtor(debtor)
       .generateNotice(false)
       .sourceFlowName(ipaCode + IMPORT_DOVUTO);
-  }
-
-  private void fillInstallmentOnDbWithFieldsToSync(InstallmentDTO installmentOnDb, InstallmentDTO installmentToSync) {
-    installmentOnDb.setIud(installmentToSync.getIud());
-    installmentOnDb.setIuv(installmentToSync.getIuv());
-    installmentOnDb.setNav(installmentToSync.getNav());
-    installmentOnDb.setAmountCents(installmentToSync.getAmountCents());
-    installmentOnDb.setDueDate(installmentToSync.getDueDate());
-    installmentOnDb.setRemittanceInformation(installmentToSync.getRemittanceInformation());
-    installmentOnDb.setLegacyPaymentMetadata(installmentToSync.getLegacyPaymentMetadata());
-    installmentOnDb.setBalance(installmentToSync.getBalance());
-    installmentOnDb.setDebtor(installmentToSync.getDebtor());
-    installmentOnDb.setSourceFlowName(installmentToSync.getSourceFlowName());
-
-    if(installmentToSync.getTransfers()!=null){
-      //multi-beneficiary handling
-      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync);
-    }
-  }
-
-  public ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, InstallmentDTO installmentToSync, String action) {
-    InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions()
-      .stream().flatMap(po -> po.getInstallments().stream())
-      .filter(i -> Objects.equals(i.getIud(), installmentToSync.getIud()))
-      .findFirst()
-      .orElseThrow(() -> {
-        log.error("Installment not found on debtPosition[{}] for organizationId[{}] and iud[{}]", debtPositionOnDb.getDebtPositionId(),
-          debtPositionOnDb.getOrganizationId(), installmentToSync.getIud());
-        return new SilFaultException(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, "Dovuto non trovato");
-      });
-
-    PaymentOptionDTO paymentOptionOnDb = debtPositionOnDb.getPaymentOptions().stream()
-      .filter(po -> Objects.equals(po.getPaymentOptionId(), installmentOnDb.getPaymentOptionId()))
-      .findFirst()
-      .orElseThrow(); //should never happen, since it has been checked in the previous step; just used to satisfy SonarQube
-
-    if(action.equals(Constants.LEGACY_IMPORT_ACTION_MODIFY)){
-      //this is necessary only for action M (modify), for action A (cancel) the only relevant field is installmentId
-      fillInstallmentOnDbWithFieldsToSync(installmentOnDb, installmentToSync);
-    }
-
-    ManageInstallmentDTO manageInstallmentDTO = ManageInstallmentDTO.builder()
-      .action(Action.fromValue(action))
-      .installment(installmentOnDb)
-      .build();
-
-    return ManageDebtPositionDTO.builder()
-      .debtPositionDescription(debtPositionOnDb.getDescription())
-      .paymentOptionId(paymentOptionOnDb.getPaymentOptionId())
-      .paymentOptionDescription(paymentOptionOnDb.getDescription())
-      .validityDate(debtPositionOnDb.getValidityDate())
-      .installments(List.of(manageInstallmentDTO))
-      .build();
   }
 
 }
