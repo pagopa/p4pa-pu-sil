@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -191,95 +192,128 @@ class SecondaryTransferMapperTest {
 
 
   //region: checkAndFillSupportedTransfersConfigurationForModify
-  @Test
-  void checkAndFillSupportedTransfersConfigurationForModify_singleTransfer() {
-    InstallmentDTO installmentOnDb = new InstallmentDTO();
-    installmentOnDb.setTransfers(List.of(new TransferDTO()));
-    InstallmentDTO installmentToSync = new InstallmentDTO();
-    installmentToSync.setTransfers(null);
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void checkAndFillSupportedTransfersConfigurationForModify_singleTransfer(boolean legacyMode) {
+    InstallmentDTO installmentOnDb = podamFactory.manufacturePojo(InstallmentDTO.class);
+    TransferDTO transferOnDb = podamFactory.manufacturePojo(TransferDTO.class).transferIndex(1);
+    installmentOnDb.setTransfers(List.of(transferOnDb));
+    InstallmentDTO installmentToSync = installmentOnDb.toBuilder().build();
+    if (legacyMode) {
+      installmentToSync.setTransfers(null);
+    } else {
+      TransferDTO transferToSync = transferOnDb.toBuilder().amountCents(transferOnDb.getAmountCents() + 100L).remittanceInformation("new info").build();
+      installmentToSync.setTransfers(List.of(transferToSync));
+    }
 
     assertDoesNotThrow(() ->
-      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync));
+      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode));
   }
 
-  @Test
-  void checkAndFillSupportedTransfersConfigurationForModify_shouldThrowOnSizeMismatch() {
-    InstallmentDTO installmentOnDb = new InstallmentDTO();
-    installmentOnDb.setTransfers(List.of(new TransferDTO(), new TransferDTO(), new TransferDTO()));
-    InstallmentDTO installmentToSync = new InstallmentDTO();
-    installmentToSync.setTransfers(List.of(new TransferDTO()));
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void checkAndFillSupportedTransfersConfigurationForModify_shouldThrowOnSizeMismatch(boolean legacyMode) {
+    InstallmentDTO installmentOnDb = podamFactory.manufacturePojo(InstallmentDTO.class);
+    installmentOnDb.setTransfers(Stream.of(1, 2, 3).map(i -> podamFactory.manufacturePojo(TransferDTO.class).transferIndex(i)).toList());
+    InstallmentDTO installmentToSync = installmentOnDb.toBuilder().build();
+    installmentToSync.setTransfers(Stream.of(1).map(i -> podamFactory.manufacturePojo(TransferDTO.class).transferIndex(i)).toList());
 
     assertThrows(SilFaultException.class, () ->
-      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync));
+      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode));
   }
 
-  @Test
-  void checkAndFillSupportedTransfersConfigurationForModify_shouldUpdateFields() {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void checkAndFillSupportedTransfersConfigurationForModify_shouldUpdateFields(boolean legacyMode) {
     InstallmentDTO installmentOnDb = new InstallmentDTO();
-    TransferDTO t1 = new TransferDTO();
-    t1.setTransferIndex(1);
-    t1.setAmountCents(10L);
-    t1.setRemittanceInformation("old");
-    TransferDTO t2 = new TransferDTO();
-    t2.setTransferIndex(2);
-    t2.setOrgFiscalCode("CF");
-    t2.setCategory("CAT");
-    t2.setIban("IBAN");
-    t2.setPostalIban("POSTAL");
-    t2.setAmountCents(20L);
-    t2.setRemittanceInformation("old2");
+    TransferDTO t1 = new TransferDTO()
+      .transferIndex(1)
+      .amountCents(10L)
+      .orgFiscalCode("CF")
+      .orgName("NAME")
+      .category("CAT")
+      .remittanceInformation("old");
+    TransferDTO t2 = new TransferDTO()
+      .transferIndex(2)
+      .orgFiscalCode("CF")
+      .category("CAT")
+      .iban("IBAN")
+      .postalIban("POSTAL")
+      .amountCents(20L)
+      .remittanceInformation("old2");
     installmentOnDb.setTransfers(List.of(t1, t2));
     installmentOnDb.setInstallmentId(1L);
 
     InstallmentDTO installmentToSync = new InstallmentDTO();
     installmentToSync.setAmountCents(100L);
-    TransferDTO t2Sync = new TransferDTO();
-    t2Sync.setTransferIndex(2);
-    t2Sync.setOrgFiscalCode("CF");
-    t2Sync.setCategory("CAT");
-    t2Sync.setIban("IBAN");
-    t2Sync.setPostalIban("POSTAL");
-    t2Sync.setAmountCents(90L);
-    t2Sync.setRemittanceInformation("new2");
-    installmentToSync.setTransfers(List.of(t2Sync));
     installmentToSync.setRemittanceInformation("new1");
+    TransferDTO t2Sync = new TransferDTO()
+      .transferIndex(2)
+      .orgFiscalCode("CF")
+      .category("CAT")
+      .iban("IBAN")
+      .postalIban("POSTAL")
+      .amountCents(90L)
+      .remittanceInformation("new2");
+    if (legacyMode) {
+      installmentToSync.setTransfers(List.of(t2Sync));
+    } else {
+      TransferDTO t1Sync = installmentOnDb.getTransfers().getFirst().toBuilder().remittanceInformation("new1").build();
+      installmentToSync.setTransfers(List.of(t1Sync, t2Sync));
+    }
 
     assertDoesNotThrow(() ->
-      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync));
+      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode));
     assertEquals(10L, t1.getAmountCents()); // updated in method
     assertEquals("new1", t1.getRemittanceInformation());
     assertEquals(90L, t2.getAmountCents());
     assertEquals("new2", t2.getRemittanceInformation());
   }
 
-  @Test
-  void checkAndFillSupportedTransfersConfigurationForModify_shouldThrowOnFieldMismatch() {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void checkAndFillSupportedTransfersConfigurationForModify_shouldThrowOnFieldMismatch(boolean legacyMode) {
     InstallmentDTO installmentOnDb = new InstallmentDTO();
-    TransferDTO t1 = new TransferDTO();
-    t1.setTransferIndex(1);
-    TransferDTO t2 = new TransferDTO();
-    t2.setTransferIndex(2);
-    t2.setOrgFiscalCode("CF1");
-    t2.setCategory("CAT");
-    t2.setIban("IBAN");
-    t2.setPostalIban("POSTAL");
+    TransferDTO t1 = new TransferDTO()
+      .transferIndex(1)
+      .amountCents(10L)
+      .orgFiscalCode("CF")
+      .orgName("NAME")
+      .category("CAT")
+      .remittanceInformation("old");
+    TransferDTO t2 = new TransferDTO()
+      .transferIndex(2)
+      .orgFiscalCode("CF")
+      .category("CAT")
+      .iban("IBAN")
+      .postalIban("POSTAL")
+      .amountCents(20L)
+      .remittanceInformation("old2");
     installmentOnDb.setTransfers(List.of(t1, t2));
     installmentOnDb.setInstallmentId(1L);
 
     InstallmentDTO installmentToSync = new InstallmentDTO();
     installmentToSync.setAmountCents(100L);
-    TransferDTO t2Sync = new TransferDTO();
-    t2Sync.setTransferIndex(2);
-    t2Sync.setOrgFiscalCode("CF2"); // different
-    t2Sync.setCategory("CAT");
-    t2Sync.setIban("IBAN");
-    t2Sync.setPostalIban("POSTAL");
-    t2Sync.setAmountCents(90L);
-    installmentToSync.setTransfers(List.of(t2Sync));
+    TransferDTO t2Sync = new TransferDTO()
+      .transferIndex(2)
+      .orgFiscalCode("CF2") // different
+      .category("CAT")
+      .iban("IBAN")
+      .postalIban("POSTAL")
+      .amountCents(90L)
+      .remittanceInformation("new1");
     installmentToSync.setRemittanceInformation("new1");
 
+
+    if (legacyMode) {
+      installmentToSync.setTransfers(List.of(t2Sync));
+    } else {
+      TransferDTO t1Sync = installmentOnDb.getTransfers().getFirst().toBuilder().build();
+      installmentToSync.setTransfers(List.of(t1Sync, t2Sync));
+    }
+
     assertThrows(SilFaultException.class, () ->
-      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync));
+      secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode));
   }
   //endregion
 

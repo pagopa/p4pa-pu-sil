@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
@@ -10,7 +12,6 @@ import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
-import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
@@ -22,8 +23,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -148,41 +147,6 @@ class PaaSILImportaDovutoMapperTest {
 
   }
   //endregion
-
-  //region: mapRequestToDebtPositionList
-  @ParameterizedTest
-  @ValueSource(strings = {Constants.LEGACY_IMPORT_ACTION_CANCEL, Constants.LEGACY_IMPORT_ACTION_MODIFY})
-  void mapToManageDebtPositionDTO_validData_ReturnsOk(String action) {
-    DebtPositionDTO debtPositionOnDb = podamFactory.manufacturePojo(DebtPositionDTO.class);
-    InstallmentDTO installmentToSync = podamFactory.manufacturePojo(InstallmentDTO.class);
-    InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().getLast().getInstallments().getLast();
-    installmentOnDb.setIud(installmentToSync.getIud());
-    debtPositionOnDb.getPaymentOptions().getLast().setPaymentOptionId(installmentOnDb.getPaymentOptionId());
-
-    if(action.equals(Constants.LEGACY_IMPORT_ACTION_MODIFY)){
-      doNothing().when(secondaryTransferMapperMock).checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync);
-    }
-
-    ManageDebtPositionDTO response = mapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action);
-
-    Assertions.assertNotNull(response);
-    TestUtils.checkNotNullFields(response);
-  }
-
-  @Test
-  void mapToManageDebtPositionDTO_UnmarshallingFailure_ReturnsError() {
-    DebtPositionDTO debtPositionOnDb = podamFactory.manufacturePojo(DebtPositionDTO.class);
-    InstallmentDTO installmentToSync = podamFactory.manufacturePojo(InstallmentDTO.class);
-    InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().getLast().getInstallments().getLast();
-    installmentOnDb.setIud(installmentToSync.getIud()+"invalid");
-
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, Constants.LEGACY_IMPORT_ACTION_MODIFY));
-
-    assertEquals(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, exception.getFault());
-    assertTrue(exception.getDescription().contains("Dovuto non trovato"));
-  }
-  //endregion
-
 
 }
 
