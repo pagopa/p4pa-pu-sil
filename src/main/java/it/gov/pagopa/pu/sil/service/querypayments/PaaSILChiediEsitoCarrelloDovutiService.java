@@ -4,12 +4,11 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.enums.legacy.CartStatus;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
-import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.veneto.regione.pagamenti.ente.ListaCarrelli;
@@ -28,47 +27,17 @@ import java.util.Objects;
 @Slf4j
 public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPaymentsService<PaaSILChiediEsitoCarrelloDovuti, PaaSILChiediEsitoCarrelloDovutiRisposta> {
 
-  private final DebtPositionService debtPositionService;
   private final PagatiMapper pagatiMapper;
-  private final SessionIdMapper sessionIdMapper;
   private final ReceiptService receiptService;
 
   public PaaSILChiediEsitoCarrelloDovutiService(
     OrganizationService organizationService,
-    DebtPositionService debtPositionService,
+    DebtPositionInstallmentFacadeService debtPositionInstallmentFacadeService,
     PagatiMapper pagatiMapper,
-    ReceiptService receiptService,
-    SessionIdMapper sessionIdMapper) {
-    super(organizationService);
-    this.debtPositionService = debtPositionService;
+    ReceiptService receiptService) {
+    super(organizationService, debtPositionInstallmentFacadeService);
     this.pagatiMapper = pagatiMapper;
     this.receiptService = receiptService;
-    this.sessionIdMapper = sessionIdMapper;
-  }
-
-  @Override
-  protected void validateRequest(PaaSILChiediEsitoCarrelloDovuti request) {
-    //nothing to do here, no specific validation needed
-  }
-
-  @Override
-  protected SilFaults getFaultForDebtPositionNotFound() {
-    return SilFaults.PAA_ID_SESSION_NON_VALIDO;
-  }
-
-  @Override
-  protected List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallments(PaaSILChiediEsitoCarrelloDovuti request, Organization organization, String accessToken) {
-    //idSession is installmentId
-    List<Long> installmentIds = sessionIdMapper.mapSessionIdToInstallmentIds(request.getIdSessionCarrello());
-
-    return installmentIds.stream()
-      //search for the debt position by installmentId
-      .map(installmentId -> Pair.of(installmentId, debtPositionService.getDebtPositionByInstallmentId(installmentId, accessToken)))
-      //find the installment in the debt position
-      .map(debtPositionPair -> Pair.of(debtPositionPair.getRight(), findInstallmentOfDebtPosition(debtPositionPair.getRight(),
-        installment -> Objects.equals(installment.getInstallmentId(), debtPositionPair.getLeft()))))
-      //return the pair of debt position and matching installment
-      .toList();
   }
 
   @Override
@@ -83,8 +52,7 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
 
   @Override
   protected PaaSILChiediEsitoCarrelloDovutiRisposta mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList,
-                                                         Organization organization, String accessToken) {
-
+                                                         Organization organization, String accessToken, PaaSILChiediEsitoCarrelloDovuti request) {
     // Prepare the response
     PaaSILChiediEsitoCarrelloDovutiRisposta response = new PaaSILChiediEsitoCarrelloDovutiRisposta();
     response.setListaCarrelli(new ListaCarrelli());
@@ -92,7 +60,6 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
     response.getListaCarrelli().getRispostaCarrellos().add(rispostaCarrello);
 
     //TODO currently support only one debt position and installment, but could be extended to support multiple
-    DebtPositionDTO debtPositionDTO = debtPositionWithInstallmentList.getFirst().getLeft();
     InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
 
     CartStatus cartStatus = getCartStatus(installmentDTO);
@@ -100,7 +67,7 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
     rispostaCarrello.setCodIpaEnte(organization.getIpaCode());
     if(cartStatus == CartStatus.PAID) {
       //map debt position to Pagati
-      byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(debtPositionDTO, installmentDTO, organization, accessToken);
+      byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installmentDTO, organization, accessToken);
 
       //retrieve the original receipt
       byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
@@ -110,6 +77,12 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
     }
 
     return response;
+  }
+
+  @Override
+  protected PaymentStatusRequest validateAndTransformRequest(PaaSILChiediEsitoCarrelloDovuti request, String orgIpaCode) {
+    // no validation needed in this scenario
+    return new PaymentStatusRequest(orgIpaCode, QueryPaymentStatusType.INSTALLMENT_ID, request.getIdSessionCarrello(), false);
   }
 
   private CartStatus getCartStatus(InstallmentDTO installment) {

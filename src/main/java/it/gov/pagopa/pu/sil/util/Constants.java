@@ -1,6 +1,10 @@
 package it.gov.pagopa.pu.sil.util;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
+
 import java.time.ZoneId;
+import java.util.List;
 
 public class Constants {
 
@@ -9,8 +13,6 @@ public class Constants {
   public static final ZoneId ZONEID = ZoneId.of("Europe/Rome");
 
   public static final String AUX_DIGIT = "3";
-
-  public static final String STAMP_DEBT_POSITION_TYPE_ORG_CODE = "STAMP";
 
   public static final long EXPIRATION_SPONTANEOUS_SIL_DEBT_POSITION_MINUTES = 120L;
 
@@ -27,5 +29,29 @@ public class Constants {
   public static final String SESSION_ID_SEPARATOR = "-";
 
   public static final String LEGACY_PAYMENT_OUTCOME_CODE_OK = "0";
+
+  public static final String LEGACY_IMPORT_ACTION_INSERT = "I";
+  public static final String LEGACY_IMPORT_ACTION_MODIFY = "M";
+  public static final String LEGACY_IMPORT_ACTION_CANCEL = "A";
+  public static final String LEGACY_IMPORT_ACTION_PRINT = "S";
+
+  public static final List<DebtPositionOrigin> PRINT_NOTICE_ALLOWED_ORIGINS = List.of(
+    DebtPositionOrigin.ORDINARY,
+    DebtPositionOrigin.ORDINARY_SIL,
+    DebtPositionOrigin.SPONTANEOUS
+  );
+  public static final List<DebtPositionOrigin> ORDINARY_DEBT_POSITION_ORIGINS = List.of(
+    DebtPositionOrigin.ORDINARY,
+    DebtPositionOrigin.ORDINARY_SIL,
+    DebtPositionOrigin.SPONTANEOUS,
+    DebtPositionOrigin.SPONTANEOUS_SIL
+  );
+
+  public static final List<DebtPositionStatus> SYNCABLE_DEBT_POSITION_STATUSES = List.of(
+    DebtPositionStatus.DRAFT,
+    DebtPositionStatus.UNPAID,
+    DebtPositionStatus.PARTIALLY_PAID,
+    DebtPositionStatus.EXPIRED
+  );
 }
 

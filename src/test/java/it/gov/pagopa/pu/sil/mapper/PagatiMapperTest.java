@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Pagati;
@@ -32,7 +32,7 @@ class PagatiMapperTest {
   @Mock
   private JAXBTransformService jaxbTransformServiceMock;
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private ReceiptService receiptServiceMock;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
@@ -56,7 +56,7 @@ class PagatiMapperTest {
     }
     byte[] expectedBytes = "expectedBytes".getBytes();
 
-    Mockito.when(debtPositionServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
+    Mockito.when(receiptServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
       .thenReturn(receipt);
 
     Mockito.when(jaxbTransformServiceMock.marshallingAsBytes(Mockito.argThat(p -> {
@@ -95,7 +95,7 @@ class PagatiMapperTest {
     }), Mockito.eq(PagatiConRicevuta.class))).thenReturn(expectedBytes);
 
     // When
-    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(debtPosition, installment, organization, "accessToken");
+    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, "accessToken");
 
     // Then
     Assertions.assertEquals(expectedBytes, result);
@@ -118,7 +118,7 @@ class PagatiMapperTest {
 
     byte[] expectedBytes = "expectedBytes".getBytes();
 
-    Mockito.when(debtPositionServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
+    Mockito.when(receiptServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
       .thenReturn(receipt);
 
     Mockito.when(jaxbTransformServiceMock.marshallingAsBytes(Mockito.argThat(p -> {
@@ -154,7 +154,7 @@ class PagatiMapperTest {
     }), Mockito.eq(Pagati.class))).thenReturn(expectedBytes);
 
     // When
-    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagati(debtPosition, installment, organization, "accessToken");
+    byte[] result = pagatiMapper.mapDebtPositionsToEncodedPagati(installment, organization, "accessToken");
 
     // Then
     Assertions.assertEquals(expectedBytes, result);

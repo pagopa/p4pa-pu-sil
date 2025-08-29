@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.UtilitiesTest;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.UnauthorizedException;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediAvvisiPendentiRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
@@ -10,6 +9,7 @@ import it.veneto.regione.pagamenti.pivot.ente.PivotSILAutorizzaImportFlussoRispo
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -24,9 +24,7 @@ class FaultUtilsTest {
     PaaSILChiediAvvisiPendentiRisposta responseObj = new PaaSILChiediAvvisiPendentiRisposta();
     FaultBean faultBean = new FaultBean();
     Supplier<Object> faultBeanSupplier = () -> faultBean;
-    BiConsumer<Object, Object> faultSetter = (response, bean) -> {
-      assertInstanceOf(FaultBean.class, bean);
-    };
+    BiConsumer<Object, Object> faultSetter = (response, bean) -> assertInstanceOf(FaultBean.class, bean);
     UtilitiesTest.setTraceId("TRACE_ID");
 
     // Act
@@ -55,9 +53,7 @@ class FaultUtilsTest {
     PaaSILChiediAvvisiPendentiRisposta responseObj = new PaaSILChiediAvvisiPendentiRisposta();
     it.veneto.regione.pagamenti.pivot.ente.FaultBean faultBean = new it.veneto.regione.pagamenti.pivot.ente.FaultBean();
     Supplier<Object> faultBeanSupplier = () -> faultBean;
-    BiConsumer<Object, Object> faultSetter = (response, bean) -> {
-      assertInstanceOf(it.veneto.regione.pagamenti.pivot.ente.FaultBean.class, bean);
-    };
+    BiConsumer<Object, Object> faultSetter = (response, bean) -> assertInstanceOf(it.veneto.regione.pagamenti.pivot.ente.FaultBean.class, bean);
     UtilitiesTest.setTraceId("TRACE_ID");
 
     // Act
@@ -121,7 +117,7 @@ class FaultUtilsTest {
         faultBeanSupplier,
         SilFaults.PAA_ENTE_NON_VALIDO,
         SilFaults.PAA_SYSTEM_ERROR,
-        new UnauthorizedException("Not authorized"),
+        new AuthorizationDeniedException("Not authorized"),
         SilFaults.PAA_ENTE_NON_VALIDO.code(),
         "Not authorized"
       },
@@ -141,7 +137,7 @@ class FaultUtilsTest {
         pivotFaultBeanSupplier,
         SilFaults.PIVOT_ENTE_NON_VALIDO,
         SilFaults.PIVOT_SYSTEM_ERROR,
-        new UnauthorizedException("Pivot unauthorized"),
+        new AuthorizationDeniedException("Pivot unauthorized"),
         SilFaults.PIVOT_ENTE_NON_VALIDO.code(),
         "Pivot unauthorized"
       },

@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.connector.actualization.config;
 
-import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
+import it.gov.pagopa.actualization.dto.generated.Payment;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
+import it.gov.pagopa.pu.sil.util.CertUtilsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,14 +26,17 @@ class ActualizationApisHolderTest extends BaseApiHolderTest {
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
     ActualizationApiClientConfig clientConfig = new ActualizationApiClientConfig();
-    apisHolder = new ActualizationApisHolder(clientConfig, restTemplateBuilderMock);
+    PuIntegrityDataConfig puIntegrityDataConfig = PuIntegrityDataConfig.builder()
+      .privateKey(CertUtilsTest.PRIVATE_KEY)
+      .build();
+    apisHolder = new ActualizationApisHolder(clientConfig, puIntegrityDataConfig, restTemplateBuilderMock);
   }
 
   @Test
   void whenGetInstallmentApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> apisHolder.getAmountUpdatesLegacyApi(accessToken, "http://example.com")
-        .login(new Credentials()),
+      accessToken -> apisHolder.getActualizationNativeApi(accessToken, "http://example.com")
+        .actualization(new Payment()),
       new ParameterizedTypeReference<>() {},
       apisHolder::unload,
       AUTH_TYPE.NO_AUTH);

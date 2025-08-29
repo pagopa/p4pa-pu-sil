@@ -4,7 +4,9 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.*;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
+import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -28,10 +30,10 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
+import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -42,6 +44,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -51,6 +56,10 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+import java.util.stream.Stream;
+
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.*;
+import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.*;
 
 @ExtendWith(MockitoExtension.class)
 class PuForOrganizationPaymentsEndpointTest {
@@ -192,27 +201,33 @@ class PuForOrganizationPaymentsEndpointTest {
 
   // region PaaSILChiediStatoImportFlusso
 
-  @Test
-  void givenValidRequestWhenPaaSILChiediStatoImportFlussoThenResponseContainsExpectedStatusAndUrl() throws Exception {
+  @ParameterizedTest
+  @MethodSource("paaSILChiediStatoImportFlussoProvider")
+  void givenValidRequestWhenPaaSILChiediStatoImportFlussoThenResponseContainsExpectedStatusAndUrl(boolean flagImported,
+                                                                                                  boolean flagError,
+                                                                                                  boolean flagNotice,
+                                                                                                  IngestionFlowFileStatus status,
+                                                                                                  List<DownloadUrl> downloadUrls,
+                                                                                                  String expectedImportedUrl,
+                                                                                                  String expectedErrorUrl,
+                                                                                                  String expectedNoticeUrl) throws Exception {
     // Given
     Long requestToken = 12345L;
-    String expectedUrl = "https://upload.url";
     PaaSILChiediStatoImportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoImportFlusso.class);
     request.setRequestToken(String.valueOf(requestToken));
-    request.setFileAvvisi(Boolean.FALSE);
-    request.setFileScarti(Boolean.TRUE);
-    request.setFileIUV(Boolean.TRUE);
-    PaymentsProcessingStatusDTO statusDTO = new PaymentsProcessingStatusDTO();
-    statusDTO.setUrlNotice(null);
-    statusDTO.setUrlImported(expectedUrl + "/imported");
-    statusDTO.setUrlErrors(expectedUrl + "/errors");
-    statusDTO.setStatus(IngestionFlowFileStatus.COMPLETED);
+    request.setFileAvvisi(flagNotice);
+    request.setFileScarti(flagError);
+    request.setFileIUV(flagImported);
+    ImportStatusResponseDTO statusDTO = new ImportStatusResponseDTO();
+    statusDTO.setDownloadUrls(downloadUrls);
+    statusDTO.setStatus(status);
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
-      Mockito.eq(request), Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken),
+      Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
 
     // When
@@ -222,10 +237,32 @@ class PuForOrganizationPaymentsEndpointTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertEquals(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(statusDTO.getStatus()), response.getStato());
-    Assertions.assertEquals(statusDTO.getUrlImported(), response.getUrlFileIUV());
-    Assertions.assertEquals(statusDTO.getUrlErrors(), response.getUrlFileScarti());
-    Assertions.assertEquals(statusDTO.getUrlNotice(), response.getUrlFileAvvisi());
+    Assertions.assertEquals(expectedImportedUrl, response.getUrlFileIUV());
+    Assertions.assertEquals(expectedErrorUrl, response.getUrlFileScarti());
+    Assertions.assertEquals(expectedNoticeUrl, response.getUrlFileAvvisi());
   }
+
+  private static Stream<Arguments> paaSILChiediStatoImportFlussoProvider() {
+    String expectedUrl = "https://upload.url";
+    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/imported");
+    DownloadUrl errors = new DownloadUrl(DISCARDED_FILE, expectedUrl + "/errors");
+    DownloadUrl notice = new DownloadUrl(PAYMENT_NOTICE_FILE, expectedUrl + "/notice");
+    DownloadUrl input = new DownloadUrl(INPUT_FILE, expectedUrl + "/input");
+
+    return Stream.of(
+      Arguments.of(true, true, true, PROCESSING, null, null, null, null),
+      Arguments.of(true, true, true, COMPLETED, List.of(imported, errors, notice), imported.getUrl(), errors.getUrl(), notice.getUrl()),
+      Arguments.of(true, true, false, COMPLETED, List.of(imported, errors), imported.getUrl(), errors.getUrl(), null),
+      Arguments.of(true, false, true, COMPLETED, List.of(imported, notice), imported.getUrl(), null, notice.getUrl()),
+      Arguments.of(true, false, false, COMPLETED, List.of(imported), imported.getUrl(), null, null),
+      Arguments.of(false, true, true, COMPLETED, List.of(errors, notice), null, errors.getUrl(), notice.getUrl()),
+      Arguments.of(false, true, false, COMPLETED, List.of(errors), null, errors.getUrl(), null),
+      Arguments.of(false, false, true, COMPLETED, List.of(notice), null, null, notice.getUrl()),
+      Arguments.of(false, false, false, COMPLETED, List.of(), null, null, null),
+      Arguments.of(false, false, false, COMPLETED, List.of(input), null, null, null)
+    );
+  }
+
   // endregion
 
   // region PaaSILAutorizzaImportFlusso
@@ -238,10 +275,13 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 12345L;
     String expectedUrl = "https://upload.url";
-
+    ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
+      .importId(String.valueOf(expectedToken))
+      .uploadUrl(expectedUrl)
+      .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
-    )).thenReturn(Pair.of(expectedToken, expectedUrl));
+    )).thenReturn(importFileResponseDTO);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
@@ -275,7 +315,7 @@ class PuForOrganizationPaymentsEndpointTest {
       RegistryOutcome.OK
     );
 
-    Mockito.when(paaSILImportaDovutoServiceMock.paaSILImportaDovuto(Mockito.same(userInfo), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(request)))
+    Mockito.when(paaSILImportaDovutoServiceMock.handleAction(Mockito.same(request), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(userInfo), Mockito.any()))
       .thenReturn(tripleResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()

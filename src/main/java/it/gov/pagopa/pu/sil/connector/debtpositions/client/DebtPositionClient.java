@@ -1,6 +1,9 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,47 +22,19 @@ public class DebtPositionClient {
     this.debtPositionsApisHolder = debtPositionsApisHolder;
   }
 
-  public DebtPositionTypeOrg getDebtPositionTypeOrgByOrganizationIdAndCode(Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getDebtPositionTypeOrgSearchControllerApi(accessToken)
-        .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
-      return null;
-    }
-  }
-
-  public DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getDebtPositionTypeEntityControllerApi(accessToken)
-        .crudGetDebtpositiontype(String.valueOf(debtPositionType));
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DeptPositionType having id[{}]", debtPositionType, e);
-      return null;
-    }
-  }
-
-  public Long countExistingInstallmentsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, String accessToken) {
-    return debtPositionsApisHolder
-      .getInstallmentNoPiiSearchControllerApi(accessToken)
-      .crudInstallmentsCountExistingInstallments(organizationId, iud, iuv, nav);
-  }
-
   public ResponseEntity<DebtPositionDTO> createDebtPosition(DebtPositionDTO debtPositionDTO, String accessToken) {
     return debtPositionsApisHolder
       .getDebtPositionApi(accessToken)
       .createDebtPositionWithHttpInfo(debtPositionDTO, false);
   }
 
-  public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
+  public ResponseEntity<DebtPositionDTO> manageDebtPositionInstallments(Long debtPositionId, ManageDebtPositionDTO manageDebtPositionDTO, String accessToken) {
     return debtPositionsApisHolder
-      .getInstallmentApi(accessToken)
-      .getInstallmentsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin);
+      .getDebtPositionApi(accessToken)
+      .manageDebtPositionInstallmentsWithHttpInfo(debtPositionId, manageDebtPositionDTO);
   }
 
-  public DebtPositionDTO getDebtPositionByInstallmentId(Long installmentId, String accessToken) {
+  public DebtPositionDTO getDebtPositionDTOByInstallmentId(Long installmentId, String accessToken) {
     try {
       return debtPositionsApisHolder
         .getDebtPositionApi(accessToken)
@@ -82,13 +57,12 @@ public class DebtPositionClient {
       .getDebtPositionsByOrganizationIdAndIud(organizationId, iud, debtPositionOrigin);
   }
 
-  public ReceiptDTO getReceiptById(Long receiptId, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getReceiptApi(accessToken)
-        .getReceipt(receiptId);
+  public DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken){
+    try{
+      return debtPositionsApisHolder.getDebtPositionSearchControllerApi(accessToken)
+        .crudDebtPositionsFindByInstallmentId(installmentId);
     } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find ReceiptDTO having receiptId[{}]", receiptId, e);
+      log.info("Cannot find DebtPosition having installmentId[{}]", installmentId, e);
       return null;
     }
   }

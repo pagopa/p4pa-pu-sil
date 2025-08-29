@@ -2,16 +2,15 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
+import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
-import it.gov.pagopa.pu.sil.util.Constants;
-import it.gov.pagopa.pu.sil.util.ConversionUtils;
-import it.gov.pagopa.pu.sil.util.Utilities;
+import it.gov.pagopa.pu.sil.util.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
@@ -27,13 +26,14 @@ import java.util.Optional;
 abstract class AbstractImmediatePaymentsMapper {
 
   protected final JAXBTransformService jaxbTransformService;
-  protected final DebtPositionService debtPositionService;
+  protected final DebtPositionTypeService debtPositionTypeService;
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
+  protected final TaxonomyService taxonomyService;
 
-  protected List<DebtPositionDTO> dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization organization, String accessToken){
-    if(!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
-      !RegistryEventType.PTDP_paaSILInviaCarrelloDovuti.equals(operationType)){
+  protected List<DebtPositionDTO> dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization organization, String accessToken) {
+    if (!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
+      !RegistryEventType.PTDP_paaSILInviaCarrelloDovuti.equals(operationType)) {
       throw new ApplicationException("invalid operation type: " + operationType);
     }
     if (StringUtils.isNotBlank(dovutiObj.getDatiVersamento().getIdentificativoUnivocoVersamento())) {
@@ -43,6 +43,8 @@ abstract class AbstractImmediatePaymentsMapper {
     if (dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size() > Constants.MAX_CART_SIZE) {
       throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: " +
         dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size() + "/" + Constants.MAX_CART_SIZE);
+    } else if (dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().isEmpty()) {
+      throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
     }
 
     PersonDTO debtor = personMapper.getAndValidateDebtor(dovutiObj.getSoggettoPagatore());
@@ -60,11 +62,12 @@ abstract class AbstractImmediatePaymentsMapper {
   }
 
 
-  protected DebtPositionDTO initDebtPosition(Long orgId) {
+  private DebtPositionDTO initDebtPosition(Long orgId) {
     return DebtPositionDTO.builder()
       .status(DebtPositionStatus.UNPAID)
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .organizationId(orgId)
+      .description("Posizione debitoria ") //debtPositionTypeOrg description will be added later, with method fillAndValidateVersamentoFieldsOfDebtPosition()
       .flagIuvVolatile(true)
       .flagPuPagoPaPayment(true)
       .multiDebtor(false)
@@ -79,17 +82,17 @@ abstract class AbstractImmediatePaymentsMapper {
       .build();
   }
 
-  protected void fillAndValidateVersamentoFieldsOfDebtPosition(RegistryEventType operationType, int idx,
-                                                                                  DebtPositionDTO debtPosition, PersonDTO debtor,
-                                                                                  Organization org, CtDatiSingoloVersamentoDovuti versamento,
-                                                                                  String cartId, String accessToken) {
+  private void fillAndValidateVersamentoFieldsOfDebtPosition(RegistryEventType operationType, int idx,
+                                                             DebtPositionDTO debtPosition, PersonDTO debtor,
+                                                             Organization org, CtDatiSingoloVersamentoDovuti versamento,
+                                                             String cartId, String accessToken) {
 
-    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionService.getDebtPositionTypeOrgByOrgIdAndType(
+    DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
 
     validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, versamento.getIdentificativoTipoDovuto());
-    personMapper.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
-    validationService.validateStamp(versamento.getDatiMarcaBolloDigitale(), versamento.getIdentificativoTipoDovuto());
+    PersonValidationUtils.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
+    validationService.validateStamp(versamento);
     validationService.validatePaymentData(versamento);
     validationService.validateIud(org.getOrganizationId(), versamento.getIdentificativoUnivocoDovuto(), accessToken);
 
@@ -105,12 +108,11 @@ abstract class AbstractImmediatePaymentsMapper {
 
     debtPosition.setIupdOrg(cartId + "-" + idx);
     debtPosition.setDebtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()));
-    debtPosition.setDescription(versamento.getCausaleVersamento());
+    debtPosition.setDescription(debtPosition.getDescription() + debtPositionTypeOrg.getDescription());
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
-    paymentOption.setDescription(versamento.getCausaleVersamento());
+    paymentOption.setDescription(debtPosition.getDescription());
     paymentOption.setTotalAmountCents(amount);
-    //TODO: since first transfer of the installment is not passed, as per P4ADEV-2407, there is currently no way
-    // to set stamp-related data. This needs to be fixed in the future, when the stamp handling will be defined.
+
     paymentOption.setInstallments(List.of(
       InstallmentDTO.builder()
         .status(InstallmentStatus.UNPAID)
@@ -122,7 +124,57 @@ abstract class AbstractImmediatePaymentsMapper {
         .legacyPaymentMetadata(versamento.getDatiSpecificiRiscossione())
         .remittanceInformation(versamento.getCausaleVersamento())
         .sourceFlowName(sourceFlowName)
+        .generateNotice(false)
         .build()
     ));
+
+    //fill first transfer if necessary (i.e. if the payment has a custom taxonomy code on legacyPaymentMetadata field or a stamp)
+    validateAndFillFirstTransferIfNecessary(debtPosition, versamento, org, debtPositionTypeOrg, accessToken);
   }
+
+  private void validateAndFillFirstTransferIfNecessary(DebtPositionDTO debtPosition, CtDatiSingoloVersamentoDovuti versamento,
+                                                       Organization org, DebtPositionTypeOrg debtPositionTypeOrg, String accessToken) {
+    InstallmentDTO installmentDTO = debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst();
+
+    String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(versamento.getDatiSpecificiRiscossione());
+    if (category == null && versamento.getDatiMarcaBolloDigitale() == null) {
+      // no need to pass the first transfer; it will be created automatically by debt-position API
+      return;
+    }
+
+    //transfer category
+    if (category == null || taxonomyService.getTaxonomyByTaxonomyCode(category, accessToken).isEmpty()) {
+      DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
+      category = debtPositionType.getTaxonomyCode().replace("9/", "").replace("/", "");
+    }
+
+    // common fields for the first transfer
+    TransferDTO transferDTO = TransferDTO.builder()
+      .transferIndex(1)
+      .orgFiscalCode(org.getOrgFiscalCode())
+      .orgName(org.getOrgName())
+      .amountCents(installmentDTO.getAmountCents())
+      .remittanceInformation(versamento.getCausaleVersamento())
+      .category(category)
+      .build();
+
+    // stamp/iban fields
+    Optional.ofNullable(versamento.getDatiMarcaBolloDigitale()).ifPresentOrElse(
+      stamp -> transferDTO
+        .stampHashDocument(stamp.getHashDocumento())
+        .stampProvincialResidence(stamp.getProvinciaResidenza())
+        .stampType(stamp.getTipoBollo()),
+      () -> {
+        if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
+          transferDTO.iban(org.getIban())
+            .postalIban(org.getPostalIban());
+        } else {
+          transferDTO.iban(debtPositionTypeOrg.getIban())
+            .postalIban(debtPositionTypeOrg.getPostalIban());
+        }
+      });
+
+    installmentDTO.setTransfers(List.of(transferDTO));
+  }
+
 }

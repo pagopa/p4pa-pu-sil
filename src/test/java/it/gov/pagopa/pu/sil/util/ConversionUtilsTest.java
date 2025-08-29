@@ -135,4 +135,26 @@ class ConversionUtilsTest {
     void testLocalDate2LocalDateTimeAtEndOfDay(LocalDate input, LocalDateTime expected) {
         assertEquals(expected, ConversionUtils.atEndOfDay(input));
     }
+
+  static Stream<Arguments> toLocalDateFromXMLGregorianCalendarProvider() {
+    OffsetDateTime odt = OffsetDateTime.of(2024, 6, 1, 12, 30, 0, 0, ZoneOffset.ofHours(2));
+    XMLGregorianCalendar xmlCal = ConversionUtils.toXMLGregorianCalendar(odt);
+    return Stream.of(
+      Arguments.of(xmlCal, odt.toLocalDate()),
+      Arguments.of(null, null)
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource("toLocalDateFromXMLGregorianCalendarProvider")
+  void testXMLGregorianCalendar2LocalDate(XMLGregorianCalendar input, LocalDate expected) {
+    LocalDate result = ConversionUtils.toLocalDate(input);
+    if (expected == null) {
+      assertNull(result);
+    } else {
+      assertNotNull(result);
+      assertEquals(expected, result);
+    }
+  }
+
 }

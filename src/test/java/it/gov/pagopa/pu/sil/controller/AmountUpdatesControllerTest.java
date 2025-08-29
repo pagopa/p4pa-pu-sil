@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
-import it.gov.pagopa.pu.sil.service.actualization.ActualizationService;
+import it.gov.pagopa.pu.sil.service.actualization.ActualizationFacadeService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @ExtendWith(MockitoExtension.class)
 class AmountUpdatesControllerTest {
   @Mock
-  private ActualizationService actualizationServiceMock;
+  private ActualizationFacadeService actualizationFacadeServiceMock;
 
   @InjectMocks
   private AmountUpdatesController amountUpdatesController;
@@ -44,7 +44,7 @@ class AmountUpdatesControllerTest {
     String nav = "NAV123";
     ActualizationResultDTO expectedResult = new ActualizationResultDTO();
 
-    Mockito.when(actualizationServiceMock.actualize(orgSilServiceId, nav, userInfo, "fakeAccessToken"))
+    Mockito.when(actualizationFacadeServiceMock.actualize(orgSilServiceId, nav, userInfo, "fakeAccessToken"))
             .thenReturn(expectedResult);
 
     ResponseEntity<ActualizationResultDTO> response = amountUpdatesController.actualize(orgSilServiceId, nav);
@@ -52,4 +52,5 @@ class AmountUpdatesControllerTest {
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertSame(expectedResult, response.getBody());
   }
+
 }

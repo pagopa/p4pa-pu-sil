@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.workflow.client;
 
 import it.gov.pagopa.pu.sil.connector.workflow.config.WorkflowApisHolder;
 import it.gov.pagopa.pu.workflowhub.controller.generated.WorkflowApi;
+import it.gov.pagopa.pu.workflowhub.dto.generated.WorkflowStatusDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +43,7 @@ class WorflowApiClientTest {
     String expectedState = "WORFLOW_OK";
 
     Mockito.when(workflowApisHolderMock.getWorkflowApi(accessToken)).thenReturn(workflowApiMock);
-    Mockito.when(workflowApiMock.waitWorkflowCompletion(workflowId, 1, 1000)).thenReturn(expectedState);
+    Mockito.when(workflowApiMock.waitWorkflowCompletion(workflowId, 1, 1000)).thenReturn(new WorkflowStatusDTO().status(expectedState));
 
     // When
     String result = workflowApiClient.waitWorkflowCompletion(workflowId, 1, 1000, accessToken);

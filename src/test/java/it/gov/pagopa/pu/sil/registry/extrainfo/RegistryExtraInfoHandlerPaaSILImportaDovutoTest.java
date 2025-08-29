@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.ElementoListaDovutiEntiSecondari;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
-import org.junit.jupiter.api.Test;
+import jakarta.activation.DataHandler;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -61,14 +61,30 @@ class RegistryExtraInfoHandlerPaaSILImportaDovutoTest {
     }
   }
 
-  @Test
-  void extractResponseExtraInfo() {
-    PaaSILImportaDovutoRisposta response = null;
+  @ParameterizedTest
+  @ValueSource(strings = {"hasNoticeZipFile", "hasNoticeUrl", "hasBoth", "hasNone"})
+  void extractResponseExtraInfo(String testCase) {
+    int expectedSize = 1;
+    PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
+    if(testCase.equals("hasNoticeZipFile") || testCase.equals("hasBoth")) {
+      response.setBase64ZipAvviso(new DataHandler(new byte[]{1, 2, 3}, "application/zip"));
+      expectedSize++;
+    }
+    if(testCase.equals("hasNoticeUrl") || testCase.equals("hasBoth")) {
+      response.setUrlFileAvviso("http://example.com/notice");
+      expectedSize++;
+    }
 
     Map<String, Object> result = registryExtraInfoHandlerPaaSILImportaDovuto.extractResponseExtraInfo(response);
 
     assertNotNull(result);
     assertTrue(result.containsKey(RegistryLogger.SKIP_PAYLOAD_KEY));
-    assertEquals(1, result.size());
+    if(testCase.equals("hasNoticeZipFile") || testCase.equals("hasBoth")) {
+      assertTrue(result.containsKey("hasNoticeZipFile"));
+    }
+    if(testCase.equals("hasNoticeUrl") || testCase.equals("hasBoth")) {
+      assertTrue(result.containsKey("noticeUrl"));
+    }
+    assertEquals(expectedSize, result.size());
   }
 }

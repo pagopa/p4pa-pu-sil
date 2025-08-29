@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service.legacyauth;
 
 import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
 import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
@@ -13,8 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SilLegacyBasicAuthServiceTest {
@@ -30,6 +30,10 @@ class SilLegacyBasicAuthServiceTest {
 
   @Test
   void whenCallLegacyBasicAuthServiceThenReturnToken() {
+    String orgFiscalCode = "orgFiscalCode";
+    String orgSilServiceName = "orgSilServiceName";
+    String nav = "31234567890";
+    UserInfo loggedUser = mock(UserInfo.class);
     String user = "user";
     String psw = "psw";
     String authUrl = "http://auth.url";
@@ -46,12 +50,12 @@ class SilLegacyBasicAuthServiceTest {
       .token("accessToken")
       .esito(Token.EsitoEnum.OK);
 
-    when(legacyBasicAuthService.login(credentials, authUrl)).thenReturn(expectedToken);
+    when(legacyBasicAuthService.login(orgFiscalCode, orgSilServiceName, nav, loggedUser, credentials, authUrl)).thenReturn(expectedToken);
 
-    AccessToken result = service.authenticate(config);
+    AccessToken result = service.authenticate(orgFiscalCode, orgSilServiceName, nav, loggedUser, config);
 
     assertSame(expectedToken.getToken(), result.getAccessToken());
     assertEquals(EXPIRATION_TIME, result.getExpiresIn());
-    verify(legacyBasicAuthService).login(credentials, authUrl);
+    verify(legacyBasicAuthService).login(orgFiscalCode, orgSilServiceName, nav, loggedUser, credentials, authUrl);
   }
 }

@@ -5,6 +5,8 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtAccertamento;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
+import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
@@ -39,7 +41,7 @@ public class ValidationUtils {
   }
 
   public static boolean isValidLegacyPaymentMetadataSecondary(final String legacyPaymentMetadata) {
-    return legacyPaymentMetadata!=null && LEGACY_PAYMENT_METADATA_SECONDARY_PATTERN.matcher(legacyPaymentMetadata).matches();
+    return legacyPaymentMetadata==null || LEGACY_PAYMENT_METADATA_SECONDARY_PATTERN.matcher(legacyPaymentMetadata).matches();
   }
 
   public static String getTransferCategoryFromLegacyPaymentMetadataSecondary(final String legacyPaymentMetadata) {
@@ -70,6 +72,14 @@ public class ValidationUtils {
       PersonEntityType.F.equals(personDTO.getEntityType()) &&
       Boolean.TRUE.equals(debtPositionTypeOrg.getFlagAnonymousFiscalCode()) ||
       !StringUtils.equals(personDTO.getFiscalCode(), Constants.ANONYMOUS_FISCAL_CODE));
+  }
+
+  public static boolean verifyValidAnonymousDebtor(DebtPositionTypeOrg debtPositionTypeOrg, CtIdentificativoUnivocoPersonaFG debtorFiscalCode) {
+    return debtPositionTypeOrg!=null && debtorFiscalCode!=null && (
+      StringUtils.equals(debtorFiscalCode.getCodiceIdentificativoUnivoco(), Constants.ANONYMOUS_FISCAL_CODE) &&
+        StTipoIdentificativoUnivocoPersFG.F.equals(debtorFiscalCode.getTipoIdentificativoUnivoco()) &&
+        Boolean.TRUE.equals(debtPositionTypeOrg.getFlagAnonymousFiscalCode()) ||
+        !StringUtils.equals(debtorFiscalCode.getCodiceIdentificativoUnivoco(), Constants.ANONYMOUS_FISCAL_CODE));
   }
 
   public static boolean isValidISOCountry(final String s) {
@@ -112,4 +122,7 @@ public class ValidationUtils {
     }
   }
 
+  public static boolean verifyExclusivePresence(Object a, Object b) {
+   return (a == null) ^ (b == null);
+  }
 }

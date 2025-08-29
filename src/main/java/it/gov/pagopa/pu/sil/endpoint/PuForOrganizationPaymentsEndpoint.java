@@ -6,7 +6,9 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.dto.PaymentsProcessingStatusDTO;
+import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
+import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
@@ -28,10 +30,10 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.paasillimportadovuto.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
+import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -50,6 +52,7 @@ import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -131,8 +134,7 @@ public class PuForOrganizationPaymentsEndpoint {
       "paaSILChiediStatoImportFlusso");
 
     try {
-      PaymentsProcessingStatusDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
-        request,
+      ImportStatusResponseDTO processingStatusDTO = ingestionFlowFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,
@@ -140,9 +142,9 @@ public class PuForOrganizationPaymentsEndpoint {
         IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
       PaaSILChiediStatoImportFlussoRisposta response = new PaaSILChiediStatoImportFlussoRisposta();
       response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
-      response.setUrlFileScarti(processingStatusDTO.getUrlErrors());
-      response.setUrlFileIUV(processingStatusDTO.getUrlImported());
-      response.setUrlFileAvvisi(processingStatusDTO.getUrlNotice());
+      if (processingStatusDTO.getDownloadUrls() != null) {
+        setDownloadUrls(response, processingStatusDTO.getDownloadUrls(), request);
+      }
       return response;
     } catch (Exception e) {
       return FaultUtils.unauthorizedOrSystemExceptionHandler(
@@ -177,15 +179,15 @@ public class PuForOrganizationPaymentsEndpoint {
       contextData,
       request,
       () -> {
-        Pair<Long, String> result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
+        ImportFileResponseDTO result = ingestionFlowFileAuthorizationService.authorizeIngestionFlowFile(
           userInfo,
           accessToken,
           orgIpaCode,
           IngestionFlowFileTypeEnum.DP_INSTALLMENTS
         );
         PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
-        response.setRequestToken(String.valueOf(result.getLeft()));
-        response.setUploadUrl(result.getRight());
+        response.setRequestToken(result.getImportId());
+        response.setUploadUrl(result.getUploadUrl());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
       FaultUtils.unauthorizedOrSystemExceptionHandler(
@@ -206,6 +208,7 @@ public class PuForOrganizationPaymentsEndpoint {
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
     response.setEsito(RegistryOutcome.KO.getValue());
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
     String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
       IntestazionePPT.class,
       IntestazionePPT::getCodIpaEnte,
@@ -220,7 +223,7 @@ public class PuForOrganizationPaymentsEndpoint {
     return registryLogger.execute(
       contextData,
       request,
-      () -> paaSILImportaDovutoService.paaSILImportaDovuto(userInfo, orgIpaCode, request),
+      () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, accessToken),
       FaultUtils.unauthorizedOrSystemExceptionHandler(
         response,
         PaaSILImportaDovutoRisposta::setFault,
@@ -603,5 +606,19 @@ public class PuForOrganizationPaymentsEndpoint {
         SilFaults.PAA_SYSTEM_ERROR
       ).apply(e);
     };
+  }
+
+  private void setDownloadUrls(PaaSILChiediStatoImportFlussoRisposta response, List<DownloadUrl> urls, PaaSILChiediStatoImportFlusso request) {
+    if (urls == null) {
+      return;
+    }
+    urls.forEach(url -> {
+      switch (url.getCode()) {
+        case DISCARDED_FILE -> response.setUrlFileScarti(Boolean.TRUE.equals(request.isFileScarti()) ? url.getUrl() : null);
+        case PAYMENT_NOTICE_FILE -> response.setUrlFileAvvisi(Boolean.TRUE.equals(request.isFileAvvisi()) ? url.getUrl() : null);
+        case OUTPUT_FILE -> response.setUrlFileIUV(Boolean.TRUE.equals(request.isFileIUV()) ? url.getUrl() : null);
+        case INPUT_FILE -> log.debug("Ignoring INPUT_FILE download URL in response, as it is not relevant for this operation.");
+      }
+    });
   }
 }

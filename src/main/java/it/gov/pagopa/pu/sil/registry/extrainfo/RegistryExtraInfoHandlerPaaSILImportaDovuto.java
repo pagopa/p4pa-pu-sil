@@ -34,6 +34,14 @@ public class RegistryExtraInfoHandlerPaaSILImportaDovuto {
   }
 
   public Map<String, Object> extractResponseExtraInfo(PaaSILImportaDovutoRisposta response) {
-    return Map.of(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
+    Map<String, Object> body = new HashMap<>();
+    if(response.getBase64ZipAvviso() != null) {
+      body.put("hasNoticeZipFile", "true");
+    }
+    if(response.getUrlFileAvviso()!=null) {
+      body.put("noticeUrl", response.getUrlFileAvviso());
+    }
+    body.put(RegistryLogger.SKIP_PAYLOAD_KEY, "true");
+    return body;
   }
 }

@@ -48,9 +48,7 @@ public class ConversionUtils {
     if(xmlGregorianCalendar == null) {
       return null;
     }
-    OffsetDateTime odt = OffsetDateTime.parse(xmlGregorianCalendar.toString());
-    ZoneOffset zoneOffset = ZONE_ID_ROME.getRules().getOffset(odt.toInstant());
-    return odt.withOffsetSameInstant(zoneOffset);
+    return xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toOffsetDateTime();
   }
 
   public static OffsetDateTime toOffsetDateTime(Date date) {
@@ -72,4 +70,12 @@ public class ConversionUtils {
     }
     return LocalDateTime.of(localDate, LocalTime.MAX);
   }
+
+  public static LocalDate toLocalDate(XMLGregorianCalendar xmlGregorianCalendar) {
+    if(xmlGregorianCalendar == null) {
+      return null;
+    }
+    return xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+  }
+
 }

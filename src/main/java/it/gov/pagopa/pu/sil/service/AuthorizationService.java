@@ -3,11 +3,14 @@ package it.gov.pagopa.pu.sil.service;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 @Service
 @Slf4j
@@ -25,94 +28,116 @@ public class AuthorizationService {
     return authClientImpl.getUserInfo(accessToken);
   }
 
-  public void validateAdminRole(Long organizationId, UserInfo loggedUser) {
+  public static void validateAdminRole(Long organizationId, UserInfo loggedUser) {
     boolean roleAdmin = isAdminRole(organizationId, loggedUser);
     if (!roleAdmin) {
       handleUnauthorizedUser(organizationId, loggedUser);
     }
   }
+  public static void validateAdminRole(String organizationIpaCode, UserInfo loggedUser) {
+    boolean roleAdmin = isAdminRole(organizationIpaCode, loggedUser);
+    if (!roleAdmin) {
+      handleUnauthorizedUser(organizationIpaCode, loggedUser);
+    }
+  }
 
   public static boolean isAdminRole(Long organizationId, UserInfo loggedUser) {
-    return getUserOrganizationRoles(organizationId, loggedUser)
-      .filter(o -> !CollectionUtils.isEmpty(o.getRoles()) && o.getRoles()
-        .contains(ROLE_ADMIN))
+    return findUserOrganizationRoles(loggedUser, organizationId, null, null)
+      .filter(AuthorizationService::hasAdminRole)
       .isPresent();
   }
 
   public static boolean isAdminRole(String organizationIpaCode, UserInfo loggedUser) {
-    return loggedUser != null && getUserOrganizationRoles(organizationIpaCode, loggedUser)
-      .filter(o -> !CollectionUtils.isEmpty(o.getRoles()) && o.getRoles()
-        .contains(ROLE_ADMIN))
+    if (loggedUser == null) {
+      return false;
+    }
+    return findUserOrganizationRoles(loggedUser, null, organizationIpaCode, null)
+      .filter(AuthorizationService::hasAdminRole)
       .isPresent();
   }
 
   public static void validateUserForOrganizationId(Long organizationId, UserInfo loggedUser) {
-    if (getUserOrganizationRoles(organizationId, loggedUser).isEmpty()) {
+    if (findUserOrganizationRoles(loggedUser, organizationId, null, null).isEmpty()) {
       handleUnauthorizedUser(organizationId, loggedUser);
     }
   }
 
   public static String getOrgIpaCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
-    if(loggedUser == null || organizationId == null) {
-      return null;
-    }
-    return getUserOrganizationRoles(organizationId, loggedUser).map(UserOrganizationRoles::getOrganizationIpaCode)
-      .orElse(null);
+    return extractOrganizationProperty(loggedUser, organizationId, null, null,
+      UserOrganizationRoles::getOrganizationIpaCode);
+  }
+
+  public static String getOrgIpaCodeFromUserInfo(UserInfo loggedUser, String organizationFiscalCode) {
+    return extractOrganizationProperty(loggedUser, null, null, organizationFiscalCode,
+      UserOrganizationRoles::getOrganizationIpaCode);
   }
 
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, Long organizationId) {
-    if(loggedUser == null || organizationId == null) {
-      return null;
-    }
-    return getUserOrganizationRoles(organizationId, loggedUser).map(UserOrganizationRoles::getOrganizationFiscalCode)
-      .orElse(null);
+    return extractOrganizationProperty(loggedUser, organizationId, null, null,
+      UserOrganizationRoles::getOrganizationFiscalCode);
   }
 
   public static String getOrgFiscalCodeFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
-    if(loggedUser == null || organizationIpaCode == null) {
-      return null;
-    }
-    return getUserOrganizationRoles(organizationIpaCode, loggedUser).map(UserOrganizationRoles::getOrganizationFiscalCode)
-      .orElse(null);
+    return extractOrganizationProperty(loggedUser, null, organizationIpaCode, null,
+      UserOrganizationRoles::getOrganizationFiscalCode);
   }
 
   public static Long getOrganizationIdFromUserInfo(UserInfo loggedUser, String organizationIpaCode) {
-    if(loggedUser == null || organizationIpaCode == null) {
-      return null;
-    }
-    return getUserOrganizationRoles(organizationIpaCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
-      .orElse(null);
+    return extractOrganizationProperty(loggedUser, null, organizationIpaCode, null,
+      UserOrganizationRoles::getOrganizationId);
   }
 
   public static Long getOrganizationIdFromOrgFiscalCode(UserInfo loggedUser, String organizationFiscalCode) {
-    if(loggedUser == null || organizationFiscalCode == null) {
+    return extractOrganizationProperty(loggedUser, null, null, organizationFiscalCode,
+      UserOrganizationRoles::getOrganizationId);
+  }
+
+  private static <T> T extractOrganizationProperty(UserInfo loggedUser, Long organizationId,
+                                                   String organizationIpaCode, String organizationFiscalCode,
+                                                   Function<UserOrganizationRoles, T> propertyExtractor) {
+    if (loggedUser == null) {
       return null;
     }
-
-    return getUserOrganizationRolesFromOrgFiscalCode(organizationFiscalCode, loggedUser).map(UserOrganizationRoles::getOrganizationId)
+    return findUserOrganizationRoles(loggedUser, organizationId, organizationIpaCode, organizationFiscalCode)
+      .map(propertyExtractor)
       .orElse(null);
+  }
+
+  private static Optional<UserOrganizationRoles> findUserOrganizationRoles(UserInfo loggedUser,
+                                                                           Long organizationId,
+                                                                           String organizationIpaCode,
+                                                                           String organizationFiscalCode) {
+    if (loggedUser == null || CollectionUtils.isEmpty(loggedUser.getOrganizations())) {
+      return Optional.empty();
+    }
+    return loggedUser.getOrganizations().stream()
+      .filter(Objects::nonNull)
+      .filter(org -> hasValidRoles(org) && (
+          (organizationId != null && organizationId.equals(org.getOrganizationId())) ||
+            (organizationIpaCode != null && organizationIpaCode.equals(org.getOrganizationIpaCode())) ||
+            (organizationFiscalCode != null && organizationFiscalCode.equals(org.getOrganizationFiscalCode()))
+        )
+      )
+      .findFirst();
+  }
+
+  private static boolean hasValidRoles(UserOrganizationRoles organization) {
+    return !CollectionUtils.isEmpty(organization.getRoles());
+  }
+
+  private static boolean hasAdminRole(UserOrganizationRoles organization) {
+    return hasValidRoles(organization) && organization.getRoles().contains(ROLE_ADMIN);
   }
 
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
-    throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : "unknown";
+    throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + userId);
   }
 
-  private static Optional<UserOrganizationRoles> getUserOrganizationRoles(Long organizationId, UserInfo loggedUser) {
-    return loggedUser.getOrganizations().stream()
-      .filter(o -> organizationId.equals(o.getOrganizationId()) && !CollectionUtils.isEmpty(o.getRoles()))
-      .findFirst();
-  }
-
-  private static Optional<UserOrganizationRoles> getUserOrganizationRoles(String organizationIpaCode, UserInfo loggedUser) {
-    return loggedUser.getOrganizations().stream()
-      .filter(o -> organizationIpaCode.equals(o.getOrganizationIpaCode()) && !CollectionUtils.isEmpty(o.getRoles()))
-      .findFirst();
-  }
-
-  private static Optional<UserOrganizationRoles> getUserOrganizationRolesFromOrgFiscalCode(String organizationFiscalCode, UserInfo loggedUser) {
-    return loggedUser.getOrganizations().stream()
-      .filter(o -> organizationFiscalCode.equals(o.getOrganizationFiscalCode()) && !CollectionUtils.isEmpty(o.getRoles()))
-      .findFirst();
+  private static void handleUnauthorizedUser(String orgIpaCode, UserInfo loggedUser) {
+    log.debug("Unauthorized user. [orgIpaCode:{}]", orgIpaCode);
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : "unknown";
+    throw new AuthorizationDeniedException("Access denied on orgIpaCode " + orgIpaCode + " to user " + userId);
   }
 }

@@ -4,12 +4,16 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFil
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
 import it.gov.pagopa.pu.processexecutions.dto.generated.LocalDateIntervalFilter;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.veneto.regione.pagamenti.pivot.ente.IdUnivocoRendicontazioneType;
+import it.veneto.regione.pagamenti.pivot.ente.IdUnivocoVersamentoType;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
+import it.veneto.regione.pagamenti.pivot.ente.TipoDovutoType;
 import org.springframework.stereotype.Service;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
-import java.util.function.Function;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassificationsExportFileRequestMapper {
@@ -20,7 +24,15 @@ public class ClassificationsExportFileRequestMapper {
       .exportFileType(ClassificationsExportFileRequestDTO.ExportFileTypeEnum.CLASSIFICATIONS)
       .fileVersion(request.getVersioneTracciato())
       .filterFields(new ClassificationsExportFileFilter()
-        //TODO: arrrange missing fields that willbe implemented by https://pagopa.atlassian.net/browse/P4ADEV-3333
+        .debtPositionTypeOrgCodes(Optional.ofNullable(request.getTipoDovuto())
+          .map(TipoDovutoType::getTipos).map(HashSet::new).orElse(null))
+        .label(request.getCodiceClassificazione().getClassificaziones().stream()
+          .map(ClassificationsExportFileFilter.LabelEnum::fromValue)
+          .collect(Collectors.toSet()))
+        .iuv(Optional.ofNullable(request.getIdUnivocoVersamento())
+          .map(IdUnivocoVersamentoType::getIuvs).orElse(null))
+        .iur(Optional.ofNullable(request.getIdUnivocoRendicontazione())
+          .map(IdUnivocoRendicontazioneType::getIurs).orElse(null))
         .iud(request.getIdUnivocoDovuto())
         .regionValueDate(mapToLocalDateIntervalFilter(request.getDataValutaDa(), request.getDataValutaA()))
         .billDate(mapToLocalDateIntervalFilter(request.getDataContabileDa(), request.getDataContabileA()))
@@ -38,11 +50,13 @@ public class ClassificationsExportFileRequestMapper {
   }
 
   private LocalDateIntervalFilter mapToLocalDateIntervalFilter(XMLGregorianCalendar from, XMLGregorianCalendar to) {
-    Function<XMLGregorianCalendar, LocalDate> toLocalDate = xmlGregorianCalendar ->
-      xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+    if (from == null && to == null) {
+      return null;
+    }
+
     return LocalDateIntervalFilter.builder()
-      .from(toLocalDate.apply(from))
-      .to(toLocalDate.apply(to))
+      .from(ConversionUtils.toLocalDate(from))
+      .to(ConversionUtils.toLocalDate(to))
       .build();
   }
 }

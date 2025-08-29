@@ -1,14 +1,14 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
+import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
 public interface DebtPositionService {
-  DebtPositionTypeOrg getDebtPositionTypeOrgByOrgIdAndType(Long organizationId, String debtPositionTypeOrgCode, String accessToken);
-  DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken);
-  Long countExistingInstallmentsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, String accessToken);
   /**
    * Creates a new debt position.
    *
@@ -19,15 +19,15 @@ public interface DebtPositionService {
   Pair<DebtPositionDTO, String> createDebtPosition(DebtPositionDTO debtPositionDTO, String accessToken);
 
   /**
-   * Retrieves a list of InstallmentDTOs based on organization ID, NAV, and debt position origins.
+   * Manages the installments of a debt position.
    *
-   * @param organizationId the ID of the organization
-   * @param nav the NAV (Navigation) identifier
-   * @param debtPositionOrigin the list of debt position origins to filter by
+   * @param debtPositionId the ID of the debt position
+   * @param manageDebtPositionDTO the DTO containing the details for installments to manage
    * @param accessToken the access token for authentication
-   * @return a list of InstallmentDTOs matching the criteria
+   * @return a pair containing the updated DebtPositionDTO and the workflow ID from the response headers
    */
-  List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
+  Pair<DebtPositionDTO, String> manageDebtPositionInstallments(Long debtPositionId, ManageDebtPositionDTO manageDebtPositionDTO, String accessToken);
+                                                                 /**
 
   /**
    * Retrieves a DebtPositionDTO by its installment ID.
@@ -36,7 +36,7 @@ public interface DebtPositionService {
    * @param accessToken the access token for authentication
    * @return the DebtPositionDTO associated with the given installment ID
    */
-  DebtPositionDTO getDebtPositionByInstallmentId(Long installmentId, String accessToken);
+  DebtPositionDTO getDebtPositionDTOByInstallmentId(Long installmentId, String accessToken);
 
   /**
    * Retrieves a list of DebtPositionDTOs by organization ID and IUV.
@@ -60,12 +60,5 @@ public interface DebtPositionService {
    */
   List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIud(Long organizationId, String iud, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
 
-  /**
-   * Retrieves a receipt by its ID.
-   *
-   * @param receiptId the ID of the receipt
-   * @param accessToken the access token for authentication
-   * @return the ReceiptDTO associated with the given receipt ID
-   */
-  ReceiptDTO getReceiptById(Long receiptId, String accessToken);
+  DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken);
 }

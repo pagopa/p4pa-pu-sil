@@ -1,13 +1,14 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
-import it.veneto.regione.schemas._2012.pagamenti.ente.*;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -17,10 +18,10 @@ import java.math.BigDecimal;
 @Service
 public class ValidationService {
 
-  private final DebtPositionService debtPositionService;
+  private final InstallmentService installmentService;
 
-  public ValidationService(DebtPositionService debtPositionService) {
-    this.debtPositionService = debtPositionService;
+  public ValidationService(InstallmentService installmentService) {
+    this.installmentService = installmentService;
   }
 
   public void validateDebtPositionTypeOrg(DebtPositionTypeOrg debtPositionTypeOrg, String debtPositionTypeOrgCode) {
@@ -31,24 +32,30 @@ public class ValidationService {
     }
   }
 
-  public void validateStamp(CtDatiMarcaBolloDigitale stamp, String debtPositionTypeOrgCode) {
-    if (Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE.equals(debtPositionTypeOrgCode)) {
-      if (stamp == null ||
-        StringUtils.isBlank(stamp.getTipoBollo()) ||
-        StringUtils.isBlank(stamp.getHashDocumento()) ||
-        StringUtils.isBlank(stamp.getProvinciaResidenza())) {
-        throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Dati marca da bollo digitale non presenti");
-      } else if (StringUtils.length(stamp.getHashDocumento()) > 72) {
-        throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Hash documento marca da bollo digitale più lunga di 72 caratteri");
-      }
-    } else if (stamp == null) {
-      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Dati marca da bollo digitale non previsti con tipo dovuto diverso da "
-        + Constants.STAMP_DEBT_POSITION_TYPE_ORG_CODE);
+  public void validateStamp(CtDatiSingoloVersamentoDovuti versamento) {
+    if (versamento.getDatiMarcaBolloDigitale() == null) {
+      return; //valid no-stamp data
+    }
+    CtDatiMarcaBolloDigitale stamp = versamento.getDatiMarcaBolloDigitale();
+    if (StringUtils.isBlank(stamp.getTipoBollo()) &&
+      StringUtils.isBlank(stamp.getHashDocumento()) &&
+      StringUtils.isBlank(stamp.getProvinciaResidenza())) {
+      versamento.setDatiMarcaBolloDigitale(null);
+      return; //valid no-stamp data
+    }
+
+    //invalid stamp data
+    if (StringUtils.length(stamp.getHashDocumento()) < 4 || StringUtils.length(stamp.getHashDocumento()) > 72) {
+      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Lunghezza errata campo hash documento marca da bollo digitale [4-72]");
+    } else if (StringUtils.length(stamp.getProvinciaResidenza()) != 2) {
+      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Lunghezza errata campo provincia residenza marca da bollo digitale [2]");
+    } else if (StringUtils.length(stamp.getTipoBollo()) != 2) {
+      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Lunghezza errata campo tipo bollo marca da bollo digitale [2]");
     }
   }
 
   public void validateIud(Long orgId, String iud, String accessToken) {
-    Long existingInstallmentWithIud = debtPositionService.countExistingInstallmentsByIudIuvNav(
+    Long existingInstallmentWithIud = installmentService.countExistingInstallmentsByIudIuvNav(
       orgId, iud, null, null, accessToken);
     if (existingInstallmentWithIud > 0) {
       throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "IUD duplicato: " + iud);
@@ -70,21 +77,6 @@ public class ValidationService {
     }
   }
 
-  public void validateFiscalCodeDebtor(CtIdentificativoUnivocoPersonaFG personIdentifier) {
-    if (personIdentifier == null) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Identificativo univoco persona non presente");
-    } else if (StringUtils.isBlank(personIdentifier.getCodiceIdentificativoUnivoco()) ||
-      personIdentifier.getTipoIdentificativoUnivoco() == null) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Identificativo univoco persona non valido");
-    } else if (personIdentifier.getTipoIdentificativoUnivoco() == StTipoIdentificativoUnivocoPersFG.F &&
-      !ValidationUtils.isValidFiscalCodeNaturalPerson(personIdentifier.getCodiceIdentificativoUnivoco())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale persona fisica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
-    } else if (personIdentifier.getTipoIdentificativoUnivoco() == StTipoIdentificativoUnivocoPersFG.G &&
-      !ValidationUtils.isValidFiscalCodeLegalEntity(personIdentifier.getCodiceIdentificativoUnivoco())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale persona giuridica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
-    }
-  }
-
   public void validatePrimaryDebtPositionOrganization(PaaSILInviaCarrelloDovuti request, String orgIpaCode) {
     if (request.getListaDovuti() == null || CollectionUtils.isEmpty(request.getListaDovuti().getElementoListaDovutis())) {
       throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Dovuti non presenti");
@@ -98,7 +90,7 @@ public class ValidationService {
     if (request.getListaDovutiEntiSecondari() != null && !CollectionUtils.isEmpty(request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris())) {
       if (numDebtPositions > 1) {
         throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto");
-      } else if (request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris().size()>1) {
+      } else if (request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris().size() > 1) {
         throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire pagamenti multibeneficiario con più di un dovuto secondario");
       }
     }
@@ -106,13 +98,13 @@ public class ValidationService {
 
   public void validateSecondaryDebtPositionData(CtDatiVersamentoDovutiEntiSecondari secondaryTransferData, int primaryDebtPositionCount) {
     if (primaryDebtPositionCount != 1) {
-      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI,"Non è possibile inserire pagamenti multibeneficiario con più di un dovuto");
+      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire pagamenti multibeneficiario con più di un dovuto");
     }
     if (!ValidationUtils.isValidFiscalCodeLegalEntity(secondaryTransferData.getCodiceFiscaleBeneficiario())) {
       throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale ente secondario non valido: " + secondaryTransferData.getCodiceFiscaleBeneficiario());
     } else if (StringUtils.isBlank(secondaryTransferData.getIbanAccreditoBeneficiario()) ||
-      !ValidationUtils.isValidIban(secondaryTransferData.getIbanAccreditoBeneficiario())){
-      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO,"IBAN accredito Ente secondario non valido [" + secondaryTransferData.getIbanAccreditoBeneficiario() + "]");
+      !ValidationUtils.isValidIban(secondaryTransferData.getIbanAccreditoBeneficiario())) {
+      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "IBAN accredito Ente secondario non valido [" + secondaryTransferData.getIbanAccreditoBeneficiario() + "]");
     }
     if (secondaryTransferData.getImportoSingoloVersamento() == null || BigDecimal.ZERO.compareTo(secondaryTransferData.getImportoSingoloVersamento()) >= 0) {
       throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido: " + secondaryTransferData.getImportoSingoloVersamento());

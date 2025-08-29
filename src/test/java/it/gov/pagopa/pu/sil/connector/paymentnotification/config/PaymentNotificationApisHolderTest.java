@@ -1,7 +1,10 @@
 package it.gov.pagopa.pu.sil.connector.paymentnotification.config;
 
-import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
+import it.gov.pagopa.paymentnotification.dto.generated.PaymentDataDTO;
+import it.gov.pagopa.paymentnotification.dto.generated.PaymentNotificationRequest;
+import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
+import it.gov.pagopa.pu.sil.util.CertUtilsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,15 +28,18 @@ class PaymentNotificationApisHolderTest extends BaseApiHolderTest {
     when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
     PaymentNotificationApiClientConfig clientConfig = new PaymentNotificationApiClientConfig();
-    apisHolder = new PaymentNotificationApisHolder(clientConfig, restTemplateBuilderMock);
+    PuIntegrityDataConfig puIntegrityDataConfig = PuIntegrityDataConfig.builder()
+      .privateKey(CertUtilsTest.PRIVATE_KEY)
+      .build();
+    apisHolder = new PaymentNotificationApisHolder(clientConfig, puIntegrityDataConfig, restTemplateBuilderMock);
   }
 
   @Test
-  void whenGetPaymentNotificationApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+  void whenGetPaymentNotificationNativeApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> {
-        apisHolder.getPaymentNotificationLegacyApi(accessToken, "http://example.com")
-          .paymentNotification(new PaymentNotification("RT123", "OK"));
+        apisHolder.getPaymentNotificationNativeApi(accessToken, "http://example.com")
+          .paymentNotification(new PaymentNotificationRequest("RT123", new PaymentDataDTO()));
         return voidMock;
       },
       new ParameterizedTypeReference<>() {},

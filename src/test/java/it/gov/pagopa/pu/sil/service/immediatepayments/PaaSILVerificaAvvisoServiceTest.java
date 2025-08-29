@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
@@ -8,12 +7,13 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvvisoRisposta;
@@ -29,6 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
@@ -42,7 +43,7 @@ import static org.mockito.Mockito.when;
 class PaaSILVerificaAvvisoServiceTest {
 
   @Mock
-  private DebtPositionService debtPositionServiceMock;
+  private InstallmentFacadeService installmentFacadeServiceMock;
   @Mock
   private CheckoutService checkoutServiceMock;
   @Mock
@@ -64,9 +65,9 @@ class PaaSILVerificaAvvisoServiceTest {
 
   @BeforeEach
   void setUp() {
-    Mockito.reset(debtPositionServiceMock, checkoutServiceMock, organizationServiceMock, cartRequestMapperMock);
+    Mockito.reset(installmentFacadeServiceMock, checkoutServiceMock, organizationServiceMock, cartRequestMapperMock);
 
-    userInfo = podamFactory.manufacturePojo(UserInfo.class);
+    userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
     userInfo.getOrganizations().getFirst().setRoles(List.of("ROLE_X", "ROLE_ADMIN"));
     orgId = userInfo.getOrganizations().getFirst().getOrganizationId();
@@ -84,11 +85,8 @@ class PaaSILVerificaAvvisoServiceTest {
     //given
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
-    //when
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, TOKEN));
-
-    //verify
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
+    //when then
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, TOKEN));
   }
 
   @ParameterizedTest
@@ -133,14 +131,14 @@ class PaaSILVerificaAvvisoServiceTest {
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("IUV non indicato", exception.getDescription());
+    Assertions.assertEquals("Identificativo univoco del versamento non indicato", exception.getDescription());
   }
 
   @Test
   void givenNotFoundIUVWhenPaaSILVerificaAvvisoThenFault() {
     //given
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), any(), eq(TOKEN)))
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of());
 
     //when
@@ -148,7 +146,7 @@ class PaaSILVerificaAvvisoServiceTest {
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Nessun avviso pagabile trovato per lo IUV indicato", exception.getDescription());
+    Assertions.assertEquals("Nessun avviso pagabile trovato per l'dentificativo univoco del versamento indicato", exception.getDescription());
   }
 
   @Test
@@ -157,7 +155,7 @@ class PaaSILVerificaAvvisoServiceTest {
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.EXPIRED);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), any(), eq(TOKEN)))
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
 
     //when
@@ -165,7 +163,7 @@ class PaaSILVerificaAvvisoServiceTest {
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Nessun avviso pagabile trovato per lo IUV indicato", exception.getDescription());
+    Assertions.assertEquals("Nessun avviso pagabile trovato per l'dentificativo univoco del versamento indicato", exception.getDescription());
   }
 
   @Test
@@ -175,7 +173,7 @@ class PaaSILVerificaAvvisoServiceTest {
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), any(), eq(TOKEN)))
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
@@ -189,6 +187,27 @@ class PaaSILVerificaAvvisoServiceTest {
   }
 
   @Test
+  void givenNullCheckoutUrlWhenPaaSILVerificaAvvisoThenException() {
+    //given
+    InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
+    installmentDTO.setStatus(InstallmentStatus.UNPAID);
+    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
+
+    when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
+      .thenReturn(List.of(installmentDTO));
+    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
+      .thenReturn(cartRequest);
+    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn(null);
+
+    //when
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, TOKEN));
+
+    //verify
+    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+  }
+
+  @Test
   void givenValidRequestWhenPaaSILVerificaAvvisoThenOk() {
     //given
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
@@ -198,7 +217,7 @@ class PaaSILVerificaAvvisoServiceTest {
     String sessionId = String.valueOf(installmentDTO.getInstallmentId());
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(debtPositionServiceMock.getInstallmentsByOrganizationIdAndNav(eq(orgId), eq("3"+request.getIdentificativoUnivocoVersamento()), any(), eq(TOKEN)))
+    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
     when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenReturn(cartRequest);
@@ -215,4 +234,5 @@ class PaaSILVerificaAvvisoServiceTest {
     Assertions.assertEquals(1, response.getRedirect());
     Assertions.assertEquals(sessionId, response.getIdSession());
   }
+
 }
