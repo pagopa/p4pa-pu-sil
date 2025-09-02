@@ -58,7 +58,8 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.*;
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.PROCESSING;
 import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -244,7 +245,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
   private static Stream<Arguments> paaSILChiediStatoImportFlussoProvider() {
     String expectedUrl = "https://upload.url";
-    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/imported");
+    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/iuv");
     DownloadUrl errors = new DownloadUrl(DISCARDED_FILE, expectedUrl + "/errors");
     DownloadUrl notice = new DownloadUrl(PAYMENT_NOTICE_FILE, expectedUrl + "/notice");
     DownloadUrl input = new DownloadUrl(INPUT_FILE, expectedUrl + "/input");
