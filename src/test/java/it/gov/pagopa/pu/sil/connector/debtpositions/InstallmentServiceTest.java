@@ -14,6 +14,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
+import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
+
 @ExtendWith(MockitoExtension.class)
 class InstallmentServiceTest {
 
@@ -40,21 +42,21 @@ class InstallmentServiceTest {
     String iuv = "IUV";
     String nav = "NAV";
     String accessToken = "ACCESSTOKEN";
-    Long expectedCount = 10L;
 
-    Mockito.when(clientMock.countExistingInstallmentsByIudIuvNav(
+    Mockito.when(clientMock.isInstallmentExistsByIudIuvNav(
         Mockito.same(organizationId),
         Mockito.same(iud),
         Mockito.same(iuv),
         Mockito.same(nav),
+        Mockito.same(ORDINARY_DEBT_POSITION_ORIGINS),
         Mockito.same(accessToken)))
-      .thenReturn(expectedCount);
+      .thenReturn(Boolean.TRUE);
 
     // When
-    Long result = service.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
+    Boolean result = service.isInstallmentExistsByIudIuvNav(organizationId, iud, iuv, nav, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
 
     // Then
-    Assertions.assertSame(expectedCount, result);
+    Assertions.assertSame(Boolean.TRUE, result);
   }
 
   @Test
@@ -86,12 +88,12 @@ class InstallmentServiceTest {
     InstallmentNoPII expectedResult = new InstallmentNoPII();
 
     Mockito.when(clientMock.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken))
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(expectedResult);
 
     // When
     InstallmentNoPII result = service.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
     // Then
     Assertions.assertSame(expectedResult, result);
   }

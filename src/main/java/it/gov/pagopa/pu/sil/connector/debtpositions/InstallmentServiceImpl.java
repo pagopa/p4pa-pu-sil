@@ -19,19 +19,18 @@ public class InstallmentServiceImpl implements InstallmentService {
     this.client = client;
   }
 
-  @Override
-  public Long countExistingInstallmentsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, String accessToken) {
-    return client.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
+  public Boolean isInstallmentExistsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, List<DebtPositionOrigin> debtPositionOrigins, String accessToken) {
+    return client.isInstallmentExistsByIudIuvNav(organizationId, iud, iuv, nav, debtPositionOrigins, accessToken);
   }
 
   @Override
-  public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
-    return client.getInstallmentsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin, accessToken);
+  public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigins, String accessToken) {
+    return client.getInstallmentsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigins, accessToken);
   }
 
   @Override
-  public InstallmentNoPII findAuthorizedByTransferSemanticKey(Long organizationId, String iuv, String iur, int transferIndex, String operatorExternalUserId, String accessToken) {
+  public InstallmentNoPII findAuthorizedByTransferSemanticKey(Long organizationId, String iuv, String iur, int transferIndex, String operatorExternalUserId, List<DebtPositionOrigin> debtPositionOrigins, String accessToken) {
     return client.findAuthorizedByTransferSemanticKey(
-      organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, debtPositionOrigins, accessToken);
   }
 }

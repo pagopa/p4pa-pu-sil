@@ -7,17 +7,17 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import java.util.List;
 
 public interface InstallmentService {
-  Long countExistingInstallmentsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, String accessToken);
+  Boolean isInstallmentExistsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, List<DebtPositionOrigin> debtPositionOrigins, String accessToken);
                                                                  /**
    * Retrieves a list of InstallmentDTOs based on organization ID, NAV, and debt position origins.
    *
    * @param organizationId the ID of the organization
    * @param nav the NAV (Navigation) identifier
-   * @param debtPositionOrigin the list of debt position origins to filter by
+   * @param debtPositionOrigins the list of debt position origins to filter by
    * @param accessToken the access token for authentication
    * @return a list of InstallmentDTOs matching the criteria
    */
-  List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
+  List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigins, String accessToken);
 
 
   /**
@@ -28,6 +28,7 @@ public interface InstallmentService {
    * @param iur the IUR (Identificativo Unico di Riscossione)
    * @param transferIndex the index of the transfer
    * @param operatorExternalUserId the external user ID of the operator
+   * @param debtPositionOrigins the possible origins of debt position
    * @param accessToken the access token for authentication
    * @return an InstallmentNoPII if found, otherwise null
    */
@@ -37,5 +38,6 @@ public interface InstallmentService {
     String iur,
     int transferIndex,
     String operatorExternalUserId,
+    List<DebtPositionOrigin> debtPositionOrigins,
     String accessToken);
 }

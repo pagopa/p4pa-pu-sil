@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
+import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -165,7 +166,7 @@ class ValidationServiceTest {
     String iud = "DUPLICATE_IUD";
     String accessToken = "TOKEN";
 
-    when(installmentServiceMock.countExistingInstallmentsByIudIuvNav(orgId, iud, null, null, accessToken)).thenReturn(1L);
+    when(installmentServiceMock.isInstallmentExistsByIudIuvNav(orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(Boolean.TRUE);
 
     SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateIud(orgId, iud, accessToken));
 
@@ -179,7 +180,7 @@ class ValidationServiceTest {
     String iud = "UNIQUE_IUD";
     String accessToken = "TOKEN";
 
-    when(installmentServiceMock.countExistingInstallmentsByIudIuvNav(orgId, iud, null, null, accessToken)).thenReturn(0L);
+    when(installmentServiceMock.isInstallmentExistsByIudIuvNav(orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(Boolean.FALSE);
 
     Assertions.assertDoesNotThrow(() -> validationService.validateIud(orgId, iud, accessToken));
   }

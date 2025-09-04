@@ -68,7 +68,7 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
   void whenGetInstallmentNoPiiSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getInstallmentNoPiiSearchControllerApi(accessToken)
-        .crudInstallmentsCountExistingInstallments(1L, "IUD", "IUV", "NAV"),
+        .crudInstallmentsIsInstallmentExists(1L, "IUD", "IUV", "NAV", null),
       new ParameterizedTypeReference<>() {},
       apisHolder::unload);
   }
