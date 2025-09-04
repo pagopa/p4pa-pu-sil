@@ -17,6 +17,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
+import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
+
 @ExtendWith(MockitoExtension.class)
 class InstallmentClientTest {
 
@@ -51,18 +53,17 @@ class InstallmentClientTest {
       String iud = "IUD";
       String iuv = "IUV";
       String nav = "NAV";
-      long expectedCount = 5L;
 
       Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
           .thenReturn(installmentNoPiiSearchControllerApiMock);
-      Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsCountExistingInstallments(organizationId, iud, iuv, nav))
-          .thenReturn(expectedCount);
+      Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsIsInstallmentExists(organizationId, iud, iuv, nav, ORDINARY_DEBT_POSITION_ORIGINS))
+          .thenReturn(Boolean.TRUE);
 
       // When
-      Long result = client.countExistingInstallmentsByIudIuvNav(organizationId, iud, iuv, nav, accessToken);
+      Boolean result = client.isInstallmentExistsByIudIuvNav(organizationId, iud, iuv, nav, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
 
       // Then
-      Assertions.assertEquals(expectedCount, result);
+      Assertions.assertEquals(Boolean.TRUE, result);
   }
 
   @Test
@@ -97,12 +98,12 @@ class InstallmentClientTest {
     Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
       .thenReturn(installmentNoPiiSearchControllerApiMock);
     Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId))
+        organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
       .thenReturn(expectedResult);
 
     // When
     InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
 
     // Then
     Assertions.assertEquals(expectedResult, result);
@@ -121,12 +122,12 @@ class InstallmentClientTest {
     Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
       .thenReturn(installmentNoPiiSearchControllerApiMock);
     Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
-      organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId))
+      organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
       .thenThrow(HttpClientErrorException.NotFound.class);
 
     // When
     InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
-      organizationId, iuv, iur, transferIndex, operatorExternalUserId, accessToken);
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
 
     // Then
     Assertions.assertNull(result);

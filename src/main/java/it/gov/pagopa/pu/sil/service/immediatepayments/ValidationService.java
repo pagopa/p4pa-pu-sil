@@ -15,6 +15,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 
+import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
+
 @Service
 public class ValidationService {
 
@@ -55,9 +57,9 @@ public class ValidationService {
   }
 
   public void validateIud(Long orgId, String iud, String accessToken) {
-    Long existingInstallmentWithIud = installmentService.countExistingInstallmentsByIudIuvNav(
-      orgId, iud, null, null, accessToken);
-    if (existingInstallmentWithIud > 0) {
+    Boolean isInstallmentExistsByIudIuvNav = installmentService.isInstallmentExistsByIudIuvNav(
+      orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
+    if (Boolean.TRUE.equals(isInstallmentExistsByIudIuvNav)) {
       throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "IUD duplicato: " + iud);
     }
   }
