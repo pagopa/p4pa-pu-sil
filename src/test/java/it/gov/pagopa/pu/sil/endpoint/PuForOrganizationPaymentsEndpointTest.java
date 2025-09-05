@@ -425,6 +425,7 @@ class PuForOrganizationPaymentsEndpointTest {
       .loggedUser(userInfo)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .iuv(request.getIdentificativoUnivocoVersamento())
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 
@@ -451,6 +452,7 @@ class PuForOrganizationPaymentsEndpointTest {
       .loggedUser(userInfo)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .iuv(request.getIdentificativoUnivocoVersamento())
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 

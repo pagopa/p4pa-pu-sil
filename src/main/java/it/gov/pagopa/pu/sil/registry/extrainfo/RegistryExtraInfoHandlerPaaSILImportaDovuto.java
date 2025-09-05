@@ -13,7 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class RegistryExtraInfoHandlerPaaSILImportaDovuto {
+public class RegistryExtraInfoHandlerPaaSILImportaDovuto extends AbstractFaultAwareExtraInfoHandler<PaaSILImportaDovutoRisposta> {
+
   public Map<String, Object> extractRequestExtraInfo(PaaSILImportaDovuto request, SoapHeaderElement header) {
     Map<String, Object> body = new HashMap<>();
     body.put("flagGeneraIuv", request.isFlagGeneraIuv());
@@ -33,7 +34,8 @@ public class RegistryExtraInfoHandlerPaaSILImportaDovuto {
     return body;
   }
 
-  public Map<String, Object> extractResponseExtraInfo(PaaSILImportaDovutoRisposta response) {
+  @Override
+  public Map<String, Object> extractResponseExtraInfoOutcomeOk(PaaSILImportaDovutoRisposta response) {
     Map<String, Object> body = new HashMap<>();
     if(response.getBase64ZipAvviso() != null) {
       body.put("hasNoticeZipFile", "true");

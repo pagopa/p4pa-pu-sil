@@ -321,6 +321,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, orgIpaCode))
+      .iuv(request.getIdentificativoUnivocoVersamento())
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
       .loggedUser(userInfo)
       .build();
