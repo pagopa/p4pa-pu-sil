@@ -2129,10 +2129,6 @@
         "type" : "string",
         "enum" : [ "UPLOADED", "PROCESSING", "COMPLETED", "ERROR", "WAITING_FILE" ]
       },
-      "ExportFileStatus" : {
-        "type" : "string",
-        "enum" : [ "REQUESTED", "PROCESSING", "COMPLETED", "EXPIRED", "ERROR" ]
-      },
       "ExportStatusResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -2141,13 +2137,17 @@
             "format" : "int64"
           },
           "status" : {
-            "$ref" : "#/components/schemas/ExportFileStatus"
+            "$ref" : "#/components/schemas/StatusEnum"
           },
           "downloadUrl" : {
             "$ref" : "#/components/schemas/DownloadUrl"
           }
         },
         "required" : [ "exportId", "status" ]
+      },
+      "StatusEnum" : {
+        "type" : "string",
+        "enum" : [ "REQUESTED", "PROCESSING", "COMPLETED", "EXPIRED", "ERROR", "COMPLETED_NO_DATA_FOUND" ]
       },
       "AssessmentDTO" : {
         "type" : "object",

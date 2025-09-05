@@ -223,7 +223,6 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "OffsetDateTimeIntervalFilter" to "it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter",
     "ClassificationsExportFileFilter" to "it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileFilter",
     "PersonDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO",
-    "ExportFileStatus" to "it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus",
     "InstallmentStatus" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus",
     "PaymentOptionType" to "it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType",
     "Action" to "it.gov.pagopa.pu.debtpositions.dto.generated.Action",

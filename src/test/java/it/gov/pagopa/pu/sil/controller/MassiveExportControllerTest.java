@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
@@ -107,7 +106,7 @@ class MassiveExportControllerTest {
 
     when(exportFileProcessingStatusServiceMock
       .getProcessingStatus(userInfo, accessToken, orgIpaCode, exportId, null))
-      .thenReturn(Pair.of(ExportFileStatus.COMPLETED, downloadUrl));
+      .thenReturn(Pair.of(ExportStatusResponseDTO.StatusEnum.COMPLETED, downloadUrl));
 
     // When
     ResponseEntity<ExportStatusResponseDTO> response = controller
@@ -119,7 +118,7 @@ class MassiveExportControllerTest {
     Assertions.assertNotNull(response.getBody().getExportId());
     Assertions.assertEquals(exportId, response.getBody().getExportId());
     Assertions.assertNotNull(response.getBody().getStatus());
-    Assertions.assertEquals(ExportFileStatus.COMPLETED, response.getBody().getStatus());
+    Assertions.assertEquals(ExportStatusResponseDTO.StatusEnum.COMPLETED, response.getBody().getStatus());
     Assertions.assertNotNull(response.getBody().getDownloadUrl());
     Assertions.assertEquals(downloadUrl, response.getBody().getDownloadUrl().getUrl());
 
