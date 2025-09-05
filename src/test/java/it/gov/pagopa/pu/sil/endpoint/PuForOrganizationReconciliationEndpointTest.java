@@ -3,10 +3,10 @@ package it.gov.pagopa.pu.sil.endpoint;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -163,8 +163,8 @@ class PuForOrganizationReconciliationEndpointTest {
     PivotSILChiediStatoExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILChiediStatoExportFlussoRiconciliazione.class);
     request.setRequestToken(String.valueOf(requestToken));
 
-    Pair<ExportFileStatus, String> processingStatus = Pair.of(
-      ExportFileStatus.COMPLETED,
+    Pair<ExportStatusResponseDTO.StatusEnum, String> processingStatus = Pair.of(
+      ExportStatusResponseDTO.StatusEnum.COMPLETED,
       expectedUrl + "/exported"
     );
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);

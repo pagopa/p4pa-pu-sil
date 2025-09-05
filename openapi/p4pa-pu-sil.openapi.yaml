@@ -856,7 +856,14 @@ components:
           type: integer
           format: int64
         status:
-          type: 'ExportFileStatus'
+          type: string
+          enum:
+            - REQUESTED
+            - PROCESSING
+            - COMPLETED
+            - EXPIRED
+            - ERROR
+            - COMPLETED_NO_DATA_FOUND
         downloadUrl:
           $ref: "#/components/schemas/DownloadUrl"
     PaymentDTO:

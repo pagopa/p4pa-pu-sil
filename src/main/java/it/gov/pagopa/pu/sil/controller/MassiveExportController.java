@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.controller.generated.ExportApi;
 import it.gov.pagopa.pu.sil.dto.generated.*;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
@@ -83,7 +82,7 @@ public class MassiveExportController implements ExportApi {
 
     log.debug("Processing export status request for orgIpaCode: {}", orgIpaCode);
 
-    Pair<ExportFileStatus, String> response = exportFileProcessingStatusService.getProcessingStatus(
+    Pair<ExportStatusResponseDTO.StatusEnum, String> response = exportFileProcessingStatusService.getProcessingStatus(
       userInfo, accessToken, orgIpaCode, exportId, null);
 
     ret.setExportId(exportId);

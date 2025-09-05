@@ -2,11 +2,11 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
+import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -100,7 +100,7 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILChiediStatoExportFlusso");
     try {
-      Pair<ExportFileStatus, String> processingStatus = exportFileProcessingStatusService.getProcessingStatus(
+      Pair<ExportStatusResponseDTO.StatusEnum, String> processingStatus = exportFileProcessingStatusService.getProcessingStatus(
         userInfo,
         accessToken,
         orgIpaCode,

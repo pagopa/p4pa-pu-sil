@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
+import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -24,11 +25,11 @@ public class ExportFileProcessingStatusService  {
     this.fileShareBaseUrl = fileShareBaseUrl;
   }
 
-  public Pair<ExportFileStatus, String> getProcessingStatus(UserInfo userInfo,
-                                                            String accessToken,
-                                                            String orgIpaCode,
-                                                            Long exportFileId,
-                                                            ExportFileTypeEnum expectedType) {
+  public Pair<ExportStatusResponseDTO.StatusEnum, String> getProcessingStatus(UserInfo userInfo,
+                                                                              String accessToken,
+                                                                              String orgIpaCode,
+                                                                              Long exportFileId,
+                                                                              ExportFileTypeEnum expectedType) {
     AuthorizationService.validateAdminRole(orgIpaCode, userInfo);
     ExportFile exportFile = exportFileService.getExportFile(exportFileId, accessToken);
     log.debug("Retrieved ExportFile: {}", exportFile);
@@ -40,9 +41,13 @@ public class ExportFileProcessingStatusService  {
     if (!ExportFileStatus.COMPLETED.equals(exportFile.getStatus())) {
       log.debug("ExportFile type {} with ID {} is not completed, returning status only: {}",
         exportFile.getExportFileType(), exportFileId, exportFile.getStatus());
-      return Pair.of(exportFile.getStatus(), null);
+      return Pair.of(ExportStatusResponseDTO.StatusEnum.fromValue(exportFile.getStatus().getValue()), null);
+    } else if(exportFile.getNumTotalRows()==null || exportFile.getNumTotalRows()==0) {
+      log.debug("ExportFile type {} with ID {} is completed but no data found, returning COMPLETED_NO_DATA_FOUND",
+        exportFile.getExportFileType(), exportFileId);
+      return Pair.of(ExportStatusResponseDTO.StatusEnum.COMPLETED_NO_DATA_FOUND, null);
     }
-    return Pair.of(exportFile.getStatus(), composeUrl(exportFile));
+    return Pair.of(ExportStatusResponseDTO.StatusEnum.COMPLETED, composeUrl(exportFile));
   }
 
   private String composeUrl(ExportFile exportFile) {
