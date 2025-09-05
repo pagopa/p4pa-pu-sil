@@ -105,6 +105,7 @@ class PaymentControllerTest {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
       .loggedUser(userInfo)
+      .iuv(nav.substring(1))
       .build();
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, nav, false, false);
 

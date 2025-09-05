@@ -16,6 +16,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.InstantPaymentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.VerifyNoticeService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.service.querypayments.QueryPaymentsService;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -76,6 +77,7 @@ public class PaymentController implements PaymentApi {
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
+      .iuv(Utilities.nav2Iuv(nav))
       .loggedUser(userInfo)
       .build();
 
