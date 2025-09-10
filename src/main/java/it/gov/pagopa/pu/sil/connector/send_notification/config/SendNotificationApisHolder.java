@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.connector.send_notification.config;
 import it.gov.pagopa.pu.sendnotification.controller.ApiClient;
 import it.gov.pagopa.pu.sendnotification.controller.BaseApi;
 import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
+import it.gov.pagopa.pu.sendnotification.controller.generated.SendApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 public class SendNotificationApisHolder {
 
     private final NotificationApi notificationApi;
+    private final SendApi sendApi;
 
     private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
@@ -31,6 +33,7 @@ public class SendNotificationApisHolder {
         }
 
         this.notificationApi = new NotificationApi(apiClient);
+        this.sendApi = new SendApi(apiClient);
     }
 
     @PreDestroy
@@ -41,6 +44,13 @@ public class SendNotificationApisHolder {
     /** It will return a {@link NotificationApi} instrumented with the provided accessToken. Use null if auth is not required */
     public NotificationApi getNotificationApi(String accessToken){
         return getApi(accessToken, notificationApi);
+    }
+
+    /** It will return a {@link SendApi} instrumented with t
+     * he provided accessToken. Use null if auth is not required
+     */
+    public SendApi getSendApi(String accessToken){
+      return getApi(accessToken, sendApi);
     }
 
     private <T extends BaseApi> T getApi(String accessToken, T api) {
