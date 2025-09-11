@@ -139,34 +139,7 @@ class SendNotificationControllerTest {
   }
 
   @Test
-  void givenNoLegalFactsWhenGetLegalFactsThenNotFound() {
-    // given
-    Long organizationId = 1L;
-    String sendNotificationId = "SEND_NOTIFICATION_ID";
-
-    Mockito.when(
-      sendNotificationRetrieverServiceMock.getLegalFacts(
-        Mockito.eq(sendNotificationId),
-        Mockito.eq(organizationId),
-        Mockito.any(),
-        Mockito.anyString()
-      )
-    ).thenReturn(null);
-
-    // when
-    ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
-      sendNotificationController.getLegalFacts(
-        organizationId,
-        sendNotificationId
-      );
-
-    // then
-    Assertions.assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
-    Assertions.assertNull(actualResponse.getBody());
-  }
-
-  @Test
-  void givenEmptyLegalFactListWhenGetLegalFactsThenNotFound() {
+  void givenEmptyLegalFactListWhenGetLegalFactsThenOkWithEmptyList() {
     // given
     Long organizationId = 1L;
     String sendNotificationId = "SEND_NOTIFICATION_ID";
@@ -188,8 +161,9 @@ class SendNotificationControllerTest {
       );
 
     // then
-    Assertions.assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
-    Assertions.assertNull(actualResponse.getBody());
+    Assertions.assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    Assertions.assertNotNull(actualResponse.getBody());
+    Assertions.assertTrue(actualResponse.getBody().isEmpty());
   }
 
   @Test

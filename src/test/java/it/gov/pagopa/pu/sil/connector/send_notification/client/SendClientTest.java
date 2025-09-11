@@ -63,25 +63,6 @@ class SendClientTest {
   }
 
   @Test
-  void givenNotFoundWhenGetLegalFactsThenEmptyList() {
-    // given
-    String accessToken = "ACCESSTOKEN";
-    String sendNotificationId = "SEND_NOTIFICATION_ID";
-
-    when(sendNotificationApisHolderMock.getSendApi(accessToken))
-      .thenReturn(sendApiMock);
-    when(sendApiMock.retrieveLegalFacts(sendNotificationId)).thenThrow(
-      HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
-
-    // when
-    List<LegalFactListElementDTO> actualResult = sendClient.getLegalFacts(sendNotificationId, accessToken);
-
-    //then
-    Assertions.assertNotNull(actualResult);
-    Assertions.assertTrue(actualResult.isEmpty());
-  }
-
-  @Test
   void whenGetLegalFactDownloadMetadataThenSuccess() {
     // given
     String accessToken = "ACCESSTOKEN";

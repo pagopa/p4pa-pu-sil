@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactListElementDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.client.SendClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,6 +24,13 @@ class LegalFactServiceImplTest {
   @BeforeEach
   void setUp() {
     legalFactService = new LegalFactServiceImpl(sendClientMock);
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      sendClientMock
+    );
   }
 
   @Test

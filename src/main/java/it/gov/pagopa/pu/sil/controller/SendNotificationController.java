@@ -60,7 +60,7 @@ public class SendNotificationController implements SendNotificationApi {
       SecurityUtils.getLoggedUser(),
       SecurityUtils.getAccessToken()
     );
-    return ResponseEntity.ofNullable(legalFacts==null || legalFacts.isEmpty() ? null : legalFacts);
+    return ResponseEntity.ok(legalFacts);
   }
 
   @Override

@@ -21,13 +21,8 @@ public class SendClient {
   }
 
   public List<LegalFactListElementDTO> getLegalFacts(String sendNotificationId, String accessToken) {
-    try{
-      return sendNotificationApisHolder.getSendApi(accessToken)
-        .retrieveLegalFacts(sendNotificationId);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.warn("No legal fact for sendNotificationId {} found", sendNotificationId);
-      return Collections.emptyList();
-    }
+    return sendNotificationApisHolder.getSendApi(accessToken)
+      .retrieveLegalFacts(sendNotificationId);
   }
 
   public LegalFactDownloadMetadataDTO getLegalFactDownloadMetadata(String sendNotificationId, String legalFactId, String accessToken) {
