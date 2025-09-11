@@ -1,0 +1,27 @@
+package it.gov.pagopa.pu.sil.connector.send_notification;
+
+import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDownloadMetadataDTO;
+import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactListElementDTO;
+import it.gov.pagopa.pu.sil.connector.send_notification.client.SendClient;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class LegalFactServiceImpl implements LegalFactService {
+  private final SendClient sendClient;
+
+  public LegalFactServiceImpl(SendClient sendClient) {
+    this.sendClient = sendClient;
+  }
+
+  @Override
+  public List<LegalFactListElementDTO> getLegalFacts(String sendNotificationId, String accessToken) {
+    return sendClient.getLegalFacts(sendNotificationId, accessToken);
+  }
+
+  @Override
+  public LegalFactDownloadMetadataDTO getLegalFactDownloadMetadata(String sendNotificationId, String legalFactId, String accessToken) {
+    return sendClient.getLegalFactDownloadMetadata(sendNotificationId, legalFactId, accessToken);
+  }
+}
