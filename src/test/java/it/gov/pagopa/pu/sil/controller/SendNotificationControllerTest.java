@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Collections;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
@@ -151,6 +152,33 @@ class SendNotificationControllerTest {
         Mockito.anyString()
       )
     ).thenReturn(null);
+
+    // when
+    ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
+      sendNotificationController.getLegalFacts(
+        organizationId,
+        sendNotificationId
+      );
+
+    // then
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
+    Assertions.assertNull(actualResponse.getBody());
+  }
+
+  @Test
+  void givenEmptyLegalFactListWhenGetLegalFactsThenNotFound() {
+    // given
+    Long organizationId = 1L;
+    String sendNotificationId = "SEND_NOTIFICATION_ID";
+
+    Mockito.when(
+      sendNotificationRetrieverServiceMock.getLegalFacts(
+        Mockito.eq(sendNotificationId),
+        Mockito.eq(organizationId),
+        Mockito.any(),
+        Mockito.anyString()
+      )
+    ).thenReturn(Collections.emptyList());
 
     // when
     ResponseEntity<List<LegalFactListElementDTO>> actualResponse =

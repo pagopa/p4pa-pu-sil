@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -25,7 +26,7 @@ public class SendClient {
         .retrieveLegalFacts(sendNotificationId);
     } catch (HttpClientErrorException.NotFound e) {
       log.warn("No legal fact for sendNotificationId {} found", sendNotificationId);
-      return null;
+      return Collections.emptyList();
     }
   }
 

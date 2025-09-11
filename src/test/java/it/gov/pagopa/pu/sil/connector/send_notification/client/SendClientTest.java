@@ -63,7 +63,7 @@ class SendClientTest {
   }
 
   @Test
-  void givenNotFoundWhenGetLegalFactsThenNull() {
+  void givenNotFoundWhenGetLegalFactsThenEmptyList() {
     // given
     String accessToken = "ACCESSTOKEN";
     String sendNotificationId = "SEND_NOTIFICATION_ID";
@@ -77,7 +77,8 @@ class SendClientTest {
     List<LegalFactListElementDTO> actualResult = sendClient.getLegalFacts(sendNotificationId, accessToken);
 
     //then
-    Assertions.assertNull(actualResult);
+    Assertions.assertNotNull(actualResult);
+    Assertions.assertTrue(actualResult.isEmpty());
   }
 
   @Test
