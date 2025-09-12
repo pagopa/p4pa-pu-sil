@@ -57,8 +57,11 @@ public class SendNotificationRetrieverServiceImpl implements SendNotificationRet
   }
 
   private static void validateSendNotificationOrganization(Long organizationId, SendNotificationDTO sendNotification) {
-    if(!sendNotification.getOrganizationId().equals(organizationId)){
-      log.info("Requested Notification for organization {}, but the sendNotificationId ({}) is related to organizationId {}", organizationId, sendNotification, sendNotification.getOrganizationId());
+    if(sendNotification == null || !sendNotification.getOrganizationId().equals(organizationId)){
+      String errorMessage = sendNotification == null ?
+        "Requested Notification for organization %s, but requested sendNotification is not found".formatted(organizationId) :
+        "Requested Notification for organization %s, but the sendNotificationId (%s) is related to organizationId %s".formatted(organizationId, sendNotification, sendNotification.getOrganizationId());
+      log.info(errorMessage);
       throw new IllegalArgumentException("SendNotification not found");
     }
   }
