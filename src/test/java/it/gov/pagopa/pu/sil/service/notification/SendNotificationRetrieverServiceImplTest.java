@@ -118,6 +118,23 @@ class SendNotificationRetrieverServiceImplTest {
   }
 
   @Test
+  void givenNotFoundNotificationWhenDeleteSendNotificationThenIllegalArgumentException() {
+    // Given
+    Long organizationId = 1L;
+    UserInfo loggedUser = AuthorizationServiceTest.buildAdminUser(organizationId, "ORGFC", "orgIpaCode");
+    String accessToken = "TOKEN";
+    String sendNotificationId = "sendNotificationId";
+
+    Mockito.when(
+      notificationServiceMock.getSendNotification(sendNotificationId, accessToken)
+    ).thenReturn(null);
+
+    // When,Then
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+      sendNotificationRetrieverService.deleteSendNotification(sendNotificationId, organizationId, loggedUser, accessToken));
+  }
+
+  @Test
   void givenInvalidUserWhenDeleteSendNotificationThenAuthorizationDeniedException() {
     // Given
     Long organizationId = 1L;
@@ -163,6 +180,24 @@ class SendNotificationRetrieverServiceImplTest {
 
     Mockito.when(notificationServiceMock.getSendNotification(sendNotificationId, accessToken)).thenReturn(
       expectedResult);
+
+    // When, Then
+    Assertions.assertThrows(IllegalArgumentException.class, () ->
+      sendNotificationRetrieverService.getSendNotification(sendNotificationId, organizationId, loggedUser, accessToken)
+    );
+  }
+
+  @Test
+  void givenNotFoundNotificationWhenGetSendNotificationThenThrowIllegalArgumentException() {
+    // Given
+    Long organizationId = 1L;
+    UserInfo loggedUser = AuthorizationServiceTest.buildAdminUser(organizationId, "ORGFC", "orgIpaCode");
+    String accessToken = "TOKEN";
+    String sendNotificationId = "sendNotificationId";
+
+    Mockito.when(
+      notificationServiceMock.getSendNotification(sendNotificationId, accessToken)
+    ).thenReturn(null);
 
     // When, Then
     Assertions.assertThrows(IllegalArgumentException.class, () ->
@@ -239,6 +274,33 @@ class SendNotificationRetrieverServiceImplTest {
         accessToken
       )
     ).thenReturn(sendNotificationForDifferentOrg);
+
+    // When, Then
+    Assertions.assertThrows(
+      IllegalArgumentException.class,
+      () -> sendNotificationRetrieverService.getLegalFacts(
+        sendNotificationId,
+        organizationId,
+        validUser,
+        accessToken
+      )
+    );
+  }
+
+  @Test
+  void givenNotFoundNotificationWhenGetLegalFactsThenThrowIllegalArgumentException() {
+    // Given
+    Long organizationId = 1L;
+    UserInfo validUser = AuthorizationServiceTest.buildAdminUser(organizationId, "ORGFC", "orgIpaCode");
+    String accessToken = "TOKEN";
+    String sendNotificationId = "SEND_NOTIFICATION_ID";
+
+    Mockito.when(
+      notificationServiceMock.getSendNotification(
+        sendNotificationId,
+        accessToken
+      )
+    ).thenReturn(null);
 
     // When, Then
     Assertions.assertThrows(
@@ -332,6 +394,35 @@ class SendNotificationRetrieverServiceImplTest {
         accessToken
       )
     ).thenReturn(sendNotificationForDifferentOrg);
+
+    // When, Then
+    Assertions.assertThrows(
+      IllegalArgumentException.class,
+      () -> sendNotificationRetrieverService.getLegalFactDownloadMetadata(
+        sendNotificationId,
+        legalFactId,
+        organizationId,
+        validUser,
+        accessToken
+      )
+    );
+  }
+
+  @Test
+  void givenNotFoundNotificationWhenGetLegalFactDownloadMetadataThenThrowIllegalArgumentException() {
+    // Given
+    Long organizationId = 1L;
+    UserInfo validUser = AuthorizationServiceTest.buildAdminUser(organizationId, "ORGFC", "orgIpaCode");
+    String accessToken = "TOKEN";
+    String sendNotificationId = "SEND_NOTIFICATION_ID";
+    String legalFactId = "LEGAL_FACT_ID";
+
+    Mockito.when(
+      notificationServiceMock.getSendNotification(
+        sendNotificationId,
+        accessToken
+      )
+    ).thenReturn(null);
 
     // When, Then
     Assertions.assertThrows(
