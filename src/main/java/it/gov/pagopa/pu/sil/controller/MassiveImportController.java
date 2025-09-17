@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.controller.generated.ImportApi;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileRequestDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
@@ -35,7 +36,8 @@ public class MassiveImportController implements ImportApi {
 
   @Override
   public ResponseEntity<ImportFileResponseDTO> massiveImportRequest(String orgFiscalCode,
-                                                                    IngestionFlowFileTypeEnum fileType) {
+                                                                    ImportFileRequestDTO importFileRequestDTO) {
+    IngestionFlowFileTypeEnum fileType = importFileRequestDTO.getImportFileType();
     log.info("Received massive import request for orgFiscalCode: {}, fileType: {}", orgFiscalCode, fileType);
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
