@@ -329,11 +329,12 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/OrgFiscalCode'
-        - name: importFileType
-          in: query
-          required: true
-          schema:
-            type: 'ImportFileType'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImportFileRequestDTO'
+        required: true
       responses:
         '201':
           description: Created
@@ -835,6 +836,13 @@ components:
     NoticeNumber:
       type: string
       pattern: '^\d{18}$'
+    ImportFileRequestDTO:
+      type: object
+      required:
+        - importFileType
+      properties:
+        importFileType:
+          type: 'ImportFileType'
     ImportFileResponseDTO:
       type: object
       required:
