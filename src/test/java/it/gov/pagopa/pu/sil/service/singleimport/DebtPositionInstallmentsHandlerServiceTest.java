@@ -11,7 +11,7 @@ import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
-import it.gov.pagopa.pu.sil.mapper.PaaSILImportaDovutoMapper;
+import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.util.Constants;
@@ -53,7 +53,7 @@ class DebtPositionInstallmentsHandlerServiceTest {
   @Mock
   private ManageDebtPositionService manageDebtPositionServiceMock;
   @Mock
-  private PaaSILImportaDovutoMapper paaSILImportaDovutoMapperMock;
+  private ManageDebtPositionMapper manageDebtPositionMapperMock;
   @Mock
   private DebtPositionService debtPositionServiceMock;
 
@@ -170,7 +170,7 @@ class DebtPositionInstallmentsHandlerServiceTest {
 
   @ParameterizedTest
   @EnumSource(value = Action.class, names = {"A", "M"})
-  void whenHendleActionThenOk(Action action) {
+  void whenHandleActionThenOk(Action action) {
     // Arrange
     String iud = "iud";
     String iuv = "iuv";
@@ -192,7 +192,7 @@ class DebtPositionInstallmentsHandlerServiceTest {
       .thenReturn(installment);
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), iud, Constants.ORDINARY_DEBT_POSITION_ORIGINS, TOKEN))
       .thenReturn(List.of(debtPosition));
-    when(paaSILImportaDovutoMapperMock.mapToManageDebtPositionDTO(debtPosition, installment, request.getInstallments().getFirst().getAction().getValue()))
+    when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(debtPosition, installment, request.getInstallments().getFirst().getAction().getValue(), false))
       .thenReturn(manageDebtPositionDTO);
     when(manageDebtPositionServiceMock.manageDebtPositionInstallments(debtPosition.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
       .thenReturn(debtPosition);

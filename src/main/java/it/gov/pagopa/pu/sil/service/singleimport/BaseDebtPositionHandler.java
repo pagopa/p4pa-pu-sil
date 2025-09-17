@@ -48,7 +48,7 @@ public abstract class BaseDebtPositionHandler<I, O> {
   }
   protected abstract Pair<DebtPositionDTO, String> mapRequestToDebtPosition(I request, Organization organization, String accessToken);
   protected abstract O mapToRespone(DebtPositionDTO debtPosition, String orgFiscalCode, DataHandler notice, String action);
-  protected abstract ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, InstallmentDTO installmentToSync, String action);
+  protected abstract ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action);
 
   public Triple<O, String, RegistryOutcome> handleAction(I request, String orgIpaCode, UserInfo userInfo, String accessToken) {
 
@@ -86,6 +86,8 @@ public abstract class BaseDebtPositionHandler<I, O> {
   }
 
   private Triple<O, String, RegistryOutcome> handleModifyAndCancel(String action, DebtPositionDTO debtPositionToSync, Organization organization, String accessToken) {
+
+    //for modify and cancel we always have only one installment to sync (the one with the IUD passed in input)
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
     String iud = installmentToSync.getIud();
 
@@ -95,7 +97,7 @@ public abstract class BaseDebtPositionHandler<I, O> {
     InstallmentDTO installmentOnDb = debtPositionWithInstallment.getRight();
 
     //map to InstallmentSynchronizeDTO
-    ManageDebtPositionDTO manageDebtPositionDTO = mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action);
+    ManageDebtPositionDTO manageDebtPositionDTO = mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, action);
 
     //execute the action on the installment
     log.info("executing action {} on installment with iud[{}] for organizationId[{}]", action, iud, organization.getOrganizationId());

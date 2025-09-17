@@ -577,6 +577,186 @@
         } ]
       }
     },
+    "/sil/organization/{organizationId}/send-notification/{sendNotificationId}/legal-facts" : {
+      "get" : {
+        "tags" : [ "SendNotification" ],
+        "summary" : "get send legal fact list",
+        "description" : "get send legal fact list",
+        "operationId" : "getLegalFacts",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "sendNotificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                  }
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                  }
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                  }
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Notification not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                  }
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{organizationId}/send-notification/{sendNotificationId}/legal-facts/{legalFactId}" : {
+      "get" : {
+        "tags" : [ "SendNotification" ],
+        "summary" : "get send legal fact download metadata",
+        "description" : "get send legal fact metadata for downloading document content",
+        "operationId" : "getLegalFactDownloadMetadata",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "sendNotificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "legalFactId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Notification not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
     "/sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}" : {
       "get" : {
         "tags" : [ "PrintPaymentNotice" ],
@@ -1053,7 +1233,7 @@
       },
       "DebtPositionOrigin" : {
         "type" : "string",
-        "enum" : [ "ORDINARY", "ORDINARY_SIL", "SPONTANEOUS", "SPONTANEOUS_SIL", "SECONDARY_ORG", "RECEIPT_FILE", "RECEIPT_PAGOPA", "REPORTING_PAGOPA" ]
+        "enum" : [ "ORDINARY", "ORDINARY_SIL", "SPONTANEOUS", "SPONTANEOUS_SIL", "SPONTANEOUS_MIXED", "SECONDARY_ORG", "RECEIPT_FILE", "RECEIPT_PAGOPA", "REPORTING_PAGOPA" ]
       },
       "DebtPositionStatus" : {
         "type" : "string",
@@ -1528,6 +1708,21 @@
           }
         }
       },
+      "F24Payment" : {
+        "type" : "object",
+        "properties" : {
+          "title" : {
+            "type" : "string"
+          },
+          "applyCost" : {
+            "type" : "boolean"
+          },
+          "metadataAttachment" : {
+            "$ref" : "#/components/schemas/Attachment"
+          }
+        },
+        "required" : [ "applyCost", "metadataAttachment", "title" ]
+      },
       "NotificationDigitalAddress" : {
         "type" : "object",
         "properties" : {
@@ -1574,9 +1769,11 @@
         "properties" : {
           "pagoPa" : {
             "$ref" : "#/components/schemas/PagoPa"
+          },
+          "f24" : {
+            "$ref" : "#/components/schemas/F24Payment"
           }
-        },
-        "required" : [ "pagoPa" ]
+        }
       },
       "PhysicalCommunicationTypeEnum" : {
         "type" : "string",
@@ -1927,6 +2124,51 @@
         },
         "required" : [ "debtPositionId", "navList" ]
       },
+      "LegalFactIdDTO" : {
+        "type" : "object",
+        "properties" : {
+          "key" : {
+            "type" : "string"
+          },
+          "category" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "category", "key" ]
+      },
+      "LegalFactListElementDTO" : {
+        "type" : "object",
+        "properties" : {
+          "taxId" : {
+            "type" : "string"
+          },
+          "iun" : {
+            "type" : "string"
+          },
+          "legalFactId" : {
+            "$ref" : "#/components/schemas/LegalFactIdDTO"
+          }
+        },
+        "required" : [ "iun", "legalFactId" ]
+      },
+      "LegalFactDownloadMetadataDTO" : {
+        "type" : "object",
+        "properties" : {
+          "filename" : {
+            "type" : "string"
+          },
+          "contentLength" : {
+            "type" : "number"
+          },
+          "url" : {
+            "type" : "string"
+          },
+          "retryAfter" : {
+            "type" : "number"
+          }
+        },
+        "required" : [ "contentLength", "filename" ]
+      },
       "PaymentStatusResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -2129,10 +2371,6 @@
         "type" : "string",
         "enum" : [ "UPLOADED", "PROCESSING", "COMPLETED", "ERROR", "WAITING_FILE" ]
       },
-      "ExportFileStatus" : {
-        "type" : "string",
-        "enum" : [ "REQUESTED", "PROCESSING", "COMPLETED", "EXPIRED", "ERROR" ]
-      },
       "ExportStatusResponseDTO" : {
         "type" : "object",
         "properties" : {
@@ -2141,13 +2379,17 @@
             "format" : "int64"
           },
           "status" : {
-            "$ref" : "#/components/schemas/ExportFileStatus"
+            "$ref" : "#/components/schemas/StatusEnum"
           },
           "downloadUrl" : {
             "$ref" : "#/components/schemas/DownloadUrl"
           }
         },
         "required" : [ "exportId", "status" ]
+      },
+      "StatusEnum" : {
+        "type" : "string",
+        "enum" : [ "REQUESTED", "PROCESSING", "COMPLETED", "EXPIRED", "ERROR", "COMPLETED_NO_DATA_FOUND" ]
       },
       "AssessmentDTO" : {
         "type" : "object",

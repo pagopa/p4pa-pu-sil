@@ -7,6 +7,9 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILImportaDovutoMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.notice.NoticeService;
@@ -20,10 +23,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Objects;
+
 @Service
 @Slf4j
 public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILImportaDovuto, PaaSILImportaDovutoRisposta> {
   private final PaaSILImportaDovutoMapper paaSILImportaDovutoMapper;
+  private final ManageDebtPositionMapper manageDebtPositionMapper;
   private final String puSilBaseUrl;
 
   public PaaSILImportaDovutoService(OrganizationService organizationService,
@@ -31,9 +37,11 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
                                     ManageDebtPositionService manageDebtPositionService,
                                     NoticeService noticeService,
                                     PaaSILImportaDovutoMapper paaSILImportaDovutoMapper,
+                                    ManageDebtPositionMapper manageDebtPositionMapper,
                                     @Value("${public-base-url.pu-sil}") String puSilBaseUrl) {
     super(organizationService, debtPositionService, manageDebtPositionService, noticeService);
     this.paaSILImportaDovutoMapper = paaSILImportaDovutoMapper;
+    this.manageDebtPositionMapper = manageDebtPositionMapper;
     this.puSilBaseUrl = puSilBaseUrl;
   }
 
@@ -56,8 +64,14 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
   }
 
   @Override
-  protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, InstallmentDTO installmentToSync, String action) {
-    return paaSILImportaDovutoMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action);
+  protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action) {
+    //validate data consistency between installment to sync and the one on db
+    if (!Objects.equals(debtPositionToSync.getDebtPositionTypeOrgId(), debtPositionOnDb.getDebtPositionTypeOrgId())) {
+      throw new SilFaultException(SilFaults.PAA_CAMPO_NON_MODIFICABILE, "Il campo tipo dovuto non può essere modificato");
+    }
+
+    InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
+    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action, true);
   }
 
   private String composeDownloadPdfNoticeUrl(String orgFiscalCode, String iuv) {

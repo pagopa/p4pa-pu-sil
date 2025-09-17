@@ -2,9 +2,13 @@ package it.gov.pagopa.pu.sil.endpoint;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.processexecutions.dto.generated.*;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
+import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -58,7 +62,8 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.*;
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
+import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.PROCESSING;
 import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -153,8 +158,8 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediStatoExportFlusso request = podamFactory.manufacturePojo(PaaSILChiediStatoExportFlusso.class);
     request.setRequestToken(String.valueOf(requestToken));
 
-    Pair<ExportFileStatus, String> processingStatus = Pair.of(
-      ExportFileStatus.COMPLETED,
+    Pair<ExportStatusResponseDTO.StatusEnum, String> processingStatus = Pair.of(
+      ExportStatusResponseDTO.StatusEnum.COMPLETED,
       expectedUrl + "/exported"
     );
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
@@ -244,7 +249,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
   private static Stream<Arguments> paaSILChiediStatoImportFlussoProvider() {
     String expectedUrl = "https://upload.url";
-    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/imported");
+    DownloadUrl imported = new DownloadUrl(OUTPUT_FILE, expectedUrl + "/iuv");
     DownloadUrl errors = new DownloadUrl(DISCARDED_FILE, expectedUrl + "/errors");
     DownloadUrl notice = new DownloadUrl(PAYMENT_NOTICE_FILE, expectedUrl + "/notice");
     DownloadUrl input = new DownloadUrl(INPUT_FILE, expectedUrl + "/input");
@@ -420,6 +425,7 @@ class PuForOrganizationPaymentsEndpointTest {
       .loggedUser(userInfo)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .iuv(request.getIdentificativoUnivocoVersamento())
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 
@@ -446,6 +452,7 @@ class PuForOrganizationPaymentsEndpointTest {
       .loggedUser(userInfo)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
       .orgFiscalCode(VALID_ORGANIZATION_FISCAL_CODE)
+      .iuv(request.getIdentificativoUnivocoVersamento())
       .build();
     configureRegistryLoggerMock(expectedRegistryContextData, request, false);
 

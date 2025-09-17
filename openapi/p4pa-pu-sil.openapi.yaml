@@ -97,6 +97,81 @@ paths:
           description: Forbidden
         '500':
           description: Internal server error
+  /sil/organization/{organizationId}/send-notification/{sendNotificationId}/legal-facts:
+    get:
+      tags:
+        - SendNotification
+      summary: get send legal fact list
+      description: get send legal fact list
+      operationId: getLegalFacts
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: sendNotificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: 'LegalFactListElementDTO'
+        '400':
+          description: Invalid request
+        '403':
+          description: Forbidden
+        '404':
+          description: Notification not found
+        '500':
+          description: Internal server error
+  /sil/organization/{organizationId}/send-notification/{sendNotificationId}/legal-facts/{legalFactId}:
+    get:
+      tags:
+        - SendNotification
+      summary: get send legal fact download metadata
+      description: get send legal fact metadata for downloading document content
+      operationId: getLegalFactDownloadMetadata
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: sendNotificationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: legalFactId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: 'LegalFactDownloadMetadataDTO'
+        '400':
+          description: Invalid request
+        '403':
+          description: Forbidden
+        '404':
+          description: Notification not found
+        '500':
+          description: Internal server error
   /sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}:
     get:
       tags:
@@ -856,7 +931,14 @@ components:
           type: integer
           format: int64
         status:
-          type: 'ExportFileStatus'
+          type: string
+          enum:
+            - REQUESTED
+            - PROCESSING
+            - COMPLETED
+            - EXPIRED
+            - ERROR
+            - COMPLETED_NO_DATA_FOUND
         downloadUrl:
           $ref: "#/components/schemas/DownloadUrl"
     PaymentDTO:

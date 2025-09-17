@@ -1,10 +1,9 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
-import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
-import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
+import it.gov.pagopa.pu.sendnotification.dto.generated.*;
 import it.gov.pagopa.pu.sil.service.notification.SendNotificationRetrieverService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.Collections;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class SendNotificationControllerTest {
@@ -36,6 +38,13 @@ class SendNotificationControllerTest {
     SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
     securityContext.setAuthentication(authentication);
     SecurityContextHolder.setContext(securityContext);
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      sendNotificationRetrieverServiceMock
+    );
   }
 
   @Test
@@ -104,5 +113,112 @@ class SendNotificationControllerTest {
     Assertions.assertNull(response.getBody());
     Mockito.verify(sendNotificationRetrieverServiceMock).getSendNotification(Mockito.eq(sendNotificationId),Mockito.eq(organizationId),
       Mockito.any(), Mockito.anyString());
+  }
+
+  @Test
+  void givenCorrectRequestWhenGetLegalFactsThenOk() {
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    List<LegalFactListElementDTO> expectedResponseBody = List.of(new LegalFactListElementDTO());
+
+    Mockito.when(sendNotificationRetrieverServiceMock.getLegalFacts(
+      sendNotificationId,
+      organizationId,
+      userInfo,
+      "fakeAccessToken"
+    )).thenReturn(expectedResponseBody);
+
+    ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
+      sendNotificationController.getLegalFacts(
+        organizationId,
+        sendNotificationId
+      );
+
+    Assertions.assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    Assertions.assertSame(expectedResponseBody, actualResponse.getBody());
+  }
+
+  @Test
+  void givenEmptyLegalFactListWhenGetLegalFactsThenOkWithEmptyList() {
+    // given
+    Long organizationId = 1L;
+    String sendNotificationId = "SEND_NOTIFICATION_ID";
+
+    Mockito.when(
+      sendNotificationRetrieverServiceMock.getLegalFacts(
+        Mockito.eq(sendNotificationId),
+        Mockito.eq(organizationId),
+        Mockito.any(),
+        Mockito.anyString()
+      )
+    ).thenReturn(Collections.emptyList());
+
+    // when
+    ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
+      sendNotificationController.getLegalFacts(
+        organizationId,
+        sendNotificationId
+      );
+
+    // then
+    Assertions.assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    Assertions.assertNotNull(actualResponse.getBody());
+    Assertions.assertTrue(actualResponse.getBody().isEmpty());
+  }
+
+  @Test
+  void givenCorrectRequestWhenGetLegalFactDownloadMetadataThenOk() {
+    Long organizationId = 1L;
+    String sendNotificationId = "sendNotificationId";
+    String legalFactId = "LEGAL_FACT_ID";
+    LegalFactDownloadMetadataDTO expectedResponseBody = new LegalFactDownloadMetadataDTO();
+
+    Mockito.when(sendNotificationRetrieverServiceMock.getLegalFactDownloadMetadata(
+      sendNotificationId,
+      legalFactId,
+      organizationId,
+      userInfo,
+      "fakeAccessToken"
+    )).thenReturn(expectedResponseBody);
+
+    ResponseEntity<LegalFactDownloadMetadataDTO> actualResponse =
+      sendNotificationController.getLegalFactDownloadMetadata(
+        organizationId,
+        sendNotificationId,
+        legalFactId
+      );
+
+    Assertions.assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
+    Assertions.assertSame(expectedResponseBody, actualResponse.getBody());
+  }
+
+  @Test
+  void givenNoLegalFactDownloadMetadataWhenGetLegalFactDownloadMetadataThenNotFound() {
+    // given
+    Long organizationId = 1L;
+    String sendNotificationId = "SEND_NOTIFICATION_ID";
+    String legalFactId = "LEGAL_FACT_ID";
+
+    Mockito.when(
+      sendNotificationRetrieverServiceMock.getLegalFactDownloadMetadata(
+        Mockito.eq(sendNotificationId),
+        Mockito.eq(legalFactId),
+        Mockito.eq(organizationId),
+        Mockito.any(),
+        Mockito.anyString()
+      )
+    ).thenReturn(null);
+
+    // when
+    ResponseEntity<LegalFactDownloadMetadataDTO> actualResponse =
+      sendNotificationController.getLegalFactDownloadMetadata(
+        organizationId,
+        sendNotificationId,
+        legalFactId
+      );
+
+    // then
+    Assertions.assertEquals(HttpStatus.NOT_FOUND, actualResponse.getStatusCode());
+    Assertions.assertNull(actualResponse.getBody());
   }
 }

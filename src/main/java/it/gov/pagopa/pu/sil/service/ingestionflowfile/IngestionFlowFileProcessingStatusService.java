@@ -66,7 +66,7 @@ public class IngestionFlowFileProcessingStatusService {
   private void addDownloadUrlsToResponse(ImportStatusResponseDTO responseDTO, IngestionFlowFile ingestionFlowFile) {
     boolean success = ingestionFlowFile.getErrorDescription() == null;
     if (ingestionFlowFile.getNumCorrectlyImportedRows()!= null && ingestionFlowFile.getNumCorrectlyImportedRows() > 0) {
-      responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.OUTPUT_FILE, composeUrl(ingestionFlowFile, "/imported")));
+      responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.OUTPUT_FILE, composeUrl(ingestionFlowFile, "/iuv")));
     }
     if (!success && ingestionFlowFile.getDiscardFileName() != null) {
       responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.DISCARDED_FILE, composeUrl(ingestionFlowFile, "/errors")));

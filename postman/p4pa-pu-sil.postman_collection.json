@@ -165,6 +165,190 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "getSendNotification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"P4PA PU Sil get notification - Responses with 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"P4PA PU Sil - get send notification - Verify response body\", function () {\r",
+                  "    let jsonResponse = pm.response.json();\r",
+                  "    pm.expect(jsonResponse).have.property(\"sendNotificationId\");\r",
+                  "    pm.expect(jsonResponse).have.property(\"status\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification/{{sendNotificationId}}",
+              "host": [
+                "{{puSilBaseUrl}}"
+              ],
+              "path": [
+                "organization",
+                "{{organizationId}}",
+                "send-notification",
+                "{{sendNotificationId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getSendLegalFacts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+									"pm.test(\"P4PA PU Sil - get send legal fact list - Responses with 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+									"pm.test(\"P4PA PU Sil - get send legal fact list - Verify response body\", function () {\r",
+                  "    let jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse).to.be.an(\"array\");\r",
+									"    pm.expect(jsonResponse[0]).to.have.keys('iun','legalFactId').and.be.an(\"object\");\r",
+									"    pm.expect(jsonResponse[0].legalFactId).to.have.keys('key','category').and.be.an(\"object\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+									""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification/{{sendNotificationId}}/legal-facts",
+              "host": [
+                "{{puSilBaseUrl}}"
+              ],
+              "path": [
+                "organization",
+                "{{organizationId}}",
+                "send-notification",
+                "{{sendNotificationId}}",
+                "legal-facts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getSendLegalFactDownloadMetadata",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+									"pm.test(\"P4PA PU Sil - get send legal fact download metadata  - Responses with 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+									"pm.test(\"P4PA PU Sil - get send legal fact download metadata - Verify response body\", function () {\r",
+                  "    let jsonResponse = pm.response.json();\r",
+									"    pm.expect(jsonResponse).have.property(\"filename\");\r",
+									"    pm.expect(jsonResponse).have.property(\"contentLength\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+									""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification/{{sendNotificationId}}/legal-facts/{{legalFactId}}",
+              "host": [
+                "{{puSilBaseUrl}}"
+              ],
+              "path": [
+                "organization",
+                "{{organizationId}}",
+                "send-notification",
+                "{{sendNotificationId}}",
+                "legal-facts",
+                "{{legalFactId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     }
@@ -208,6 +392,10 @@
     },
     {
       "key": "sendNotificationId",
+      "value": ""
+    },
+    {
+      "key": "legalFactId",
       "value": ""
     }
   ]

@@ -20,10 +20,10 @@ public class InstallmentClient {
     this.debtPositionsApisHolder = debtPositionsApisHolder;
   }
 
-  public Long countExistingInstallmentsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, String accessToken) {
+  public Boolean isInstallmentExistsByIudIuvNav(Long organizationId, String iud, String iuv, String nav, List<DebtPositionOrigin> debtPositionOrigins, String accessToken) {
     return debtPositionsApisHolder
       .getInstallmentNoPiiSearchControllerApi(accessToken)
-      .crudInstallmentsCountExistingInstallments(organizationId, iud, iuv, nav);
+      .crudInstallmentsIsInstallmentExists(organizationId, iud, iuv, nav, debtPositionOrigins);
   }
 
   public List<InstallmentDTO> getInstallmentsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
@@ -38,11 +38,12 @@ public class InstallmentClient {
       String iur,
       int transferIndex,
       String operatorExternalUserId,
+      List<DebtPositionOrigin> debtPositionOrigins,
       String accessToken) {
     try {
       return debtPositionsApisHolder
         .getInstallmentNoPiiSearchControllerApi(accessToken)
-        .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId);
+        .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, debtPositionOrigins);
     } catch (HttpClientErrorException.NotFound e) {
       log.info("Cannot find InstallmentNoPII by semantic key: organizationId {} - iuv {} - iur {} - transferIndex {}", organizationId, iuv, iur, transferIndex, e);
       return null;
