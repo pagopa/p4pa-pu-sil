@@ -2,16 +2,16 @@ import java.util.*
 
 plugins {
   java
-  id("org.springframework.boot") version "3.5.5"
+  id("org.springframework.boot") version "3.5.6"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "6.2.0.5505"
+  id("org.sonarqube") version "6.3.1.5724"
   id("com.github.ben-manes.versions") version "0.52.0"
-  id("org.openapi.generator") version "7.13.0"
+  id("org.openapi.generator") version "7.15.0"
   id("org.ajoberstar.grgit") version "5.3.2"
-  id("com.gorylenko.gradle-git-properties") version "2.5.0"
+  id("com.gorylenko.gradle-git-properties") version "2.5.3"
   //code generation for soap webservices classes (via  jaxb)
-  id("com.intershop.gradle.jaxb") version "7.0.1"
+  id("com.intershop.gradle.jaxb") version "7.0.2"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -40,22 +40,23 @@ dependencyManagement {
   }
 }
 
-val springDocOpenApiVersion = "2.8.9"
-val openApiToolsVersion = "0.2.6"
-val micrometerVersion = "1.5.1"
+val springDocOpenApiVersion = "2.8.13"
+val janinoVersion = "3.1.12"
+val openApiToolsVersion = "0.2.7"
+val micrometerVersion = "1.5.4"
 val httpClientVersion = "5.5"
-val springWolfAsyncApiVersion = "1.13.0"
+val springWolfAsyncApiVersion = "1.16.0"
 val podamVersion = "8.0.2.RELEASE"
 val jaxbVersion = "4.0.5"
 val jaxbApiVersion = "4.0.2"
-val activationVersion = "2.1.3"
+val activationVersion = "2.1.4"
 val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.1"
-val caffeineVersion = "3.2.1"
+val caffeineVersion = "3.2.2"
 val javaJwtVersion = "4.5.0"
-val jwksRsaVersion = "0.22.2"
-val bouncycastleVersion = "1.81"
-val nimbusVersion = "10.4"
+val jwksRsaVersion = "0.23.0"
+val bouncycastleVersion = "1.82"
+val nimbusVersion = "10.5"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -71,6 +72,7 @@ dependencies {
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
+  implementation("org.codehaus.janino:janino:$janinoVersion")
   implementation("io.github.springwolf:springwolf-kafka:${springWolfAsyncApiVersion}")
   implementation("io.github.springwolf:springwolf-ui:${springWolfAsyncApiVersion}")
   implementation("io.github.springwolf:springwolf-cloud-stream:${springWolfAsyncApiVersion}")
