@@ -51,7 +51,7 @@ class BalanceMapperTest {
       balanceMapper.mapBalanceFromSil(invalidJson);
     });
 
-    assertTrue(exception.getMessage().contains("Error while map balance from PuSil"));
+    assertTrue(exception.getMessage().contains("Error while parse balance from PuSil"));
   }
 
 
