@@ -280,4 +280,14 @@ class PuSilExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
   }
+
+  @Test
+  void handleBalanceParseException() throws Exception {
+    doThrow(new BalanceParseException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
 }

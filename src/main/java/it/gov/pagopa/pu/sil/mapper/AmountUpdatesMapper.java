@@ -7,6 +7,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AmountUpdatesMapper {
+
+  private final BalanceMapper balanceMapper;
+
+  public AmountUpdatesMapper(BalanceMapper balanceMapper) {
+    this.balanceMapper = balanceMapper;
+  }
+
   public ActualizationResultDTO pagamentoAggiornato2AmountUpdatesDTO(PagamentoAggiornato pagamentoAggiornato) {
     return ActualizationResultDTO.builder()
       .nav(pagamentoAggiornato.getNumeroAvviso())
@@ -15,7 +22,7 @@ public class AmountUpdatesMapper {
       .displayDate(pagamentoAggiornato.getDataVisualizzazione())
       .updatedAmountCents(pagamentoAggiornato.getImportoPosizione())
       .completionDeadlineDate(pagamentoAggiornato.getDataPerfezionamentoDecorrenzaTermini())
-      .balance(pagamentoAggiornato.getBilancio())
+      .balance(balanceMapper.mapBalanceFromSil(pagamentoAggiornato.getBilancio()))
       .build();
   }
 
@@ -26,7 +33,7 @@ public class AmountUpdatesMapper {
       .notificationFeeCents(updatedPayment.getNotificationFeeCents())
       .updatedAmountCents(updatedPayment.getAmountCents())
       .completionDeadlineDate(updatedPayment.getRetentionDate())
-      .balance(updatedPayment.getBalance())
+      .balance(balanceMapper.mapBalanceFromSil(updatedPayment.getBalance()))
       .build();
   }
 }

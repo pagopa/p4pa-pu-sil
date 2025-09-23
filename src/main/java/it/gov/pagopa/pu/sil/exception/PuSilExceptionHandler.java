@@ -56,7 +56,7 @@ public class PuSilExceptionHandler {
     return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
   }
 
-  @ExceptionHandler({RuntimeException.class})
+  @ExceptionHandler({RuntimeException.class, BalanceParseException.class})
   public ResponseEntity<PuSilErrorDTO> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
   }

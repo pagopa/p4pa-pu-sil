@@ -265,14 +265,17 @@
             "type" : "string",
             "pattern" : "^\\d{11}$"
           }
-        }, {
-          "name" : "importFileType",
-          "in" : "query",
-          "required" : true,
-          "schema" : {
-            "$ref" : "#/components/schemas/IngestionFlowFileTypeEnum"
-          }
         } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ImportFileRequestDTO"
+              }
+            }
+          },
+          "required" : true
+        },
         "responses" : {
           "201" : {
             "description" : "Created",
@@ -1907,6 +1910,15 @@
           }
         },
         "required" : [ "importId", "uploadUrl" ]
+      },
+      "ImportFileRequestDTO" : {
+        "type" : "object",
+        "properties" : {
+          "importFileType" : {
+            "$ref" : "#/components/schemas/IngestionFlowFileTypeEnum"
+          }
+        },
+        "required" : [ "importFileType" ]
       },
       "IngestionFlowFileTypeEnum" : {
         "type" : "string",

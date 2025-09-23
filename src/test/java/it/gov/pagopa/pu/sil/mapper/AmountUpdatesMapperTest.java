@@ -4,48 +4,75 @@ import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
 import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class AmountUpdatesMapperTest {
-    private final AmountUpdatesMapper mapper = new AmountUpdatesMapper();
+  @Mock
+  private BalanceMapper balanceMapperMock;
+  private AmountUpdatesMapper mapper;
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
-    private final PodamFactory podamFactory = TestUtils.getPodamFactory();
+  private final String jsonBalance = "[{" +
+    "\"capitolo\": \"Dionysus\"," +
+    "\"ufficio\": \"Prometheus\"," +
+    "\"accertamento\": \"Meleager\"," +
+    "\"importo\": 9.53" +
+    "}]";
 
-    @Test
-    void testPagamentoAggiornato2AmountUpdatesDTO() {
-        PagamentoAggiornato pagamento = new PagamentoAggiornato();
-        pagamento.setNumeroAvviso("NAV123");
-        pagamento.setIun("IUN456");
-        pagamento.setSpeseNotifica(1_00L);
-        OffsetDateTime now = OffsetDateTime.now();
-        pagamento.setDataVisualizzazione(now);
-        pagamento.setImportoPosizione(50_00L);
-        pagamento.setDataPerfezionamentoDecorrenzaTermini(now.plusDays(1));
-        pagamento.setBilancio("BILANCIO-JSON");
-        pagamento.setCodice(PagamentoAggiornato.CodiceEnum._004);
-        pagamento.setDettaglio("Some error description");
+  private final String expectedBalanceXml = "<bilancio><capitolo><codCapitolo>Dionysus</codCapitolo>" +
+    "<codUfficio>Prometheus</codUfficio>" +
+    "<accertamento><codAccertamento>Meleager</codAccertamento>" +
+    "<importo>9.53</importo></accertamento></capitolo></bilancio>";
 
-      ActualizationResultDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(pagamento);
+  @BeforeEach
+  void setUp() {
+    mapper = new AmountUpdatesMapper(balanceMapperMock);
+  }
 
-        assertNotNull(dto);
-        assertEquals("NAV123", dto.getNav());
-        assertEquals("IUN456", dto.getIun());
-        assertEquals(1_00L, dto.getNotificationFeeCents());
-        assertEquals(now, dto.getDisplayDate());
-        assertEquals(50_00L, dto.getUpdatedAmountCents());
-        assertEquals(now.plusDays(1), dto.getCompletionDeadlineDate());
-        assertEquals("BILANCIO-JSON", dto.getBalance());
-    }
+  @Test
+  void testPagamentoAggiornato2AmountUpdatesDTO() {
+    PagamentoAggiornato pagamento = new PagamentoAggiornato();
+    pagamento.setNumeroAvviso("NAV123");
+    pagamento.setIun("IUN456");
+    pagamento.setSpeseNotifica(1_00L);
+    OffsetDateTime now = OffsetDateTime.now();
+    pagamento.setDataVisualizzazione(now);
+    pagamento.setImportoPosizione(50_00L);
+    pagamento.setDataPerfezionamentoDecorrenzaTermini(now.plusDays(1));
+    pagamento.setBilancio(jsonBalance);
+    pagamento.setCodice(PagamentoAggiornato.CodiceEnum._004);
+    pagamento.setDettaglio("Some error description");
+
+    Mockito.when(balanceMapperMock.mapBalanceFromSil(jsonBalance)).thenReturn(expectedBalanceXml);
+    ActualizationResultDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(pagamento);
+
+    assertNotNull(dto);
+    assertEquals("NAV123", dto.getNav());
+    assertEquals("IUN456", dto.getIun());
+    assertEquals(1_00L, dto.getNotificationFeeCents());
+    assertEquals(now, dto.getDisplayDate());
+    assertEquals(50_00L, dto.getUpdatedAmountCents());
+    assertEquals(now.plusDays(1), dto.getCompletionDeadlineDate());
+    assertEquals(expectedBalanceXml, dto.getBalance());
+  }
 
   @Test
   void testUpdatedPayment2AmountUpdatesDTO() {
     UpdatedPayment updatedPayment = podamFactory.manufacturePojo(UpdatedPayment.class);
+    updatedPayment.setBalance(jsonBalance);
 
+    Mockito.when(balanceMapperMock.mapBalanceFromSil(jsonBalance)).thenReturn(expectedBalanceXml);
     ActualizationResultDTO dto = mapper.updatedPayment2AmountUpdatesDTO(updatedPayment);
 
     assertNotNull(dto);
@@ -55,7 +82,7 @@ class AmountUpdatesMapperTest {
     assertNull(dto.getDisplayDate());
     assertEquals(updatedPayment.getAmountCents(), dto.getUpdatedAmountCents());
     assertEquals(updatedPayment.getRetentionDate(), dto.getCompletionDeadlineDate());
-    assertEquals(updatedPayment.getBalance(), dto.getBalance());
+    assertEquals(expectedBalanceXml, dto.getBalance());
 
     TestUtils.checkAllNotNullFields(dto, "displayDate", "errorCode", "errorDescription");
   }

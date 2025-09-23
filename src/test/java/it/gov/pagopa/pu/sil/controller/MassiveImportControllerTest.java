@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
+import it.gov.pagopa.pu.sil.dto.generated.ImportFileRequestDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
@@ -73,7 +74,7 @@ class MassiveImportControllerTest {
 
     // When
     ResponseEntity<ImportFileResponseDTO> response = controller
-      .massiveImportRequest(orgFiscalCode, dpInstallments);
+      .massiveImportRequest(orgFiscalCode, new ImportFileRequestDTO().importFileType(dpInstallments));
 
     // Then
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
