@@ -2,10 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionSearchControllerApi;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -179,5 +176,25 @@ class DebtPositionClientTest {
 
     // Then
     Assertions.assertEquals(expectedResult, result);
+  }
+
+  @Test
+  void whenCreateMixedDebtPositionThenInvokeApi() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
+    MixedDebtPositionDTO mixedDebtPositionDTO = new MixedDebtPositionDTO();
+    ResponseEntity<DebtPositionDTO> expectedResponse = ResponseEntity.ok(debtPositionDTO);
+
+    Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
+      .thenReturn(debtPositionApiMock);
+    Mockito.when(debtPositionApiMock.createMixedDebtPositionWithHttpInfo(mixedDebtPositionDTO))
+      .thenReturn(expectedResponse);
+
+    // When
+    ResponseEntity<DebtPositionDTO> result = client.createMixedDebtPosition(mixedDebtPositionDTO, accessToken);
+
+    // Then
+    Assertions.assertEquals(expectedResponse, result);
   }
 }

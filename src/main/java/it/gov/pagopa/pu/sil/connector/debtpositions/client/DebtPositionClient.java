@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +17,12 @@ public class DebtPositionClient {
 
   public DebtPositionClient(DebtPositionsApisHolder debtPositionsApisHolder) {
     this.debtPositionsApisHolder = debtPositionsApisHolder;
+  }
+
+  public ResponseEntity<DebtPositionDTO> createMixedDebtPosition(MixedDebtPositionDTO mixedDebtPositionDTO, String accessToken) {
+    return debtPositionsApisHolder
+      .getDebtPositionApi(accessToken)
+      .createMixedDebtPositionWithHttpInfo(mixedDebtPositionDTO);
   }
 
   public ResponseEntity<DebtPositionDTO> createDebtPosition(DebtPositionDTO debtPositionDTO, String accessToken) {
@@ -66,5 +69,4 @@ public class DebtPositionClient {
       return null;
     }
   }
-
 }
