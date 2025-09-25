@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -22,6 +19,12 @@ public class DebtPositionServiceImpl implements DebtPositionService {
 
   public DebtPositionServiceImpl(DebtPositionClient client) {
     this.client = client;
+  }
+
+  @Override
+  public Pair<DebtPositionDTO, String> createMixedDebtPosition(MixedDebtPositionDTO mixedDebtPositionDTO, String accessToken) {
+    ResponseEntity<DebtPositionDTO> responseEntity = client.createMixedDebtPosition(mixedDebtPositionDTO, accessToken);
+    return Pair.of(responseEntity.getBody(), responseEntity.getHeaders().getFirst(HEADER_X_WORKFLOW_ID));
   }
 
   @Override

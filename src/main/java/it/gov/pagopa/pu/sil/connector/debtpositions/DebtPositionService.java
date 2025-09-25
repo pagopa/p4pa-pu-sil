@@ -1,14 +1,21 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
 public interface DebtPositionService {
+
+  /**
+   * Creates a new mixed debt position.
+   *
+   * @param mixedDebtPositionDTO the DTO containing the details of the mixed debt position to create
+   * @param accessToken the access token for authentication
+   * @return a pair containing the created DebtPositionDTO and the workflow ID from the response headers
+   */
+  Pair<DebtPositionDTO, String> createMixedDebtPosition(MixedDebtPositionDTO mixedDebtPositionDTO, String accessToken);
+
   /**
    * Creates a new debt position.
    *
