@@ -34,6 +34,9 @@ public class ExportFileProcessingStatusService  {
     ExportFile exportFile = exportFileService.getExportFile(exportFileId, accessToken);
     log.debug("Retrieved ExportFile: {}", exportFile);
 
+    if(exportFile == null){
+      throw new IllegalArgumentException("Cannot find export file having id " + exportFileId);
+    }
     if (expectedType != null && !expectedType.equals(exportFile.getExportFileType())) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, exportFile.getExportFileType()));

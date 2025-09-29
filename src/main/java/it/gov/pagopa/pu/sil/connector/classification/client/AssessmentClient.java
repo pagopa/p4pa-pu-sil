@@ -1,21 +1,16 @@
 package it.gov.pagopa.pu.sil.connector.classification.client;
 
 import it.gov.pagopa.pu.classification.dto.generated.CollectionModelAssessmentsBalanceView;
-import it.gov.pagopa.pu.classification.dto.generated.CollectionModelPaymentsReporting;
-import it.gov.pagopa.pu.classification.dto.generated.Treasury;
 import it.gov.pagopa.pu.sil.connector.classification.config.ClassificationApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-
-import java.util.List;
 
 @Slf4j
 @Service
-public class ClassificationClient {
+public class AssessmentClient {
   private final ClassificationApisHolder classificationApisHolder;
 
-  public ClassificationClient(ClassificationApisHolder classificationApisHolder) {
+  public AssessmentClient(ClassificationApisHolder classificationApisHolder) {
     this.classificationApisHolder = classificationApisHolder;
   }
 

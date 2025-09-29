@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
-import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
+import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
@@ -16,9 +16,9 @@ import java.util.List;
 public class QueryAssessmentsService extends BaseQueryAssessmentsService<GetAssessmentResponseDTO> {
   private final AssessmentsBalanceMapper assessmentsBalanceMapper;
 
-  public QueryAssessmentsService(ClassificationService classificationService,
+  public QueryAssessmentsService(AssessmentService assessmentService,
                                  AssessmentsBalanceMapper assessmentsBalanceMapper) {
-    super(classificationService);
+    super(assessmentService);
     this.assessmentsBalanceMapper = assessmentsBalanceMapper;
   }
 

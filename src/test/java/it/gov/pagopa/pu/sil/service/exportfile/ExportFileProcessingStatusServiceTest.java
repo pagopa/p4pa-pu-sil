@@ -75,6 +75,22 @@ class ExportFileProcessingStatusServiceTest {
   }
 
   @Test
+  void givenNotExistingExportWhenGetProcessingStatusThenThrowException() {
+    // Given
+    String orgIpaCode = "ORG1";
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
+    userInfo.setUserId("user1");
+    String accessToken = "token";
+
+    when(exportFileServiceMock.getExportFile(1L, accessToken)).thenReturn(null);
+
+    // When, Then
+    assertThrows(IllegalArgumentException.class, () ->
+      service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, ExportFileTypeEnum.PAID)
+    );
+  }
+
+  @Test
   void givenStatusNotCompletedWhenGetProcessingStatusThenNoUrl() {
     // Given
     String orgIpaCode = "ORG1";
