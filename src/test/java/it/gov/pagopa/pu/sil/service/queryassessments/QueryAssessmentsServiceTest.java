@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
-import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
+import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.dto.generated.BalanceDTO;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
 import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class QueryAssessmentsServiceTest {
   @Mock
-  private ClassificationService classificationService;
+  private AssessmentService assessmentService;
   @Mock
   private AssessmentsBalanceMapper assessmentsBalanceMapper;
 
@@ -40,7 +40,7 @@ class QueryAssessmentsServiceTest {
 
   @BeforeEach
   void setUp() {
-    service = new QueryAssessmentsService(classificationService, assessmentsBalanceMapper);
+    service = new QueryAssessmentsService(assessmentService, assessmentsBalanceMapper);
     userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
   }
 
@@ -59,7 +59,7 @@ class QueryAssessmentsServiceTest {
     // Given
     String iuf = "IUF123";
 
-    when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
+    when(assessmentService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
       .thenReturn(Collections.emptyList());
 
     // When Then
@@ -81,11 +81,11 @@ class QueryAssessmentsServiceTest {
     BalanceDTO balanceDTO = new BalanceDTO();
 
     if (iuf == null) {
-      when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(
+      when(assessmentService.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(
           anyLong(), anyString(), anyString(), anyString()))
         .thenReturn(List.of(assessmentsBalanceView));
     } else {
-      when(classificationService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), anyString(), anyString()))
+      when(assessmentService.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), anyString(), anyString()))
         .thenReturn(List.of(assessmentsBalanceView));
     }
     when(assessmentsBalanceMapper.map2BalanceDTO(assessmentsBalanceView)).thenReturn(balanceDTO);

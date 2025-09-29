@@ -38,6 +38,10 @@ public class InstantPaymentMapper {
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), payment.getDebtPositionTypeOrgCode(), accessToken);
 
+    if(debtPositionTypeOrg == null){
+      throw new IllegalArgumentException("Cannot find DebtPositionTypeOrg having code " + payment.getDebtPositionTypeOrgCode() + " on organizationId " + org.getOrganizationId());
+    }
+
     PaymentOptionDTO paymentOption = PaymentOptionDTO.builder()
       .status(PaymentOptionStatus.UNPAID)
       .paymentOptionIndex(1)
