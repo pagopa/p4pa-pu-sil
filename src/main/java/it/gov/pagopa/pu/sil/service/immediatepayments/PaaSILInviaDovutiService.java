@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -8,13 +7,10 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -23,17 +19,17 @@ public class PaaSILInviaDovutiService extends AbstractImmediatePaymentsService<P
   private final PaaSILInviaDovutiMapper paaSILInviaDovutiMapper;
 
   public PaaSILInviaDovutiService(CheckoutService checkoutService,
-                                  ManageDebtPositionService manageDebtPositionService,
+                                  InstantPaymentsFacade instantPaymentsFacade,
                                   CartRequestMapper cartRequestMapper,
                                   OrganizationService organizationService,
                                   PaaSILInviaDovutiMapper paaSILInviaDovutiMapper,
                                   SessionIdMapper sessionIdMapper) {
-    super(checkoutService, manageDebtPositionService, organizationService, cartRequestMapper, sessionIdMapper);
+    super(checkoutService, instantPaymentsFacade, organizationService, cartRequestMapper, sessionIdMapper);
     this.paaSILInviaDovutiMapper = paaSILInviaDovutiMapper;
   }
 
   @Override
-  protected List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization org, String cartId, String accessToken) {
+  protected MappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization org, String cartId, String accessToken) {
     return paaSILInviaDovutiMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
   }
 

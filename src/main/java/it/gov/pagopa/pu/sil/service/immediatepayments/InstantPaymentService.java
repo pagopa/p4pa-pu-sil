@@ -9,7 +9,6 @@ import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.InstantPaymentMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -21,18 +20,19 @@ public class InstantPaymentService extends AbstractImmediatePaymentsService<Inst
   private final InstantPaymentMapper instantPaymentMapper;
 
   protected InstantPaymentService(CheckoutService checkoutService,
-                                  ManageDebtPositionService manageDebtPositionService,
+                                  InstantPaymentsFacade instantPaymentsFacade,
                                   OrganizationService organizationService,
                                   CartRequestMapper cartRequestMapper,
                                   SessionIdMapper sessionIdMapper,
                                   InstantPaymentMapper instantPaymentMapper) {
-    super(checkoutService, manageDebtPositionService, organizationService, cartRequestMapper, sessionIdMapper);
+    super(checkoutService, instantPaymentsFacade, organizationService, cartRequestMapper, sessionIdMapper);
     this.instantPaymentMapper = instantPaymentMapper;
   }
 
   @Override
-  protected List<DebtPositionDTO> mapRequestToDebtPositions(InstantPaymentRequest request, Organization org, String cartId, String accessToken) {
-    return instantPaymentMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
+  protected MappingResult mapRequestToDebtPositions(InstantPaymentRequest request, Organization org, String cartId, String accessToken) {
+    List<DebtPositionDTO> dp = instantPaymentMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
+    return MappingResult.ofDebtPositions(dp);
   }
 
   @Override

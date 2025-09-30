@@ -10,6 +10,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.service.immediatepayments.MappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -91,9 +92,11 @@ class PaaSILInviaDovutiMapperTest {
   void mapRequestToDebtPositions_InvalidIUV_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(new CtDatiSingoloVersamentoDovuti());
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento("IUV");
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
@@ -105,11 +108,13 @@ class PaaSILInviaDovutiMapperTest {
   void mapRequestToDebtPositions_InvalidDebtor_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(new CtDatiSingoloVersamentoDovuti());
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
-
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
@@ -123,12 +128,16 @@ class PaaSILInviaDovutiMapperTest {
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    SilFaultException silFaultException = new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
     if(testCase.equals("6dp")) {
       for(int i = 0; i < 6; i++) {
         CtDatiSingoloVersamentoDovuti versamento = podamFactory.manufacturePojo(CtDatiSingoloVersamentoDovuti.class);
         dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
       }
+      silFaultException = new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: 6/5");
     }
+    doThrow(silFaultException).when(validationServiceMock)
+      .validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
 
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
@@ -176,6 +185,7 @@ class PaaSILInviaDovutiMapperTest {
     versamento.setDatiSpecificiRiscossione(datiSpecificiRiscossione);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
@@ -191,7 +201,8 @@ class PaaSILInviaDovutiMapperTest {
     }
 
     //when
-    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    MappingResult mappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    List<DebtPositionDTO> result = mappingResult.debtPositions();
 
     //then
     assertNotNull(result);
@@ -201,7 +212,7 @@ class PaaSILInviaDovutiMapperTest {
       TestUtils.checkAllNotNullFields(dp,
         "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       dp.getPaymentOptions().forEach(po -> {
-        TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+        TestUtils.checkNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "description");
         po.getInstallments().forEach(i -> {
           TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",

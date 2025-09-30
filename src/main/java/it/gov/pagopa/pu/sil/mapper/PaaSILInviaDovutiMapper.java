@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.MixedDebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
@@ -8,6 +9,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
+import it.gov.pagopa.pu.sil.service.immediatepayments.MappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
@@ -29,7 +31,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
     super(jaxbTransformService, debtPositionService, validationService, personMapper, taxonomyService);
   }
 
-  public List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {
+  public MappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {
     //unmarshall "dovuti"
     Dovuti dovutiObj;
     try {
@@ -40,9 +42,14 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
       log.error("error unmarshalling PaaSILInviaDovuti: [{}]", errorMessage, unmarshallingException);
       throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
     }
-    return dovutiMapper(RegistryEventType.PTDP_paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
 
+    validationService.validateCartSize(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size());
+
+    if (dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size() == 1) {
+      DebtPositionDTO debtPositionDTO = dovutiMapper(RegistryEventType.PTDP_paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
+      return MappingResult.ofDebtPositions(List.of(debtPositionDTO));
+    }
+    MixedDebtPositionDTO mixedDebtPositionDTO = mixedDebtPositionDTOMapper(RegistryEventType.PTDP_paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
+    return MappingResult.ofMixedDebtPositions(List.of(mixedDebtPositionDTO));
   }
-
-
 }

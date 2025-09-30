@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
@@ -116,4 +117,12 @@ public class ValidationService {
     }
   }
 
+  public void validateCartSize(int size) {
+    if (size > Constants.MAX_CART_SIZE) {
+      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: " +
+        size + "/" + Constants.MAX_CART_SIZE);
+    } else if (size == 0) {
+      throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
+    }
+  }
 }

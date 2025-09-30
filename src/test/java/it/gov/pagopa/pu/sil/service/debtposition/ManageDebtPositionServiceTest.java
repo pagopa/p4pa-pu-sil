@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service.debtposition;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.MixedDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.workflow.service.WorkflowService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -38,7 +39,7 @@ class ManageDebtPositionServiceTest {
 
   //region: createSyncedDebtPositions
   @Test
-  void testCreateSyncedDebtPositions_AllSyncedSuccessfully() {
+  void testCreateSyncedDebtPositions_AllSuccessfully() {
     // Arrange
     DebtPositionDTO debtPosition1 = new DebtPositionDTO();
     debtPosition1.setDebtPositionId(1L);
@@ -53,7 +54,7 @@ class ManageDebtPositionServiceTest {
       .thenReturn(WORKFLOW_STATUS_COMPLETED_VALUE);
 
     // Act
-    List<DebtPositionDTO> result = manageDebtPositionService.createSyncedDebtPositions(
+    List<DebtPositionDTO> result = manageDebtPositionService.createDebtPositions(
       List.of(debtPosition1, debtPosition2), "accessToken");
 
     // Assert
@@ -61,7 +62,7 @@ class ManageDebtPositionServiceTest {
   }
 
   @Test
-  void testCreateSyncedDebtPositions_SomeFailedToSync() {
+  void testCreateDebtPositions_SomeFailedToSync() {
     // Arrange
     DebtPositionDTO debtPosition1 = new DebtPositionDTO();
     debtPosition1.setDebtPositionId(1L);
@@ -79,7 +80,7 @@ class ManageDebtPositionServiceTest {
 
     // Act
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPosition1, debtPosition2);
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> manageDebtPositionService.createSyncedDebtPositions(
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> manageDebtPositionService.createDebtPositions(
       debtPositionDTOList, "accessToken"));
 
     // Assert
@@ -121,6 +122,66 @@ class ManageDebtPositionServiceTest {
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class,
       () -> manageDebtPositionService.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, "accessToken"));
 
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+    assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
+  }
+  //endregion
+
+  //region: createMixedDebtPositions
+  @Test
+  void testCreateMixedDebtPositions_AllSuccessfully() {
+    // Arrange
+    MixedDebtPositionDTO mixedDebtPosition1 = new MixedDebtPositionDTO();
+    MixedDebtPositionDTO mixedDebtPosition2 = new MixedDebtPositionDTO();
+
+    DebtPositionDTO debtPosition1 = new DebtPositionDTO();
+    debtPosition1.setDebtPositionId(1L);
+    DebtPositionDTO debtPosition2 = new DebtPositionDTO();
+    debtPosition2.setDebtPositionId(2L);
+
+    when(debtPositionServiceMock.createMixedDebtPosition(any(MixedDebtPositionDTO.class), anyString()))
+      .thenReturn(Pair.of(debtPosition1, "workflow1"))
+      .thenReturn(Pair.of(debtPosition2, "workflow2"));
+
+    when(workflowServiceMock.waitWorkflowCompletion(anyString(), anyInt(), anyInt(), anyString()))
+      .thenReturn(WORKFLOW_STATUS_COMPLETED_VALUE);
+
+    // Act
+    List<DebtPositionDTO> result = manageDebtPositionService.createMixedDebtPositions(
+      List.of(mixedDebtPosition1, mixedDebtPosition2), "accessToken");
+
+    // Assert
+    assertEquals(2, result.size());
+    assertEquals(1L, result.get(0).getDebtPositionId());
+    assertEquals(2L, result.get(1).getDebtPositionId());
+  }
+
+  @Test
+  void testCreateMixedDebtPositions_SomeFailedToSync() {
+    // Arrange
+    MixedDebtPositionDTO mixedDebtPosition1 = new MixedDebtPositionDTO();
+    MixedDebtPositionDTO mixedDebtPosition2 = new MixedDebtPositionDTO();
+
+    DebtPositionDTO debtPosition1 = new DebtPositionDTO();
+    debtPosition1.setDebtPositionId(1L);
+    DebtPositionDTO debtPosition2 = new DebtPositionDTO();
+    debtPosition2.setDebtPositionId(2L);
+
+    when(debtPositionServiceMock.createMixedDebtPosition(any(MixedDebtPositionDTO.class), anyString()))
+      .thenReturn(Pair.of(debtPosition1, "workflow1"))
+      .thenReturn(Pair.of(debtPosition2, "workflow2"));
+
+    when(workflowServiceMock.waitWorkflowCompletion(eq("workflow1"), anyInt(), anyInt(), anyString()))
+      .thenReturn(WORKFLOW_STATUS_COMPLETED_VALUE);
+    when(workflowServiceMock.waitWorkflowCompletion(eq("workflow2"), anyInt(), anyInt(), anyString()))
+      .thenReturn("FAILED");
+
+    // Act
+    List<MixedDebtPositionDTO> mixedDebtPositionDTOList = List.of(mixedDebtPosition1, mixedDebtPosition2);
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> manageDebtPositionService.createMixedDebtPositions(
+      mixedDebtPositionDTOList, "accessToken"));
+
+    // Assert
     assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
     assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
   }
