@@ -269,5 +269,70 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     });
   }
 
+  @Test
+  void whenMapRequestToDebtPositionsThenReturnMixedDebtPosition() {
+    // given
+    PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
+    request.setListaDovuti(new ListaDovuti());
+    request.getListaDovuti().getElementoListaDovutis().add(new ElementoListaDovuti());
+    request.getListaDovuti().getElementoListaDovutis().getFirst().setDovuti(new byte[]{});
+    Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
+    CtDatiSingoloVersamentoDovuti versamento1 = new CtDatiSingoloVersamentoDovuti();
+    versamento1.setCausaleVersamento("causale");
+    versamento1.setImportoSingoloVersamento(BigDecimal.TWO);
+    versamento1.setDatiSpecificiRiscossione("9/DATI_SPECIFICI");
+    versamento1.setIdentificativoTipoDovuto("COD_TIPO_DOVUTO");
+    versamento1.setIdentificativoUnivocoDovuto("IUD");
+    Bilancio bilancio = podamFactory.manufacturePojo(Bilancio.class);
+    versamento1.setBilancio(bilancio);
+    when(jaxbTransformServiceMock.marshalling(bilancio, Bilancio.class)).thenReturn("bilancioString");
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento1);
+    dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
+    CtDatiSingoloVersamentoDovuti versamento2 = new CtDatiSingoloVersamentoDovuti();
+    versamento2.setCausaleVersamento("causale");
+    versamento2.setImportoSingoloVersamento(BigDecimal.ONE);
+    versamento2.setIdentificativoTipoDovuto("NO-IBAN");
+    versamento2.setIdentificativoUnivocoDovuto("IUD-NO-IBAN");
+    versamento2.setDatiSpecificiRiscossione("9/1234567IM/");
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento2);
+
+    DebtPositionTypeOrg debtPositionTypeOrg1 = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    DebtPositionTypeOrg debtPositionTypeOrg2 = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+
+    PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
+    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
+    doNothing().when(validationServiceMock).validateCartSize(request.getListaDovuti().getElementoListaDovutis().size());
+    when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
+
+    doReturn(debtPositionTypeOrg1).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento1.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+    doReturn(debtPositionTypeOrg2).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), versamento2.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+
+    //when
+    MappingResult mappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    List<MixedDebtPositionDTO> result = mappingResult.mixedDebtPositions();
+
+    //then
+    assertNotNull(result);
+    assertEquals(1, result.size());
+    MixedDebtPositionDTO mixedDebtPositionDTO = result.getFirst();
+    TestUtils.checkAllNotNullFields(mixedDebtPositionDTO);
+
+    List<MixedTransferDTO> mixedTransfers = mixedDebtPositionDTO.getTransfers();
+    assertEquals(2, mixedTransfers.size());
+
+    MixedTransferDTO mixedTransfer1 = mixedTransfers.get(0);
+    assertNull(mixedTransfer1.getStampHashDocument());
+    assertNull(mixedTransfer1.getStampType());
+    assertNull(mixedTransfer1.getStampProvincialResidence());
+
+    MixedTransferDTO mixedTransfer2 = mixedTransfers.get(1);
+    assertNull(mixedTransfer2.getStampHashDocument());
+    assertNull(mixedTransfer2.getStampType());
+    assertNull(mixedTransfer2.getStampProvincialResidence());
+  }
 }
 

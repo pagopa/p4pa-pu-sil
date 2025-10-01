@@ -137,28 +137,14 @@ abstract class AbstractImmediatePaymentsMapper {
 
   protected MixedDebtPositionDTO mixedDebtPositionDTOMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization org, String accessToken) {
     validationService.validateCartSize(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size());
-
+    PersonDTO debtor = personMapper.getAndValidateDebtor(dovutiObj.getSoggettoPagatore());
 
     String sourceFlowName = Constants.SOURCE_FLOW_NAME_PREFIX_INVIADOVUTI + cartId;
     if (RegistryEventType.PTDP_paaSILInviaCarrelloDovuti.equals(operationType)) {
       sourceFlowName = Constants.SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI + cartId;
     }
 
-    return MixedDebtPositionDTO.builder()
-      .organizationId(org.getOrganizationId())
-      .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
-      .sourceFlowName(sourceFlowName)
-      .flagIuvVolatile(true)
-      .description("MIXED")
-      .remittanceInformation(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().getFirst().getCausaleVersamento())
-      .dueDate(Utilities.getSpontaneousSilExpirationDate())
-      .debtor(personMapper.getAndValidateDebtor(dovutiObj.getSoggettoPagatore()))
-      .transfers(mixedTransferDTOListMapper(dovutiObj, org, accessToken))
-      .build();
-  }
-
-  private List<MixedTransferDTO> mixedTransferDTOListMapper(Dovuti dovutiObj, Organization org, String accessToken) {
-    List<MixedTransferDTO> result = new ArrayList<>();
+    List<MixedTransferDTO> mixedTransfers = new ArrayList<>();
     for (CtDatiSingoloVersamentoDovuti singleTranfer : dovutiObj.getDatiVersamento().getDatiSingoloVersamentos()) {
       DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
         org.getOrganizationId(), singleTranfer.getIdentificativoTipoDovuto(), accessToken);
@@ -187,8 +173,19 @@ abstract class AbstractImmediatePaymentsMapper {
               .postalIban(debtPositionTypeOrg.getPostalIban());
           }
         });
-      result.add(mixedTransferDTO);
+      mixedTransfers.add(mixedTransferDTO);
     }
-    return result;
+
+    return MixedDebtPositionDTO.builder()
+      .organizationId(org.getOrganizationId())
+      .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
+      .sourceFlowName(sourceFlowName)
+      .flagIuvVolatile(true)
+      .description("MIXED")
+      .remittanceInformation(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().getFirst().getCausaleVersamento())
+      .dueDate(Utilities.getSpontaneousSilExpirationDate())
+      .debtor(debtor)
+      .transfers(mixedTransfers)
+      .build();
   }
 }
