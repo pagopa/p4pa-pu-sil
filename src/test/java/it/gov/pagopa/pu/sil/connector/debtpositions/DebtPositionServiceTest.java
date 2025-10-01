@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPosition;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -139,5 +136,24 @@ class DebtPositionServiceTest {
 
     // Then
     Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void whenCreateMixedDebtPositionThenReturnDebtPositionDTO() {
+    // Given
+    MixedDebtPositionDTO mixedDebtPositionDTO = new MixedDebtPositionDTO();
+    DebtPositionDTO expectedDebtPositionDTO = new DebtPositionDTO();
+    String accessToken = "ACCESSTOKEN";
+    ResponseEntity<DebtPositionDTO> expectedResult = ResponseEntity.ok().header("X-Workflow-Id", "workflow-id").body(expectedDebtPositionDTO);
+
+    Mockito.when(clientMock.createMixedDebtPosition(mixedDebtPositionDTO, accessToken)).thenReturn(expectedResult);
+
+    // When
+    Pair<DebtPositionDTO, String> result = service.createMixedDebtPosition(mixedDebtPositionDTO, accessToken);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertSame(expectedResult.getBody(), result.getLeft());
+    Assertions.assertSame("workflow-id", result.getRight());
   }
 }
