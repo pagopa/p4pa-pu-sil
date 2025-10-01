@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
-import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
+import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.LegacyAssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LegacyQueryAssessmentsServiceTest {
   @Mock
-  private ClassificationService classificationServiceMock;
+  private AssessmentService assessmentServiceMock;
   @Mock
   private LegacyAssessmentsBalanceMapper legacyAssessmentsBalanceMapperMock;
 
@@ -44,7 +44,7 @@ class LegacyQueryAssessmentsServiceTest {
 
   @BeforeEach
   void setUp() {
-    service = new LegacyQueryAssessmentsService(classificationServiceMock, legacyAssessmentsBalanceMapperMock);
+    service = new LegacyQueryAssessmentsService(assessmentServiceMock, legacyAssessmentsBalanceMapperMock);
     userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
   }
 
@@ -90,7 +90,7 @@ class LegacyQueryAssessmentsServiceTest {
       validationMock.when(() -> ValidationUtils.verifyExclusivePresence(request.getRichiestaPerBolletta(), request.getRichiestaPerIUF()))
         .thenReturn(true);
 
-      when(classificationServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
+      when(assessmentServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
         .thenReturn(Collections.emptyList());
 
       // When, Then
@@ -121,10 +121,10 @@ class LegacyQueryAssessmentsServiceTest {
         .thenReturn(true);
 
       if (richiestaPerIUF == null) {
-        when(classificationServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(anyLong(), any(), any(), any()))
+        when(assessmentServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndBill(anyLong(), any(), any(), any()))
           .thenReturn(List.of(assessmentsBalanceView));
       } else {
-        when(classificationServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
+        when(assessmentServiceMock.findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(anyLong(), any(), any()))
           .thenReturn(List.of(assessmentsBalanceView));
       }
 

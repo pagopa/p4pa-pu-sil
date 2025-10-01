@@ -22,6 +22,7 @@ import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
@@ -30,6 +31,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class PuSilExceptionHandler {
+
+  @ExceptionHandler({HttpClientErrorException.class})
+  public ResponseEntity<PuSilErrorDTO> handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
+    return handleException(ex, request, ex.getStatusCode(), PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
+  }
 
   @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
   public ResponseEntity<PuSilErrorDTO> handleViolationException(Exception ex, HttpServletRequest request) {

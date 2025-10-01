@@ -1,17 +1,17 @@
 package it.gov.pagopa.pu.sil.connector.classification;
 
 import it.gov.pagopa.pu.classification.dto.generated.*;
-import it.gov.pagopa.pu.sil.connector.classification.client.ClassificationClient;
+import it.gov.pagopa.pu.sil.connector.classification.client.AssessmentClient;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 
 @Service
-public class ClassificationServiceImpl implements ClassificationService {
-  private final ClassificationClient client;
+public class AssessmentServiceImpl implements AssessmentService {
+  private final AssessmentClient client;
 
-  public ClassificationServiceImpl(ClassificationClient client) {
+  public AssessmentServiceImpl(AssessmentClient client) {
     this.client = client;
   }
 

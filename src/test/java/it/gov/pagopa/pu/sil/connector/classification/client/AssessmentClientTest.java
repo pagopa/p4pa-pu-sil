@@ -14,16 +14,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
-class ClassificationClientTest {
+class AssessmentClientTest {
   @Mock
   private ClassificationApisHolder apisHolder;
   @Mock
   private AssessmentsBalanceViewSearchControllerApi assessmentsBalanceViewSearchControllerApiMock;
 
-  private ClassificationClient client;
+  private AssessmentClient client;
 
   @BeforeEach
-  void setUp() { client = new ClassificationClient(apisHolder);  }
+  void setUp() { client = new AssessmentClient(apisHolder);  }
 
   @AfterEach
   void tearDown() {
