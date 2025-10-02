@@ -1,9 +1,11 @@
 package it.gov.pagopa.pu.sil.controller;
 
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.*;
 import it.gov.pagopa.pu.sil.controller.generated.SendNotificationApi;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.notification.SendNotificationRetrieverService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,61 +25,114 @@ public class SendNotificationController implements SendNotificationApi {
 
   @Override
   public ResponseEntity<CreateNotificationResponse> createSendNotification(
-    Long organizationId, CreateNotificationRequest body) {
-    log.info("requested createSendNotification having organizationId {}",organizationId);
-    return ResponseEntity.ok(sendNotificationRetrieverService.createSendNotification(organizationId,body,
-      SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken()));
+    String orgFiscalCode, CreateNotificationRequest body) {
+
+    log.info("requested createSendNotification having orgFiscalCode {}", orgFiscalCode);
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
+
+    return ResponseEntity.ok(
+      sendNotificationRetrieverService.createSendNotification(
+        organizationId,
+        body,
+        userInfo,
+        accessToken
+      )
+    );
   }
 
   @Override
   public ResponseEntity<Void> deleteSendNotification(
-    Long organizationId, String sendNotificationId) {
-    log.info("requested deleteSendNotification having organizationId {} and sendNotificationId {}",organizationId, sendNotificationId);
-    sendNotificationRetrieverService.deleteSendNotification(sendNotificationId,organizationId,
-      SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken());
+    String orgFiscalCode, String sendNotificationId) {
+
+    log.info("requested deleteSendNotification having orgFiscalCode {} and sendNotificationId {}",
+      orgFiscalCode,
+      sendNotificationId
+    );
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
+
+    sendNotificationRetrieverService.deleteSendNotification(
+      sendNotificationId,
+      organizationId,
+      userInfo,
+      accessToken
+    );
     return ResponseEntity.ok().build();
   }
 
   @Override
   public ResponseEntity<SendNotificationDTO> getSendNotification(
-    Long organizationId,
-    String sendNotificationId) {
-    log.info("requested getSendNotification having organizationId {} and sendNotificationId {}",organizationId, sendNotificationId);
-    return ResponseEntity.ofNullable(sendNotificationRetrieverService.getSendNotification(sendNotificationId,organizationId,
-      SecurityUtils.getLoggedUser(),SecurityUtils.getAccessToken()));
+    String orgFiscalCode, String sendNotificationId) {
+
+    log.info("requested getSendNotification having orgFiscalCode {} and sendNotificationId {}",
+      orgFiscalCode,
+      sendNotificationId
+    );
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
+
+    return ResponseEntity.ofNullable(
+      sendNotificationRetrieverService.getSendNotification(
+        sendNotificationId,
+        organizationId,
+        userInfo,
+        accessToken
+      )
+    );
   }
 
   @Override
   public ResponseEntity<List<LegalFactListElementDTO>> getLegalFacts(
-    Long organizationId, String sendNotificationId) {
-    log.info("requested getLegalFacts having organizationId {} and sendNotificationId {}",
-      organizationId,
+    String orgFiscalCode, String sendNotificationId) {
+
+    log.info("requested getLegalFacts having orgFiscalCode {} and sendNotificationId {}",
+      orgFiscalCode,
       sendNotificationId
     );
-    List<LegalFactListElementDTO> legalFacts = sendNotificationRetrieverService.getLegalFacts(
-      sendNotificationId,
-      organizationId,
-      SecurityUtils.getLoggedUser(),
-      SecurityUtils.getAccessToken()
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
+
+    return ResponseEntity.ok(
+      sendNotificationRetrieverService.getLegalFacts(
+        sendNotificationId,
+        organizationId,
+        userInfo,
+        accessToken
+      )
     );
-    return ResponseEntity.ok(legalFacts);
   }
 
   @Override
   public ResponseEntity<LegalFactDownloadMetadataDTO> getLegalFactDownloadMetadata(
-    Long organizationId, String sendNotificationId, String legalFactId) {
-    log.info("requested getLegalFactDownloadMetadata having organizationId {}, sendNotificationId {} and legalFactId {}",
-      organizationId,
+    String orgFiscalCode, String sendNotificationId, String legalFactId) {
+
+    log.info("requested getLegalFactDownloadMetadata having orgFiscalCode {}, sendNotificationId {} and legalFactId {}",
+      orgFiscalCode,
       sendNotificationId,
       legalFactId
     );
-    LegalFactDownloadMetadataDTO legalFactDownloadMetadata = sendNotificationRetrieverService.getLegalFactDownloadMetadata(
-      sendNotificationId,
-      legalFactId,
-      organizationId,
-      SecurityUtils.getLoggedUser(),
-      SecurityUtils.getAccessToken()
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
+
+    return ResponseEntity.ofNullable(
+      sendNotificationRetrieverService.getLegalFactDownloadMetadata(
+        sendNotificationId,
+        legalFactId,
+        organizationId,
+        userInfo,
+        accessToken
+      )
     );
-    return ResponseEntity.ofNullable(legalFactDownloadMetadata);
   }
 }

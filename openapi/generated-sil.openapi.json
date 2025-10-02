@@ -126,19 +126,18 @@
         } ]
       }
     },
-    "/sil/organization/{organizationId}/send-notification" : {
+    "/sil/organization/{orgFiscalCode}/send-notification" : {
       "post" : {
         "tags" : [ "SendNotification" ],
         "summary" : "Create notification",
         "description" : "Create initial notification",
         "operationId" : "createSendNotification",
         "parameters" : [ {
-          "name" : "organizationId",
+          "name" : "orgFiscalCode",
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string"
           }
         } ],
         "requestBody" : {
@@ -462,19 +461,18 @@
         } ]
       }
     },
-    "/sil/organization/{organizationId}/send-notification/{sendNotificationId}" : {
+    "/sil/organization/{orgFiscalCode}/send-notification/{sendNotificationId}" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send notification",
         "description" : "get send notification",
         "operationId" : "getSendNotification",
         "parameters" : [ {
-          "name" : "organizationId",
+          "name" : "orgFiscalCode",
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string"
           }
         }, {
           "name" : "sendNotificationId",
@@ -546,12 +544,11 @@
         "description" : "Delete notification",
         "operationId" : "deleteSendNotification",
         "parameters" : [ {
-          "name" : "organizationId",
+          "name" : "orgFiscalCode",
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string"
           }
         }, {
           "name" : "sendNotificationId",
@@ -580,19 +577,18 @@
         } ]
       }
     },
-    "/sil/organization/{organizationId}/send-notification/{sendNotificationId}/legal-facts" : {
+    "/sil/organization/{orgFiscalCode}/send-notification/{sendNotificationId}/legal-facts" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send legal fact list",
         "description" : "get send legal fact list",
         "operationId" : "getLegalFacts",
         "parameters" : [ {
-          "name" : "organizationId",
+          "name" : "orgFiscalCode",
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string"
           }
         }, {
           "name" : "sendNotificationId",
@@ -674,19 +670,18 @@
         } ]
       }
     },
-    "/sil/organization/{organizationId}/send-notification/{sendNotificationId}/legal-facts/{legalFactId}" : {
+    "/sil/organization/{orgFiscalCode}/send-notification/{sendNotificationId}/legal-facts/{legalFactId}" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send legal fact download metadata",
         "description" : "get send legal fact metadata for downloading document content",
         "operationId" : "getLegalFactDownloadMetadata",
         "parameters" : [ {
-          "name" : "organizationId",
+          "name" : "orgFiscalCode",
           "in" : "path",
           "required" : true,
           "schema" : {
-            "type" : "integer",
-            "format" : "int64"
+            "type" : "string"
           }
         }, {
           "name" : "sendNotificationId",
