@@ -76,7 +76,7 @@ public abstract class BaseDebtPositionHandler<I, O> {
 
   private Triple<O, String, RegistryOutcome> handleInsert(String action, DebtPositionDTO debtPosition, String orgFiscalCode, String accessToken) {
     //create debt position (and wait for the workflow to complete)
-    DebtPositionDTO debtPositionDTO = manageDebtPositionService.createSyncedDebtPositions(List.of(debtPosition), accessToken).getFirst();
+    DebtPositionDTO debtPositionDTO = manageDebtPositionService.createDebtPositions(List.of(debtPosition), accessToken).getFirst();
     //retrieve the IUV
     String iuv = debtPositionDTO.getPaymentOptions().getFirst().getInstallments().getFirst().getIuv();
     //prepare the response

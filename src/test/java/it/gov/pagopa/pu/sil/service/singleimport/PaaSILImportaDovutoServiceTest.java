@@ -118,7 +118,7 @@ class PaaSILImportaDovutoServiceTest {
 
     switch (action) {
       case Constants.LEGACY_IMPORT_ACTION_INSERT:
-        Mockito.when(manageDebtPositionServiceMock.createSyncedDebtPositions(List.of(debtPositionDTO), TOKEN)).thenReturn(List.of(processedDebtPositionDTO));
+        Mockito.when(manageDebtPositionServiceMock.createDebtPositions(List.of(debtPositionDTO), TOKEN)).thenReturn(List.of(processedDebtPositionDTO));
         break;
       case Constants.LEGACY_IMPORT_ACTION_MODIFY, Constants.LEGACY_IMPORT_ACTION_CANCEL:
         Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))

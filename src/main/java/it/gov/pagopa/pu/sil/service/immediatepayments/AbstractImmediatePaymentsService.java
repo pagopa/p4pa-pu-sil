@@ -14,7 +14,6 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -27,33 +26,34 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
+public abstract class AbstractImmediatePaymentsService<I, O> {
 
   protected final CheckoutService checkoutService;
-  protected final ManageDebtPositionService manageDebtPositionService;
+  protected final InstantPaymentsFacade instantPaymentsFacade;
   protected final CartRequestMapper cartRequestMapper;
   protected final OrganizationService organizationService;
   protected final SessionIdMapper sessionIdMapper;
 
   protected AbstractImmediatePaymentsService(CheckoutService checkoutService,
-                                             ManageDebtPositionService manageDebtPositionService,
+                                             InstantPaymentsFacade instantPaymentsFacade,
                                              OrganizationService organizationService,
                                              CartRequestMapper cartRequestMapper,
                                              SessionIdMapper sessionIdMapper) {
     this.checkoutService = checkoutService;
-    this.manageDebtPositionService = manageDebtPositionService;
+    this.instantPaymentsFacade = instantPaymentsFacade;
     this.cartRequestMapper = cartRequestMapper;
     this.organizationService = organizationService;
     this.sessionIdMapper = sessionIdMapper;
   }
 
-  protected abstract List<DebtPositionDTO> mapRequestToDebtPositions(REQ request, Organization org, String cartId, String accessToken);
+  // NOTE: changed to return a PaymentRequestMappingResult which may contain either plain debt positions or mixed debt positions
+  protected abstract PaymentRequestMappingResult mapRequestToDebtPositions(I request, Organization org, String cartId, String accessToken);
 
-  protected abstract RESP mapToResponse(String outcome, String checkoutUrl, String sessionId);
+  protected abstract O mapToResponse(String outcome, String checkoutUrl, String sessionId);
 
-  protected abstract String getCallbackUrl(REQ request);
+  protected abstract String getCallbackUrl(I request);
 
-  public Triple<RESP, String, RegistryOutcome> processRequest(REQ request, String orgIpaCode, UserInfo userInfo, String accessToken) {
+  public Triple<O, String, RegistryOutcome> processRequest(I request, String orgIpaCode, UserInfo userInfo, String accessToken) {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
@@ -75,10 +75,10 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
     String cartId = UUID.randomUUID().toString();
 
     //map request to debt positions and validate it
-    List<DebtPositionDTO> mappedRequest = mapRequestToDebtPositions(request, organization, cartId, accessToken);
+    PaymentRequestMappingResult paymentRequestMappingResult = mapRequestToDebtPositions(request, organization, cartId, accessToken);
 
-    //create debt positions
-    List<DebtPositionDTO> debtPositions = manageDebtPositionService.createSyncedDebtPositions(mappedRequest, accessToken);
+    //create debt positions using the facade which decides between mixed and plain
+    List<DebtPositionDTO> debtPositions = instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
 
     String iuvs = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())
@@ -98,7 +98,7 @@ public abstract class AbstractImmediatePaymentsService<REQ, RESP> {
       throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore durante la creazione del carrello di pagamento");
     }
 
-    RESP response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
+    O response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
     return Triple.of(response, iuvs, RegistryOutcome.OK);
   }
 }

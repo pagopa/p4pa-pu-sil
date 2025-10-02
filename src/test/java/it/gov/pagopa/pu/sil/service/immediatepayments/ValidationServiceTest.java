@@ -10,6 +10,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -453,6 +455,24 @@ class ValidationServiceTest {
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
 
     Assertions.assertDoesNotThrow(() -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
+  }
+  //endregion
+
+  //region: validateCartSize
+  @ParameterizedTest
+  @CsvSource({
+    "10, PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, 'Numero massimo dovuti nel carrello superato: 10/5'",
+    "0, PAA_XML_NON_VALIDO, 'Nessun dovuto presente'",
+    "1, , " // valid case, should not throw
+  })
+  void validateCartSize_Parametrized(int size, String expectedFault, String expectedDescription) {
+    if (expectedFault != null) {
+      SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateCartSize(size));
+      assertEquals(SilFaults.valueOf(expectedFault), result.getFault());
+      assertEquals(expectedDescription, result.getDescription());
+    } else {
+      Assertions.assertDoesNotThrow(() -> validationService.validateCartSize(size));
+    }
   }
   //endregion
 }
