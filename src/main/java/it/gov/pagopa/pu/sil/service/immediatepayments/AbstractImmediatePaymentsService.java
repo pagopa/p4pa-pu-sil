@@ -46,8 +46,8 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     this.sessionIdMapper = sessionIdMapper;
   }
 
-  // NOTE: changed to return a MappingResult which may contain either plain debt positions or mixed debt positions
-  protected abstract MappingResult mapRequestToDebtPositions(I request, Organization org, String cartId, String accessToken);
+  // NOTE: changed to return a PaymentRequestMappingResult which may contain either plain debt positions or mixed debt positions
+  protected abstract PaymentRequestMappingResult mapRequestToDebtPositions(I request, Organization org, String cartId, String accessToken);
 
   protected abstract O mapToResponse(String outcome, String checkoutUrl, String sessionId);
 
@@ -75,10 +75,10 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     String cartId = UUID.randomUUID().toString();
 
     //map request to debt positions and validate it
-    MappingResult mappingResult = mapRequestToDebtPositions(request, organization, cartId, accessToken);
+    PaymentRequestMappingResult paymentRequestMappingResult = mapRequestToDebtPositions(request, organization, cartId, accessToken);
 
     //create debt positions using the facade which decides between mixed and plain
-    List<DebtPositionDTO> debtPositions = instantPaymentsFacade.createDebtPositionsFromMapping(mappingResult, accessToken);
+    List<DebtPositionDTO> debtPositions = instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
 
     String iuvs = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())

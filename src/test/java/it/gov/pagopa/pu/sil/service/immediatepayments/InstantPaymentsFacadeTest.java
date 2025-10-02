@@ -30,25 +30,25 @@ class InstantPaymentsFacadeTest {
 
   @ParameterizedTest
   @ValueSource(booleans = {false, true})
-  @DisplayName("Test createDebtPositionsFromMapping with mixed and non-mixed MappingResult")
+  @DisplayName("Test createDebtPositionsFromMapping with mixed and non-mixed PaymentRequestMappingResult")
   void testCreateDebtPositionsFromMapping(boolean mixed) {
-    MappingResult mappingResult = mock(MappingResult.class);
+    PaymentRequestMappingResult paymentRequestMappingResult = mock(PaymentRequestMappingResult.class);
     String accessToken = "token";
     List<DebtPositionDTO> expectedResult = Collections.singletonList(mock(DebtPositionDTO.class));
 
     if (mixed) {
       List<MixedDebtPositionDTO> mixedList = Collections.singletonList(mock(MixedDebtPositionDTO.class));
-      when(mappingResult.isMixed()).thenReturn(true);
-      when(mappingResult.mixedDebtPositions()).thenReturn(mixedList);
+      when(paymentRequestMappingResult.isMixed()).thenReturn(true);
+      when(paymentRequestMappingResult.mixedDebtPositions()).thenReturn(mixedList);
       when(manageDebtPositionServiceMock.createMixedDebtPositions(mixedList, accessToken)).thenReturn(expectedResult);
     } else {
       List<DebtPositionDTO> debtList = Collections.singletonList(mock(DebtPositionDTO.class));
-      when(mappingResult.isMixed()).thenReturn(false);
-      when(mappingResult.debtPositions()).thenReturn(debtList);
+      when(paymentRequestMappingResult.isMixed()).thenReturn(false);
+      when(paymentRequestMappingResult.debtPositions()).thenReturn(debtList);
       when(manageDebtPositionServiceMock.createDebtPositions(debtList, accessToken)).thenReturn(expectedResult);
     }
 
-    List<DebtPositionDTO> result = instantPaymentsFacade.createDebtPositionsFromMapping(mappingResult, accessToken);
+    List<DebtPositionDTO> result = instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
     assertEquals(expectedResult, result);
 
     if (mixed) {

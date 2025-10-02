@@ -9,7 +9,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
-import it.gov.pagopa.pu.sil.service.immediatepayments.MappingResult;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.veneto.regione.pagamenti.ente.ElementoListaDovuti;
@@ -38,7 +38,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     this.secondaryTransferMapper = secondaryTransferMapper;
   }
 
-  public MappingResult mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization organization, String cartId, String accessToken) {
+  public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization organization, String cartId, String accessToken) {
     //validate "dovuti"
     validationService.validatePrimaryDebtPositionOrganization(request, organization.getIpaCode());
     //validate "dovuti secondari"
@@ -75,7 +75,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
 
     handleSecondaryTransfer(debtPositionList, dovutiList, request.getListaDovutiEntiSecondari(), accessToken);
 
-    return new MappingResult(debtPositionList, mixedDebtPositionList);
+    return new PaymentRequestMappingResult(debtPositionList, mixedDebtPositionList);
   }
 
   private void handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList, List<Dovuti> dovutiList,

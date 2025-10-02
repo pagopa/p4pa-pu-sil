@@ -14,11 +14,11 @@ public class InstantPaymentsFacade {
     this.manageDebtPositionService = manageDebtPositionService;
   }
 
-  public List<DebtPositionDTO> createDebtPositionsFromMapping(MappingResult mappingResult, String accessToken) {
-    if (mappingResult.isMixed()) {
-      return manageDebtPositionService.createMixedDebtPositions(mappingResult.mixedDebtPositions(), accessToken);
+  public List<DebtPositionDTO> createDebtPositionsFromMapping(PaymentRequestMappingResult paymentRequestMappingResult, String accessToken) {
+    if (paymentRequestMappingResult.isMixed()) {
+      return manageDebtPositionService.createMixedDebtPositions(paymentRequestMappingResult.mixedDebtPositions(), accessToken);
     } else {
-      return manageDebtPositionService.createDebtPositions(mappingResult.debtPositions(), accessToken);
+      return manageDebtPositionService.createDebtPositions(paymentRequestMappingResult.debtPositions(), accessToken);
     }
   }
 }

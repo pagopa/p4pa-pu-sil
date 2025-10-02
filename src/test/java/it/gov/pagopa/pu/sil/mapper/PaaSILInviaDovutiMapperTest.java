@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.service.immediatepayments.MappingResult;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -197,8 +197,8 @@ class PaaSILInviaDovutiMapperTest {
     }
 
     //when
-    MappingResult mappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
-    List<DebtPositionDTO> result = mappingResult.debtPositions();
+    PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    List<DebtPositionDTO> result = paymentRequestMappingResult.debtPositions();
 
     //then
     assertNotNull(result);
@@ -301,8 +301,8 @@ class PaaSILInviaDovutiMapperTest {
       .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), noIbanTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
 
     //when
-    MappingResult mappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
-    List<MixedDebtPositionDTO> result = mappingResult.mixedDebtPositions();
+    PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    List<MixedDebtPositionDTO> result = paymentRequestMappingResult.mixedDebtPositions();
 
     //then
     assertNotNull(result);

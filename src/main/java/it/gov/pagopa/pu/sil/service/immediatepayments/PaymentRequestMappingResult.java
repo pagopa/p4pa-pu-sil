@@ -7,16 +7,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public record MappingResult(List<DebtPositionDTO> debtPositions, List<MixedDebtPositionDTO> mixedDebtPositions) {
+public record PaymentRequestMappingResult(List<DebtPositionDTO> debtPositions, List<MixedDebtPositionDTO> mixedDebtPositions) {
 
-  public static MappingResult ofDebtPositions(List<DebtPositionDTO> debtPositions) {
+  public static PaymentRequestMappingResult ofDebtPositions(List<DebtPositionDTO> debtPositions) {
     Objects.requireNonNull(debtPositions, "debtPositions must not be null");
-    return new MappingResult(debtPositions, Collections.emptyList());
+    return new PaymentRequestMappingResult(debtPositions, Collections.emptyList());
   }
 
-  public static MappingResult ofMixedDebtPositions(List<MixedDebtPositionDTO> mixedDebtPositions) {
+  public static PaymentRequestMappingResult ofMixedDebtPositions(List<MixedDebtPositionDTO> mixedDebtPositions) {
     Objects.requireNonNull(mixedDebtPositions, "mixedDebtPositions must not be null");
-    return new MappingResult(Collections.emptyList(), mixedDebtPositions);
+    return new PaymentRequestMappingResult(Collections.emptyList(), mixedDebtPositions);
   }
 
   public boolean isMixed() {

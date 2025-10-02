@@ -9,7 +9,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
-import it.gov.pagopa.pu.sil.service.immediatepayments.MappingResult;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
@@ -31,7 +31,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
     super(jaxbTransformService, debtPositionService, validationService, personMapper, taxonomyService);
   }
 
-  public MappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {
+  public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {
     //unmarshall "dovuti"
     Dovuti dovutiObj;
     try {
@@ -47,9 +47,9 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
 
     if (dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().size() == 1) {
       DebtPositionDTO debtPositionDTO = dovutiMapper(RegistryEventType.PTDP_paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
-      return MappingResult.ofDebtPositions(List.of(debtPositionDTO));
+      return PaymentRequestMappingResult.ofDebtPositions(List.of(debtPositionDTO));
     }
     MixedDebtPositionDTO mixedDebtPositionDTO = mixedDebtPositionDTOMapper(RegistryEventType.PTDP_paaSILInviaDovuti, cartId, dovutiObj, organization, accessToken);
-    return MappingResult.ofMixedDebtPositions(List.of(mixedDebtPositionDTO));
+    return PaymentRequestMappingResult.ofMixedDebtPositions(List.of(mixedDebtPositionDTO));
   }
 }

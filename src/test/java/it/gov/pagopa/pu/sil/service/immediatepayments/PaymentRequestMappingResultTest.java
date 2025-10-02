@@ -9,12 +9,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MappingResultTest {
+class PaymentRequestMappingResultTest {
 
   @Test
   void ofDebtPositions_shouldCreateWithDebtPositionsOnly() {
     DebtPositionDTO dto = new DebtPositionDTO();
-    MappingResult result = MappingResult.ofDebtPositions(List.of(dto));
+    PaymentRequestMappingResult result = PaymentRequestMappingResult.ofDebtPositions(List.of(dto));
 
     assertEquals(1, result.debtPositions().size());
     assertTrue(result.mixedDebtPositions().isEmpty());
@@ -24,7 +24,7 @@ class MappingResultTest {
   @Test
   void ofMixedDebtPositions_shouldCreateWithMixedDebtPositionsOnly() {
     MixedDebtPositionDTO dto = new MixedDebtPositionDTO();
-    MappingResult result = MappingResult.ofMixedDebtPositions(List.of(dto));
+    PaymentRequestMappingResult result = PaymentRequestMappingResult.ofMixedDebtPositions(List.of(dto));
 
     assertEquals(1, result.mixedDebtPositions().size());
     assertTrue(result.debtPositions().isEmpty());
@@ -33,17 +33,17 @@ class MappingResultTest {
 
   @Test
   void isMixed_shouldReturnFalseWhenMixedDebtPositionsIsEmpty() {
-    MappingResult result = new MappingResult(Collections.emptyList(), Collections.emptyList());
+    PaymentRequestMappingResult result = new PaymentRequestMappingResult(Collections.emptyList(), Collections.emptyList());
     assertFalse(result.isMixed());
   }
 
   @Test
   void ofDebtPositions_shouldThrowOnNull() {
-    assertThrows(NullPointerException.class, () -> MappingResult.ofDebtPositions(null));
+    assertThrows(NullPointerException.class, () -> PaymentRequestMappingResult.ofDebtPositions(null));
   }
 
   @Test
   void ofMixedDebtPositions_shouldThrowOnNull() {
-    assertThrows(NullPointerException.class, () -> MappingResult.ofMixedDebtPositions(null));
+    assertThrows(NullPointerException.class, () -> PaymentRequestMappingResult.ofMixedDebtPositions(null));
   }
 }

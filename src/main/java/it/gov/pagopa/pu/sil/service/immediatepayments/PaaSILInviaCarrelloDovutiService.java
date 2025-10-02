@@ -29,7 +29,7 @@ public class PaaSILInviaCarrelloDovutiService extends AbstractImmediatePaymentsS
   }
 
   @Override
-  protected MappingResult mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization org, String cartId, String accessToken) {
+  protected PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization org, String cartId, String accessToken) {
     return paaSILInviaCarrelloDovutiMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
   }
 

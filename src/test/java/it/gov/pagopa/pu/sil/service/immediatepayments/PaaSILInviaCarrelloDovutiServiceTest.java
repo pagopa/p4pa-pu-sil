@@ -149,12 +149,12 @@ class PaaSILInviaCarrelloDovutiServiceTest {
     //given
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
-    MappingResult mappingResult = MappingResult.ofDebtPositions(debtPositionDTOList);
+    PaymentRequestMappingResult paymentRequestMappingResult = PaymentRequestMappingResult.ofDebtPositions(debtPositionDTOList);
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaCarrelloDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), any(), eq(TOKEN)))
-      .thenReturn(mappingResult);
-    when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(mappingResult, TOKEN))
+      .thenReturn(paymentRequestMappingResult);
+    when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
       .thenThrow(new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "system error"));
 
     //when
@@ -170,14 +170,14 @@ class PaaSILInviaCarrelloDovutiServiceTest {
     //given
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
-    MappingResult mappingResult = MappingResult.ofDebtPositions(debtPositionDTOList);
+    PaymentRequestMappingResult paymentRequestMappingResult = PaymentRequestMappingResult.ofDebtPositions(debtPositionDTOList);
 
     AtomicReference<String> cartId = new AtomicReference<>();
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaCarrelloDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), argThat(c -> {cartId.set(c); return true;}), eq(TOKEN)))
-      .thenReturn(mappingResult);
-    when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(mappingResult, TOKEN))
+      .thenReturn(paymentRequestMappingResult);
+    when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
       .thenReturn(debtPositionDTOList);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
@@ -197,7 +197,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
     AtomicReference<String> cartId = new AtomicReference<>();
     CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
-    MappingResult mappingResult = MappingResult.ofDebtPositions(debtPositionDTOList);
+    PaymentRequestMappingResult paymentRequestMappingResult = PaymentRequestMappingResult.ofDebtPositions(debtPositionDTOList);
 
     String iuvs = debtPositionDTOList.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())
@@ -209,8 +209,8 @@ class PaaSILInviaCarrelloDovutiServiceTest {
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(paaSILInviaCarrelloDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), argThat(c -> {cartId.set(c); return true;}), eq(TOKEN)))
-      .thenReturn(mappingResult);
-    when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(mappingResult, TOKEN))
+      .thenReturn(paymentRequestMappingResult);
+    when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
       .thenReturn(debtPositionDTOList);
     when(sessionIdMapperMock.mapDebtPositionsToSessionId(debtPositionDTOList)).thenReturn(sessionId);
     when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
