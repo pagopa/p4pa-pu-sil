@@ -324,15 +324,13 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     List<MixedTransferDTO> mixedTransfers = mixedDebtPositionDTO.getTransfers();
     assertEquals(2, mixedTransfers.size());
 
-    MixedTransferDTO mixedTransfer1 = mixedTransfers.get(0);
-    assertNull(mixedTransfer1.getStampHashDocument());
-    assertNull(mixedTransfer1.getStampType());
-    assertNull(mixedTransfer1.getStampProvincialResidence());
-
-    MixedTransferDTO mixedTransfer2 = mixedTransfers.get(1);
-    assertNull(mixedTransfer2.getStampHashDocument());
-    assertNull(mixedTransfer2.getStampType());
-    assertNull(mixedTransfer2.getStampProvincialResidence());
+    mixedTransfers.forEach(mt -> {
+      assertNull(mt.getStampHashDocument());
+      assertNull(mt.getStampType());
+      assertNull(mt.getStampProvincialResidence());
+      TestUtils.checkAllNotNullFields(mt,
+        "stampType", "stampHashDocument", "stampProvincialResidence");
+    });
   }
 }
 

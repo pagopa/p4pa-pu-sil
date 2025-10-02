@@ -16,7 +16,6 @@ import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -79,7 +78,7 @@ class PaaSILInviaDovutiMapperTest {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("XML non conforme"));
@@ -94,7 +93,7 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento("IUV");
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
     assertEquals("L'inserimento dello IUV è deprecato", exception.getDescription());
@@ -112,7 +111,7 @@ class PaaSILInviaDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
     doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
     assertEquals("error", exception.getDescription());
@@ -137,7 +136,7 @@ class PaaSILInviaDovutiMapperTest {
       .validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     if(testCase.equals("6dp")){
       assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, exception.getFault());
@@ -263,26 +262,27 @@ class PaaSILInviaDovutiMapperTest {
     noIbanTransfer.setImportoSingoloVersamento(BigDecimal.TWO);
     noIbanTransfer.setIdentificativoTipoDovuto("NO-IBAN");
     noIbanTransfer.setIdentificativoUnivocoDovuto("IUD-NO-IBAN");
+    noIbanTransfer.setDatiSpecificiRiscossione("9/1234567IM/");
 
-    CtDatiSingoloVersamentoDovuti transfer = new CtDatiSingoloVersamentoDovuti();
-    transfer.setCausaleVersamento("causale NO-IBAN");
-    transfer.setImportoSingoloVersamento(BigDecimal.ONE);
-    transfer.setIdentificativoTipoDovuto("NO-IBAN");
-    transfer.setIdentificativoUnivocoDovuto("IUD-NO-IBAN");
-    transfer.setDatiSpecificiRiscossione("9/1234567IM/");
+    CtDatiSingoloVersamentoDovuti balanceTransfer = new CtDatiSingoloVersamentoDovuti();
+    balanceTransfer.setCausaleVersamento("causale BALANCE");
+    balanceTransfer.setImportoSingoloVersamento(BigDecimal.ONE);
+    balanceTransfer.setIdentificativoTipoDovuto("BALANCE");
+    balanceTransfer.setIdentificativoUnivocoDovuto("IUD-BALANCE");
+    balanceTransfer.setDatiSpecificiRiscossione("9/1234567IM/");
     Bilancio bilancio = podamFactory.manufacturePojo(Bilancio.class);
-    transfer.setBilancio(bilancio);
+    balanceTransfer.setBilancio(bilancio);
     when(jaxbTransformServiceMock.marshalling(bilancio, Bilancio.class)).thenReturn("bilancioString");
 
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(stampTransfer);
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(noIbanTransfer);
-    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(transfer);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(balanceTransfer);
 
 
     DebtPositionTypeOrg debtPositionTypeOrgStamp = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-    DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    DebtPositionTypeOrg debtPositionTypeOrgBalance = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
     DebtPositionTypeOrg debtPositionTypeOrgNoIban = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
     debtPositionTypeOrgNoIban.setIban(null);
     debtPositionTypeOrgNoIban.setPostalIban(null);
@@ -295,8 +295,8 @@ class PaaSILInviaDovutiMapperTest {
 
     doReturn(debtPositionTypeOrgStamp).when(debtPositionTypeServiceMock)
         .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), stampTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
-    doReturn(debtPositionTypeOrg).when(debtPositionTypeServiceMock)
-      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), transfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+    doReturn(debtPositionTypeOrgBalance).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), balanceTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
     doReturn(debtPositionTypeOrgNoIban).when(debtPositionTypeServiceMock)
       .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), noIbanTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
 
@@ -312,21 +312,21 @@ class PaaSILInviaDovutiMapperTest {
 
     List<MixedTransferDTO> mixedTransfers = mixedDebtPositionDTO.getTransfers();
     assertEquals(3, mixedTransfers.size());
-
-    MixedTransferDTO mixedTransferStamp = mixedTransfers.get(0);
-    assertNull(mixedTransferStamp.getIban());
-    assertNull(mixedTransferStamp.getPostalIban());
-    assertNull(mixedTransferStamp.getLegacyPaymentMetadata());
-
-    MixedTransferDTO mixedTransferNoIban = mixedTransfers.get(1);
-    assertNull(mixedTransferNoIban.getStampHashDocument());
-    assertNull(mixedTransferNoIban.getStampType());
-    assertNull(mixedTransferNoIban.getStampProvincialResidence());
-
-    MixedTransferDTO mixedTransfer = mixedTransfers.get(2);
-    assertNull(mixedTransfer.getStampHashDocument());
-    assertNull(mixedTransfer.getStampType());
-    assertNull(mixedTransfer.getStampProvincialResidence());
+    mixedTransfers.forEach(mt -> {
+      String excludedFields = "";
+      if(mt.getIud().contains("STAMP")) {
+        excludedFields += "iban,postalIban,legacyPaymentMetadata";
+        assertNull(mt.getIban());
+        assertNull(mt.getPostalIban());
+        assertNull(mt.getLegacyPaymentMetadata());
+      } else {
+        excludedFields += "stampHashDocument,stampProvincialResidence,stampType";
+        assertNull(mt.getStampHashDocument());
+        assertNull(mt.getStampType());
+        assertNull(mt.getStampProvincialResidence());
+      }
+      TestUtils.checkAllNotNullFields(mt, excludedFields.split(","));
+    });
   }
 }
 
