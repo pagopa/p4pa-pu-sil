@@ -153,13 +153,13 @@
               }
             },
             "url": {
-              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification",
+              "raw": "{{puSilBaseUrl}}/organization/{{orgFiscalCode}}/send-notification",
               "host": [
                 "{{puSilBaseUrl}}"
               ],
               "path": [
                 "organization",
-                "{{organizationId}}",
+                "{{orgFiscalCode}}",
                 "send-notification"
               ]
             }
@@ -212,13 +212,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification/{{sendNotificationId}}",
+              "raw": "{{puSilBaseUrl}}/organization/{{orgFiscalCode}}/send-notification/{{sendNotificationId}}",
               "host": [
                 "{{puSilBaseUrl}}"
               ],
               "path": [
                 "organization",
-                "{{organizationId}}",
+                "{{orgFiscalCode}}",
                 "send-notification",
                 "{{sendNotificationId}}"
               ]
@@ -273,13 +273,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification/{{sendNotificationId}}/legal-facts",
+              "raw": "{{puSilBaseUrl}}/organization/{{orgFiscalCode}}/send-notification/{{sendNotificationId}}/legal-facts",
               "host": [
                 "{{puSilBaseUrl}}"
               ],
               "path": [
                 "organization",
-                "{{organizationId}}",
+                "{{orgFiscalCode}}",
                 "send-notification",
                 "{{sendNotificationId}}",
                 "legal-facts"
@@ -334,13 +334,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{puSilBaseUrl}}/organization/{{organizationId}}/send-notification/{{sendNotificationId}}/legal-facts/{{legalFactId}}",
+              "raw": "{{puSilBaseUrl}}/organization/{{orgFiscalCode}}/send-notification/{{sendNotificationId}}/legal-facts/{{legalFactId}}",
               "host": [
                 "{{puSilBaseUrl}}"
               ],
               "path": [
                 "organization",
-                "{{organizationId}}",
+                "{{orgFiscalCode}}",
                 "send-notification",
                 "{{sendNotificationId}}",
                 "legal-facts",
@@ -382,8 +382,8 @@
       "type": "string"
     },
     {
-      "key": "organizationId",
-      "value": "3",
+      "key": "orgFiscalCode",
+      "value": "99999999982",
       "type": "string"
     },
     {
