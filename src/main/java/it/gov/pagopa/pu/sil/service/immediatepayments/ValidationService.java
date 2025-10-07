@@ -69,9 +69,6 @@ public class ValidationService {
     if (versamento.getImportoSingoloVersamento() == null || BigDecimal.ZERO.compareTo(versamento.getImportoSingoloVersamento()) >= 0) {
       throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido: " + versamento.getImportoSingoloVersamento());
     }
-    if (StringUtils.isBlank(versamento.getDatiSpecificiRiscossione()) || !ValidationUtils.isValidLegacyPaymentMetadata(versamento.getDatiSpecificiRiscossione())) {
-      throw new SilFaultException(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, "Dati specifici riscossione non validi: " + versamento.getDatiSpecificiRiscossione());
-    }
     if (!ValidationUtils.verifyBalanceAmount(versamento.getBilancio(), versamento.getImportoSingoloVersamento())) {
       throw new SilFaultException(SilFaults.PAA_IMPORTO_BILANCIO_NON_VALIDO, "Importo bilancio non valido");
     }
@@ -111,9 +108,6 @@ public class ValidationService {
     }
     if (secondaryTransferData.getImportoSingoloVersamento() == null || BigDecimal.ZERO.compareTo(secondaryTransferData.getImportoSingoloVersamento()) >= 0) {
       throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido: " + secondaryTransferData.getImportoSingoloVersamento());
-    }
-    if (!ValidationUtils.isValidLegacyPaymentMetadataSecondary(secondaryTransferData.getDatiSpecificiRiscossione())) {
-      throw new SilFaultException(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, "Dati specifici riscossione non validi: " + secondaryTransferData.getDatiSpecificiRiscossione());
     }
   }
 
