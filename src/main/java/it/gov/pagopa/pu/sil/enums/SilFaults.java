@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.enums;
 
+import java.util.Arrays;
+
 public enum SilFaults {
 
   PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR"),
@@ -11,7 +13,7 @@ public enum SilFaults {
   PAA_IUD_DUPLICATO("IUD duplicato"),
   PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA("Marca da bollo digitale non valida"),
   PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO("Importo versamento non valido"),
-  PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO("Dati specifici riscossione non validi"),
+  PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO("Dati specifici riscossione non validi", "P4PA_INVALID_TAXONOMY_CATEGORY", "P4PA_INVALID_LEGACY_PAYMENT_METADATA"),
   PAA_IMPORTO_BILANCIO_NON_VALIDO("Importo bilancio non valido"),
   PAA_CAUSALE_NON_PRESENTE("Causale non presente o non valida"),
   PAA_ANAGRAFICA_NON_VALIDA("Anagrafica debitore non valida"),
@@ -48,16 +50,27 @@ public enum SilFaults {
   ;
 
   private final String description;
+  private final String[] nativeFaults;
 
-  private SilFaults(String description) {
+  SilFaults(String description, String... nativeFaults) {
     this.description = description;
+    this.nativeFaults = nativeFaults;
   }
 
   public String description() {
     return this.description;
   }
+  public String[] nativeFaults() { return this.nativeFaults; }
 
   public String code() {
     return this.name();
+  }
+
+  public static SilFaults fromNativeFault2LegacyCode(String nativeFault) {
+    return Arrays.stream(SilFaults.values())
+      .filter(fault -> Arrays.stream(fault.nativeFaults)
+        .anyMatch(nativeFault::contains))
+      .findFirst()
+      .orElseThrow(()-> new IllegalArgumentException("Unexpected value %s".formatted(nativeFault)));
   }
 }
