@@ -2,9 +2,6 @@ package it.gov.pagopa.pu.sil.mapper;
 
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -41,11 +38,7 @@ import static org.mockito.Mockito.when;
 class SecondaryTransferMapperTest {
 
   @Mock
-  TaxonomyService taxonomyServiceMock;
-  @Mock
   JAXBTransformService jaxbTransformServiceMock;
-  @Mock
-  DebtPositionTypeService debtPositionTypeServiceMock;
 
   @InjectMocks
   SecondaryTransferMapper secondaryTransferMapper;
@@ -54,7 +47,7 @@ class SecondaryTransferMapperTest {
 
   @BeforeEach
   void setup() {
-    Mockito.reset(taxonomyServiceMock, jaxbTransformServiceMock, debtPositionTypeServiceMock);
+    Mockito.reset(jaxbTransformServiceMock);
   }
 
   //region: mapToCtDatiVersamentoDovutiEntiSecondari
