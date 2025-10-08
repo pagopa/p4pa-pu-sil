@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractImmediatePaymentsService<I, O> {
+  public static final Pattern VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN = Pattern.compile("^\\[(.*?)\\]\\s*(.*)$");
 
   protected final CheckoutService checkoutService;
   protected final InstantPaymentsFacade instantPaymentsFacade;
@@ -112,7 +113,7 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     if (errorResponse == null) {
       return new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore durante la creazione delle posizioni debitorie");
     }
-    Matcher matcher = Pattern.compile("\\[(.*?)\\]\\s*(.*)").matcher(errorResponse.getMessage());
+    Matcher matcher = VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN.matcher(errorResponse.getMessage());
     if (matcher.matches()) {
       return new SilFaultException(
         SilFaults.fromNativeFault2LegacyCode(matcher.group(1)),
