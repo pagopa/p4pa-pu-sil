@@ -17,7 +17,7 @@ import org.springframework.util.CollectionUtils;
 import java.math.BigDecimal;
 
 import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
-
+//TODO: P4ADEV-3975 remove redundant validation
 @Service
 public class ValidationService {
 
