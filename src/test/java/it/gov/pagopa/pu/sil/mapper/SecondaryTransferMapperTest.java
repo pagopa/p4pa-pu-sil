@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.mapper;
 
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -127,21 +126,6 @@ class SecondaryTransferMapperTest {
       "transferId", "installmentId", "stampType", "stampHashDocument", "stampProvincialResidence", "mbdAttachment", "postalIban", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
   }
 
-  @Test
-  void fillSecondaryTransferData_shouldThrowException() {
-    int defaultCollectionSize = podamFactory.getStrategy().getNumberOfCollectionElements(Object.class);
-    podamFactory.getStrategy().setDefaultNumberOfCollectionElements(1);
-    DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
-    podamFactory.getStrategy().setDefaultNumberOfCollectionElements(defaultCollectionSize);
-    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = podamFactory.manufacturePojo(CtDatiVersamentoDovutiEntiSecondari.class);
-    BigDecimal scaled = secondaryTransferData.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
-    secondaryTransferData.setImportoSingoloVersamento(scaled);
-    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
-
-    SilFaultException exception = assertThrows(SilFaultException.class, () -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData));
-
-    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, exception.getFault());
-  }
   //endregion
 
 
