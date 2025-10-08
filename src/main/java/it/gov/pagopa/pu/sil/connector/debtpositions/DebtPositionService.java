@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -68,4 +69,14 @@ public interface DebtPositionService {
   List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIud(Long organizationId, String iud, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
 
   DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken);
+
+  /**
+   * Retrieves a list of DebtPositionDTOs by CtIdentificativoUnivocoPersonaFG and organization ID.
+   *
+   * @param identificativoUnivocoPersonaFG the CtIdentificativoUnivocoPersonaFG object
+   * @param organizationId the ID of the organization
+   * @param accessToken the access token for authentication
+   * @return a list of DebtPositionDTOs matching the criteria
+   */
+  List<DebtPositionDTO> getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(CtIdentificativoUnivocoPersonaFG identificativoUnivocoPersonaFG, Long organizationId, String accessToken);
 }

@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
@@ -57,5 +58,10 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   @Override
   public DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken) {
     return client.getDebtPositionByInstallmentId(installmentId, accessToken);
+  }
+
+  @Override
+  public List<DebtPositionDTO> getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(CtIdentificativoUnivocoPersonaFG identificativoUnivocoPersonaFG, Long organizationId, String accessToken) {
+    return client.getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(identificativoUnivocoPersonaFG, organizationId, accessToken);
   }
 }

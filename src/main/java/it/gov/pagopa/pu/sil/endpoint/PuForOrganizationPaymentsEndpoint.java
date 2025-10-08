@@ -33,6 +33,7 @@ import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessin
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPosizioniAperteService;
 import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -87,6 +88,7 @@ public class PuForOrganizationPaymentsEndpoint {
   private final PaaSILPrenotaExportFlussoIncrementaleConRicevutaService paaSILPrenotaExportFlussoIncrementaleConRicevutaService;
 
   private final ExportFileProcessingStatusService exportFileProcessingStatusService;
+  private final PaaSILChiediPosizioniAperteService paaSILChiediPosizioniAperteService;
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStatoExportFlusso")
   @ResponsePayload
@@ -430,13 +432,25 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILChiediPosizioniAperteRisposta paaSILChiediPosizioniAperte(
     @RequestPayload PaaSILChiediPosizioniAperte request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
-      new PaaSILChiediPosizioniAperteRisposta(),
-      SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILChiediPosizioniAperte non è una operazione supportata",
-      FaultBean::new,
-      PaaSILChiediPosizioniAperteRisposta::setFault
-    );
+
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+
+    PaaSILChiediPosizioniAperteRisposta response;
+
+    try {
+      response = paaSILChiediPosizioniAperteService.processRequest(request, userInfo, accessToken);
+    } catch(Exception e) {
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILChiediPosizioniAperteRisposta(),
+        PaaSILChiediPosizioniAperteRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ).apply(e);
+    }
+
+    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStoricoPagamenti")
