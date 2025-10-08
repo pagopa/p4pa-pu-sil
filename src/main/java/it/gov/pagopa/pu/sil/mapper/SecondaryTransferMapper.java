@@ -16,10 +16,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -48,7 +45,6 @@ public class SecondaryTransferMapper {
   }
 
   public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData) {
-
     long secondaryAmount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(secondaryTransferData.getImportoSingoloVersamento());
     TransferDTO secondaryTransfer = TransferDTO.builder()
       .transferIndex(2)
@@ -62,13 +58,15 @@ public class SecondaryTransferMapper {
 
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
     InstallmentDTO installment = paymentOption.getInstallments().getFirst();
-    if (installment.getTransfers() != null) {
-      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI,
-        "Non è possibile inserire pagamenti multibeneficiario con più di un trasferimento secondario");
+
+    if (installment.getTransfers() == null) {
+      installment.setTransfers(new ArrayList<>());
     }
-    installment.setTransfers(List.of(secondaryTransfer));
-    installment.setAmountCents(installment.getAmountCents() + secondaryAmount);
-    paymentOption.setTotalAmountCents(installment.getAmountCents());
+    installment.getTransfers().add(secondaryTransfer);
+
+    long updatedAmount = installment.getAmountCents() + secondaryAmount;
+    installment.setAmountCents(updatedAmount);
+    paymentOption.setTotalAmountCents(updatedAmount);
   }
 
   public void checkAndFillSupportedTransfersConfigurationForModify(InstallmentDTO installmentOnDb, InstallmentDTO installmentToSync, boolean legacyMode) {
