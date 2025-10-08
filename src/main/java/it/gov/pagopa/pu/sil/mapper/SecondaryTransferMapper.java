@@ -54,12 +54,7 @@ public class SecondaryTransferMapper {
     return Optional.empty();
   }
 
-  public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData,
-                                         String debtPositionTypeOrgCode, String accessToken) {
-
-    String category = retrieveAndValidateSecondaryTransferCategory(
-      secondaryTransferData.getDatiSpecificiRiscossione(), debtPosition.getOrganizationId(),
-      debtPositionTypeOrgCode, accessToken);
+  public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData) {
 
     long secondaryAmount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(secondaryTransferData.getImportoSingoloVersamento());
     TransferDTO secondaryTransfer = TransferDTO.builder()
@@ -69,7 +64,7 @@ public class SecondaryTransferMapper {
       .amountCents(secondaryAmount)
       .remittanceInformation(secondaryTransferData.getCausaleVersamento())
       .iban(secondaryTransferData.getIbanAccreditoBeneficiario())
-      .category(category)
+      .category(ValidationUtils.getCategory(secondaryTransferData.getDatiSpecificiRiscossione()))
       .build();
 
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
@@ -169,6 +164,6 @@ public class SecondaryTransferMapper {
       throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico dei dati specifici riscossione dell'Ente Secondario non presente in archivio [" + category + "]");
     }
 
-    return category;
+    return ValidationUtils.getCategory(legacyPaymentMetadata);
   }
 }

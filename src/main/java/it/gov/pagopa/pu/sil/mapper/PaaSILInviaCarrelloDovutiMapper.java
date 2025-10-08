@@ -71,17 +71,16 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
         }
       });
 
-    handleSecondaryTransfer(debtPositionList, dovutiList, request.getListaDovutiEntiSecondari(), accessToken);
+    handleSecondaryTransfer(debtPositionList, request.getListaDovutiEntiSecondari());
 
     return new PaymentRequestMappingResult(debtPositionList, mixedDebtPositionList);
   }
 
-  private void handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList, List<Dovuti> dovutiList,
-                                       ListaDovutiEntiSecondari dovutiSecondariList, String accessToken) {
+  private void handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList,
+                                       ListaDovutiEntiSecondari dovutiSecondariList) {
     secondaryTransferMapper.mapToCtDatiVersamentoDovutiEntiSecondari(dovutiSecondariList).ifPresent(secondaryTransferData -> {
       validationService.validateSecondaryDebtPositionData(secondaryTransferData, debtPositionList.size());
-      secondaryTransferMapper.fillSecondaryTransferData(debtPositionList.getFirst(), secondaryTransferData,
-        dovutiList.getFirst().getDatiVersamento().getDatiSingoloVersamentos().getFirst().getIdentificativoTipoDovuto(), accessToken);
+      secondaryTransferMapper.fillSecondaryTransferData(debtPositionList.getFirst(), secondaryTransferData);
     });
   }
 }
