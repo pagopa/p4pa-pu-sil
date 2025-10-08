@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractImmediatePaymentsService<I, O> {
-  private static final Pattern VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN = Pattern.compile("^\\[([^\\]]*)\\](.*)$");
+  private static final Pattern VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN = Pattern.compile("^\\[([^\\]]*)\\]\\s*(.*)$");
 
   protected final CheckoutService checkoutService;
   protected final InstantPaymentsFacade instantPaymentsFacade;
@@ -117,7 +117,7 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     if (matcher.matches()) {
       return new SilFaultException(
         SilFaults.fromNativeFault2LegacyCode(matcher.group(1)),
-        matcher.group(2)
+        matcher.group(2).trim()
       );
     }
     return new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, errorResponse.getMessage());

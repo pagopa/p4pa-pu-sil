@@ -125,4 +125,12 @@ public class ValidationUtils {
   public static boolean verifyExclusivePresence(Object a, Object b) {
    return (a == null) ^ (b == null);
   }
+
+  public static String getCategory(String legacyPaymentMetadata) {
+    String category = getTransferCategoryFromLegacyPaymentMetadataSecondary(legacyPaymentMetadata);
+    if(category == null) {
+      return null;
+    }
+    return category.replace("9/", "").replace("/", "");
+  }
 }

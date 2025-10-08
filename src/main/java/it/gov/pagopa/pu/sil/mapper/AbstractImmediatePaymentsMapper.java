@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -29,7 +28,6 @@ abstract class AbstractImmediatePaymentsMapper {
   protected final DebtPositionTypeService debtPositionTypeService;
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
-  protected final TaxonomyService taxonomyService;
 
   protected DebtPositionDTO dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization org, String accessToken) {
     if (!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
@@ -65,6 +63,30 @@ abstract class AbstractImmediatePaymentsMapper {
       sourceFlowName = Constants.SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI + cartId;
     }
 
+    TransferDTO transferDTO = TransferDTO.builder()
+      .transferIndex(1)
+      .orgFiscalCode(org.getOrgFiscalCode())
+      .orgName(org.getOrgName())
+      .amountCents(amount)
+      .remittanceInformation(versamento.getCausaleVersamento())
+      .category(ValidationUtils.getCategory(versamento.getDatiSpecificiRiscossione()))
+      .build();
+
+    Optional.ofNullable(versamento.getDatiMarcaBolloDigitale()).ifPresentOrElse(
+      stamp -> transferDTO
+        .stampHashDocument(stamp.getHashDocumento())
+        .stampProvincialResidence(stamp.getProvinciaResidenza())
+        .stampType(stamp.getTipoBollo()),
+      () -> {
+        if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
+          transferDTO.iban(org.getIban())
+            .postalIban(org.getPostalIban());
+        } else {
+          transferDTO.iban(debtPositionTypeOrg.getIban())
+            .postalIban(debtPositionTypeOrg.getPostalIban());
+        }
+      });
+
     InstallmentDTO installment = InstallmentDTO.builder()
       .status(InstallmentStatus.UNPAID)
       .iud(versamento.getIdentificativoUnivocoDovuto())
@@ -76,42 +98,8 @@ abstract class AbstractImmediatePaymentsMapper {
       .remittanceInformation(versamento.getCausaleVersamento())
       .sourceFlowName(sourceFlowName)
       .generateNotice(false)
+      .transfers(List.of(transferDTO))
       .build();
-
-    // determine if a first transfer must be pushed
-    String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(versamento.getDatiSpecificiRiscossione());
-    if (category != null || versamento.getDatiMarcaBolloDigitale() != null) {
-      if (category == null || taxonomyService.getTaxonomyByTaxonomyCode(category, accessToken).isEmpty()) {
-        DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
-        category = debtPositionType.getTaxonomyCode().replace("9/", "").replace("/", "");
-      }
-
-      TransferDTO transferDTO = TransferDTO.builder()
-        .transferIndex(1)
-        .orgFiscalCode(org.getOrgFiscalCode())
-        .orgName(org.getOrgName())
-        .amountCents(installment.getAmountCents())
-        .remittanceInformation(versamento.getCausaleVersamento())
-        .category(category)
-        .build();
-
-      Optional.ofNullable(versamento.getDatiMarcaBolloDigitale()).ifPresentOrElse(
-        stamp -> transferDTO
-          .stampHashDocument(stamp.getHashDocumento())
-          .stampProvincialResidence(stamp.getProvinciaResidenza())
-          .stampType(stamp.getTipoBollo()),
-        () -> {
-          if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
-            transferDTO.iban(org.getIban())
-              .postalIban(org.getPostalIban());
-          } else {
-            transferDTO.iban(debtPositionTypeOrg.getIban())
-              .postalIban(debtPositionTypeOrg.getPostalIban());
-          }
-        });
-
-      installment.setTransfers(List.of(transferDTO));
-    }
 
     PaymentOptionDTO paymentOption = PaymentOptionDTO.builder()
       .status(PaymentOptionStatus.UNPAID)
