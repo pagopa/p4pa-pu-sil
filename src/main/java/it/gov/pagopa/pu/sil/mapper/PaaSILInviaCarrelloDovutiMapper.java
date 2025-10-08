@@ -62,15 +62,16 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
 
     List<DebtPositionDTO> debtPositionList = new ArrayList<>();
     List<MixedDebtPositionDTO> mixedDebtPositionList = new ArrayList<>();
-    dovutiList.stream()
-      .forEach(d -> {
-        if(d.getDatiVersamento().getDatiSingoloVersamentos().size() > 1) {
-          mixedDebtPositionList.add(mixedDebtPositionDTOMapper(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti, cartId, d, organization, accessToken));
-        } else {
-          debtPositionList.add(dovutiMapper(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti, cartId, d, organization, accessToken));
-        }
-      });
 
+    for (int i = 0; i < dovutiList.size(); i++) {
+      Dovuti d = dovutiList.get(i);
+      String indexedCartId = cartId + "-" + (i + 1);
+      if (d.getDatiVersamento().getDatiSingoloVersamentos().size() > 1) {
+        mixedDebtPositionList.add(mixedDebtPositionDTOMapper(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti, indexedCartId, d, organization, accessToken));
+      } else {
+        debtPositionList.add(dovutiMapper(RegistryEventType.PTDP_paaSILInviaCarrelloDovuti, indexedCartId, d, organization, accessToken));
+      }
+    }
     handleSecondaryTransfer(debtPositionList, request.getListaDovutiEntiSecondari());
 
     return new PaymentRequestMappingResult(debtPositionList, mixedDebtPositionList);
