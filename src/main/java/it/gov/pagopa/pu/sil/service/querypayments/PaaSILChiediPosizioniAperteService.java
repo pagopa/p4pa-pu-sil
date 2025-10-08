@@ -36,7 +36,8 @@ public class PaaSILChiediPosizioniAperteService {
   public PaaSILChiediPosizioniAperteRisposta processRequest(
     PaaSILChiediPosizioniAperte request,
     UserInfo userInfo,
-    String accessToken
+    String accessToken,
+    String orgIpaCode
   ) {
     PaaSILChiediPosizioniAperteRisposta response = new PaaSILChiediPosizioniAperteRisposta();
     AuthorizationService.validateAdminRole(request.getCodIpaEnte(), userInfo);

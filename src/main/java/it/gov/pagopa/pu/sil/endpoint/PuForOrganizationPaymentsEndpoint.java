@@ -435,11 +435,15 @@ public class PuForOrganizationPaymentsEndpoint {
 
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILChiediPosizioniAperte");
 
     PaaSILChiediPosizioniAperteRisposta response;
 
     try {
-      response = paaSILChiediPosizioniAperteService.processRequest(request, userInfo, accessToken);
+      response = paaSILChiediPosizioniAperteService.processRequest(request, userInfo, accessToken, orgIpaCode);
     } catch(Exception e) {
       response = FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediPosizioniAperteRisposta(),
