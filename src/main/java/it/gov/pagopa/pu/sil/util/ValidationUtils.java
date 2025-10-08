@@ -129,7 +129,7 @@ public class ValidationUtils {
   public static String getCategory(String legacyPaymentMetadata) {
     String category = getTransferCategoryFromLegacyPaymentMetadataSecondary(legacyPaymentMetadata);
     if(category == null) {
-      return null;
+      return "";
     }
     return category.replace("9/", "").replace("/", "");
   }

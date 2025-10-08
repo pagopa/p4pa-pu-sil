@@ -158,7 +158,6 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-    DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
     if (testCase.equals("stamp")) {
       CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
       datiMarcaBolloDigitale.setTipoBollo("01");
@@ -171,6 +170,8 @@ class PaaSILInviaDovutiMapperTest {
       datiSpecificiRiscossione = "9/1234888/CUSTOM_INVALID_CATEGORY";
       debtPositionTypeOrg.setIban(null);
       debtPositionTypeOrg.setPostalIban(null);
+      org.setIban("IT60X0542811101000000123456");
+      org.setPostalIban("IT60X0542811101000000654321");
     }
     versamento.setDatiSpecificiRiscossione(datiSpecificiRiscossione);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
@@ -179,11 +180,6 @@ class PaaSILInviaDovutiMapperTest {
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
-
-    if(testCase.equals("stamp") || testCase.equals("customInvalidCategory")) {
-      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), ACCESS_TOKEN))
-        .thenReturn(debtPositionType);
-    }
 
     //when
     PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
