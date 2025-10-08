@@ -30,6 +30,11 @@ public class InstantPaymentService extends AbstractImmediatePaymentsService<Inst
   }
 
   @Override
+  protected List<DebtPositionDTO> createDebtPositionsFromMapping(PaymentRequestMappingResult paymentRequestMappingResult, String accessToken) {
+    return instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
+  }
+
+  @Override
   protected PaymentRequestMappingResult mapRequestToDebtPositions(InstantPaymentRequest request, Organization org, String cartId, String accessToken) {
     List<DebtPositionDTO> dp = instantPaymentMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
     return PaymentRequestMappingResult.ofDebtPositions(dp);

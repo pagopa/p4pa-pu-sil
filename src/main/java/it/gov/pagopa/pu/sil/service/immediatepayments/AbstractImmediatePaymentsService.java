@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
@@ -19,14 +20,18 @@ import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractImmediatePaymentsService<I, O> {
+  private static final Pattern VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN = Pattern.compile("^\\[([^\\]]*)\\](.*)$");
 
   protected final CheckoutService checkoutService;
   protected final InstantPaymentsFacade instantPaymentsFacade;
@@ -46,6 +51,7 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     this.sessionIdMapper = sessionIdMapper;
   }
 
+  protected abstract List<DebtPositionDTO> createDebtPositionsFromMapping(PaymentRequestMappingResult paymentRequestMappingResult, String accessToken);
   // NOTE: changed to return a PaymentRequestMappingResult which may contain either plain debt positions or mixed debt positions
   protected abstract PaymentRequestMappingResult mapRequestToDebtPositions(I request, Organization org, String cartId, String accessToken);
 
@@ -78,7 +84,7 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     PaymentRequestMappingResult paymentRequestMappingResult = mapRequestToDebtPositions(request, organization, cartId, accessToken);
 
     //create debt positions using the facade which decides between mixed and plain
-    List<DebtPositionDTO> debtPositions = instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
+    List<DebtPositionDTO> debtPositions = createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
 
     String iuvs = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())
@@ -100,5 +106,20 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
 
     O response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
     return Triple.of(response, iuvs, RegistryOutcome.OK);
+  }
+
+  protected SilFaultException buildException(HttpServerErrorException e) {
+    DebtPositionErrorDTO errorResponse = e.getResponseBodyAs(DebtPositionErrorDTO.class);
+    if (errorResponse == null) {
+      return new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore durante la creazione delle posizioni debitorie");
+    }
+    Matcher matcher = VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN.matcher(errorResponse.getMessage());
+    if (matcher.matches()) {
+      return new SilFaultException(
+        SilFaults.fromNativeFault2LegacyCode(matcher.group(1)),
+        matcher.group(2)
+      );
+    }
+    return new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, errorResponse.getMessage());
   }
 }

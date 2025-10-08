@@ -47,7 +47,7 @@ abstract class AbstractImmediatePaymentsMapper {
     // get debt position type org and validate
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
-
+    //TODO: P4ADEV-3975 remove redundant validation
     validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, versamento.getIdentificativoTipoDovuto());
     PersonValidationUtils.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
     validationService.validateStamp(versamento);
@@ -175,7 +175,7 @@ abstract class AbstractImmediatePaymentsMapper {
         });
       mixedTransfers.add(mixedTransferDTO);
     }
-
+    //TODO: P4ADEV-3958 move remittanceInformation
     return MixedDebtPositionDTO.builder()
       .organizationId(org.getOrganizationId())
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)

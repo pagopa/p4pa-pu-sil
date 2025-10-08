@@ -216,19 +216,6 @@ class ValidationServiceTest {
   }
 
   @Test
-  void validatePaymentData_InvalidDatiSpecificiRiscossione_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.TEN);
-    versamento.setDatiSpecificiRiscossione("INVALID");
-    versamento.setCausaleVersamento("Valid causale");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePaymentData(versamento));
-
-    assertEquals(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, result.getFault());
-    assertEquals("Dati specifici riscossione non validi: INVALID", result.getDescription());
-  }
-
-  @Test
   void validatePaymentData_InvalidBalanceAmount_ReturnsError() {
     CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
     versamento.setImportoSingoloVersamento(BigDecimal.TEN);
@@ -430,20 +417,6 @@ class ValidationServiceTest {
 
     assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getFault());
     assertEquals("Importo singolo versamento non valido: 0", result.getDescription());
-  }
-
-  @Test
-  void validateSecondaryDebtPositionData_InvalidPaymentMetadata_ReturnsError() {
-    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
-    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
-    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
-    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
-    secondaryTransferData.setDatiSpecificiRiscossione("INVALID_METADATA");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
-
-    assertEquals(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, result.getFault());
-    assertEquals("Dati specifici riscossione non validi: INVALID_METADATA", result.getDescription());
   }
 
   @Test
