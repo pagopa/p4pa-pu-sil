@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.MixedDebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -32,9 +31,8 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
                                          DebtPositionTypeService debtPositionTypeService,
                                          PersonMapper personMapper,
                                          ValidationService validationService,
-                                         SecondaryTransferMapper secondaryTransferMapper,
-                                         TaxonomyService taxonomyService) {
-    super(jaxbTransformService, debtPositionTypeService, validationService, personMapper, taxonomyService);
+                                         SecondaryTransferMapper secondaryTransferMapper) {
+    super(jaxbTransformService, debtPositionTypeService, validationService, personMapper);
     this.secondaryTransferMapper = secondaryTransferMapper;
   }
 
@@ -73,17 +71,16 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
         }
       });
 
-    handleSecondaryTransfer(debtPositionList, dovutiList, request.getListaDovutiEntiSecondari(), accessToken);
+    handleSecondaryTransfer(debtPositionList, request.getListaDovutiEntiSecondari());
 
     return new PaymentRequestMappingResult(debtPositionList, mixedDebtPositionList);
   }
 
-  private void handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList, List<Dovuti> dovutiList,
-                                       ListaDovutiEntiSecondari dovutiSecondariList, String accessToken) {
+  private void handleSecondaryTransfer(List<DebtPositionDTO> debtPositionList,
+                                       ListaDovutiEntiSecondari dovutiSecondariList) {
     secondaryTransferMapper.mapToCtDatiVersamentoDovutiEntiSecondari(dovutiSecondariList).ifPresent(secondaryTransferData -> {
       validationService.validateSecondaryDebtPositionData(secondaryTransferData, debtPositionList.size());
-      secondaryTransferMapper.fillSecondaryTransferData(debtPositionList.getFirst(), secondaryTransferData,
-        dovutiList.getFirst().getDatiVersamento().getDatiSingoloVersamentos().getFirst().getIdentificativoTipoDovuto(), accessToken);
+      secondaryTransferMapper.fillSecondaryTransferData(debtPositionList.getFirst(), secondaryTransferData);
     });
   }
 }

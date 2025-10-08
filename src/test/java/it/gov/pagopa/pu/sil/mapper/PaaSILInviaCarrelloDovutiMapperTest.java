@@ -231,7 +231,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
           .build()
       ));
       return null;
-    }).when(secondaryTransferMapperMock).fillSecondaryTransferData(any(), any(), any(), eq(ACCESS_TOKEN));
+    }).when(secondaryTransferMapperMock).fillSecondaryTransferData(any(), any());
 
     //when
     PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);

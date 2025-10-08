@@ -4,9 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -28,7 +26,6 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,9 +47,6 @@ class PaaSILInviaDovutiMapperTest {
 
   @Mock
   private ValidationService validationServiceMock;
-
-  @Mock
-  private TaxonomyService taxonomyServiceMock;
 
   UserInfo userInfo;
   Organization org;
@@ -148,7 +142,7 @@ class PaaSILInviaDovutiMapperTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"happyCase", "stamp", "customValidCategory", "customInvalidCategory"})
+  @ValueSource(strings = {"stamp", "customValidCategory", "customInvalidCategory"})
   void mapRequestToDebtPositionsOrFault_ValidFlow_ReturnsDebtPositions(String testCase) {
     //given
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
@@ -164,7 +158,6 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-    DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
     if (testCase.equals("stamp")) {
       CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
       datiMarcaBolloDigitale.setTipoBollo("01");
@@ -174,9 +167,11 @@ class PaaSILInviaDovutiMapperTest {
     } else if(testCase.equals("customValidCategory")) {
       datiSpecificiRiscossione = "9/1234567IM/CUSTOM_VALID_CATEGORY";
     } else if(testCase.equals("customInvalidCategory")) {
-      datiSpecificiRiscossione = "9/1234888IM/CUSTOM_INVALID_CATEGORY";
+      datiSpecificiRiscossione = "9/1234888/CUSTOM_INVALID_CATEGORY";
       debtPositionTypeOrg.setIban(null);
       debtPositionTypeOrg.setPostalIban(null);
+      org.setIban("IT60X0542811101000000123456");
+      org.setPostalIban("IT60X0542811101000000654321");
     }
     versamento.setDatiSpecificiRiscossione(datiSpecificiRiscossione);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
@@ -185,16 +180,6 @@ class PaaSILInviaDovutiMapperTest {
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
-    Taxonomy taxonomy = podamFactory.manufacturePojo(Taxonomy.class);
-    if(testCase.equals("customValidCategory")) {
-      when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234567IM", ACCESS_TOKEN)).thenReturn(Optional.of(taxonomy));
-    } else if(testCase.equals("customInvalidCategory")) {
-      when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234888IM", ACCESS_TOKEN)).thenReturn(Optional.empty());
-    }
-    if(testCase.equals("stamp") || testCase.equals("customInvalidCategory")) {
-      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), ACCESS_TOKEN))
-        .thenReturn(debtPositionType);
-    }
 
     //when
     PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
@@ -214,9 +199,6 @@ class PaaSILInviaDovutiMapperTest {
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
             "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
             "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-          if (testCase.equals("happyCase")) {
-            assertNull(i.getTransfers());
-          } else {
             assertNotNull(i.getTransfers());
             assertEquals(1, i.getTransfers().size());
             TransferDTO transfer = i.getTransfers().getFirst();
@@ -233,7 +215,6 @@ class PaaSILInviaDovutiMapperTest {
               assertNull(transfer.getStampProvincialResidence());
             }
             TestUtils.checkAllNotNullFields(transfer, excludedFields.split(","));
-          }
         });
       });
     });

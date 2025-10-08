@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -16,7 +13,6 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.DovutiEntiSecondari;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -29,10 +25,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class SecondaryTransferMapper {
-
-  private final TaxonomyService taxonomyService;
   private final JAXBTransformService jaxbTransformService;
-  private final DebtPositionTypeService debtPositionTypeService;
 
   public Optional<CtDatiVersamentoDovutiEntiSecondari> mapToCtDatiVersamentoDovutiEntiSecondari(ListaDovutiEntiSecondari dovutiSecondariList) {
     //unmarshall "dovuti secondari" (if present)
@@ -54,12 +47,7 @@ public class SecondaryTransferMapper {
     return Optional.empty();
   }
 
-  public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData,
-                                         String debtPositionTypeOrgCode, String accessToken) {
-
-    String category = retrieveAndValidateSecondaryTransferCategory(
-      secondaryTransferData.getDatiSpecificiRiscossione(), debtPosition.getOrganizationId(),
-      debtPositionTypeOrgCode, accessToken);
+  public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData) {
 
     long secondaryAmount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(secondaryTransferData.getImportoSingoloVersamento());
     TransferDTO secondaryTransfer = TransferDTO.builder()
@@ -69,7 +57,7 @@ public class SecondaryTransferMapper {
       .amountCents(secondaryAmount)
       .remittanceInformation(secondaryTransferData.getCausaleVersamento())
       .iban(secondaryTransferData.getIbanAccreditoBeneficiario())
-      .category(category)
+      .category(ValidationUtils.getCategory(secondaryTransferData.getDatiSpecificiRiscossione()))
       .build();
 
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
@@ -150,25 +138,5 @@ public class SecondaryTransferMapper {
       }
     });
 
-  }
-
-  private String retrieveAndValidateSecondaryTransferCategory(String legacyPaymentMetadata, Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
-    String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(legacyPaymentMetadata);
-    if (category == null) {
-      // Retrieve the category from the DebtPositionTypeOrg using the debtPositionTypeOrgId
-      DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
-        organizationId, debtPositionTypeOrgCode, accessToken);
-      DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
-      category = debtPositionType.getTaxonomyCode();
-    }
-    if (StringUtils.isBlank(category)) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico non presente o non valido per l'ente secondario: " + category);
-    }
-    Optional<Taxonomy> taxonomy = taxonomyService.getTaxonomyByTaxonomyCode(category, accessToken);
-    if (taxonomy.isEmpty()) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "Codice tassonomico dei dati specifici riscossione dell'Ente Secondario non presente in archivio [" + category + "]");
-    }
-
-    return category;
   }
 }
