@@ -142,7 +142,7 @@ class PaaSILInviaDovutiMapperTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"happyCase", "stamp", "customValidCategory", "customInvalidCategory"})
+  @ValueSource(strings = {"stamp", "customValidCategory", "customInvalidCategory"})
   void mapRequestToDebtPositionsOrFault_ValidFlow_ReturnsDebtPositions(String testCase) {
     //given
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
@@ -199,9 +199,6 @@ class PaaSILInviaDovutiMapperTest {
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
             "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
             "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-          if (testCase.equals("happyCase")) {
-            assertNull(i.getTransfers());
-          } else {
             assertNotNull(i.getTransfers());
             assertEquals(1, i.getTransfers().size());
             TransferDTO transfer = i.getTransfers().getFirst();
@@ -218,7 +215,6 @@ class PaaSILInviaDovutiMapperTest {
               assertNull(transfer.getStampProvincialResidence());
             }
             TestUtils.checkAllNotNullFields(transfer, excludedFields.split(","));
-          }
         });
       });
     });

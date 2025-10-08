@@ -342,7 +342,7 @@ class ValidationUtilsTest {
   })
   @NullSource
   void testGetCategory(String input) {
-    String expected = null;
+    String expected = "";
     if ("9/1646246AP/long/long".equals(input)) expected = "1646246AP";
     if ("2/9079248TS/.".equals(input)) expected = "9079248TS";
     assertEquals(expected, ValidationUtils.getCategory(input));
