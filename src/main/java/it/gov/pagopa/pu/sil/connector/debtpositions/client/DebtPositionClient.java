@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
-import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -71,8 +70,17 @@ public class DebtPositionClient {
     }
   }
 
-  public List<DebtPositionDTO> getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(CtIdentificativoUnivocoPersonaFG identificativoUnivocoPersonaFG, Long organizationId, String accessToken) {
-    // @TODO: when PR for debt position is merged I can replace this
-    return List.of();
+  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(String debtorFiscalCode, PersonEntityType debtorEntityType, Long organizationId, String accessToken) {
+    return debtPositionsApisHolder
+      .getDebtPositionApi(accessToken)
+      .getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        debtorFiscalCode,
+        debtorEntityType,
+        List.of(InstallmentStatus.UNPAID),
+        null,
+        organizationId,
+        null,
+        null
+      );
   }
 }

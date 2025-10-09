@@ -78,5 +78,5 @@ public interface DebtPositionService {
    * @param accessToken the access token for authentication
    * @return a list of DebtPositionDTOs matching the criteria
    */
-  List<DebtPositionDTO> getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(CtIdentificativoUnivocoPersonaFG identificativoUnivocoPersonaFG, Long organizationId, String accessToken);
+  List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(String debtorFiscalCode, PersonEntityType debtorEntityType, Long organizationId, String accessToken);
 }

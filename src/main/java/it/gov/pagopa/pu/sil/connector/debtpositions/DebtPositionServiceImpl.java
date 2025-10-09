@@ -61,7 +61,8 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   }
 
   @Override
-  public List<DebtPositionDTO> getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(CtIdentificativoUnivocoPersonaFG identificativoUnivocoPersonaFG, Long organizationId, String accessToken) {
-    return client.getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(identificativoUnivocoPersonaFG, organizationId, accessToken);
+  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType
+    (String debtorFiscalCode, PersonEntityType debtorEntityType, Long organizationId, String accessToken) {
+    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, accessToken);
   }
 }
