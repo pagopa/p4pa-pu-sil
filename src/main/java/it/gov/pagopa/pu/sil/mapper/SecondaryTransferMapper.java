@@ -59,10 +59,7 @@ public class SecondaryTransferMapper {
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();
     InstallmentDTO installment = paymentOption.getInstallments().getFirst();
 
-    if (installment.getTransfers() == null) {
-      installment.setTransfers(new ArrayList<>());
-    }
-    installment.getTransfers().add(secondaryTransfer);
+    installment.addTransfersItem(secondaryTransfer);
 
     long updatedAmount = installment.getAmountCents() + secondaryAmount;
     installment.setAmountCents(updatedAmount);
