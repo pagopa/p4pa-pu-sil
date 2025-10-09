@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.dto.generated.InstantPaymentRequest;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentDTO;
 import it.gov.pagopa.pu.sil.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,7 +34,7 @@ class InstantPaymentMapperTest {
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @Test
-  void testMapRequestToDebtPositions() {
+  void whenMapRequestToDebtPositionsThenOk() {
 
     // Given
     InstantPaymentRequest request = podamFactory.manufacturePojo(InstantPaymentRequest.class);
@@ -52,7 +53,7 @@ class InstantPaymentMapperTest {
     when(transferMapperMock.mapToDebtPositionTransferDTO(transferDTO))
       .thenReturn(podamFactory.manufacturePojo(it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO.class));
     // When
-    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org,"CART_ID", accessToken);
+    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org, "CART_ID", accessToken);
 
     // Then
     assertNotNull(result);
@@ -90,13 +91,33 @@ class InstantPaymentMapperTest {
           "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "notificationDate", "ingestionFlowFileId",
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
           "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "legacyPaymentMetadata");
-        if(i.getTransfers()!=null) {
-          i.getTransfers().forEach(t -> {
+        if (i.getTransfers() != null) {
+          i.getTransfers().forEach(t ->
             TestUtils.checkNotNullFields(t, "transferId", "installmentId",
-              "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-          });
+              "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId"));
         }
       });
     });
+  }
+
+  @Test
+  void givenNotExistentDebtPositionTypeOrgWhenMapRequestToDebtPositionsThenThrowException() {
+    // Given
+    InstantPaymentRequest request = podamFactory.manufacturePojo(InstantPaymentRequest.class);
+    PaymentDTO paymentDTO = podamFactory.manufacturePojo(PaymentDTO.class);
+    TransferDTO transferDTO = podamFactory.manufacturePojo(TransferDTO.class);
+    paymentDTO.setTransfers(List.of(transferDTO));
+    request.setPayments(List.of(paymentDTO));
+    Organization org = podamFactory.manufacturePojo(Organization.class);
+    org.setIpaCode("ORG_IPA");
+    org.setStatus(OrganizationStatus.ACTIVE);
+    String accessToken = "accessToken";
+
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
+      org.getOrganizationId(), paymentDTO.getDebtPositionTypeOrgCode(), accessToken))
+      .thenReturn(null);
+
+    // When
+    Assertions.assertThrows(IllegalArgumentException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", accessToken));
   }
 }

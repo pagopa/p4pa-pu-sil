@@ -10,6 +10,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -211,19 +213,6 @@ class ValidationServiceTest {
 
     assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getFault());
     assertEquals("Importo singolo versamento non valido: null", result.getDescription());
-  }
-
-  @Test
-  void validatePaymentData_InvalidDatiSpecificiRiscossione_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.TEN);
-    versamento.setDatiSpecificiRiscossione("INVALID");
-    versamento.setCausaleVersamento("Valid causale");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePaymentData(versamento));
-
-    assertEquals(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, result.getFault());
-    assertEquals("Dati specifici riscossione non validi: INVALID", result.getDescription());
   }
 
   @Test
@@ -431,20 +420,6 @@ class ValidationServiceTest {
   }
 
   @Test
-  void validateSecondaryDebtPositionData_InvalidPaymentMetadata_ReturnsError() {
-    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
-    secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
-    secondaryTransferData.setIbanAccreditoBeneficiario("IT60X0542811101000000123456");
-    secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
-    secondaryTransferData.setDatiSpecificiRiscossione("INVALID_METADATA");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
-
-    assertEquals(SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO, result.getFault());
-    assertEquals("Dati specifici riscossione non validi: INVALID_METADATA", result.getDescription());
-  }
-
-  @Test
   void validateSecondaryDebtPositionData_ValidData_ReturnsNull() {
     CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = new CtDatiVersamentoDovutiEntiSecondari();
     secondaryTransferData.setCodiceFiscaleBeneficiario("12345678901");
@@ -453,6 +428,24 @@ class ValidationServiceTest {
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
 
     Assertions.assertDoesNotThrow(() -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
+  }
+  //endregion
+
+  //region: validateCartSize
+  @ParameterizedTest
+  @CsvSource({
+    "10, PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, 'Numero massimo dovuti nel carrello superato: 10/5'",
+    "0, PAA_XML_NON_VALIDO, 'Nessun dovuto presente'",
+    "1, , " // valid case, should not throw
+  })
+  void validateCartSize_Parametrized(int size, String expectedFault, String expectedDescription) {
+    if (expectedFault != null) {
+      SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateCartSize(size));
+      assertEquals(SilFaults.valueOf(expectedFault), result.getFault());
+      assertEquals(expectedDescription, result.getDescription());
+    } else {
+      Assertions.assertDoesNotThrow(() -> validationService.validateCartSize(size));
+    }
   }
   //endregion
 }

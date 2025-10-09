@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.service.queryassessments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
-import it.gov.pagopa.pu.sil.connector.classification.ClassificationService;
+import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +11,10 @@ import java.util.List;
 
 @Slf4j
 public abstract class BaseQueryAssessmentsService<R> {
-  private final ClassificationService classificationService;
+  private final AssessmentService assessmentService;
 
-  protected BaseQueryAssessmentsService(ClassificationService classificationService) {
-    this.classificationService = classificationService;
+  protected BaseQueryAssessmentsService(AssessmentService assessmentService) {
+    this.assessmentService = assessmentService;
   }
 
   public R getAssessment(
@@ -29,7 +29,7 @@ public abstract class BaseQueryAssessmentsService<R> {
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
 
     if (iuf == null) {
-      List<AssessmentsBalanceView> balances = classificationService
+      List<AssessmentsBalanceView> balances = assessmentService
         .findClosedAssessmentsBalanceViewByOrganizationIdAndBill(
           organizationId, billNumber, billYear, accessToken);
       if (balances.isEmpty()) {
@@ -41,7 +41,7 @@ public abstract class BaseQueryAssessmentsService<R> {
       return mapToResponse(balances);
     }
 
-    List<AssessmentsBalanceView> balances = classificationService
+    List<AssessmentsBalanceView> balances = assessmentService
       .findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(
         organizationId, iuf, accessToken);
     if (balances.isEmpty()) {

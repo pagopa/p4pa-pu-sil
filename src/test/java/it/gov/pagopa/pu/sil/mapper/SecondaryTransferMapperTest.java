@@ -2,10 +2,6 @@ package it.gov.pagopa.pu.sil.mapper;
 
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
-import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -41,11 +37,7 @@ import static org.mockito.Mockito.when;
 class SecondaryTransferMapperTest {
 
   @Mock
-  TaxonomyService taxonomyServiceMock;
-  @Mock
   JAXBTransformService jaxbTransformServiceMock;
-  @Mock
-  DebtPositionTypeService debtPositionTypeServiceMock;
 
   @InjectMocks
   SecondaryTransferMapper secondaryTransferMapper;
@@ -54,7 +46,7 @@ class SecondaryTransferMapperTest {
 
   @BeforeEach
   void setup() {
-    Mockito.reset(taxonomyServiceMock, jaxbTransformServiceMock, debtPositionTypeServiceMock);
+    Mockito.reset(jaxbTransformServiceMock);
   }
 
   //region: mapToCtDatiVersamentoDovutiEntiSecondari
@@ -116,9 +108,8 @@ class SecondaryTransferMapperTest {
   //endregion
 
   //region: fillSecondaryTransferData
-  @ParameterizedTest
-  @ValueSource(strings = {"validCategoryFromLegacyPaymentMetadata", "validCategoryFromDebtPositionOrgCode"})
-  void fillSecondaryTransferData_shouldFillCorrectly(String testCase) {
+  @Test
+  void fillSecondaryTransferData_shouldFillCorrectly() {
     int defaultCollectionSize = podamFactory.getStrategy().getNumberOfCollectionElements(Object.class);
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(1);
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
@@ -127,67 +118,14 @@ class SecondaryTransferMapperTest {
     CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = podamFactory.manufacturePojo(CtDatiVersamentoDovutiEntiSecondari.class);
     BigDecimal scaled = secondaryTransferData.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
     secondaryTransferData.setImportoSingoloVersamento(scaled);
-    if (testCase.equals("validCategoryFromLegacyPaymentMetadata")) {
-      secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
-    } else if (testCase.equals("validCategoryFromDebtPositionOrgCode")) {
-      DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-      DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
-      debtPositionType.setTaxonomyCode("1234567IM");
-      when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(debtPosition.getOrganizationId(), "ORG_CODE", "accessToken"))
-        .thenReturn(debtPositionTypeOrg);
-      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), "accessToken"))
-        .thenReturn(debtPositionType);
-    }
-    Taxonomy taxonomy = podamFactory.manufacturePojo(Taxonomy.class);
-    when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234567IM", "accessToken"))
-      .thenReturn(Optional.of(taxonomy));
+    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
 
-    assertDoesNotThrow(() -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData, "ORG_CODE", "accessToken"));
+    assertDoesNotThrow(() -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData));
 
     TestUtils.checkNotNullFields(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst(),
       "transferId", "installmentId", "stampType", "stampHashDocument", "stampProvincialResidence", "mbdAttachment", "postalIban", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"invalidCategoryFromLegacyPaymentMetadata", "invalidCategoryFromDebtPositionOrgCode", "invalidCategory", "invalidNumberOfTransfers"})
-  void fillSecondaryTransferData_shouldThrowException(String testCase) {
-    int defaultCollectionSize = podamFactory.getStrategy().getNumberOfCollectionElements(Object.class);
-    podamFactory.getStrategy().setDefaultNumberOfCollectionElements(1);
-    DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
-    podamFactory.getStrategy().setDefaultNumberOfCollectionElements(defaultCollectionSize);
-    CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = podamFactory.manufacturePojo(CtDatiVersamentoDovutiEntiSecondari.class);
-    BigDecimal scaled = secondaryTransferData.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
-    secondaryTransferData.setImportoSingoloVersamento(scaled);
-    secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
-    Taxonomy taxonomy = podamFactory.manufacturePojo(Taxonomy.class);
-    SilFaults expectedFault = SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO;
-    if (testCase.equals("invalidCategory")) {
-      taxonomy = null;
-    }
-    if (testCase.equals("invalidCategoryFromLegacyPaymentMetadata") || testCase.equals("invalidCategoryFromDebtPositionOrgCode")) {
-      secondaryTransferData.setDatiSpecificiRiscossione(testCase.equals("invalidCategoryFromLegacyPaymentMetadata") ? "9/1234IM/legacyMetadata" : null);
-      DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-      DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
-      debtPositionType.setTaxonomyCode("");
-      when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(debtPosition.getOrganizationId(), "ORG_CODE", "accessToken"))
-        .thenReturn(debtPositionTypeOrg);
-      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), "accessToken"))
-        .thenReturn(debtPositionType);
-    } else {
-      when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234567IM", "accessToken"))
-        .thenReturn(Optional.ofNullable(taxonomy));
-    }
-    if (testCase.equals("invalidNumberOfTransfers")) {
-      expectedFault = SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI;
-    } else {
-      debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().setTransfers(null);
-    }
-
-
-    SilFaultException exception = assertThrows(SilFaultException.class, () -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData, "ORG_CODE", "accessToken"));
-
-    assertEquals(expectedFault, exception.getFault());
-  }
   //endregion
 
 

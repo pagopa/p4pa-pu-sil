@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sendnotification.dto.generated.*;
+import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.sil.service.notification.SendNotificationRetrieverService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -14,10 +16,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
 import java.util.List;
@@ -28,16 +26,21 @@ class SendNotificationControllerTest {
   private SendNotificationRetrieverService sendNotificationRetrieverServiceMock;
   @InjectMocks
   private SendNotificationController sendNotificationController;
+
+  private final String accessToken = "fakeAccessToken";
+  private final String orgFiscalCode = "ORG123456789";
+  private final Long organizationId = 1L;
   private UserInfo userInfo;
 
   @BeforeEach
   void setUp() {
+    UserOrganizationRoles userOrganizationRoles = new UserOrganizationRoles();
+    userOrganizationRoles.setRoles(List.of("TEST"));
+    userOrganizationRoles.setOrganizationId(1L);
+    userOrganizationRoles.setOrganizationFiscalCode(orgFiscalCode);
     userInfo = new UserInfo();
-    userInfo.setMappedExternalUserId("fakeExternalUser");
-    Authentication authentication = new UsernamePasswordAuthenticationToken(userInfo, "fakeAccessToken");
-    SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-    securityContext.setAuthentication(authentication);
-    SecurityContextHolder.setContext(securityContext);
+    userInfo.setOrganizations(List.of(userOrganizationRoles));
+    SecurityUtilsTest.configureSecurityContext(accessToken, userInfo);
   }
 
   @AfterEach
@@ -49,7 +52,6 @@ class SendNotificationControllerTest {
 
   @Test
   void givenCreateSendNotificationThenOk() {
-    Long organizationId = 1L;
     CreateNotificationRequest request = new CreateNotificationRequest();
     CreateNotificationResponse expectedResult = new CreateNotificationResponse();
 
@@ -60,7 +62,7 @@ class SendNotificationControllerTest {
       "fakeAccessToken"
     )).thenReturn(expectedResult);
 
-    ResponseEntity<CreateNotificationResponse> response = sendNotificationController.createSendNotification(organizationId,request);
+    ResponseEntity<CreateNotificationResponse> response = sendNotificationController.createSendNotification(orgFiscalCode, request);
 
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertSame(expectedResult, response.getBody());
@@ -68,7 +70,6 @@ class SendNotificationControllerTest {
 
   @Test
   void givenDeleteSendNotificationThenOk() {
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
 
     Mockito.doNothing().when(sendNotificationRetrieverServiceMock).deleteSendNotification(
@@ -78,14 +79,13 @@ class SendNotificationControllerTest {
       "fakeAccessToken"
     );
 
-    ResponseEntity<Void> response = sendNotificationController.deleteSendNotification(organizationId,sendNotificationId);
+    ResponseEntity<Void> response = sendNotificationController.deleteSendNotification(orgFiscalCode,sendNotificationId);
 
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
   }
 
   @Test
   void givenCorrectRequestWhenGetSendNotificationThenOk() {
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
     SendNotificationDTO expectedResult = new SendNotificationDTO();
 
@@ -96,7 +96,7 @@ class SendNotificationControllerTest {
       "fakeAccessToken"
     )).thenReturn(expectedResult);
 
-    ResponseEntity<SendNotificationDTO> response = sendNotificationController.getSendNotification(organizationId,sendNotificationId);
+    ResponseEntity<SendNotificationDTO> response = sendNotificationController.getSendNotification(orgFiscalCode,sendNotificationId);
 
     Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     Assertions.assertSame(expectedResult,response.getBody());
@@ -104,10 +104,9 @@ class SendNotificationControllerTest {
 
   @Test
   void givenNoSendNotificationWhenGetSendNotificationThenNotFound() {
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
 
-    ResponseEntity<SendNotificationDTO> response = sendNotificationController.getSendNotification(organizationId,sendNotificationId);
+    ResponseEntity<SendNotificationDTO> response = sendNotificationController.getSendNotification(orgFiscalCode,sendNotificationId);
 
     Assertions.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     Assertions.assertNull(response.getBody());
@@ -117,7 +116,6 @@ class SendNotificationControllerTest {
 
   @Test
   void givenCorrectRequestWhenGetLegalFactsThenOk() {
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
     List<LegalFactListElementDTO> expectedResponseBody = List.of(new LegalFactListElementDTO());
 
@@ -130,7 +128,7 @@ class SendNotificationControllerTest {
 
     ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
       sendNotificationController.getLegalFacts(
-        organizationId,
+        orgFiscalCode,
         sendNotificationId
       );
 
@@ -141,7 +139,6 @@ class SendNotificationControllerTest {
   @Test
   void givenEmptyLegalFactListWhenGetLegalFactsThenOkWithEmptyList() {
     // given
-    Long organizationId = 1L;
     String sendNotificationId = "SEND_NOTIFICATION_ID";
 
     Mockito.when(
@@ -156,7 +153,7 @@ class SendNotificationControllerTest {
     // when
     ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
       sendNotificationController.getLegalFacts(
-        organizationId,
+        orgFiscalCode,
         sendNotificationId
       );
 
@@ -168,7 +165,6 @@ class SendNotificationControllerTest {
 
   @Test
   void givenCorrectRequestWhenGetLegalFactDownloadMetadataThenOk() {
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
     String legalFactId = "LEGAL_FACT_ID";
     LegalFactDownloadMetadataDTO expectedResponseBody = new LegalFactDownloadMetadataDTO();
@@ -183,7 +179,7 @@ class SendNotificationControllerTest {
 
     ResponseEntity<LegalFactDownloadMetadataDTO> actualResponse =
       sendNotificationController.getLegalFactDownloadMetadata(
-        organizationId,
+        orgFiscalCode,
         sendNotificationId,
         legalFactId
       );
@@ -195,7 +191,6 @@ class SendNotificationControllerTest {
   @Test
   void givenNoLegalFactDownloadMetadataWhenGetLegalFactDownloadMetadataThenNotFound() {
     // given
-    Long organizationId = 1L;
     String sendNotificationId = "SEND_NOTIFICATION_ID";
     String legalFactId = "LEGAL_FACT_ID";
 
@@ -212,7 +207,7 @@ class SendNotificationControllerTest {
     // when
     ResponseEntity<LegalFactDownloadMetadataDTO> actualResponse =
       sendNotificationController.getLegalFactDownloadMetadata(
-        organizationId,
+        orgFiscalCode,
         sendNotificationId,
         legalFactId
       );

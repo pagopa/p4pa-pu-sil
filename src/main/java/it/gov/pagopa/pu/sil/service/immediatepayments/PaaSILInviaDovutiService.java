@@ -8,11 +8,11 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaDovutiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
-import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovutiRisposta;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.List;
 
@@ -23,17 +23,26 @@ public class PaaSILInviaDovutiService extends AbstractImmediatePaymentsService<P
   private final PaaSILInviaDovutiMapper paaSILInviaDovutiMapper;
 
   public PaaSILInviaDovutiService(CheckoutService checkoutService,
-                                  ManageDebtPositionService manageDebtPositionService,
+                                  InstantPaymentsFacade instantPaymentsFacade,
                                   CartRequestMapper cartRequestMapper,
                                   OrganizationService organizationService,
                                   PaaSILInviaDovutiMapper paaSILInviaDovutiMapper,
                                   SessionIdMapper sessionIdMapper) {
-    super(checkoutService, manageDebtPositionService, organizationService, cartRequestMapper, sessionIdMapper);
+    super(checkoutService, instantPaymentsFacade, organizationService, cartRequestMapper, sessionIdMapper);
     this.paaSILInviaDovutiMapper = paaSILInviaDovutiMapper;
   }
 
   @Override
-  protected List<DebtPositionDTO> mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization org, String cartId, String accessToken) {
+  protected List<DebtPositionDTO> createDebtPositionsFromMapping(PaymentRequestMappingResult paymentRequestMappingResult, String accessToken) {
+    try {
+      return instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
+    } catch (HttpServerErrorException e) {
+      throw buildException(e);
+    }
+  }
+
+  @Override
+  protected PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization org, String cartId, String accessToken) {
     return paaSILInviaDovutiMapper.mapRequestToDebtPositions(request, org, cartId, accessToken);
   }
 

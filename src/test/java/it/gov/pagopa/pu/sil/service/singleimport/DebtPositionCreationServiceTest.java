@@ -99,7 +99,7 @@ class DebtPositionCreationServiceTest {
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.of(org));
     when(debtPositionMapperMock.mapRequestToDebtPosition(request, org, TOKEN))
         .thenReturn(mappedDebtPositionDTO);
-    when(manageDebtPositionServiceMock.createSyncedDebtPositions(List.of(mappedDebtPositionDTO), TOKEN))
+    when(manageDebtPositionServiceMock.createDebtPositions(List.of(mappedDebtPositionDTO), TOKEN))
       .thenReturn(List.of(createdDebtPositionDTO));
 
     // When

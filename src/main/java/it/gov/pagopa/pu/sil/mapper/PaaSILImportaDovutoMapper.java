@@ -79,7 +79,7 @@ public class PaaSILImportaDovutoMapper {
     //secondary transfer (multi-beneficiary payment)
     secondaryTransferMapper.mapToCtDatiVersamentoDovutiEntiSecondari(request.getListaDovutiEntiSecondari()).ifPresent(secondaryTransferData -> {
       immediatePaymentsValidationService.validateSecondaryDebtPositionData(secondaryTransferData, 1);
-      secondaryTransferMapper.fillSecondaryTransferData(debtPositionDTO, secondaryTransferData, debtPositionTypeOrg.getCode(), accessToken);
+      secondaryTransferMapper.fillSecondaryTransferData(debtPositionDTO, secondaryTransferData);
     });
 
     return Pair.of(debtPositionDTO, versamento.getAzione());

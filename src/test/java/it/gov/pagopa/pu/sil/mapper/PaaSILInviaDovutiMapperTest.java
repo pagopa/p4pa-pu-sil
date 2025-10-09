@@ -4,21 +4,16 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.connector.organization.service.TaxonomyService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaDovuti;
-import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
-import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
-import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
-import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
-import org.junit.jupiter.api.Assertions;
+import it.veneto.regione.schemas._2012.pagamenti.ente.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +26,6 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -53,9 +47,6 @@ class PaaSILInviaDovutiMapperTest {
 
   @Mock
   private ValidationService validationServiceMock;
-
-  @Mock
-  private TaxonomyService taxonomyServiceMock;
 
   UserInfo userInfo;
   Organization org;
@@ -81,7 +72,7 @@ class PaaSILInviaDovutiMapperTest {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("XML non conforme"));
@@ -91,10 +82,12 @@ class PaaSILInviaDovutiMapperTest {
   void mapRequestToDebtPositions_InvalidIUV_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(new CtDatiSingoloVersamentoDovuti());
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento("IUV");
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
     assertEquals("L'inserimento dello IUV è deprecato", exception.getDescription());
@@ -105,12 +98,14 @@ class PaaSILInviaDovutiMapperTest {
   void mapRequestToDebtPositions_InvalidDebtor_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(new CtDatiSingoloVersamentoDovuti());
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
-
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
     assertEquals("error", exception.getDescription());
@@ -123,15 +118,19 @@ class PaaSILInviaDovutiMapperTest {
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    SilFaultException silFaultException = new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
     if(testCase.equals("6dp")) {
       for(int i = 0; i < 6; i++) {
         CtDatiSingoloVersamentoDovuti versamento = podamFactory.manufacturePojo(CtDatiSingoloVersamentoDovuti.class);
         dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
       }
+      silFaultException = new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: 6/5");
     }
+    doThrow(silFaultException).when(validationServiceMock)
+      .validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     if(testCase.equals("6dp")){
       assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, exception.getFault());
@@ -143,7 +142,7 @@ class PaaSILInviaDovutiMapperTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"happyCase", "stamp", "customValidCategory", "customInvalidCategory"})
+  @ValueSource(strings = {"stamp", "customValidCategory", "customInvalidCategory"})
   void mapRequestToDebtPositionsOrFault_ValidFlow_ReturnsDebtPositions(String testCase) {
     //given
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
@@ -159,7 +158,6 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
-    DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
     if (testCase.equals("stamp")) {
       CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
       datiMarcaBolloDigitale.setTipoBollo("01");
@@ -169,29 +167,23 @@ class PaaSILInviaDovutiMapperTest {
     } else if(testCase.equals("customValidCategory")) {
       datiSpecificiRiscossione = "9/1234567IM/CUSTOM_VALID_CATEGORY";
     } else if(testCase.equals("customInvalidCategory")) {
-      datiSpecificiRiscossione = "9/1234888IM/CUSTOM_INVALID_CATEGORY";
+      datiSpecificiRiscossione = "9/1234888/CUSTOM_INVALID_CATEGORY";
       debtPositionTypeOrg.setIban(null);
       debtPositionTypeOrg.setPostalIban(null);
+      org.setIban("IT60X0542811101000000123456");
+      org.setPostalIban("IT60X0542811101000000654321");
     }
     versamento.setDatiSpecificiRiscossione(datiSpecificiRiscossione);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
-    Taxonomy taxonomy = podamFactory.manufacturePojo(Taxonomy.class);
-    if(testCase.equals("customValidCategory")) {
-      when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234567IM", ACCESS_TOKEN)).thenReturn(Optional.of(taxonomy));
-    } else if(testCase.equals("customInvalidCategory")) {
-      when(taxonomyServiceMock.getTaxonomyByTaxonomyCode("1234888IM", ACCESS_TOKEN)).thenReturn(Optional.empty());
-    }
-    if(testCase.equals("stamp") || testCase.equals("customInvalidCategory")) {
-      when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), ACCESS_TOKEN))
-        .thenReturn(debtPositionType);
-    }
 
     //when
-    List<DebtPositionDTO> result = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    List<DebtPositionDTO> result = paymentRequestMappingResult.debtPositions();
 
     //then
     assertNotNull(result);
@@ -201,15 +193,12 @@ class PaaSILInviaDovutiMapperTest {
       TestUtils.checkAllNotNullFields(dp,
         "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       dp.getPaymentOptions().forEach(po -> {
-        TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+        TestUtils.checkNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "description");
         po.getInstallments().forEach(i -> {
           TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
             "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
             "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-          if (testCase.equals("happyCase")) {
-            assertNull(i.getTransfers());
-          } else {
             assertNotNull(i.getTransfers());
             assertEquals(1, i.getTransfers().size());
             TransferDTO transfer = i.getTransfers().getFirst();
@@ -226,11 +215,99 @@ class PaaSILInviaDovutiMapperTest {
               assertNull(transfer.getStampProvincialResidence());
             }
             TestUtils.checkAllNotNullFields(transfer, excludedFields.split(","));
-          }
         });
       });
     });
+  }
 
+  @Test
+  void whenMapRequestToDebtPositionsThenReturnMixedDebtPosition() {
+    // given
+    PaaSILInviaDovuti request = new PaaSILInviaDovuti();
+    Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
+
+    CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
+    datiMarcaBolloDigitale.setTipoBollo("01");
+    datiMarcaBolloDigitale.setHashDocumento("HASH_DOCUMENTO");
+    datiMarcaBolloDigitale.setProvinciaResidenza("IT");
+    CtDatiSingoloVersamentoDovuti stampTransfer = new CtDatiSingoloVersamentoDovuti();
+    stampTransfer.setCausaleVersamento("causale STAMP");
+    stampTransfer.setImportoSingoloVersamento(BigDecimal.TEN);
+    stampTransfer.setIdentificativoTipoDovuto("STAMP");
+    stampTransfer.setIdentificativoUnivocoDovuto("IUD-STAMP");
+    stampTransfer.setDatiMarcaBolloDigitale(datiMarcaBolloDigitale);
+
+    CtDatiSingoloVersamentoDovuti noIbanTransfer = new CtDatiSingoloVersamentoDovuti();
+    noIbanTransfer.setCausaleVersamento("causale NO-IBAN");
+    noIbanTransfer.setImportoSingoloVersamento(BigDecimal.TWO);
+    noIbanTransfer.setIdentificativoTipoDovuto("NO-IBAN");
+    noIbanTransfer.setIdentificativoUnivocoDovuto("IUD-NO-IBAN");
+    noIbanTransfer.setDatiSpecificiRiscossione("9/1234567IM/");
+
+    CtDatiSingoloVersamentoDovuti balanceTransfer = new CtDatiSingoloVersamentoDovuti();
+    balanceTransfer.setCausaleVersamento("causale BALANCE");
+    balanceTransfer.setImportoSingoloVersamento(BigDecimal.ONE);
+    balanceTransfer.setIdentificativoTipoDovuto("BALANCE");
+    balanceTransfer.setIdentificativoUnivocoDovuto("IUD-BALANCE");
+    balanceTransfer.setDatiSpecificiRiscossione("9/1234567IM/");
+    Bilancio bilancio = podamFactory.manufacturePojo(Bilancio.class);
+    balanceTransfer.setBilancio(bilancio);
+    when(jaxbTransformServiceMock.marshalling(bilancio, Bilancio.class)).thenReturn("bilancioString");
+
+    dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(stampTransfer);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(noIbanTransfer);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(balanceTransfer);
+
+
+    DebtPositionTypeOrg debtPositionTypeOrgStamp = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    DebtPositionTypeOrg debtPositionTypeOrgBalance = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    DebtPositionTypeOrg debtPositionTypeOrgNoIban = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    debtPositionTypeOrgNoIban.setIban(null);
+    debtPositionTypeOrgNoIban.setPostalIban(null);
+
+
+    PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
+    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
+    doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
+    when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
+
+    doReturn(debtPositionTypeOrgStamp).when(debtPositionTypeServiceMock)
+        .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), stampTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+    doReturn(debtPositionTypeOrgBalance).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), balanceTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+    doReturn(debtPositionTypeOrgNoIban).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), noIbanTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+
+    //when
+    PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);
+    List<MixedDebtPositionDTO> result = paymentRequestMappingResult.mixedDebtPositions();
+
+    //then
+    assertNotNull(result);
+    assertEquals(1, result.size());
+    MixedDebtPositionDTO mixedDebtPositionDTO = result.getFirst();
+    TestUtils.checkAllNotNullFields(mixedDebtPositionDTO);
+
+    List<MixedTransferDTO> mixedTransfers = mixedDebtPositionDTO.getTransfers();
+    assertEquals(3, mixedTransfers.size());
+    mixedTransfers.forEach(mt -> {
+      String excludedFields = "";
+      if(mt.getIud().contains("STAMP")) {
+        excludedFields += "iban,postalIban,legacyPaymentMetadata";
+        assertNull(mt.getIban());
+        assertNull(mt.getPostalIban());
+        assertNull(mt.getLegacyPaymentMetadata());
+      } else {
+        excludedFields += "stampHashDocument,stampProvincialResidence,stampType";
+        assertNull(mt.getStampHashDocument());
+        assertNull(mt.getStampType());
+        assertNull(mt.getStampProvincialResidence());
+      }
+      TestUtils.checkAllNotNullFields(mt, excludedFields.split(","));
+    });
   }
 }
 
