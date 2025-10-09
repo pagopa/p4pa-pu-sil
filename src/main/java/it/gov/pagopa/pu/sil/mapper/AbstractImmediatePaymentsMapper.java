@@ -16,10 +16,7 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @RequiredArgsConstructor
 abstract class AbstractImmediatePaymentsMapper {
@@ -98,7 +95,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .remittanceInformation(versamento.getCausaleVersamento())
       .sourceFlowName(sourceFlowName)
       .generateNotice(false)
-      .transfers(List.of(transferDTO))
+      .transfers(new ArrayList<>(List.of(transferDTO)))
       .build();
 
     PaymentOptionDTO paymentOption = PaymentOptionDTO.builder()
