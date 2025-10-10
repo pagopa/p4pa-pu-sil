@@ -156,4 +156,26 @@ class DebtPositionServiceTest {
     Assertions.assertSame(expectedResult.getBody(), result.getLeft());
     Assertions.assertSame("workflow-id", result.getRight());
   }
+
+  @Test
+  void whenGetDebtPositionsByDebtorFiscalCodeAndDebtorEntityTypeThenReturnListOfDebtPositionDTO() {
+    // Given
+    String debtorFiscalCode = "FISCALCODE";
+    PersonEntityType debtorEntityType = PersonEntityType.F;
+    String accessToken = "ACCESSTOKEN";
+    List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
+
+    Mockito.when(clientMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+      debtorFiscalCode,
+      debtorEntityType,
+      null,
+      accessToken
+    )).thenReturn(expectedResult);
+
+    // When
+    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
+  }
 }

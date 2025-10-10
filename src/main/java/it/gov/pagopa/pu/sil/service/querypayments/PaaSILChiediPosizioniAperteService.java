@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
@@ -41,13 +42,15 @@ public class PaaSILChiediPosizioniAperteService {
   ) {
     PaaSILChiediPosizioniAperteRisposta response = new PaaSILChiediPosizioniAperteRisposta();
     AuthorizationService.validateAdminRole(request.getCodIpaEnte(), userInfo);
+
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
-    List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByIdentificativoUnivocoPersonaFGAndOrganizationId(request.getIdentificativoUnivocoPersonaFG(), organizationId, accessToken);
+
+    List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(), PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()), organizationId, accessToken);
 
     response.getPaaSILPosizioniApertes().addAll(processOpenPositions(request, organization, debtPositions));
     return response;
