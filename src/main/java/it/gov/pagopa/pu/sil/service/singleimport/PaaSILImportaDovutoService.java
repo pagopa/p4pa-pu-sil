@@ -76,7 +76,7 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
 
   private String composeDownloadPdfNoticeUrl(String orgFiscalCode, String iuv) {
     return UriComponentsBuilder.fromUriString(puSilBaseUrl)
-      .path("/sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
+      .path("/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
       .buildAndExpand(orgFiscalCode, iuv)
       .toUriString();
   }
