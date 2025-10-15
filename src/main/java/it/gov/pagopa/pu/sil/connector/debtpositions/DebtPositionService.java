@@ -71,10 +71,14 @@ public interface DebtPositionService {
   DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken);
 
   /**
-   * Retrieves a list of DebtPositionDTOs by CtIdentificativoUnivocoPersonaFG and organization ID.
+   * Retrieves a list of DebtPositionDTOs by debtor fiscal code and debtor entity type.
    *
-   * @param identificativoUnivocoPersonaFG the CtIdentificativoUnivocoPersonaFG object
+   * @param debtorFiscalCode the fiscal code of the debtor
+   * @param debtorEntityType the entity type of the debtor
    * @param organizationId the ID of the organization
+   * @param status the status of the installments to filter by
+   * @param fromDate the start date for filtering debt positions (inclusive)
+   * @param toDate the end date for filtering debt positions (inclusive)
    * @param accessToken the access token for authentication
    * @return a list of DebtPositionDTOs matching the criteria
    */

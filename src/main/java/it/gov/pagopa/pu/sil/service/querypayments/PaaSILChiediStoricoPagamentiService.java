@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -51,14 +52,14 @@ public class PaaSILChiediStoricoPagamentiService {
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
 
-    OffsetDateTime dateFrom = LocalDate.now().atStartOfDay().atOffset(ZoneId.systemDefault().getRules().getOffset(Instant.now()));
+    OffsetDateTime dateFrom = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS);
     if (request.getDataFrom() != null) {
-      dateFrom = request.getDataFrom().toGregorianCalendar().toZonedDateTime().toOffsetDateTime();
+      dateFrom = ConversionUtils.toOffsetDateTime(request.getDataFrom());
     }
 
-    OffsetDateTime dateTo = LocalDate.now().atTime(LocalTime.MAX).atOffset(ZoneId.systemDefault().getRules().getOffset(Instant.now()));
+    OffsetDateTime dateTo = dateFrom.plusDays(1);
     if (request.getDataTo() != null) {
-      dateTo = request.getDataTo().toGregorianCalendar().toZonedDateTime().toOffsetDateTime();
+      dateTo = ConversionUtils.toOffsetDateTime(request.getDataTo());
     }
 
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
