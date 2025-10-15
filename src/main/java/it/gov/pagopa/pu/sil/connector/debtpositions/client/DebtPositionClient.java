@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -70,17 +71,25 @@ public class DebtPositionClient {
     }
   }
 
-  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(String debtorFiscalCode, PersonEntityType debtorEntityType, Long organizationId, String accessToken) {
+  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+    String debtorFiscalCode,
+    PersonEntityType debtorEntityType,
+    Long organizationId,
+    InstallmentStatus status,
+    OffsetDateTime fromDate,
+    OffsetDateTime toDate,
+    String accessToken
+  ) {
     return debtPositionsApisHolder
       .getDebtPositionApi(accessToken)
       .getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         debtorFiscalCode,
         debtorEntityType,
-        List.of(InstallmentStatus.UNPAID),
+        status != null ? List.of(status) : null,
         null,
         organizationId,
-        null,
-        null
+        fromDate,
+        toDate
       );
   }
 }

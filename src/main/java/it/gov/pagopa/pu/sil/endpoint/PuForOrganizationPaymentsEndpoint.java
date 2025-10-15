@@ -30,10 +30,7 @@ import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
-import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
-import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
-import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPosizioniAperteService;
+import it.gov.pagopa.pu.sil.service.querypayments.*;
 import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
@@ -89,6 +86,7 @@ public class PuForOrganizationPaymentsEndpoint {
 
   private final ExportFileProcessingStatusService exportFileProcessingStatusService;
   private final PaaSILChiediPosizioniAperteService paaSILChiediPosizioniAperteService;
+  private final PaaSILChiediStoricoPagamentiService paaSILChiediStoricoPagamentiService;
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILChiediStatoExportFlusso")
   @ResponsePayload
@@ -462,13 +460,28 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILChiediStoricoPagamentiRisposta paaSILChiediStoricoPagamenti(
     @RequestPayload PaaSILChiediStoricoPagamenti request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
-      new PaaSILChiediStoricoPagamentiRisposta(),
-      SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILChiediStoricoPagamenti non è una operazione supportata",
-      FaultBean::new,
-      PaaSILChiediStoricoPagamentiRisposta::setFault
-    );
+    UserInfo userInfo = SecurityUtils.getLoggedUser();
+    String accessToken = SecurityUtils.getAccessToken();
+    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
+      IntestazionePPT.class,
+      IntestazionePPT::getCodIpaEnte,
+      "paaSILChiediStoricoPagamenti");
+
+    PaaSILChiediStoricoPagamentiRisposta response;
+
+    try {
+      response = paaSILChiediStoricoPagamentiService.processRequest(request, userInfo, accessToken, orgIpaCode);
+    } catch(Exception e) {
+      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+        new PaaSILChiediStoricoPagamentiRisposta(),
+        PaaSILChiediStoricoPagamentiRisposta::setFault,
+        FaultBean::new,
+        SilFaults.PAA_ENTE_NON_VALIDO,
+        SilFaults.PAA_SYSTEM_ERROR
+      ).apply(e);
+    }
+
+    return response;
   }
 
   @PayloadRoot(namespace = NAMESPACE_URI, localPart = "paaSILRegistraPagamento")

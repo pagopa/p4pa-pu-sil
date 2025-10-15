@@ -212,7 +212,7 @@ class DebtPositionClientTest {
       .thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, accessToken);
+    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, InstallmentStatus.UNPAID, null, null, accessToken);
 
     // Then
     Assertions.assertEquals(expectedResult, result);

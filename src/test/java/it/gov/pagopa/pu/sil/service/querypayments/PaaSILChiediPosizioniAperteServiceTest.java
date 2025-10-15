@@ -5,7 +5,10 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.connector.pagopa.checkout.client.CheckoutClient;
+import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperte;
@@ -33,16 +36,24 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PaaSILChiediPosizioniAperteServiceTest {
 
-  @Mock private DebtPositionService debtPositionService;
-  @Mock private OrganizationService organizationService;
-  @Mock private JAXBTransformService jaxbTransformService;
+  @Mock private DebtPositionService debtPositionServiceMock;
+  @Mock private OrganizationService organizationServiceMock;
+  @Mock private JAXBTransformService jaxbTransformServiceMock;
+  @Mock private CheckoutClient checkoutClientMock;
+  @Mock private CartRequestMapper cartRequestMapperMock;
+  @Mock private DebtPositionTypeService debtPositionTypeServiceMock;
 
   private PaaSILChiediPosizioniAperteService service;
 
   @BeforeEach
   void setUp() {
     service = new PaaSILChiediPosizioniAperteService(
-      debtPositionService, organizationService, jaxbTransformService
+      debtPositionServiceMock,
+      organizationServiceMock,
+      jaxbTransformServiceMock,
+      checkoutClientMock,
+      cartRequestMapperMock,
+      debtPositionTypeServiceMock
     );
   }
 
@@ -90,15 +101,15 @@ class PaaSILChiediPosizioniAperteServiceTest {
     DebtPositionDTO dp = new DebtPositionDTO();
     dp.setPaymentOptions(List.of(paymentOption));
 
-    when(organizationService.getOrganizationById(eq(orgId), eq(accessToken)))
+    when(organizationServiceMock.getOrganizationById(eq(orgId), eq(accessToken)))
       .thenReturn(Optional.of(org));
 
-    when(debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgId), eq(accessToken))
+    when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+      anyString(), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.UNPAID), eq(null), eq(null), eq(accessToken))
     ).thenReturn(List.of(dp));
 
     byte[] marshalledBytes = "dovuti-xml".getBytes();
-    when(jaxbTransformService.marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class)))
+    when(jaxbTransformServiceMock.marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class)))
       .thenReturn(marshalledBytes);
 
     // When
@@ -123,10 +134,10 @@ class PaaSILChiediPosizioniAperteServiceTest {
     DataHandler dh = item.getDovuti();
     Assertions.assertNotNull(dh, "Dovuti DataHandler should be set");
 
-    verify(organizationService).getOrganizationById(orgId, accessToken);
-    verify(debtPositionService).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(accessToken)
+    verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
+    verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.UNPAID), eq(null), eq(null), eq(accessToken)
     );
-    verify(jaxbTransformService, times(1)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
+    verify(jaxbTransformServiceMock, times(1)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
   }
 }

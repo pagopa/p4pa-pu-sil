@@ -2,12 +2,12 @@ package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
-import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -61,8 +61,15 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   }
 
   @Override
-  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType
-    (String debtorFiscalCode, PersonEntityType debtorEntityType, Long organizationId, String accessToken) {
-    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, accessToken);
+  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+    String debtorFiscalCode,
+    PersonEntityType debtorEntityType,
+    Long organizationId,
+    InstallmentStatus status,
+    OffsetDateTime fromDate,
+    OffsetDateTime toDate,
+    String accessToken
+  ) {
+    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, status, fromDate, toDate, accessToken);
   }
 }

@@ -169,11 +169,14 @@ class DebtPositionServiceTest {
       debtorFiscalCode,
       debtorEntityType,
       null,
+      null,
+      null,
+      null,
       accessToken
     )).thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, accessToken);
+    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, null, null, null, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);
