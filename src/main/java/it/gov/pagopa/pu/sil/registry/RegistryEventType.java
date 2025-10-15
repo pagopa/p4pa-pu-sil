@@ -12,6 +12,8 @@ public enum RegistryEventType {
   PTDP_paaSILInviaDovuti(true),
   PTDP_paaSILVerificaAvviso(true),
   PTDP_paaSILInviaCarrelloDovuti(true),
+  PTDP_paaSILChiediPosizioniAperte(true),
+  PTDP_paaSILChiediStoricoPagamenti(true),
 
   PTPR_pivotSILAutorizzaImportFlusso(true),
   PTPR_pivotSILAutorizzaImportFlussoTesoreria(true),

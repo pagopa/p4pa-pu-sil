@@ -128,6 +128,8 @@
           "PTDP_paaSILInviaDovuti",
           "PTDP_paaSILVerificaAvviso",
           "PTDP_paaSILInviaCarrelloDovuti",
+          "PTDP_paaSILChiediPosizioniAperte",
+          "PTDP_paaSILChiediStoricoPagamenti",
           "PTPR_pivotSILAutorizzaImportFlusso",
           "PTPR_pivotSILAutorizzaImportFlussoTesoreria",
           "SIL_attualizzazioneImporti",
