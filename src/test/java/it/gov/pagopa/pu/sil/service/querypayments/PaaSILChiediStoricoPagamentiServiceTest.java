@@ -5,16 +5,14 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
-import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
-import it.gov.pagopa.pu.sil.connector.fileshare.FileShareService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediStoricoPagamenti;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediStoricoPagamentiRisposta;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
-import it.veneto.regione.schemas._2012.pagamenti.ente.PagatiConRicevuta;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import jakarta.activation.DataHandler;
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +23,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.Resource;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -44,9 +41,8 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
   @Mock private DebtPositionService debtPositionServiceMock;
   @Mock private OrganizationService organizationServiceMock;
-  @Mock private JAXBTransformService jaxbTransformServiceMock;
   @Mock private ReceiptService receiptServiceMock;
-  @Mock private FileShareService fileShareServiceMock;
+  @Mock private PagatiMapper pagatiMapperMock;
 
   private PaaSILChiediStoricoPagamentiService service;
 
@@ -55,9 +51,8 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     service = new PaaSILChiediStoricoPagamentiService(
       debtPositionServiceMock,
       organizationServiceMock,
-      jaxbTransformServiceMock,
       receiptServiceMock,
-      fileShareServiceMock
+      pagatiMapperMock
     );
   }
 
@@ -76,7 +71,6 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     idFG.setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.F);
     request.setIdentificativoUnivocoPersonaFG(idFG);
 
-    // explicitly set date range to ensure deterministic assertions
     XMLGregorianCalendar dataFrom = toXmlCal(ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneId.systemDefault()));
     XMLGregorianCalendar dataTo = toXmlCal(ZonedDateTime.of(2025, 1, 31, 23, 59, 59, 0, ZoneId.systemDefault()));
     request.setDataFrom(dataFrom);
@@ -90,7 +84,6 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     org.setOrgFiscalCode("11111111111");
     org.setStatus(OrganizationStatus.ACTIVE);
 
-    // build debt position with one payment option and one paid installment
     InstallmentDTO installment = new InstallmentDTO();
     installment.setReceiptId(1001L);
 
@@ -130,7 +123,6 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       anyString(), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.PAID), any(), any(), eq(accessToken))
     ).thenReturn(List.of(dp));
 
-    // receipt data
     ReceiptDTO receipt = new ReceiptDTO();
     receipt.setIdPsp("PSP001");
     receipt.setPspCompanyName("PSP Test");
@@ -141,16 +133,12 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     receipt.setPaymentAmountCents(12345L);
     receipt.setFeeCents(200L);
 
-    when(receiptServiceMock.getReceiptById(eq(1001L), eq(accessToken))).thenReturn(receipt);
+    byte[] marshalledReceipt = "receipt".getBytes(StandardCharsets.UTF_8);
 
-    // file share returns receipt bytes
-    Resource resourceMock = mock(Resource.class);
-    when(resourceMock.getContentAsByteArray()).thenReturn("pdf-binary".getBytes(StandardCharsets.UTF_8));
-    when(fileShareServiceMock.downloadReceipt(eq(orgId), eq(1001L), eq(accessToken))).thenReturn(resourceMock);
+    when(receiptServiceMock.getReceiptById(1001L, orgId, accessToken)).thenReturn(marshalledReceipt);
 
-    byte[] marshalledBytes = "pagati-con-ricevuta-xml".getBytes(StandardCharsets.UTF_8);
-    when(jaxbTransformServiceMock.marshallingAsBytes(any(PagatiConRicevuta.class), eq(PagatiConRicevuta.class)))
-      .thenReturn(marshalledBytes);
+    when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken))
+      .thenReturn("pagati".getBytes(StandardCharsets.UTF_8));
 
     // When
     PaaSILChiediStoricoPagamentiRisposta response;
@@ -160,7 +148,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
         .thenReturn(orgId);
 
-      response = service.processRequest(request, userInfo, accessToken, orgIpaCode);
+      response = service.processRequest(request, userInfo, accessToken);
     }
 
     // Then
@@ -181,9 +169,8 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.PAID), any(), any(), eq(accessToken)
     );
-    verify(receiptServiceMock).getReceiptById(1001L, accessToken);
-    verify(fileShareServiceMock).downloadReceipt(orgId, 1001L, accessToken);
-    verify(jaxbTransformServiceMock, times(1)).marshallingAsBytes(any(PagatiConRicevuta.class), eq(PagatiConRicevuta.class));
+    verify(receiptServiceMock).getReceiptById(1001L, orgId, accessToken);
+    verify(pagatiMapperMock).mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken);
   }
 
   @Test
@@ -214,12 +201,12 @@ class PaaSILChiediStoricoPagamentiServiceTest {
         .thenReturn(orgId);
 
       Assertions.assertThrows(SilFaultException.class, () ->
-        service.processRequest(request, userInfo, accessToken, orgIpaCode)
+        service.processRequest(request, userInfo, accessToken)
       );
     }
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-    verifyNoInteractions(debtPositionServiceMock, receiptServiceMock, fileShareServiceMock, jaxbTransformServiceMock);
+    verifyNoInteractions(debtPositionServiceMock, receiptServiceMock, receiptServiceMock, pagatiMapperMock);
   }
 
   private static XMLGregorianCalendar toXmlCal(ZonedDateTime zdt) throws Exception {

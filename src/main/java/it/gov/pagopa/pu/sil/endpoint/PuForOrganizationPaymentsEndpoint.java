@@ -462,15 +462,11 @@ public class PuForOrganizationPaymentsEndpoint {
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
-    String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
-      IntestazionePPT.class,
-      IntestazionePPT::getCodIpaEnte,
-      "paaSILChiediStoricoPagamenti");
 
     PaaSILChiediStoricoPagamentiRisposta response;
 
     try {
-      response = paaSILChiediStoricoPagamentiService.processRequest(request, userInfo, accessToken, orgIpaCode);
+      response = paaSILChiediStoricoPagamentiService.processRequest(request, userInfo, accessToken);
     } catch(Exception e) {
       response = FaultUtils.unauthorizedOrSystemExceptionHandler(
         new PaaSILChiediStoricoPagamentiRisposta(),
