@@ -82,7 +82,7 @@ public class PaaSILChiediPosizioniAperteService {
 
             try {
               CartRequest cartRequest = cartRequestMapper.mapInstallmentToCartRequest(installment, organization, null, null);
-              openPosition.setUrlPagamento(checkoutClient.checkoutCart(cartRequest)); // @TODO: to replace with URL from ARpu
+              openPosition.setUrlPagamento(checkoutClient.checkoutCart(cartRequest)); // @TODO: to replace with a different URL
             } catch (Exception e) {
               log.error("Error generating payment URL for installment[{}]", installment.getInstallmentId(), e);
             }
@@ -136,7 +136,6 @@ public class PaaSILChiediPosizioniAperteService {
     CtDatiSingoloVersamentoDovuti datiSingoloVersamento = of.createCtDatiSingoloVersamentoDovuti();
     datiSingoloVersamento.setIdentificativoUnivocoDovuto(installment.getIud());
     datiSingoloVersamento.setImportoSingoloVersamento(ConversionUtils.centsAmountToBigDecimalEuroAmount(installment.getAmountCents()));
-    datiSingoloVersamento.setCommissioneCaricoPA(ConversionUtils.centsAmountToBigDecimalEuroAmount(installment.getNotificationFeeCents()));
 
     if (debtPositionTypeOrg != null) {
       datiSingoloVersamento.setIdentificativoTipoDovuto(debtPositionTypeOrg.getCode());
