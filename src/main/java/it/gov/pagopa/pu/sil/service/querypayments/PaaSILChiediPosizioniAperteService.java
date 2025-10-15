@@ -82,7 +82,7 @@ public class PaaSILChiediPosizioniAperteService {
 
             try {
               CartRequest cartRequest = cartRequestMapper.mapInstallmentToCartRequest(installment, organization, null, null);
-              openPosition.setUrlPagamento(checkoutClient.checkoutCart(cartRequest)); // @TODO: to replace with a different URL
+              openPosition.setUrlPagamento(checkoutClient.checkoutCart(cartRequest)); // @TODO: da implementare con la P4ADEV-4043
             } catch (Exception e) {
               log.error("Error generating payment URL for installment[{}]", installment.getInstallmentId(), e);
             }
