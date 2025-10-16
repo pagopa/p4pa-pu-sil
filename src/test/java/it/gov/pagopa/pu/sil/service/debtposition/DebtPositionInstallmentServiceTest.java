@@ -92,6 +92,61 @@ class DebtPositionInstallmentServiceTest {
   }
 
   @Test
+  void whenGetDebtPositionsAndInstallmentsByMultipleInstallmentIdsThenSuccess() {
+    // Arrange
+    String sessionId = "1-2-3";
+    List<Long> multipleInstallmentIds = List.of(1L, 2L, 3L);
+    PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, sessionId, false);
+
+    InstallmentDTO inst2 = dp.getPaymentOptions().getFirst().getInstallments().getLast();
+    inst2.setInstallmentId(2L);
+
+    DebtPositionDTO dp3 = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    dp3.setOrganizationId(org.getOrganizationId());
+    dp3.setStatus(DebtPositionStatus.PAID);
+    InstallmentDTO inst3 = dp3.getPaymentOptions().getFirst().getInstallments().getFirst();
+    inst3.setInstallmentId(3L);
+
+    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(multipleInstallmentIds);
+    when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
+    when(debtPositionService.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp);
+    when(debtPositionService.getDebtPositionDTOByInstallmentId(3L, accessToken)).thenReturn(dp3);
+
+    // Act
+    List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByInstallmentId(
+      request, accessToken);
+
+    // Assert
+    assertEquals(3, result.size());
+    assertEquals(Pair.of(dp, inst), result.get(0));
+    assertEquals(Pair.of(dp, inst2), result.get(1));
+    assertEquals(Pair.of(dp3, inst3), result.get(2));
+  }
+
+  @Test
+  void whenGetDebtPositionsAndInstallmentsByMultipleInstallmentIdsWithMismatchThenSilFaultException() {
+    // Arrange
+    String sessionId = "1-2-3";
+    List<Long> multipleInstallmentIds = List.of(1L, 2L, 3L);
+    PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, sessionId, false);
+
+    DebtPositionDTO dp2 = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    dp2.setOrganizationId(org.getOrganizationId());
+    dp2.setStatus(DebtPositionStatus.PAID);
+    InstallmentDTO inst2 = dp2.getPaymentOptions().getFirst().getInstallments().getFirst();
+    inst2.setInstallmentId(999L);
+
+    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(multipleInstallmentIds);
+    when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
+    when(debtPositionService.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp2);
+
+    // Act & Assert
+    assertThrows(SilFaultException.class, () ->
+      installmentService.getDebtPositionsAndInstallmentsByInstallmentId(request, accessToken)
+    );
+  }
+
+  @Test
   void whenGetDebtPositionsAndInstallmentsByIudThenSuccess() {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), IUD, inst.getIud(), false);
