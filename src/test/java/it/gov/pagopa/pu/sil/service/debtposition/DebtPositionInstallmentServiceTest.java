@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType.*;
@@ -39,7 +40,7 @@ class DebtPositionInstallmentServiceTest {
   private DebtPositionDTO dp;
   private DebtPositionDTO otherDp;
   private InstallmentDTO inst;
-  private List<Long> installmentIds;
+  private List<Long> installmentIds = new ArrayList<>();
   private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
@@ -49,7 +50,7 @@ class DebtPositionInstallmentServiceTest {
     accessToken = "accessToken";
     org = podamFactory.manufacturePojo(Organization.class);
     org.setStatus(OrganizationStatus.ACTIVE);
-    installmentIds = List.of(1L);
+    installmentIds.add(1L);
     dp = podamFactory.manufacturePojo(DebtPositionDTO.class);
     dp.setOrganizationId(org.getOrganizationId());
     dp.setStatus(DebtPositionStatus.PAID);
@@ -95,7 +96,8 @@ class DebtPositionInstallmentServiceTest {
   void whenGetDebtPositionsAndInstallmentsByMultipleInstallmentIdsThenSuccess() {
     // Arrange
     String sessionId = "1-2-3";
-    List<Long> multipleInstallmentIds = List.of(1L, 2L, 3L);
+    installmentIds.add(2L);
+    installmentIds.add(3L);
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, sessionId, false);
 
     InstallmentDTO inst2 = dp.getPaymentOptions().getFirst().getInstallments().getLast();
@@ -107,7 +109,7 @@ class DebtPositionInstallmentServiceTest {
     InstallmentDTO inst3 = dp3.getPaymentOptions().getFirst().getInstallments().getFirst();
     inst3.setInstallmentId(3L);
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(multipleInstallmentIds);
+    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
     when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
     when(debtPositionService.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp);
     when(debtPositionService.getDebtPositionDTOByInstallmentId(3L, accessToken)).thenReturn(dp3);
@@ -127,7 +129,8 @@ class DebtPositionInstallmentServiceTest {
   void whenGetDebtPositionsAndInstallmentsByMultipleInstallmentIdsWithMismatchThenSilFaultException() {
     // Arrange
     String sessionId = "1-2-3";
-    List<Long> multipleInstallmentIds = List.of(1L, 2L, 3L);
+    installmentIds.add(2L);
+    installmentIds.add(3L);
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, sessionId, false);
 
     DebtPositionDTO dp2 = podamFactory.manufacturePojo(DebtPositionDTO.class);
@@ -136,7 +139,7 @@ class DebtPositionInstallmentServiceTest {
     InstallmentDTO inst2 = dp2.getPaymentOptions().getFirst().getInstallments().getFirst();
     inst2.setInstallmentId(999L);
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(multipleInstallmentIds);
+    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
     when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
     when(debtPositionService.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp2);
 
@@ -205,5 +208,21 @@ class DebtPositionInstallmentServiceTest {
       installmentService.getDebtPositionsAndInstallmentsByIuv(
         request, org, accessToken)
     );
+  }
+
+  @Test
+  void givenDebtPositionCancelledWhenGetDebtPositionsAndInstallmentsByIuvThenReturnEmptyList() {
+    // Arrange
+    PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
+    dp.setStatus(DebtPositionStatus.CANCELLED);
+
+    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), ALLOWED_ORIGINS, accessToken))
+      .thenReturn(List.of(dp));
+
+    // Act
+    List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByIuv(
+      request, org, accessToken);
+    // Assert
+    assertTrue(result.isEmpty());
   }
 }
