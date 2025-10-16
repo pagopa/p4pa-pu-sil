@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType.*;
 import static it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService.*;
@@ -41,7 +43,7 @@ class DebtPositionInstallmentServiceTest {
   private DebtPositionDTO otherDp;
   private InstallmentDTO inst;
   private List<Long> installmentIds = new ArrayList<>();
-  private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList;
+  private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList = new ArrayList<>();
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
@@ -57,10 +59,16 @@ class DebtPositionInstallmentServiceTest {
     inst = dp.getPaymentOptions().getFirst().getInstallments().getFirst();
     inst.setInstallmentId(1L);
     inst.setStatus(InstallmentStatus.PAID);
-    pairList = List.of(Pair.of(dp, inst));
+    pairList.add(Pair.of(dp, inst));
     otherDp = podamFactory.manufacturePojo(DebtPositionDTO.class);
     otherDp.setOrganizationId(org.getOrganizationId());
     otherDp.setStatus(DebtPositionStatus.PAID);
+  }
+
+  @AfterEach
+  void tearDown() {
+    installmentIds.clear();
+    pairList.clear();
   }
 
   @Test
@@ -102,12 +110,14 @@ class DebtPositionInstallmentServiceTest {
 
     InstallmentDTO inst2 = dp.getPaymentOptions().getFirst().getInstallments().getLast();
     inst2.setInstallmentId(2L);
+    pairList.add(Pair.of(dp, inst2));
 
     DebtPositionDTO dp3 = podamFactory.manufacturePojo(DebtPositionDTO.class);
     dp3.setOrganizationId(org.getOrganizationId());
     dp3.setStatus(DebtPositionStatus.PAID);
     InstallmentDTO inst3 = dp3.getPaymentOptions().getFirst().getInstallments().getFirst();
     inst3.setInstallmentId(3L);
+    pairList.add(Pair.of(dp3, inst3));
 
     when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
     when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
@@ -120,9 +130,8 @@ class DebtPositionInstallmentServiceTest {
 
     // Assert
     assertEquals(3, result.size());
-    assertEquals(Pair.of(dp, inst), result.get(0));
-    assertEquals(Pair.of(dp, inst2), result.get(1));
-    assertEquals(Pair.of(dp3, inst3), result.get(2));
+    IntStream.range(0, result.size())
+      .forEach(i -> assertEquals(pairList.get(i), result.get(i)));
   }
 
   @Test
