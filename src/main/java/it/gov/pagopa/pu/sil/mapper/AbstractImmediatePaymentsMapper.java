@@ -135,7 +135,7 @@ abstract class AbstractImmediatePaymentsMapper {
         org.getOrganizationId(), singleTranfer.getIdentificativoTipoDovuto(), accessToken);
 
       MixedTransferDTO mixedTransferDTO = MixedTransferDTO.builder()
-        .iud(singleTranfer.getIdentificativoTipoDovuto())
+        .iud(singleTranfer.getIdentificativoUnivocoDovuto())
         .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
         .amountCents(ConversionUtils.bigDecimalEuroAmountToCentsAmount(singleTranfer.getImportoSingoloVersamento()))
         .balance(Optional.ofNullable(singleTranfer.getBilancio())
