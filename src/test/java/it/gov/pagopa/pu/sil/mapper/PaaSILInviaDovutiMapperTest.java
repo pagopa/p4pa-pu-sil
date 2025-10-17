@@ -198,7 +198,7 @@ class PaaSILInviaDovutiMapperTest {
           TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "transfers", "notificationDate", "ingestionFlowFileId",
             "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
-            "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+            "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "balance");
             assertNotNull(i.getTransfers());
             assertEquals(1, i.getTransfers().size());
             TransferDTO transfer = i.getTransfers().getFirst();
@@ -294,14 +294,14 @@ class PaaSILInviaDovutiMapperTest {
     List<MixedTransferDTO> mixedTransfers = mixedDebtPositionDTO.getTransfers();
     assertEquals(3, mixedTransfers.size());
     mixedTransfers.forEach(mt -> {
-      String excludedFields = "";
+      String excludedFields = "balance";
       if(mt.getIud().contains("STAMP")) {
-        excludedFields += "iban,postalIban,legacyPaymentMetadata";
+        excludedFields += ",iban,postalIban,legacyPaymentMetadata";
         assertNull(mt.getIban());
         assertNull(mt.getPostalIban());
         assertNull(mt.getLegacyPaymentMetadata());
       } else {
-        excludedFields += "stampHashDocument,stampProvincialResidence,stampType";
+        excludedFields += ",stampHashDocument,stampProvincialResidence,stampType";
         assertNull(mt.getStampHashDocument());
         assertNull(mt.getStampType());
         assertNull(mt.getStampProvincialResidence());
