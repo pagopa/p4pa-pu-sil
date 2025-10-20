@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractExportFileReservationService {
+    public static final String IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO = "SECONDARIO";
+
     protected final DebtPositionTypeService debtPositionTypeService;
 
     protected AbstractExportFileReservationService(DebtPositionTypeService debtPositionTypeService) {
