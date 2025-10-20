@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaidExportFileReservationService extends
   AbstractExportFileReservationService {
-  public static final String IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO = "SECONDARIO";
-
   private final ExportFileService exportFileService;
 
   public PaidExportFileReservationService(ExportFileService exportFileService,

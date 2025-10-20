@@ -1,7 +1,21 @@
 package it.gov.pagopa.pu.sil.service.exportfile;
 
+import static it.gov.pagopa.pu.sil.service.exportfile.AbstractExportFileReservationService.IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
+import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter.DebtPositionOriginsEnum;
+import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO.ExportFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
@@ -9,6 +23,8 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import java.time.OffsetDateTime;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,13 +33,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-
-import java.time.OffsetDateTime;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaaSILPrenotaExportFlussoIncrementaleConRicevutaServiceTest {
@@ -95,9 +104,26 @@ class PaaSILPrenotaExportFlussoIncrementaleConRicevutaServiceTest {
 
     DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg().flagActive(true).debtPositionTypeOrgId(1L);
 
+    PaidExportFileRequestDTO expectedMappedRequestDto = new PaidExportFileRequestDTO()
+      .organizationId(organizationId)
+      .exportFileType(ExportFileTypeEnum.PAID)
+      .fileVersion(fileVersion)
+      .filterFields(new it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter().from(from).to(to))
+        .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
+        .debtPositionOrigins(
+          List.of(DebtPositionOriginsEnum.ORDINARY,
+            DebtPositionOriginsEnum.ORDINARY_SIL,
+            DebtPositionOriginsEnum.SPONTANEOUS,
+            DebtPositionOriginsEnum.SPONTANEOUS_SIL,
+            DebtPositionOriginsEnum.SPONTANEOUS_MIXED,
+            DebtPositionOriginsEnum.RECEIPT_FILE,
+            DebtPositionOriginsEnum.RECEIPT_PAGOPA,
+            DebtPositionOriginsEnum.REPORTING_PAGOPA)));
+
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(eq(organizationId), any(), eq(accessToken)))
       .thenReturn(debtPositionTypeOrg);
-    when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken)))
+    when(exportFileServiceMock.createPaidExportFile(expectedMappedRequestDto, accessToken))
       .thenReturn(456L);
 
     // When
@@ -115,6 +141,50 @@ class PaaSILPrenotaExportFlussoIncrementaleConRicevutaServiceTest {
     // Then
     assertNotNull(result);
     assertEquals(456L, result);
+  }
+
+  @Test
+  void givenSecondaryOrgWhenDoReservationThenOk() {
+    // Given
+    String orgIpaCode = "ORG2";
+    Long organizationId = 123L;
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(organizationId, "ORGFC", orgIpaCode);
+    userInfo.setUserId("admin2");
+    String accessToken = "token2";
+    String fileVersion = "1.0";
+    OffsetDateTime from = OffsetDateTime.now();
+    OffsetDateTime to = OffsetDateTime.now();
+    boolean incremental = true;
+
+    PaidExportFileRequestDTO expectedMappedRequestDto = new PaidExportFileRequestDTO()
+      .organizationId(organizationId)
+      .exportFileType(ExportFileTypeEnum.PAID)
+      .fileVersion(fileVersion)
+      .filterFields(new it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter()
+        .installmentUpdateDateTime(new OffsetDateTimeIntervalFilter().from(from).to(to))
+        .debtPositionTypeOrgId(null)
+        .debtPositionOrigins(List.of(DebtPositionOriginsEnum.SECONDARY_ORG)));
+
+    when(exportFileServiceMock.createPaidExportFile(expectedMappedRequestDto, accessToken))
+      .thenReturn(456L);
+
+    // When
+    Long result = service.doReservation(
+      userInfo,
+      accessToken,
+      orgIpaCode,
+      fileVersion,
+      from,
+      to,
+      IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO,
+      incremental
+    );
+
+    // Then
+    assertNotNull(result);
+    assertEquals(456L, result);
+
+    verify(debtPositionTypeServiceMock, never()).getDebtPositionTypeOrgByOrgIdAndType(any(), any(), any());
   }
 
   @Test
