@@ -197,4 +197,24 @@ class DebtPositionClientTest {
     // Then
     Assertions.assertEquals(expectedResponse, result);
   }
+
+  @Test
+  void whenGetDebtPositionsByDebtorFiscalCodeAndDebtorEntityTypeThenInvokeApi() {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    String debtorFiscalCode = "12345678901";
+    PersonEntityType debtorEntityType = PersonEntityType.F;
+    List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
+
+    Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
+      .thenReturn(debtPositionApiMock);
+    Mockito.when(debtPositionApiMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, List.of(InstallmentStatus.UNPAID), null, null, null, null))
+      .thenReturn(expectedResult);
+
+    // When
+    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, InstallmentStatus.UNPAID, null, null, accessToken);
+
+    // Then
+    Assertions.assertEquals(expectedResult, result);
+  }
 }

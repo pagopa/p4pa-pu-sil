@@ -139,7 +139,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
     assertNotNull(result);
     assertNull(result.getFault());
     assertNotNull(result.getListaCarrelli());
-    assertEquals(1, result.getListaCarrelli().getRispostaCarrellos().size());
+    assertEquals(2, result.getListaCarrelli().getRispostaCarrellos().size());
     RispostaCarrello cartResponse = result.getListaCarrelli().getRispostaCarrellos().getFirst();
     assertEquals(org.getIpaCode(), cartResponse.getCodIpaEnte());
     assertEquals(expectedOutcome, cartResponse.getEsito());

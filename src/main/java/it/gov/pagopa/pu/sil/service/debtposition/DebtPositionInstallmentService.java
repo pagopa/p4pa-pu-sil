@@ -1,4 +1,3 @@
-
 package it.gov.pagopa.pu.sil.service.debtposition;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
@@ -31,9 +30,7 @@ public class DebtPositionInstallmentService {
     PaymentStatusRequest request,
     String accessToken) {
     return sessionIdMapper.mapSessionIdToInstallmentIds(request.id()).stream()
-      .map(id -> debtPositionService.getDebtPositionDTOByInstallmentId(id, accessToken))
-      .map(debtPosition -> Pair.of(debtPosition,
-        findInstallment(debtPosition, installment -> installment.getInstallmentId().toString().equals(request.id()), SilFaults.PAA_ID_SESSION_NON_VALIDO)))
+      .map(id -> createPairFromInstallmentId(id, accessToken))
       .toList();
   }
 
@@ -41,32 +38,40 @@ public class DebtPositionInstallmentService {
     PaymentStatusRequest request,
     Organization organization,
     String accessToken) {
-    return getFirstValidDebtPosition(
-      debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-        organization.getOrganizationId(), request.id(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken),
-      installment -> installment.getIud().equals(request.id()), SilFaults.PAA_IUD_NON_VALIDO);
+    List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByOrganizationIdAndIud(
+      organization.getOrganizationId(), request.id(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken);
+    return findFirstValidPair(debtPositions, inst -> inst.getIud().equals(request.id()), SilFaults.PAA_IUD_NON_VALIDO);
   }
 
   public List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallmentsByIuv(
     PaymentStatusRequest request,
     Organization organization,
     String accessToken) {
-    return getFirstValidDebtPosition(
-      debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-        organization.getOrganizationId(), request.id(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken),
-      installment -> installment.getIuv().equals(request.id()), SilFaults.PAA_IUV_NON_VALIDO);
+    List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
+      organization.getOrganizationId(), request.id(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken);
+    return findFirstValidPair(debtPositions, inst -> inst.getIuv().equals(request.id()), SilFaults.PAA_IUV_NON_VALIDO);
   }
 
-  private List<Pair<DebtPositionDTO, InstallmentDTO>> getFirstValidDebtPosition(
+  private Pair<DebtPositionDTO, InstallmentDTO> createPairFromInstallmentId(Long installmentId, String accessToken) {
+    DebtPositionDTO debtPosition = debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
+    InstallmentDTO installment = findInstallment(debtPosition, inst -> inst.getInstallmentId().equals(installmentId), SilFaults.PAA_ID_SESSION_NON_VALIDO);
+    return Pair.of(debtPosition, installment);
+  }
+
+  private List<Pair<DebtPositionDTO, InstallmentDTO>> findFirstValidPair(
     List<DebtPositionDTO> debtPositions,
     Predicate<InstallmentDTO> predicate,
     SilFaults fault) {
     return debtPositions.stream()
-      .filter(dp -> !Objects.equals(dp.getStatus(), DebtPositionStatus.CANCELLED))
+      .filter(this::isNotCancelled)
       .findFirst()
       .map(dp -> Pair.of(dp, findInstallment(dp, predicate, fault)))
       .map(List::of)
       .orElse(List.of());
+  }
+
+  private boolean isNotCancelled(DebtPositionDTO debtPosition) {
+    return !Objects.equals(debtPosition.getStatus(), DebtPositionStatus.CANCELLED);
   }
 
   private InstallmentDTO findInstallment(DebtPositionDTO debtPosition, Predicate<InstallmentDTO> predicate, SilFaults fault) {

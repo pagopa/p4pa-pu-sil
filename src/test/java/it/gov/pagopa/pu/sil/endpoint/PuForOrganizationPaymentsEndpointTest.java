@@ -37,6 +37,8 @@ import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessin
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediEsitoCarrelloDovutiService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiConRicevutaService;
 import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPagatiService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediPosizioniAperteService;
+import it.gov.pagopa.pu.sil.service.querypayments.PaaSILChiediStoricoPagamentiService;
 import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -103,6 +105,10 @@ class PuForOrganizationPaymentsEndpointTest {
   private PaaSILChiediPagatiConRicevutaService paaSILChiediPagatiConRicevutaServiceMock;
   @Mock
   private PaaSILChiediEsitoCarrelloDovutiService paaSILChiediEsitoCarrelloDovutiServiceMock;
+  @Mock
+  private PaaSILChiediPosizioniAperteService paaSILChiediPosizioniAperteServiceMock;
+  @Mock
+  private PaaSILChiediStoricoPagamentiService paaSILChiediStoricoPagamentiServiceMock;
   @Mock
   private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
 
@@ -578,6 +584,49 @@ class PuForOrganizationPaymentsEndpointTest {
   }
   // endregion
 
+  // region PaaSILChiediStoricoPagamenti
+  @Test
+  void givenValidRequestWhenPaaSILChiediStoricoPagamentiThenOk() throws Exception {
+    // Given
+    PaaSILChiediStoricoPagamenti request = podamFactory.manufacturePojo(PaaSILChiediStoricoPagamenti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    PaaSILChiediStoricoPagamentiRisposta expectedResponse = new PaaSILChiediStoricoPagamentiRisposta();
+
+    Mockito.when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenReturn(expectedResponse);
+
+    // When
+    PaaSILChiediStoricoPagamentiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediStoricoPagamenti(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAnErrorWhenPaaSILChiediStoricoPagamentiThenKo() throws Exception {
+    // Given
+    PaaSILChiediStoricoPagamenti request = podamFactory.manufacturePojo(PaaSILChiediStoricoPagamenti.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
+      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+
+    // When
+    PaaSILChiediStoricoPagamentiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediStoricoPagamenti(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertNotNull(result.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
+    Assertions.assertEquals("Description", result.getFault().getDescription());
+  }
+  // endregion
+
   // region PaaSILChiediAvvisiPendenti
   @Test
   void givenAnyWhenPaaSILChiediAvvisiPendentiThenFault() throws Exception {
@@ -589,10 +638,44 @@ class PuForOrganizationPaymentsEndpointTest {
 
   // region PaaSILChiediPosizioniAperte
   @Test
-  void givenAnyWhenPaaSILChiediPosizioniAperteThenFault() throws Exception {
-    testFaultResponse(PaaSILChiediPosizioniAperte.class,
-      SilFaults.PAA_SYSTEM_ERROR.code(),
-      puForOrganizationPaymentsEndpoint::paaSILChiediPosizioniAperte);
+  void givenValidRequestWhenPaaSILChiediPosizioniAperteThenOk() throws Exception {
+    // Given
+    PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+    PaaSILChiediPosizioniAperteRisposta expectedResponse = new PaaSILChiediPosizioniAperteRisposta();
+
+    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken, VALID_ORG_IPA_CODE))
+      .thenReturn(expectedResponse);
+
+    // When
+    PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAnErrorWhenPaaSILChiediPosizioniAperteThenKo() throws Exception {
+    // Given
+    PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken, VALID_ORG_IPA_CODE))
+      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+
+    // When
+    PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, header);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertNotNull(result.getFault());
+    Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
+    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 
