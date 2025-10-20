@@ -48,7 +48,6 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
   protected PaaSILChiediPagatiConRicevutaRisposta mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList,
                                                          Organization organization, String accessToken, PaaSILChiediPagatiConRicevuta request) {
 
-    //TODO currently support only one debt position and installment, but could be extended to support multiple
     InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
 
     //map debt position to Pagati
