@@ -41,7 +41,6 @@ public class PaaSILChiediPagatiService extends AbstractQueryPaymentsService<PaaS
                                               Organization organization, String accessToken,
                                               PaaSILChiediPagati request) {
 
-    //TODO currently support only one debt position and installment, but could be extended to support multiple
     InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
 
     //map debt position to Pagati

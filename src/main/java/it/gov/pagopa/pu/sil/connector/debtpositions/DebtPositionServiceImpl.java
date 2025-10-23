@@ -7,6 +7,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -57,5 +58,18 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   @Override
   public DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken) {
     return client.getDebtPositionByInstallmentId(installmentId, accessToken);
+  }
+
+  @Override
+  public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+    String debtorFiscalCode,
+    PersonEntityType debtorEntityType,
+    Long organizationId,
+    InstallmentStatus status,
+    OffsetDateTime fromDate,
+    OffsetDateTime toDate,
+    String accessToken
+  ) {
+    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, status, fromDate, toDate, accessToken);
   }
 }

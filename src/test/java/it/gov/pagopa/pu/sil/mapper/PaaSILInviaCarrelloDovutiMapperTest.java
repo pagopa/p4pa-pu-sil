@@ -329,7 +329,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
       assertNull(mt.getStampType());
       assertNull(mt.getStampProvincialResidence());
       TestUtils.checkAllNotNullFields(mt,
-        "stampType", "stampHashDocument", "stampProvincialResidence");
+        "stampType", "stampHashDocument", "stampProvincialResidence", "balance");
     });
   }
 }

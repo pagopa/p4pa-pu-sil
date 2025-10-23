@@ -52,30 +52,37 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
 
   @Override
   protected PaaSILChiediEsitoCarrelloDovutiRisposta mapper(List<Pair<DebtPositionDTO, InstallmentDTO>> debtPositionWithInstallmentList,
-                                                         Organization organization, String accessToken, PaaSILChiediEsitoCarrelloDovuti request) {
+                                                           Organization organization, String accessToken, PaaSILChiediEsitoCarrelloDovuti request) {
     // Prepare the response
     PaaSILChiediEsitoCarrelloDovutiRisposta response = new PaaSILChiediEsitoCarrelloDovutiRisposta();
     response.setListaCarrelli(new ListaCarrelli());
-    RispostaCarrello rispostaCarrello = new RispostaCarrello();
-    response.getListaCarrelli().getRispostaCarrellos().add(rispostaCarrello);
 
-    //TODO currently support only one debt position and installment, but could be extended to support multiple
-    InstallmentDTO installmentDTO = debtPositionWithInstallmentList.getFirst().getRight();
+    // Loop through all installments instead of taking only the first
+    for (Pair<DebtPositionDTO, InstallmentDTO> pair : debtPositionWithInstallmentList) {
+      InstallmentDTO installmentDTO = pair.getRight();
 
-    CartStatus cartStatus = getCartStatus(installmentDTO);
-    rispostaCarrello.setEsito(cartStatus.getValue());
-    rispostaCarrello.setCodIpaEnte(organization.getIpaCode());
-    if(cartStatus == CartStatus.PAID) {
-      //map debt position to Pagati
-      byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installmentDTO, organization, accessToken);
+      RispostaCarrello rispostaCarrello = new RispostaCarrello();
 
-      //retrieve the original receipt
-      byte[] encodedReceipt = receiptService.getReceiptById(installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
+      CartStatus cartStatus = getCartStatus(installmentDTO);
+      rispostaCarrello.setEsito(cartStatus.getValue());
+      rispostaCarrello.setCodIpaEnte(organization.getIpaCode());
 
-      rispostaCarrello.setPagati(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedPagati)));
-      rispostaCarrello.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedReceipt)));
+      if(cartStatus == CartStatus.PAID) {
+        // Map each installment to Pagati
+        byte[] encodedPagati = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(
+          installmentDTO, organization, accessToken);
+
+        // Retrieve the receipt for this specific installment
+        byte[] encodedReceipt = receiptService.getReceiptById(
+          installmentDTO.getReceiptId(), organization.getOrganizationId(), accessToken);
+
+        rispostaCarrello.setPagati(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedPagati)));
+        rispostaCarrello.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", encodedReceipt)));
+      }
+
+      // Add each cart response to the list
+      response.getListaCarrelli().getRispostaCarrellos().add(rispostaCarrello);
     }
-
     return response;
   }
 

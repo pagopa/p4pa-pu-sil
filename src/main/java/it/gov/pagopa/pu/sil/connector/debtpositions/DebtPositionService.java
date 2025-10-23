@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface DebtPositionService {
@@ -68,4 +69,26 @@ public interface DebtPositionService {
   List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIud(Long organizationId, String iud, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
 
   DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken);
+
+  /**
+   * Retrieves a list of DebtPositionDTOs by debtor fiscal code and debtor entity type.
+   *
+   * @param debtorFiscalCode the fiscal code of the debtor
+   * @param debtorEntityType the entity type of the debtor
+   * @param organizationId the ID of the organization
+   * @param status the status of the installments to filter by
+   * @param fromDate the start date for filtering debt positions (inclusive)
+   * @param toDate the end date for filtering debt positions (inclusive)
+   * @param accessToken the access token for authentication
+   * @return a list of DebtPositionDTOs matching the criteria
+   */
+  List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+    String debtorFiscalCode,
+    PersonEntityType debtorEntityType,
+    Long organizationId,
+    InstallmentStatus status,
+    OffsetDateTime fromDate,
+    OffsetDateTime toDate,
+    String accessToken
+  );
 }

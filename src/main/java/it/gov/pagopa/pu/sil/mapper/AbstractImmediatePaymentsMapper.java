@@ -51,7 +51,7 @@ abstract class AbstractImmediatePaymentsMapper {
 
     String balance = Optional.ofNullable(versamento.getBilancio())
       .map(b -> jaxbTransformService.marshalling(b, Bilancio.class))
-      .orElse(debtPositionTypeOrg.getBalance());
+      .orElse(null);
 
     Long amount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(versamento.getImportoSingoloVersamento());
 
@@ -135,12 +135,12 @@ abstract class AbstractImmediatePaymentsMapper {
         org.getOrganizationId(), singleTranfer.getIdentificativoTipoDovuto(), accessToken);
 
       MixedTransferDTO mixedTransferDTO = MixedTransferDTO.builder()
-        .iud(singleTranfer.getIdentificativoTipoDovuto())
+        .iud(singleTranfer.getIdentificativoUnivocoDovuto())
         .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
         .amountCents(ConversionUtils.bigDecimalEuroAmountToCentsAmount(singleTranfer.getImportoSingoloVersamento()))
         .balance(Optional.ofNullable(singleTranfer.getBilancio())
           .map(b -> jaxbTransformService.marshalling(b, Bilancio.class))
-          .orElse(debtPositionTypeOrg.getBalance()))
+          .orElse(null))
         .legacyPaymentMetadata(singleTranfer.getDatiSpecificiRiscossione())
         .build();
 

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -53,7 +52,7 @@ public class InstantPaymentMapper {
           .status(InstallmentStatus.UNPAID)
           .iud(payment.getIud())
           .amountCents(payment.getTotalAmountCents())
-          .balance(Optional.ofNullable(payment.getBalance()).orElse(debtPositionTypeOrg.getBalance()))
+          .balance(payment.getBalance())
           .dueDate(Utilities.getSpontaneousSilExpirationDate())
           .debtor(payment.getDebtor())
           .remittanceInformation(transfer.getRemittanceInformation())
