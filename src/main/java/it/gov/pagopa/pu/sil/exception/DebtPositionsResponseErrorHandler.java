@@ -9,8 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
@@ -23,8 +22,6 @@ public class DebtPositionsResponseErrorHandler extends
   DefaultResponseErrorHandler {
 
   private static final String DEBT_POSITIONS = "DEBT-POSITIONS";
-  private static final Pattern ERROR_CODE_PATTERN = Pattern.compile(
-    "^\\[([A-Z0-9_]++)]\\s+.*");
 
   private final ResponseErrorHandler errorLoggerHandler;
   private final ObjectMapper objectMapper;
@@ -39,8 +36,9 @@ public class DebtPositionsResponseErrorHandler extends
   }
 
   @Override
-  public void handleError(ClientHttpResponse response,
-    HttpStatusCode statusCode, URI url, HttpMethod method) throws IOException {
+  public void handleError(@NonNull ClientHttpResponse response,
+    @NonNull HttpStatusCode statusCode, @NonNull URI url,
+    @NonNull HttpMethod method) throws IOException {
     if (errorLoggerHandler != null) {
       try {
         errorLoggerHandler.handleError(url, method, response);
@@ -88,10 +86,18 @@ public class DebtPositionsResponseErrorHandler extends
       return Optional.empty();
     }
 
-    Matcher matcher = ERROR_CODE_PATTERN.matcher(message.trim());
+    String trimmedMessage = message.trim();
+    if (!trimmedMessage.startsWith("[")) {
+      return Optional.empty();
+    }
 
-    if (matcher.matches() && matcher.groupCount() > 0) {
-      return Optional.of(matcher.group(1));
+    int closingBracketIndex = trimmedMessage.indexOf(']');
+    if (closingBracketIndex > 1) {
+      String code = trimmedMessage.substring(1, closingBracketIndex);
+
+      if (!code.isBlank()) {
+        return Optional.of(code);
+      }
     }
 
     return Optional.empty();
