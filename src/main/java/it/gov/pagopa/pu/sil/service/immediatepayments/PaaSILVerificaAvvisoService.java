@@ -51,7 +51,7 @@ public class PaaSILVerificaAvvisoService extends BaseVerifyNoticeService<PaaSILV
     if(InstallmentStatus.UNPAID.equals(installment.getStatus())) {
       return doCheckOut(installment, organization, callbackUrl);
     } else {
-      throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO,"Nessun avviso pagabile trovato per l'dentificativo univoco del versamento indicato");
+      throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO,"Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato");
     }
   }
 }

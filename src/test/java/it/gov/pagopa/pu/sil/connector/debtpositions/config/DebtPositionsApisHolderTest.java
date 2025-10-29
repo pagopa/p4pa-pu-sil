@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +27,7 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
         DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
           .baseUrl("http://example.com")
           .build();
-        apisHolder = new DebtPositionsApisHolder(clientConfig, restTemplateBuilderMock);
+        apisHolder = new DebtPositionsApisHolder(clientConfig, restTemplateBuilderMock, new ObjectMapper());
     }
 
     @AfterEach

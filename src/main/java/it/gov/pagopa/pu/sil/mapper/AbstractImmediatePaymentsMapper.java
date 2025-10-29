@@ -42,11 +42,7 @@ abstract class AbstractImmediatePaymentsMapper {
     // get debt position type org and validate
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
-    //TODO: P4ADEV-3975 remove redundant validation
-    validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, versamento.getIdentificativoTipoDovuto());
-    PersonValidationUtils.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
     validationService.validateStamp(versamento);
-    validationService.validatePaymentData(versamento);
     validationService.validateIud(org.getOrganizationId(), versamento.getIdentificativoUnivocoDovuto(), accessToken);
 
     String balance = Optional.ofNullable(versamento.getBilancio())
