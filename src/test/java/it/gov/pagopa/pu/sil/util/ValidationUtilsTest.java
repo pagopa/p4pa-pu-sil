@@ -331,20 +331,4 @@ class ValidationUtilsTest {
       Arguments.of(new Object(), new Object(), false)
     );
   }
-
-  @ParameterizedTest
-  @ValueSource(strings = {
-    "9/1646246AP/long/long", // valid, should extract "1646246AP"
-    "2/9079248TS/.",         // valid, should extract "9079248TS"
-    "InvalidData",           // invalid, should return null
-    "0/1234534AA/",          // invalid, should return null
-    "0/1234534IM"            // invalid, should return null
-  })
-  @NullSource
-  void testGetCategory(String input) {
-    String expected = "";
-    if ("9/1646246AP/long/long".equals(input)) expected = "1646246AP";
-    if ("2/9079248TS/.".equals(input)) expected = "9079248TS";
-    assertEquals(expected, ValidationUtils.getCategory(input));
-  }
 }

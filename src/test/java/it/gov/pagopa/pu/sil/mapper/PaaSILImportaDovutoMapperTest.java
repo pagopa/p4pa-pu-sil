@@ -118,7 +118,7 @@ class PaaSILImportaDovutoMapperTest {
     CtDatiVersamentoDovutiEntiSecondari secondaryTransferData = podamFactory.manufacturePojo(CtDatiVersamentoDovutiEntiSecondari.class);
     when(secondaryTransferMapperMock.mapToCtDatiVersamentoDovutiEntiSecondari(request.getListaDovutiEntiSecondari())).thenReturn(Optional.of(secondaryTransferData));
     doNothing().when(immediatePaymentsValidationServiceMock).validateSecondaryDebtPositionData(secondaryTransferData, 1);
-    doNothing().when(secondaryTransferMapperMock).fillSecondaryTransferData(any(), eq(secondaryTransferData));
+    doNothing().when(secondaryTransferMapperMock).fillSecondaryTransferData(any(), eq(secondaryTransferData), eq(versamento.getDatiVersamento().getIdentificativoTipoDovuto()), eq(ACCESS_TOKEN));
 
 
     Pair<DebtPositionDTO, String> response = mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN);
