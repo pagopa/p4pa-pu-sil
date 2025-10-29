@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.*;
@@ -25,6 +26,7 @@ abstract class AbstractImmediatePaymentsMapper {
   protected final DebtPositionTypeService debtPositionTypeService;
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
+  protected final DebtPositionInstallmentService debtPositionInstallmentService;
 
   protected DebtPositionDTO dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization org, String accessToken) {
     if (!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
@@ -66,7 +68,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .orgName(org.getOrgName())
       .amountCents(amount)
       .remittanceInformation(versamento.getCausaleVersamento())
-      .category(ValidationUtils.getCategory(versamento.getDatiSpecificiRiscossione()))
+      .category(debtPositionInstallmentService.getCategory(versamento.getDatiSpecificiRiscossione(), versamento.getIdentificativoTipoDovuto(), org.getOrganizationId(), accessToken))
       .build();
 
     Optional.ofNullable(versamento.getDatiMarcaBolloDigitale()).ifPresentOrElse(
