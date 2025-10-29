@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
+import it.gov.pagopa.pu.sil.exception.DebtPositionsResponseErrorHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,8 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     void setUp() {
         Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
         Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
+        Mockito.doNothing().when(restTemplateMock).setErrorHandler(Mockito.any(
+          DebtPositionsResponseErrorHandler.class));
         DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
           .baseUrl("http://example.com")
           .build();
