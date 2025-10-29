@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.exception;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -35,15 +35,14 @@ class DebtPositionsResponseErrorHandlerTest {
   @Mock
   private ResponseErrorHandler errorLoggerHandlerMock;
   @Mock
-  private ClientHttpResponse mockResponse;
+  private ClientHttpResponse responseMock;
 
   private ObjectMapper objectMapper;
 
-  @BeforeEach
-  void setUp() {
+  void setUp(boolean isPrintBodyWhenError) {
     DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
       .baseUrl(BASE_URL)
-      .printBodyWhenError(false)
+      .printBodyWhenError(isPrintBodyWhenError)
       .build();
     objectMapper = new ObjectMapper();
     errorHandler = new DebtPositionsResponseErrorHandler(clientConfig,
@@ -60,13 +59,18 @@ class DebtPositionsResponseErrorHandlerTest {
   @Test
   void handleError_shouldTranscodeAndThrowSilFaultExceptionForMappedCode()
     throws IOException {
+    setUp(true);
+
     String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message("[P4PA_INVALID_IUV] The iuv must be 17 characters long"));
-    when(mockResponse.getBody()).thenReturn(
-      new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
+    when(responseMock.getBody())
+      .thenReturn(  // First return because errorLoggerHandler will consume the stream
+        new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)))
+      .thenReturn(
+        new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 
     SilFaultException exception = assertThrows(SilFaultException.class, () ->
-      errorHandler.handleError(mockResponse, HttpStatusCode.valueOf(400),
+      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
         DUMMY_URI,
         HttpMethod.POST)
     );
@@ -74,15 +78,17 @@ class DebtPositionsResponseErrorHandlerTest {
   }
 
   @Test
-  void handleError_shouldFallbackToPaasystemErrorForUnmappedNativeCode()
+  void handleError_shouldFallbackToPaaSystemErrorForUnmappedNativeCode()
     throws IOException {
+    setUp(false);
+
     String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message("[UNKNOWN_CODE] This is an unmapped error message"));
-    when(mockResponse.getBody()).thenReturn(
+    when(responseMock.getBody()).thenReturn(
       new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 
     SilFaultException exception = assertThrows(SilFaultException.class, () ->
-      errorHandler.handleError(mockResponse, HttpStatusCode.valueOf(400),
+      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
         DUMMY_URI, HttpMethod.POST)
     );
 
@@ -90,10 +96,46 @@ class DebtPositionsResponseErrorHandlerTest {
   }
 
   @Test
+  void handleError_shouldThrowExceptionIfCannotDeserializeResponseBody()
+    throws IOException {
+    setUp(false);
+
+    when(responseMock.getBody()).thenThrow(IOException.class);
+
+    assertThrows(IOException.class, () ->
+      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
+        DUMMY_URI,
+        HttpMethod.POST)
+    );
+  }
+
+  @Test
   void handleError_shouldDelegateToSuperHandleErrorFor5xxStatus() {
+    setUp(false);
+
     assertThrows(Exception.class,
-      () -> errorHandler.handleError(mockResponse, HttpStatusCode.valueOf(500),
+      () -> errorHandler.handleError(responseMock, HttpStatusCode.valueOf(500),
         DUMMY_URI, HttpMethod.POST));
+  }
+
+  @Test
+  void extractErrorCode_shouldThrowPaaSystemExceptionWhenOriginalMessageIsBlank()
+    throws IOException {
+    setUp(false);
+
+    String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
+      .message(""));
+    when(responseMock.getBody()).thenReturn(
+      new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
+
+    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
+        DUMMY_URI, HttpMethod.POST)
+    );
+
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+    assertTrue(exception.getDescription()
+      .contains("Errore esterno con codice non trovato"));
   }
 
 }

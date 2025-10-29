@@ -24,7 +24,7 @@ public class DebtPositionsResponseErrorHandler extends
 
   private static final String DEBT_POSITIONS = "DEBT-POSITIONS";
   private static final Pattern ERROR_CODE_PATTERN = Pattern.compile(
-    "^\\[([A-Z0-9_]+)]\\s+.*");
+    "^\\[([A-Z0-9_]++)]\\s+.*");
 
   private final ResponseErrorHandler errorLoggerHandler;
   private final ObjectMapper objectMapper;
