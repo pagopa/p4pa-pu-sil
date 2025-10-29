@@ -4,9 +4,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
-import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.ente.ListaDovutiEntiSecondari;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
 import it.veneto.regione.schemas._2012.pagamenti.ente.DovutiEntiSecondari;
@@ -23,6 +23,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SecondaryTransferMapper {
   private final JAXBTransformService jaxbTransformService;
+  private final DebtPositionInstallmentService debtPositionInstallmentService;
 
   public Optional<CtDatiVersamentoDovutiEntiSecondari> mapToCtDatiVersamentoDovutiEntiSecondari(ListaDovutiEntiSecondari dovutiSecondariList) {
     //unmarshall "dovuti secondari" (if present)
@@ -44,7 +45,7 @@ public class SecondaryTransferMapper {
     return Optional.empty();
   }
 
-  public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData) {
+  public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData, String debtPositionTypeOrgCode, String accessToken) {
     long secondaryAmount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(secondaryTransferData.getImportoSingoloVersamento());
     TransferDTO secondaryTransfer = TransferDTO.builder()
       .transferIndex(2)
@@ -53,7 +54,7 @@ public class SecondaryTransferMapper {
       .amountCents(secondaryAmount)
       .remittanceInformation(secondaryTransferData.getCausaleVersamento())
       .iban(secondaryTransferData.getIbanAccreditoBeneficiario())
-      .category(ValidationUtils.getCategory(secondaryTransferData.getDatiSpecificiRiscossione()))
+      .category(debtPositionInstallmentService.getCategory(secondaryTransferData.getDatiSpecificiRiscossione(), debtPositionTypeOrgCode, debtPosition.getOrganizationId(), accessToken))
       .build();
 
     PaymentOptionDTO paymentOption = debtPosition.getPaymentOptions().getFirst();

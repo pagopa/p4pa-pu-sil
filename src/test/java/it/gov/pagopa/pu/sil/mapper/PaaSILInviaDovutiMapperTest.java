@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -47,6 +48,9 @@ class PaaSILInviaDovutiMapperTest {
 
   @Mock
   private ValidationService validationServiceMock;
+
+  @Mock
+  private DebtPositionInstallmentService debtPositionInstallmentServiceMock;
 
   UserInfo userInfo;
   Organization org;
@@ -158,6 +162,8 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
+    String expectedCategory = debtPositionType.getTaxonomyCode();
     if (testCase.equals("stamp")) {
       CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
       datiMarcaBolloDigitale.setTipoBollo("01");
@@ -166,6 +172,7 @@ class PaaSILInviaDovutiMapperTest {
       versamento.setDatiMarcaBolloDigitale(datiMarcaBolloDigitale);
     } else if(testCase.equals("customValidCategory")) {
       datiSpecificiRiscossione = "9/1234567IM/CUSTOM_VALID_CATEGORY";
+      expectedCategory = "9/1234567IM/";
     } else if(testCase.equals("customInvalidCategory")) {
       datiSpecificiRiscossione = "9/1234888/CUSTOM_INVALID_CATEGORY";
       debtPositionTypeOrg.setIban(null);
@@ -180,6 +187,8 @@ class PaaSILInviaDovutiMapperTest {
     when(personMapperMock.getAndValidateDebtor(any())).thenReturn(debtor);
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
+    when(debtPositionInstallmentServiceMock.getCategory(datiSpecificiRiscossione, versamento.getIdentificativoTipoDovuto(), org.getOrganizationId(), ACCESS_TOKEN)).thenReturn(expectedCategory);
+
 
     //when
     PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);

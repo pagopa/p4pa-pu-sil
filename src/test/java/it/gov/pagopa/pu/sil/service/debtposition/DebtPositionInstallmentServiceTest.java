@@ -4,12 +4,15 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,9 +26,9 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType.*;
-import static it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService.*;
+import static it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService.ALLOWED_ORIGINS;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionInstallmentServiceTest {
@@ -33,6 +36,8 @@ class DebtPositionInstallmentServiceTest {
   private DebtPositionService debtPositionService;
   @Mock
   private SessionIdMapper sessionIdMapper;
+  @Mock
+  private DebtPositionTypeService debtPositionTypeServiceMock;
 
   @InjectMocks
   private DebtPositionInstallmentService installmentService;
@@ -233,5 +238,51 @@ class DebtPositionInstallmentServiceTest {
       request, org, accessToken);
     // Assert
     assertTrue(result.isEmpty());
+  }
+
+  @Test
+  void testGetCategoryWhenLegacyIsValid() {
+    String legacyPaymentMetadata = "9/1646246AP/long/long";
+    String debtPositionTypeOrgCode = "CODE";
+    Long orgId = 1L;
+
+    String result = installmentService.getCategory(legacyPaymentMetadata, debtPositionTypeOrgCode, orgId, accessToken);
+
+    assertEquals("1646246AP", result);
+  }
+
+  @Test
+  void testGetCategoryWhenLegacyIsNotValid() {
+    String legacyPaymentMetadata = "9/1646246AX";
+    String debtPositionTypeOrgCode = "CODE";
+    Long orgId = 1L;
+
+    DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+    DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
+    debtPositionType.setTaxonomyCode("9/1122333AP/");
+
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(orgId, debtPositionTypeOrgCode, accessToken))
+      .thenReturn(debtPositionTypeOrg);
+    when(debtPositionTypeServiceMock.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken))
+      .thenReturn(debtPositionType);
+
+    String result = installmentService.getCategory(legacyPaymentMetadata, debtPositionTypeOrgCode, orgId, accessToken);
+
+    assertEquals("1122333AP", result);
+  }
+
+  @Test
+  void testGetCategoryWhenTypeCodeNotValid() {
+    String legacyPaymentMetadata = "9/1646246AX";
+    String debtPositionTypeOrgCode = "CODE";
+    Long orgId = 1L;
+
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(orgId, debtPositionTypeOrgCode, accessToken))
+      .thenReturn(null);
+
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () ->  installmentService.getCategory(legacyPaymentMetadata, debtPositionTypeOrgCode, orgId, accessToken));
+
+    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
+    assertTrue(exception.getDescription().contains("Tipo dovuto non valido: " + debtPositionTypeOrgCode));
   }
 }

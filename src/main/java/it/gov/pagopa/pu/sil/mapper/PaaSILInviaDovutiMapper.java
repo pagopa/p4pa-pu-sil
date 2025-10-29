@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -25,8 +26,9 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
   public PaaSILInviaDovutiMapper(JAXBTransformService jaxbTransformService,
                                  DebtPositionTypeService debtPositionService,
                                  PersonMapper personMapper,
-                                 ValidationService validationService) {
-    super(jaxbTransformService, debtPositionService, validationService, personMapper);
+                                 ValidationService validationService,
+                                 DebtPositionInstallmentService debtPositionInstallmentService) {
+    super(jaxbTransformService, debtPositionService, validationService, personMapper, debtPositionInstallmentService);
   }
 
   public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {

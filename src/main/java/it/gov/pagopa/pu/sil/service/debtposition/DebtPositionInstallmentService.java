@@ -1,10 +1,9 @@
 package it.gov.pagopa.pu.sil.service.debtposition;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
+import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
@@ -16,14 +15,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import static it.gov.pagopa.pu.sil.util.ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary;
+
 @Service
 public class DebtPositionInstallmentService {
   private final DebtPositionService debtPositionService;
   private final SessionIdMapper sessionIdMapper;
+  private final DebtPositionTypeService debtPositionTypeService;
 
-  public DebtPositionInstallmentService(DebtPositionService debtPositionService, SessionIdMapper sessionIdMapper) {
+  public DebtPositionInstallmentService(DebtPositionService debtPositionService, SessionIdMapper sessionIdMapper, DebtPositionTypeService debtPositionTypeService) {
     this.debtPositionService = debtPositionService;
     this.sessionIdMapper = sessionIdMapper;
+    this.debtPositionTypeService = debtPositionTypeService;
   }
 
   public List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallmentsByInstallmentId(
@@ -80,5 +83,19 @@ public class DebtPositionInstallmentService {
       .filter(predicate)
       .findFirst()
       .orElseThrow(() -> new SilFaultException(fault, "Avviso non trovato"));
+  }
+
+  public String getCategory(String legacyPaymentMetadata, String debtPositionTypeOrgCode, Long organizationId, String accessToken) {
+    String category = getTransferCategoryFromLegacyPaymentMetadataSecondary(legacyPaymentMetadata);
+    if(category == null) {
+      DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
+        organizationId, debtPositionTypeOrgCode, accessToken);
+      if (debtPositionTypeOrg == null) {
+        throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
+      }
+      DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
+      category = debtPositionType.getTaxonomyCode();
+    }
+    return category.replace("9/", "").replace("/", "");
   }
 }
