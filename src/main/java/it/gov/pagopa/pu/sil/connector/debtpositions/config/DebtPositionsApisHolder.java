@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.debtpositions.controller.ApiClient;
 import it.gov.pagopa.pu.debtpositions.controller.BaseApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionApi;
@@ -34,8 +33,7 @@ public class DebtPositionsApisHolder {
 
   public DebtPositionsApisHolder(
     DebtPositionsApiClientConfig clientConfig,
-    RestTemplateBuilder restTemplateBuilder,
-    ObjectMapper objectMapper
+    RestTemplateBuilder restTemplateBuilder
   ) {
     RestTemplate restTemplate = restTemplateBuilder.build();
     ApiClient apiClient = new ApiClient(restTemplate);
@@ -44,7 +42,7 @@ public class DebtPositionsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
 
-    restTemplate.setErrorHandler(new DebtPositionsResponseErrorHandler(clientConfig, objectMapper));
+    restTemplate.setErrorHandler(new DebtPositionsResponseErrorHandler(clientConfig));
 
     this.debtPositionTypeOrgSearchControllerApi = new DebtPositionTypeOrgSearchControllerApi(apiClient);
     this.debtPositionTypeEntityControllerApi = new DebtPositionTypeEntityControllerApi(apiClient);
