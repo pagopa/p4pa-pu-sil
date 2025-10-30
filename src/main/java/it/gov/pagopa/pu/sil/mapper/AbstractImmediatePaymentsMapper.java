@@ -144,6 +144,7 @@ abstract class AbstractImmediatePaymentsMapper {
           .map(b -> jaxbTransformService.marshalling(b, Bilancio.class))
           .orElse(null))
         .legacyPaymentMetadata(singleTranfer.getDatiSpecificiRiscossione())
+        .remittanceInformation(singleTranfer.getCausaleVersamento())
         .build();
 
       Optional.ofNullable(singleTranfer.getDatiMarcaBolloDigitale()).ifPresentOrElse(
@@ -169,7 +170,6 @@ abstract class AbstractImmediatePaymentsMapper {
       .sourceFlowName(sourceFlowName)
       .flagIuvVolatile(true)
       .description("MIXED")
-      .remittanceInformation(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().getFirst().getCausaleVersamento())
       .dueDate(Utilities.getSpontaneousSilExpirationDate())
       .debtor(debtor)
       .transfers(mixedTransfers)
