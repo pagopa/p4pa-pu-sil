@@ -16,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -118,13 +120,14 @@ class DebtPositionsResponseErrorHandlerTest {
         DUMMY_URI, HttpMethod.POST));
   }
 
-  @Test
-  void extractErrorCode_shouldThrowPaaSystemExceptionWhenOriginalMessageIsBlank()
+  @ParameterizedTest
+  @ValueSource(strings = {"", "ERROR", "[MALFORMED"})
+  void extractErrorCode_shouldThrowPaaSystemExceptionWhenCodeIsNotValid(String debtPositionsErrorMessage)
     throws IOException {
     setUp(false);
 
     String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
-      .message(""));
+      .message(debtPositionsErrorMessage));
     when(responseMock.getBody()).thenReturn(
       new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 

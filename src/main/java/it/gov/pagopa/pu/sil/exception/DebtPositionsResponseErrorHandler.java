@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Optional;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
@@ -36,9 +35,8 @@ public class DebtPositionsResponseErrorHandler extends
   }
 
   @Override
-  public void handleError(@NonNull ClientHttpResponse response,
-    @NonNull HttpStatusCode statusCode, @NonNull URI url,
-    @NonNull HttpMethod method) throws IOException {
+  public void handleError(ClientHttpResponse response,
+    HttpStatusCode statusCode, URI url, HttpMethod method) throws IOException {
     if (errorLoggerHandler != null) {
       try {
         errorLoggerHandler.handleError(url, method, response);
