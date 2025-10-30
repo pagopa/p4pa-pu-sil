@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
@@ -31,6 +32,7 @@ class DebtPositionsResponseErrorHandlerTest {
 
   private static final String BASE_URL = "http://example.com";
   private static final URI DUMMY_URI = URI.create(BASE_URL);
+  public static final HttpStatusCode STATUS_400 = HttpStatusCode.valueOf(400);
 
   private DebtPositionsResponseErrorHandler errorHandler;
 
@@ -71,11 +73,8 @@ class DebtPositionsResponseErrorHandlerTest {
       .thenReturn(
         new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
-      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
-        DUMMY_URI,
-        HttpMethod.POST)
-    );
+    Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
+    SilFaultException exception = assertThrows(SilFaultException.class, exec);
     assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
   }
 
@@ -89,10 +88,8 @@ class DebtPositionsResponseErrorHandlerTest {
     when(responseMock.getBody()).thenReturn(
       new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
-      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
-        DUMMY_URI, HttpMethod.POST)
-    );
+    Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
+    SilFaultException exception = assertThrows(SilFaultException.class, exec);
 
     assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
   }
@@ -104,20 +101,17 @@ class DebtPositionsResponseErrorHandlerTest {
 
     when(responseMock.getBody()).thenThrow(IOException.class);
 
-    assertThrows(IOException.class, () ->
-      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
-        DUMMY_URI,
-        HttpMethod.POST)
-    );
+    Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
+    assertThrows(IOException.class, exec);
   }
 
   @Test
   void handleError_shouldDelegateToSuperHandleErrorFor5xxStatus() {
     setUp(false);
 
-    assertThrows(Exception.class,
-      () -> errorHandler.handleError(responseMock, HttpStatusCode.valueOf(500),
-        DUMMY_URI, HttpMethod.POST));
+    HttpStatusCode statusCode = HttpStatusCode.valueOf(500);
+    Executable exec = () -> errorHandler.handleError(responseMock, statusCode, DUMMY_URI, HttpMethod.POST);
+    assertThrows(Exception.class, exec);
   }
 
   @ParameterizedTest
@@ -131,10 +125,8 @@ class DebtPositionsResponseErrorHandlerTest {
     when(responseMock.getBody()).thenReturn(
       new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
-      errorHandler.handleError(responseMock, HttpStatusCode.valueOf(400),
-        DUMMY_URI, HttpMethod.POST)
-    );
+    Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
+    SilFaultException exception = assertThrows(SilFaultException.class, exec);
 
     assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
     assertTrue(exception.getDescription()

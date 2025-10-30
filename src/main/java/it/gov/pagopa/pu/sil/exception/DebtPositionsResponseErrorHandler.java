@@ -41,6 +41,7 @@ public class DebtPositionsResponseErrorHandler extends
       try {
         errorLoggerHandler.handleError(url, method, response);
       } catch (Exception ignored) {
+        // Exception from the errorLoggerHandler should be ignored
       }
     }
 
