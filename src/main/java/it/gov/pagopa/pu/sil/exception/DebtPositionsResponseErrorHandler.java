@@ -37,16 +37,18 @@ public class DebtPositionsResponseErrorHandler extends
   @Override
   public void handleError(ClientHttpResponse response,
     HttpStatusCode statusCode, URI url, HttpMethod method) throws IOException {
+    BufferedClientHttpResponse bufferedResponse = new BufferedClientHttpResponse(response);
+
     if (errorLoggerHandler != null) {
       try {
-        errorLoggerHandler.handleError(url, method, response);
+        errorLoggerHandler.handleError(url, method, bufferedResponse);
       } catch (Exception ignored) {
         // Exception from the errorLoggerHandler should be ignored
       }
     }
 
     if (statusCode.is4xxClientError()) {
-      try (InputStream responseBodyStream = response.getBody()) {
+      try (InputStream responseBodyStream = bufferedResponse.getBody()) {
         DebtPositionErrorDTO debtPositionErrorDTO = objectMapper.readValue(
           responseBodyStream, DebtPositionErrorDTO.class);
         transcodeDebtPositionsErrorAndThrow(debtPositionErrorDTO.getMessage());
@@ -55,7 +57,7 @@ public class DebtPositionsResponseErrorHandler extends
         throw ex;
       }
     } else {
-      super.handleError(response, statusCode, url, method);
+      super.handleError(bufferedResponse, statusCode, url, method);
     }
   }
 
