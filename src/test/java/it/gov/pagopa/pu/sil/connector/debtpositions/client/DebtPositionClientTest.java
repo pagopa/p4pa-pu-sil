@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Collections;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
@@ -204,15 +205,16 @@ class DebtPositionClientTest {
     String accessToken = "ACCESSTOKEN";
     String debtorFiscalCode = "12345678901";
     PersonEntityType debtorEntityType = PersonEntityType.F;
+    List<String> debtPositionTypeOrgCodesToExclude = Collections.emptyList();
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
 
     Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
       .thenReturn(debtPositionApiMock);
-    Mockito.when(debtPositionApiMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, List.of(InstallmentStatus.UNPAID), null, null, null, null))
+    Mockito.when(debtPositionApiMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, List.of(InstallmentStatus.UNPAID), null, debtPositionTypeOrgCodesToExclude, null, null, null))
       .thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, InstallmentStatus.UNPAID, null, null, accessToken);
+    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, debtPositionTypeOrgCodesToExclude, InstallmentStatus.UNPAID, null, null, accessToken);
 
     // Then
     Assertions.assertEquals(expectedResult, result);

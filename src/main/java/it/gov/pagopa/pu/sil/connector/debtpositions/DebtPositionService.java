@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.OffsetDateTime;
@@ -77,8 +78,7 @@ public interface DebtPositionService {
    * @param debtorEntityType the entity type of the debtor
    * @param organizationId the ID of the organization
    * @param status the status of the installments to filter by
-   * @param fromDate the start date for filtering debt positions (inclusive)
-   * @param toDate the end date for filtering debt positions (inclusive)
+   * @param dateFilter the date interval filter (containing start and end dates) for filtering debt positions (inclusive)
    * @param accessToken the access token for authentication
    * @return a list of DebtPositionDTOs matching the criteria
    */
@@ -86,9 +86,9 @@ public interface DebtPositionService {
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
     Long organizationId,
+    List<String> debtPositionTypeOrgCodesToExclude,
     InstallmentStatus status,
-    OffsetDateTime fromDate,
-    OffsetDateTime toDate,
+    OffsetDateTimeIntervalFilter dateFilter,
     String accessToken
   );
 }

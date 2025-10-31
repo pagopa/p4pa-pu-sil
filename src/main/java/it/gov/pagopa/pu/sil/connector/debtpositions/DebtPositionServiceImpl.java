@@ -1,13 +1,13 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -65,11 +65,11 @@ public class DebtPositionServiceImpl implements DebtPositionService {
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
     Long organizationId,
+    List<String> debtPositionTypeOrgCodesToExclude,
     InstallmentStatus status,
-    OffsetDateTime fromDate,
-    OffsetDateTime toDate,
+    OffsetDateTimeIntervalFilter dateFilter,
     String accessToken
   ) {
-    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, status, fromDate, toDate, accessToken);
+    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, debtPositionTypeOrgCodesToExclude, status, dateFilter.getFrom(), dateFilter.getTo(), accessToken);
   }
 }

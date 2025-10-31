@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -30,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import static it.gov.pagopa.pu.sil.util.Constants.MIXED_DP_TYPE_ORG_CODE;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -63,6 +65,8 @@ class PaaSILChiediPosizioniAperteServiceTest {
     String accessToken = "token";
     String orgIpaCode = "IPA123";
     long orgId = 42L;
+    List<String> debtPositionTypeOrgCodesToExclude = List.of(MIXED_DP_TYPE_ORG_CODE);
+    OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
 
     PaaSILChiediPosizioniAperte request = new PaaSILChiediPosizioniAperte();
     request.setCodIpaEnte(orgIpaCode);
@@ -105,7 +109,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
       .thenReturn(Optional.of(org));
 
     when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.UNPAID), eq(null), eq(null), eq(accessToken))
+      anyString(), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
     ).thenReturn(List.of(dp));
 
     byte[] marshalledBytes = "dovuti-xml".getBytes();
@@ -136,7 +140,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.UNPAID), eq(null), eq(null), eq(accessToken)
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
     );
     verify(jaxbTransformServiceMock, times(1)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
   }

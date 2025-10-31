@@ -33,6 +33,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
+import static it.gov.pagopa.pu.sil.util.Constants.MIXED_DP_TYPE_ORG_CODE;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -62,6 +63,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     String accessToken = "token";
     String orgIpaCode = "IPA123";
     long orgId = 42L;
+    List<String> debtPositionTypeOrgCodesToExclude = List.of(MIXED_DP_TYPE_ORG_CODE);
 
     PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
     request.setCodIpaEnte(orgIpaCode);
@@ -120,7 +122,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       .thenReturn(Optional.of(org));
 
     when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.PAID), any(), any(), eq(accessToken))
+      anyString(), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
     ).thenReturn(List.of(dp));
 
     ReceiptDTO receipt = new ReceiptDTO();
@@ -167,7 +169,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(InstallmentStatus.PAID), any(), any(), eq(accessToken)
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
     );
     verify(receiptServiceMock).getReceiptById(1001L, orgId, accessToken);
     verify(pagatiMapperMock).mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken);
