@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface DebtPositionService {
