@@ -112,7 +112,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .iupdOrg(cartId)
       .status(DebtPositionStatus.UNPAID)
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
-      .organizationId(org.getOrganizationId())
+      .organizationId(Objects.requireNonNull(org.getOrganizationId()))
       .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
       .flagIuvVolatile(true)
       .flagPuPagoPaPayment(true)
@@ -132,21 +132,22 @@ abstract class AbstractImmediatePaymentsMapper {
     }
 
     List<MixedTransferDTO> mixedTransfers = new ArrayList<>();
-    for (CtDatiSingoloVersamentoDovuti singleTranfer : dovutiObj.getDatiVersamento().getDatiSingoloVersamentos()) {
+    for (CtDatiSingoloVersamentoDovuti singleTransfer : dovutiObj.getDatiVersamento().getDatiSingoloVersamentos()) {
       DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
-        org.getOrganizationId(), singleTranfer.getIdentificativoTipoDovuto(), accessToken);
+        org.getOrganizationId(), singleTransfer.getIdentificativoTipoDovuto(), accessToken);
 
       MixedTransferDTO mixedTransferDTO = MixedTransferDTO.builder()
-        .iud(singleTranfer.getIdentificativoUnivocoDovuto())
-        .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
-        .amountCents(ConversionUtils.bigDecimalEuroAmountToCentsAmount(singleTranfer.getImportoSingoloVersamento()))
-        .balance(Optional.ofNullable(singleTranfer.getBilancio())
+        .iud(singleTransfer.getIdentificativoUnivocoDovuto())
+        .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))
+        .amountCents(ConversionUtils.bigDecimalEuroAmountToCentsAmount(singleTransfer.getImportoSingoloVersamento()))
+        .balance(Optional.ofNullable(singleTransfer.getBilancio())
           .map(b -> jaxbTransformService.marshalling(b, Bilancio.class))
           .orElse(null))
-        .legacyPaymentMetadata(singleTranfer.getDatiSpecificiRiscossione())
+        .legacyPaymentMetadata(singleTransfer.getDatiSpecificiRiscossione())
+        .remittanceInformation(singleTransfer.getCausaleVersamento())
         .build();
 
-      Optional.ofNullable(singleTranfer.getDatiMarcaBolloDigitale()).ifPresentOrElse(
+      Optional.ofNullable(singleTransfer.getDatiMarcaBolloDigitale()).ifPresentOrElse(
         stamp -> mixedTransferDTO
           .stampHashDocument(stamp.getHashDocumento())
           .stampProvincialResidence(stamp.getProvinciaResidenza())
@@ -162,14 +163,13 @@ abstract class AbstractImmediatePaymentsMapper {
         });
       mixedTransfers.add(mixedTransferDTO);
     }
-    //TODO: P4ADEV-3958 move remittanceInformation
+
     return MixedDebtPositionDTO.builder()
-      .organizationId(org.getOrganizationId())
+      .organizationId(Objects.requireNonNull(org.getOrganizationId()))
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .sourceFlowName(sourceFlowName)
       .flagIuvVolatile(true)
       .description("MIXED")
-      .remittanceInformation(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().getFirst().getCausaleVersamento())
       .dueDate(Utilities.getSpontaneousSilExpirationDate())
       .debtor(debtor)
       .transfers(mixedTransfers)
