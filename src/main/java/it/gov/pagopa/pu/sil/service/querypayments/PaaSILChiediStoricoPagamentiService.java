@@ -28,7 +28,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static it.gov.pagopa.pu.sil.util.Constants.MIXED_DP_TYPE_ORG_CODE;
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
 @Service
 @Slf4j
@@ -71,7 +71,7 @@ public class PaaSILChiediStoricoPagamentiService {
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
       organizationId,
-      List.of(MIXED_DP_TYPE_ORG_CODE),
+      EXCLUDED_DEBT_POSITION_TYPE_CODES,
       InstallmentStatus.PAID,
       dateFilter,
       accessToken

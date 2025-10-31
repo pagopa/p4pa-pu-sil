@@ -33,7 +33,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
-import static it.gov.pagopa.pu.sil.util.Constants.MIXED_DP_TYPE_ORG_CODE;
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -63,7 +63,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     String accessToken = "token";
     String orgIpaCode = "IPA123";
     long orgId = 42L;
-    List<String> debtPositionTypeOrgCodesToExclude = List.of(MIXED_DP_TYPE_ORG_CODE);
+    List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
     PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
     request.setCodIpaEnte(orgIpaCode);
