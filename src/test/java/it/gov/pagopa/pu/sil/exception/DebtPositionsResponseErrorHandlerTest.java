@@ -73,12 +73,13 @@ class DebtPositionsResponseErrorHandlerTest {
 
 
   @Test
-  void handleError_shouldThrowIOExceptionWhenCannotDeserializeDebtPositionError()
+  void handleError_shouldThrowPaaSystemExceptionWhenCannotDeserializeDebtPositionError()
     throws IOException {
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream("MALFORMED_DEBT_POSITION_ERROR".getBytes(StandardCharsets.UTF_8)));
 
     Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
-    assertThrows(IOException.class, exec);
+    SilFaultException exception = assertThrows(SilFaultException.class, exec);
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
   }
 
   @ParameterizedTest
