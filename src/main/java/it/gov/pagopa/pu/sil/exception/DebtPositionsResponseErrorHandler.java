@@ -51,7 +51,7 @@ public class DebtPositionsResponseErrorHandler extends
           debtPositionErrorDTO = objectMapper.readValue(responseBody, DebtPositionErrorDTO.class);
         } catch (IOException ex) {
           log.error("Cannot deserialize DebtPositionError message from body: {}", responseBody, ex);
-          throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Failed to parse DebtPositionErrorDTO from HTTP body: " + ex);
+          throw ex;
         }
 
         transcodeDebtPositionsErrorAndThrow(debtPositionErrorDTO.getMessage());

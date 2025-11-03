@@ -101,8 +101,7 @@ class DebtPositionsResponseErrorHandlerTest {
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream("MALFORMED_DEBT_POSITION_ERROR".getBytes(StandardCharsets.UTF_8)));
 
     Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
-    SilFaultException exception = assertThrows(SilFaultException.class, exec);
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+    assertThrows(IOException.class, exec);
   }
 
   @ParameterizedTest
