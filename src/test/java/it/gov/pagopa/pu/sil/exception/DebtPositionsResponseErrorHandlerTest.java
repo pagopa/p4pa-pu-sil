@@ -13,7 +13,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -40,21 +39,26 @@ class DebtPositionsResponseErrorHandlerTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  @BeforeEach
-  void setUp() throws IOException {
+  void setUp(boolean isPrintBodyWhenError) throws IOException {
     DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
       .baseUrl(BASE_URL)
-      .printBodyWhenError(false)
+      .printBodyWhenError(isPrintBodyWhenError)
       .build();
     errorHandler = new DebtPositionsResponseErrorHandler(clientConfig, objectMapper);
 
+    if (isPrintBodyWhenError) {
+      when(responseMock.getStatusCode()).thenReturn(STATUS_400);
+    }
     when(responseMock.getStatusText()).thenReturn("STATUS_TEXT");
     when(responseMock.getHeaders()).thenReturn(HttpHeaders.EMPTY);
   }
 
-  @Test
-  void handleError_shouldTranscodeAndThrowSilFaultExceptionForMappedCode()
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void handleError_shouldTranscodeAndThrowSilFaultExceptionForMappedCode(boolean isPrintBodyWhenError)
     throws IOException {
+    setUp(isPrintBodyWhenError);
+
     String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message("[P4PA_INVALID_IUV] The iuv must be 17 characters long"));
 
@@ -66,15 +70,34 @@ class DebtPositionsResponseErrorHandlerTest {
   }
 
   @Test
-  void handleError_shouldThrowHttpServerExceptionWhenStatus5xx() {
+  void handleError_shouldTranscodeAndThrowPaaSystemSilFaultExceptionForNonMappedCode()
+    throws IOException {
+    setUp(false);
+
+    String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
+      .message("[NOT_MAPPED] Not mapped error message."));
+
+    when(responseMock.getBody()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
+
+    Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
+    SilFaultException exception = assertThrows(SilFaultException.class, exec);
+    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
+  }
+
+  @Test
+  void handleError_shouldThrowHttpServerExceptionWhenStatus5xx()
+    throws IOException {
+    setUp(false);
+
     Executable exec = () -> errorHandler.handleError(responseMock, HttpStatusCode.valueOf(500), DUMMY_URI, HttpMethod.POST);
     assertThrows(HttpServerErrorException.class, exec);
   }
 
-
   @Test
   void handleError_shouldThrowPaaSystemExceptionWhenCannotDeserializeDebtPositionError()
     throws IOException {
+    setUp(false);
+
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream("MALFORMED_DEBT_POSITION_ERROR".getBytes(StandardCharsets.UTF_8)));
 
     Executable exec = () -> errorHandler.handleError(responseMock, STATUS_400, DUMMY_URI, HttpMethod.POST);
@@ -86,6 +109,8 @@ class DebtPositionsResponseErrorHandlerTest {
   @ValueSource(strings = {"", "ERROR", "[MALFORMED"})
   void extractErrorCode_shouldThrowPaaSystemExceptionWhenCodeIsNotValid(String debtPositionsErrorMessage)
     throws IOException {
+    setUp(false);
+
     String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message(debtPositionsErrorMessage));
 
