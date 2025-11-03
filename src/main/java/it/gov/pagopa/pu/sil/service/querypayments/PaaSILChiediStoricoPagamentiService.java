@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -26,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
 @Service
 @Slf4j
@@ -62,13 +65,15 @@ public class PaaSILChiediStoricoPagamentiService {
       dateTo = ConversionUtils.toOffsetDateTime(request.getDataTo());
     }
 
+    OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(dateFrom, dateTo);
+
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
       organizationId,
+      EXCLUDED_DEBT_POSITION_TYPE_CODES,
       InstallmentStatus.PAID,
-      dateFrom,
-      dateTo,
+      dateFilter,
       accessToken
     );
 
