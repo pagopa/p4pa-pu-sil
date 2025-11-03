@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.exception;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApiClientConfig;
@@ -21,13 +22,15 @@ public class DebtPositionsResponseErrorHandler extends
 
   private static final String DEBT_POSITIONS = "DEBT-POSITIONS";
 
+  private final ObjectMapper objectMapper;
   private final ResponseErrorHandler errorLoggerHandler;
 
-  public DebtPositionsResponseErrorHandler(
-    DebtPositionsApiClientConfig clientConfig) {
+  public DebtPositionsResponseErrorHandler(DebtPositionsApiClientConfig clientConfig,
+    ObjectMapper objectMapper) {
     this.errorLoggerHandler = clientConfig.isPrintBodyWhenError() ?
       RestTemplateConfig.bodyPrinterWhenError(DEBT_POSITIONS)
       : null;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -41,8 +44,16 @@ public class DebtPositionsResponseErrorHandler extends
       }
     } catch (HttpStatusCodeException exception) {
       if (statusCode.is4xxClientError()) {
-        DebtPositionErrorDTO debtPositionErrorDTO = exception.getResponseBodyAs(
-          DebtPositionErrorDTO.class);
+        String responseBody = exception.getResponseBodyAsString();
+        DebtPositionErrorDTO debtPositionErrorDTO;
+
+        try {
+          debtPositionErrorDTO = objectMapper.readValue(responseBody, DebtPositionErrorDTO.class);
+        } catch (IOException ex) {
+          log.error("Cannot deserialize DebtPositionError message from body: {}", responseBody, ex);
+          throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Failed to parse DebtPositionErrorDTO from HTTP body: " + ex);
+        }
+
         transcodeDebtPositionsErrorAndThrow(debtPositionErrorDTO.getMessage());
       } else {
         throw exception;
