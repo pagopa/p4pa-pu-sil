@@ -22,6 +22,10 @@ public class Constants {
 
   public static final String SOURCE_FLOW_NAME_PREFIX_INVIACARRELLODOVUTI = "SIL_ICD-";
 
+  public static final String MIXED_DP_TYPE_ORG_CODE = "MIXED";
+
+  public static final List<String> EXCLUDED_DEBT_POSITION_TYPE_CODES = List.of(MIXED_DP_TYPE_ORG_CODE);
+
   public static final int MAX_CART_SIZE = 5;
 
   public static final String WORKFLOW_STATUS_COMPLETED_VALUE = "WORKFLOW_EXECUTION_STATUS_COMPLETED";

@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.client.DebtPositionClient;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Collections;
 import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
@@ -162,13 +164,16 @@ class DebtPositionServiceTest {
     // Given
     String debtorFiscalCode = "FISCALCODE";
     PersonEntityType debtorEntityType = PersonEntityType.F;
+    List<String> debtPositionTypeOrgCodesToExclude = Collections.emptyList();
     String accessToken = "ACCESSTOKEN";
+    OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
 
     Mockito.when(clientMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       debtorFiscalCode,
       debtorEntityType,
       null,
+      debtPositionTypeOrgCodesToExclude,
       null,
       null,
       null,
@@ -176,7 +181,7 @@ class DebtPositionServiceTest {
     )).thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, null, null, null, accessToken);
+    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, debtPositionTypeOrgCodesToExclude, null, dateFilter, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);

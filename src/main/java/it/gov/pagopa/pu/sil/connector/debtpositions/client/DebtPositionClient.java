@@ -75,6 +75,7 @@ public class DebtPositionClient {
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
     Long organizationId,
+    List<String> debtPositionTypeOrgCodesToExclude,
     InstallmentStatus status,
     OffsetDateTime fromDate,
     OffsetDateTime toDate,
@@ -87,6 +88,7 @@ public class DebtPositionClient {
         debtorEntityType,
         status != null ? List.of(status) : null,
         null,
+        debtPositionTypeOrgCodesToExclude,
         organizationId,
         fromDate,
         toDate
