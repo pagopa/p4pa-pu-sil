@@ -10,10 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DateUtilsTest {
   @Test
-  void givenLocalDateWhenToOffsetDateTimeStartOfTheDayThenOk() {
-    ZonedDateTime input = ZonedDateTime.of(2025, 10, 15, 14, 30, 0, 0, Constants.ZONEID);
+  void givenOffsetDateTimeWhenToOffsetDateTimeStartOfTheDayThenOk() {
+    OffsetDateTime input = OffsetDateTime.of(2025, 10, 15, 14, 30, 0, 0, ZoneOffset.ofHours(2));
 
-    OffsetDateTime expected = ZonedDateTime.of(2025, 10, 15, 0, 0, 0, 0, Constants.ZONEID).toOffsetDateTime();
+    OffsetDateTime expected = OffsetDateTime.of(2025, 10, 15, 0, 0, 0, 0, ZoneOffset.ofHours(2));
 
     OffsetDateTime result = DateUtils.toOffsetDateTimeStartOfTheDay(input);
 
@@ -21,17 +21,16 @@ class DateUtilsTest {
   }
 
   @Test
-  void givenNullLocalDateWhenToOffsetDateTimeStartOfTheDayThenReturnNull() {
+  void givenNullWhenToOffsetDateTimeStartOfTheDayThenReturnNull() {
     assertNull(DateUtils.toOffsetDateTimeStartOfTheDay(null));
   }
 
   @Test
-  void givenLocalDateWhenToOffsetDateTimeEndOfTheDayThenOk() {
-    ZonedDateTime input = ZonedDateTime.of(2025, 10, 15, 14, 30, 0, 0, Constants.ZONEID);
+  void givenOffsetDateTimeWhenToOffsetDateTimeEndOfTheDayThenOk() {
+    OffsetDateTime input = OffsetDateTime.of(2025, 10, 15, 14, 30, 0, 0, ZoneOffset.ofHours(2));
 
-    OffsetDateTime expected = ZonedDateTime.of(2025, 10, 16, 0, 0, 0, 0, Constants.ZONEID)
-      .minus(1, ChronoUnit.MILLIS)
-      .toOffsetDateTime();
+    OffsetDateTime startOfNextDay = OffsetDateTime.of(2025, 10, 16, 0, 0, 0, 0, ZoneOffset.ofHours(2));
+    OffsetDateTime expected = startOfNextDay.minus(1, ChronoUnit.MILLIS);
 
     OffsetDateTime result = DateUtils.toOffsetDateTimeEndOfTheDay(input);
 
@@ -39,7 +38,7 @@ class DateUtilsTest {
   }
 
   @Test
-  void givenNullLocalDateWhenToOffsetDateTimeEndOfTheDayThenReturnNull() {
+  void givenNullWhenToOffsetDateTimeEndOfTheDayThenReturnNull() {
     assertNull(DateUtils.toOffsetDateTimeEndOfTheDay(null));
   }
 }

@@ -18,6 +18,9 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 
+import static it.gov.pagopa.pu.sil.util.DateUtils.toOffsetDateTimeEndOfTheDay;
+import static it.gov.pagopa.pu.sil.util.DateUtils.toOffsetDateTimeStartOfTheDay;
+
 @Slf4j
 @Service
 public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservationService {
@@ -71,8 +74,8 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
                                                       Long debtPositionTypeOrgId) {
     PaidExportFileFilter filters = new PaidExportFileFilter()
       .paymentDateTime(new OffsetDateTimeIntervalFilter()
-        .from(from)
-        .to(to));
+        .from(toOffsetDateTimeStartOfTheDay(from))
+        .to(toOffsetDateTimeEndOfTheDay(to)));
 
     if (IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO.equals(
       debtPositionTypeOrgCode)) {

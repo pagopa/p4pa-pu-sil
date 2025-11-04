@@ -32,7 +32,6 @@ import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthoriza
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.querypayments.*;
 import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
-import it.gov.pagopa.pu.sil.util.DateUtils;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -514,14 +513,14 @@ public class PuForOrganizationPaymentsEndpoint {
 
     OffsetDateTime from = optRequest.map(PaaSILPrenotaExportFlusso::getDateFrom)
       .map(XMLGregorianCalendar::toGregorianCalendar)
-      .map(GregorianCalendar::toZonedDateTime)
-      .map(DateUtils::toOffsetDateTimeStartOfTheDay)
+      .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
+      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS))
       .orElse(null);
 
     OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlusso::getDateTo)
       .map(XMLGregorianCalendar::toGregorianCalendar)
-      .map(GregorianCalendar::toZonedDateTime)
-      .map(DateUtils::toOffsetDateTimeEndOfTheDay)
+      .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
+      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS))
       .orElse(null);
 
     String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlusso::getIdentificativoTipoDovuto)

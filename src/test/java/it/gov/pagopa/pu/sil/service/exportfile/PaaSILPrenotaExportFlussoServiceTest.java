@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.sil.service.exportfile;
 
 import static it.gov.pagopa.pu.sil.service.exportfile.AbstractExportFileReservationService.IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO;
+import static it.gov.pagopa.pu.sil.util.DateUtils.toOffsetDateTimeEndOfTheDay;
+import static it.gov.pagopa.pu.sil.util.DateUtils.toOffsetDateTimeStartOfTheDay;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -114,7 +116,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
       .exportFileType(ExportFileTypeEnum.PAID)
       .fileVersion(fileVersion)
       .filterFields(new it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter()
-        .paymentDateTime(new OffsetDateTimeIntervalFilter().from(from).to(to))
+        .paymentDateTime(new OffsetDateTimeIntervalFilter().from(toOffsetDateTimeStartOfTheDay(from)).to(toOffsetDateTimeEndOfTheDay(to)))
         .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
         .debtPositionOrigins(
           List.of(DebtPositionOriginsEnum.ORDINARY,
@@ -161,7 +163,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
       .exportFileType(ExportFileTypeEnum.PAID)
       .fileVersion(fileVersion)
       .filterFields(new it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter()
-        .paymentDateTime(new OffsetDateTimeIntervalFilter().from(from).to(to))
+        .paymentDateTime(new OffsetDateTimeIntervalFilter().from(toOffsetDateTimeStartOfTheDay(from)).to(toOffsetDateTimeEndOfTheDay(to)))
         .debtPositionTypeOrgId(null)
         .debtPositionOrigins(
           List.of(DebtPositionOriginsEnum.SECONDARY_ORG)));
