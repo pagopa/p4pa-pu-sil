@@ -50,7 +50,6 @@ import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
