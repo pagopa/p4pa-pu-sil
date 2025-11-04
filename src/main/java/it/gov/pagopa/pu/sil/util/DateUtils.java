@@ -8,6 +8,9 @@ import java.time.OffsetDateTime;
 import static it.gov.pagopa.pu.sil.util.Constants.ZONEID;
 
 public class DateUtils {
+  private DateUtils() {
+  }
+
   public static OffsetDateTime toOffsetDateTimeStartOfTheDay(LocalDate localDate) {
     if (localDate == null) {
       return null;
