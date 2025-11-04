@@ -51,6 +51,7 @@ import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -513,13 +514,13 @@ public class PuForOrganizationPaymentsEndpoint {
 
     OffsetDateTime from = optRequest.map(PaaSILPrenotaExportFlusso::getDateFrom)
       .map(XMLGregorianCalendar::toGregorianCalendar)
-      .map(gc -> gc.toZonedDateTime().toLocalDate())
+      .map(GregorianCalendar::toZonedDateTime)
       .map(DateUtils::toOffsetDateTimeStartOfTheDay)
       .orElse(null);
 
     OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlusso::getDateTo)
       .map(XMLGregorianCalendar::toGregorianCalendar)
-      .map(gc -> gc.toZonedDateTime().toLocalDate())
+      .map(GregorianCalendar::toZonedDateTime)
       .map(DateUtils::toOffsetDateTimeEndOfTheDay)
       .orElse(null);
 

@@ -2,10 +2,8 @@ package it.gov.pagopa.pu.sil.util;
 
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,10 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DateUtilsTest {
   @Test
   void givenLocalDateWhenToOffsetDateTimeStartOfTheDayThenOk() {
-    OffsetDateTime expected = LocalDate.now().atStartOfDay(Constants.ZONEID).toOffsetDateTime();
+    ZonedDateTime input = ZonedDateTime.of(2025, 10, 15, 14, 30, 0, 0, Constants.ZONEID);
 
-    OffsetDateTime result = DateUtils.toOffsetDateTimeStartOfTheDay(
-      LocalDate.now());
+    OffsetDateTime expected = ZonedDateTime.of(2025, 10, 15, 0, 0, 0, 0, Constants.ZONEID).toOffsetDateTime();
+
+    OffsetDateTime result = DateUtils.toOffsetDateTimeStartOfTheDay(input);
 
     assertTrue(expected.isEqual(result));
   }
@@ -28,12 +27,13 @@ class DateUtilsTest {
 
   @Test
   void givenLocalDateWhenToOffsetDateTimeEndOfTheDayThenOk() {
-    OffsetDateTime expected = LocalDateTime.of(LocalDate.now(),
-        LocalTime.MAX.truncatedTo(java.time.temporal.ChronoUnit.MILLIS))
-      .atZone(Constants.ZONEID).toOffsetDateTime();
+    ZonedDateTime input = ZonedDateTime.of(2025, 10, 15, 14, 30, 0, 0, Constants.ZONEID);
 
-    OffsetDateTime result = DateUtils.toOffsetDateTimeEndOfTheDay(
-      LocalDate.now());
+    OffsetDateTime expected = ZonedDateTime.of(2025, 10, 16, 0, 0, 0, 0, Constants.ZONEID)
+      .minus(1, ChronoUnit.MILLIS)
+      .toOffsetDateTime();
+
+    OffsetDateTime result = DateUtils.toOffsetDateTimeEndOfTheDay(input);
 
     assertTrue(expected.isEqual(result));
   }

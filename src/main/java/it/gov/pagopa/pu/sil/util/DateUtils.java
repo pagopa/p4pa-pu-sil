@@ -1,28 +1,26 @@
 package it.gov.pagopa.pu.sil.util;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
-
-import static it.gov.pagopa.pu.sil.util.Constants.ZONEID;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 public class DateUtils {
   private DateUtils() {
   }
 
-  public static OffsetDateTime toOffsetDateTimeStartOfTheDay(LocalDate localDate) {
-    if (localDate == null) {
+  public static OffsetDateTime toOffsetDateTimeStartOfTheDay(ZonedDateTime zonedDateTime) {
+    if (zonedDateTime == null) {
       return null;
     }
-    return localDate.atStartOfDay(ZONEID).toOffsetDateTime();
+    return zonedDateTime.truncatedTo(java.time.temporal.ChronoUnit.DAYS).toOffsetDateTime();
   }
 
-  public static OffsetDateTime toOffsetDateTimeEndOfTheDay(LocalDate localDate) {
-    if (localDate == null) {
+  public static OffsetDateTime toOffsetDateTimeEndOfTheDay(ZonedDateTime zonedDateTime) {
+    if (zonedDateTime == null) {
       return null;
     }
-    LocalDateTime endOfDay = LocalDateTime.of(localDate, LocalTime.MAX.truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
-    return endOfDay.atZone(ZONEID).toOffsetDateTime();
+    ZonedDateTime startOfNextDay = zonedDateTime.truncatedTo(ChronoUnit.DAYS).plusDays(1);
+    return startOfNextDay.minus(1, java.time.temporal.ChronoUnit.MILLIS)
+      .toOffsetDateTime();
   }
 }
