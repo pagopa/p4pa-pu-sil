@@ -1,11 +1,21 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.veneto.regione.pagamenti.ente.*;
-import it.veneto.regione.schemas._2012.pagamenti.ente.*;
+import it.veneto.regione.pagamenti.ente.ElementoListaDovuti;
+import it.veneto.regione.pagamenti.ente.ElementoListaDovutiEntiSecondari;
+import it.veneto.regione.pagamenti.ente.ListaDovuti;
+import it.veneto.regione.pagamenti.ente.ListaDovutiEntiSecondari;
+import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
+import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,12 +26,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
-
-import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ValidationServiceTest {
@@ -36,37 +40,6 @@ class ValidationServiceTest {
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(installmentServiceMock);
   }
-
-  //region: validateDebtPositionTypeOrg
-  @Test
-  void validateDebtPositionTypeOrg_NullDebtPositionTypeOrg_ReturnsError() {
-    String debtPositionTypeOrgCode = "CODE";
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateDebtPositionTypeOrg(null, debtPositionTypeOrgCode));
-
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, result.getFault());
-    assertEquals("Tipo dovuto non valido: CODE", result.getDescription());
-  }
-
-  @Test
-  void validateDebtPositionTypeOrg_InactiveDebtPositionTypeOrg_ReturnsError() {
-    DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg();
-    debtPositionTypeOrg.setFlagActive(false);
-    String debtPositionTypeOrgCode = "CODE";
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, debtPositionTypeOrgCode));
-
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, result.getFault());
-    assertEquals("Tipo dovuto non abilitato: CODE", result.getDescription());
-  }
-
-  @Test
-  void validateDebtPositionTypeOrg_ValidDebtPositionTypeOrg_ReturnsNull() {
-    DebtPositionTypeOrg debtPositionTypeOrg = new DebtPositionTypeOrg();
-    debtPositionTypeOrg.setFlagActive(true);
-
-    Assertions.assertDoesNotThrow(() -> validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, "CODE"));
-  }
-  //endregion
 
   //region: validateStamp
   @Test
@@ -185,84 +158,6 @@ class ValidationServiceTest {
     when(installmentServiceMock.isInstallmentExistsByIudIuvNav(orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(Boolean.FALSE);
 
     Assertions.assertDoesNotThrow(() -> validationService.validateIud(orgId, iud, accessToken));
-  }
-  //endregion
-
-  //region: validatePaymentData
-  @Test
-  void validatePaymentData_InvalidAmount_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.ZERO);
-    versamento.setCausaleVersamento("Valid causale");
-    versamento.setDatiSpecificiRiscossione("9/ValidData");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePaymentData(versamento));
-
-    assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getFault());
-    assertEquals("Importo singolo versamento non valido: 0", result.getDescription());
-  }
-
-  @Test
-  void validatePaymentData_NullAmount_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(null);
-    versamento.setCausaleVersamento("Valid causale");
-    versamento.setDatiSpecificiRiscossione("9/ValidData");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePaymentData(versamento));
-
-    assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getFault());
-    assertEquals("Importo singolo versamento non valido: null", result.getDescription());
-  }
-
-  @Test
-  void validatePaymentData_InvalidBalanceAmount_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.TEN);
-    Bilancio bilancio = new Bilancio();
-    CtCapitolo capitolo = new CtCapitolo();
-    CtAccertamento accertamento = new CtAccertamento();
-    accertamento.setImporto(BigDecimal.TWO);
-    capitolo.getAccertamentos().add(accertamento);
-    bilancio.getCapitolos().add(capitolo);
-    versamento.setBilancio(bilancio);
-    versamento.setCausaleVersamento("Valid causale");
-    versamento.setDatiSpecificiRiscossione("9/ValidData");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePaymentData(versamento));
-
-    assertEquals(SilFaults.PAA_IMPORTO_BILANCIO_NON_VALIDO, result.getFault());
-    assertEquals("Importo bilancio non valido", result.getDescription());
-  }
-
-  @Test
-  void validatePaymentData_BlankCausale_ReturnsError() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.TEN);
-    versamento.setDatiSpecificiRiscossione("9/ValidData");
-    versamento.setCausaleVersamento(" ");
-
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePaymentData(versamento));
-
-    assertEquals(SilFaults.PAA_CAUSALE_NON_PRESENTE, result.getFault());
-    assertEquals("Causale versamento non presente o non valida", result.getDescription());
-  }
-
-  @Test
-  void validatePaymentData_ValidData_ReturnsNull() {
-    CtDatiSingoloVersamentoDovuti versamento = new CtDatiSingoloVersamentoDovuti();
-    versamento.setImportoSingoloVersamento(BigDecimal.TEN);
-    Bilancio bilancio = new Bilancio();
-    CtCapitolo capitolo = new CtCapitolo();
-    CtAccertamento accertamento = new CtAccertamento();
-    accertamento.setImporto(BigDecimal.TEN);
-    capitolo.getAccertamentos().add(accertamento);
-    bilancio.getCapitolos().add(capitolo);
-    versamento.setBilancio(bilancio);
-    versamento.setCausaleVersamento("Valid causale");
-    versamento.setDatiSpecificiRiscossione("9/ValidData");
-
-    Assertions.assertDoesNotThrow(() -> validationService.validatePaymentData(versamento));
   }
   //endregion
 

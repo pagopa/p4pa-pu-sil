@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -55,6 +56,9 @@ class PaaSILInviaCarrelloDovutiMapperTest {
 
   @Mock
   private SecondaryTransferMapper secondaryTransferMapperMock;
+
+  @Mock
+  private DebtPositionInstallmentService debtPositionInstallmentServiceMock;
 
   UserInfo userInfo;
   Organization org;
@@ -214,6 +218,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), ACCESS_TOKEN)).thenReturn(debtPositionTypeOrg);
     CtDatiVersamentoDovutiEntiSecondari ctDatiVersamentoDovutiEntiSecondari = new CtDatiVersamentoDovutiEntiSecondari();
     String expectedCategory = legacyPaymentMetadataSecondary == null ? debtPositionType.getTaxonomyCode() : legacyPaymentMetadataSecondary.substring(2, 11);
+    when(debtPositionInstallmentServiceMock.getCategory(versamento.getDatiSpecificiRiscossione(), versamento.getIdentificativoTipoDovuto(), org.getOrganizationId(), ACCESS_TOKEN)).thenReturn(expectedCategory);
     when(secondaryTransferMapperMock.mapToCtDatiVersamentoDovutiEntiSecondari(request.getListaDovutiEntiSecondari())).thenReturn(Optional.of(ctDatiVersamentoDovutiEntiSecondari));
     doNothing().when(validationServiceMock).validateSecondaryDebtPositionData(ctDatiVersamentoDovutiEntiSecondari, 1);
     doAnswer((Answer<Void>) invocationOnMock -> {
@@ -231,7 +236,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
           .build()
       ));
       return null;
-    }).when(secondaryTransferMapperMock).fillSecondaryTransferData(any(), any());
+    }).when(secondaryTransferMapperMock).fillSecondaryTransferData(any(), any(), any(), any());
 
     //when
     PaymentRequestMappingResult paymentRequestMappingResult = mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN);

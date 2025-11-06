@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.*;
@@ -25,6 +26,7 @@ abstract class AbstractImmediatePaymentsMapper {
   protected final DebtPositionTypeService debtPositionTypeService;
   protected final ValidationService validationService;
   protected final PersonMapper personMapper;
+  protected final DebtPositionInstallmentService debtPositionInstallmentService;
 
   protected DebtPositionDTO dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization org, String accessToken) {
     if (!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
@@ -42,11 +44,7 @@ abstract class AbstractImmediatePaymentsMapper {
     // get debt position type org and validate
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
-    //TODO: P4ADEV-3975 remove redundant validation
-    validationService.validateDebtPositionTypeOrg(debtPositionTypeOrg, versamento.getIdentificativoTipoDovuto());
-    PersonValidationUtils.validateAnonymousDebtor(debtPositionTypeOrg, debtor);
     validationService.validateStamp(versamento);
-    validationService.validatePaymentData(versamento);
     validationService.validateIud(org.getOrganizationId(), versamento.getIdentificativoUnivocoDovuto(), accessToken);
 
     String balance = Optional.ofNullable(versamento.getBilancio())
@@ -66,7 +64,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .orgName(org.getOrgName())
       .amountCents(amount)
       .remittanceInformation(versamento.getCausaleVersamento())
-      .category(ValidationUtils.getCategory(versamento.getDatiSpecificiRiscossione()))
+      .category(debtPositionInstallmentService.getCategory(versamento.getDatiSpecificiRiscossione(), versamento.getIdentificativoTipoDovuto(), org.getOrganizationId(), accessToken))
       .build();
 
     Optional.ofNullable(versamento.getDatiMarcaBolloDigitale()).ifPresentOrElse(
@@ -110,7 +108,7 @@ abstract class AbstractImmediatePaymentsMapper {
       .iupdOrg(cartId)
       .status(DebtPositionStatus.UNPAID)
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
-      .organizationId(org.getOrganizationId())
+      .organizationId(Objects.requireNonNull(org.getOrganizationId()))
       .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
       .flagIuvVolatile(true)
       .flagPuPagoPaPayment(true)
@@ -130,21 +128,22 @@ abstract class AbstractImmediatePaymentsMapper {
     }
 
     List<MixedTransferDTO> mixedTransfers = new ArrayList<>();
-    for (CtDatiSingoloVersamentoDovuti singleTranfer : dovutiObj.getDatiVersamento().getDatiSingoloVersamentos()) {
+    for (CtDatiSingoloVersamentoDovuti singleTransfer : dovutiObj.getDatiVersamento().getDatiSingoloVersamentos()) {
       DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
-        org.getOrganizationId(), singleTranfer.getIdentificativoTipoDovuto(), accessToken);
+        org.getOrganizationId(), singleTransfer.getIdentificativoTipoDovuto(), accessToken);
 
       MixedTransferDTO mixedTransferDTO = MixedTransferDTO.builder()
-        .iud(singleTranfer.getIdentificativoUnivocoDovuto())
-        .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
-        .amountCents(ConversionUtils.bigDecimalEuroAmountToCentsAmount(singleTranfer.getImportoSingoloVersamento()))
-        .balance(Optional.ofNullable(singleTranfer.getBilancio())
+        .iud(singleTransfer.getIdentificativoUnivocoDovuto())
+        .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))
+        .amountCents(ConversionUtils.bigDecimalEuroAmountToCentsAmount(singleTransfer.getImportoSingoloVersamento()))
+        .balance(Optional.ofNullable(singleTransfer.getBilancio())
           .map(b -> jaxbTransformService.marshalling(b, Bilancio.class))
           .orElse(null))
-        .legacyPaymentMetadata(singleTranfer.getDatiSpecificiRiscossione())
+        .legacyPaymentMetadata(singleTransfer.getDatiSpecificiRiscossione())
+        .remittanceInformation(singleTransfer.getCausaleVersamento())
         .build();
 
-      Optional.ofNullable(singleTranfer.getDatiMarcaBolloDigitale()).ifPresentOrElse(
+      Optional.ofNullable(singleTransfer.getDatiMarcaBolloDigitale()).ifPresentOrElse(
         stamp -> mixedTransferDTO
           .stampHashDocument(stamp.getHashDocumento())
           .stampProvincialResidence(stamp.getProvinciaResidenza())
@@ -160,14 +159,13 @@ abstract class AbstractImmediatePaymentsMapper {
         });
       mixedTransfers.add(mixedTransferDTO);
     }
-    //TODO: P4ADEV-3958 move remittanceInformation
+
     return MixedDebtPositionDTO.builder()
-      .organizationId(org.getOrganizationId())
+      .organizationId(Objects.requireNonNull(org.getOrganizationId()))
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .sourceFlowName(sourceFlowName)
       .flagIuvVolatile(true)
       .description("MIXED")
-      .remittanceInformation(dovutiObj.getDatiVersamento().getDatiSingoloVersamentos().getFirst().getCausaleVersamento())
       .dueDate(Utilities.getSpontaneousSilExpirationDate())
       .debtor(debtor)
       .transfers(mixedTransfers)

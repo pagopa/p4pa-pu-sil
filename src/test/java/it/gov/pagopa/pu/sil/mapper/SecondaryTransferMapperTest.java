@@ -4,6 +4,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.ElementoListaDovutiEntiSecondari;
@@ -42,7 +43,12 @@ class SecondaryTransferMapperTest {
   @InjectMocks
   SecondaryTransferMapper secondaryTransferMapper;
 
+  @Mock
+  DebtPositionInstallmentService debtPositionInstallmentServiceMock;
+
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
+
+  private static final String ACCESS_TOKEN = "token";
 
   @BeforeEach
   void setup() {
@@ -119,8 +125,9 @@ class SecondaryTransferMapperTest {
     BigDecimal scaled = secondaryTransferData.getImportoSingoloVersamento().setScale(2, RoundingMode.HALF_UP);
     secondaryTransferData.setImportoSingoloVersamento(scaled);
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/legacyMetadata");
+    when(debtPositionInstallmentServiceMock.getCategory(secondaryTransferData.getDatiSpecificiRiscossione(), "code", debtPosition.getOrganizationId(), ACCESS_TOKEN)).thenReturn("9/1234567IM/");
 
-    assertDoesNotThrow(() -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData));
+    assertDoesNotThrow(() -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData, "code", ACCESS_TOKEN));
 
     TestUtils.checkNotNullFields(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst(),
       "transferId", "installmentId", "stampType", "stampHashDocument", "stampProvincialResidence", "mbdAttachment", "postalIban", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");

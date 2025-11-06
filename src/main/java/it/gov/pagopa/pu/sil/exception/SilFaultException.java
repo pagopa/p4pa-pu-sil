@@ -13,4 +13,10 @@ public class SilFaultException extends ApplicationException {
     this.fault = fault;
     this.description = description;
   }
+
+  public SilFaultException(SilFaults fault) {
+    super("Fault %s - %s".formatted(fault.code(), fault.description()));
+    this.fault = fault;
+    this.description = fault.description();
+  }
 }
