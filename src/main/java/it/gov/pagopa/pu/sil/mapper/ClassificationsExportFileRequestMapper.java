@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,9 @@ public class ClassificationsExportFileRequestMapper {
           .collect(Collectors.toSet()))
         .iuv(Optional.ofNullable(request.getIdUnivocoVersamento())
           .map(IdUnivocoVersamentoType::getIuvs).orElse(null))
-        .iur(Optional.ofNullable(request.getIdUnivocoRendicontazione())
+        .iur(Optional.ofNullable(request.getIdUnivocoRiscossione())
+          .map(List::of).orElse(null))
+        .iuf(Optional.ofNullable(request.getIdUnivocoRendicontazione())
           .map(IdUnivocoRendicontazioneType::getIurs).orElse(null))
         .iud(request.getIdUnivocoDovuto())
         .regionValueDate(mapToLocalDateIntervalFilter(request.getDataValutaDa(), request.getDataValutaA()))
