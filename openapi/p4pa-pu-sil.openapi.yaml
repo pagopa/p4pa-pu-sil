@@ -825,6 +825,8 @@ components:
             - GENERIC_ERROR
         message:
           type: string
+        traceId:
+          type: string
     OrgFiscalCode:
       type: string
       pattern: '^\d{11}$'
