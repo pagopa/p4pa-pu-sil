@@ -91,7 +91,7 @@ class ExportFileClientTest {
       .thenReturn(exportFileControllerApiMock);
 
     ProcessExecutionsErrorDTO processExecutionsErrorDTO = new ProcessExecutionsErrorDTO(
-      ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range");
+      ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range", "traceId");
     HttpClientErrorException.BadRequest badRequest = (HttpClientErrorException.BadRequest) HttpClientErrorException.create(
       HttpStatus.BAD_REQUEST, "Bad request", null, null, null);
     badRequest.setBodyConvertFunction(t -> processExecutionsErrorDTO);
