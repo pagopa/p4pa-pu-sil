@@ -1,4 +1,6 @@
 import java.util.*
+import com.github.jk1.license.render.*
+import com.github.jk1.license.filter.*
 
 plugins {
   java
@@ -12,6 +14,7 @@ plugins {
   id("com.gorylenko.gradle-git-properties") version "2.5.3"
   //code generation for soap webservices classes (via  jaxb)
   id("com.intershop.gradle.jaxb") version "7.0.2"
+  id("com.github.jk1.dependency-license-report") version "3.0.1"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -28,6 +31,18 @@ configurations {
   compileOnly {
     extendsFrom(configurations.annotationProcessor.get())
   }
+  compileClasspath {
+    resolutionStrategy.activateDependencyLocking()
+  }
+}
+
+licenseReport {
+  renderers = arrayOf(XmlReportRenderer("third-party-libs.xml", "Back-End Libraries"))
+  outputDir = "$projectDir/dependency-licenses"
+  filters = arrayOf(SpdxLicenseBundleNormalizer())
+}
+tasks.classes {
+  finalizedBy(tasks.generateLicenseReport)
 }
 
 repositories {
@@ -57,6 +72,7 @@ val javaJwtVersion = "4.5.0"
 val jwksRsaVersion = "0.23.0"
 val bouncycastleVersion = "1.82"
 val nimbusVersion = "10.5"
+val commonsLang3Version = "3.19.0"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -71,7 +87,10 @@ dependencies {
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
   implementation("io.micrometer:micrometer-registry-prometheus")
-  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion")
+  implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion") {
+    exclude(group = "org.apache.commons", module = "commons-lang3")
+  }
+  implementation("org.apache.commons:commons-lang3:${commonsLang3Version}")
   implementation("org.codehaus.janino:janino:$janinoVersion")
   implementation("io.github.springwolf:springwolf-kafka:${springWolfAsyncApiVersion}")
   implementation("io.github.springwolf:springwolf-ui:${springWolfAsyncApiVersion}")
@@ -142,12 +161,6 @@ tasks {
     filesMatching("**/application.yml") {
       expand(projectInfo)
     }
-  }
-}
-
-configurations {
-  compileClasspath {
-    resolutionStrategy.activateDependencyLocking()
   }
 }
 
