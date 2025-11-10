@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
-import it.gov.pagopa.pu.sil.UtilitiesTest;
+import it.gov.pagopa.pu.sil.util.UtilitiesTest;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.event.producer.dto.RegistryEventDTO;

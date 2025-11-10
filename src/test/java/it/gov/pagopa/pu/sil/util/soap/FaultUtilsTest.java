@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
-import it.gov.pagopa.pu.sil.UtilitiesTest;
+import it.gov.pagopa.pu.sil.util.UtilitiesTest;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediAvvisiPendentiRisposta;

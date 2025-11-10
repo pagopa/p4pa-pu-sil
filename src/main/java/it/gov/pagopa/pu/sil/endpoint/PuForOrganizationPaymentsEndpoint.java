@@ -32,6 +32,7 @@ import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthoriza
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.querypayments.*;
 import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.util.DateUtils;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
@@ -50,6 +51,7 @@ import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -512,14 +514,14 @@ public class PuForOrganizationPaymentsEndpoint {
 
     OffsetDateTime from = optRequest.map(PaaSILPrenotaExportFlusso::getDateFrom)
       .map(XMLGregorianCalendar::toGregorianCalendar)
-      .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
-      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS))
+      .map(GregorianCalendar::toZonedDateTime)
+      .map(DateUtils::toOffsetDateTimeStartOfTheDay)
       .orElse(null);
 
     OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlusso::getDateTo)
       .map(XMLGregorianCalendar::toGregorianCalendar)
-      .map(gc -> gc.toZonedDateTime().toOffsetDateTime())
-      .map(odt -> odt.truncatedTo(ChronoUnit.DAYS))
+      .map(GregorianCalendar::toZonedDateTime)
+      .map(DateUtils::toOffsetDateTimeEndOfTheDay)
       .orElse(null);
 
     String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlusso::getIdentificativoTipoDovuto)

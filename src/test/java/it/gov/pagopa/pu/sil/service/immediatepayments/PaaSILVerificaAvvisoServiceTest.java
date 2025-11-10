@@ -1,5 +1,13 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
@@ -17,6 +25,8 @@ import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvvisoRisposta;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,13 +41,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaaSILVerificaAvvisoServiceTest {
@@ -163,7 +166,7 @@ class PaaSILVerificaAvvisoServiceTest {
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Nessun avviso pagabile trovato per l'dentificativo univoco del versamento indicato", exception.getDescription());
+    Assertions.assertEquals("Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato", exception.getDescription());
   }
 
   @Test

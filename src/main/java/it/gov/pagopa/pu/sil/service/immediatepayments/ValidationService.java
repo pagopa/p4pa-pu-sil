@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
+import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
+
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -10,14 +11,11 @@ import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
+import java.math.BigDecimal;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.math.BigDecimal;
-
-import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
-//TODO: P4ADEV-3975 remove redundant validation
 @Service
 public class ValidationService {
 
@@ -25,14 +23,6 @@ public class ValidationService {
 
   public ValidationService(InstallmentService installmentService) {
     this.installmentService = installmentService;
-  }
-
-  public void validateDebtPositionTypeOrg(DebtPositionTypeOrg debtPositionTypeOrg, String debtPositionTypeOrgCode) {
-    if (debtPositionTypeOrg == null) {
-      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
-    } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
-      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, "Tipo dovuto non abilitato: " + debtPositionTypeOrgCode);
-    }
   }
 
   public void validateStamp(CtDatiSingoloVersamentoDovuti versamento) {
@@ -62,18 +52,6 @@ public class ValidationService {
       orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
     if (Boolean.TRUE.equals(isInstallmentExistsByIudIuvNav)) {
       throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "IUD duplicato: " + iud);
-    }
-  }
-
-  public void validatePaymentData(CtDatiSingoloVersamentoDovuti versamento) {
-    if (versamento.getImportoSingoloVersamento() == null || BigDecimal.ZERO.compareTo(versamento.getImportoSingoloVersamento()) >= 0) {
-      throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido: " + versamento.getImportoSingoloVersamento());
-    }
-    if (!ValidationUtils.verifyBalanceAmount(versamento.getBilancio(), versamento.getImportoSingoloVersamento())) {
-      throw new SilFaultException(SilFaults.PAA_IMPORTO_BILANCIO_NON_VALIDO, "Importo bilancio non valido");
-    }
-    if (StringUtils.isBlank(versamento.getCausaleVersamento())) {
-      throw new SilFaultException(SilFaults.PAA_CAUSALE_NON_PRESENTE, "Causale versamento non presente o non valida");
     }
   }
 

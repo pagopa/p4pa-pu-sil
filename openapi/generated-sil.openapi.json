@@ -1546,6 +1546,9 @@
           },
           "message" : {
             "type" : "string"
+          },
+          "traceId" : {
+            "type" : "string"
           }
         },
         "required" : [ "code", "message" ]

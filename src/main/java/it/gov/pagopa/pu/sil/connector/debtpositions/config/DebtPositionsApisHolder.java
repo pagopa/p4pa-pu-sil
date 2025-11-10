@@ -1,9 +1,16 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.debtpositions.controller.ApiClient;
 import it.gov.pagopa.pu.debtpositions.controller.BaseApi;
-import it.gov.pagopa.pu.debtpositions.controller.generated.*;
-import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeEntityControllerApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeOrgSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.controller.generated.ReceiptApi;
+import it.gov.pagopa.pu.sil.exception.DebtPositionsResponseErrorHandler;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -27,17 +34,18 @@ public class DebtPositionsApisHolder {
 
   public DebtPositionsApisHolder(
     DebtPositionsApiClientConfig clientConfig,
-    RestTemplateBuilder restTemplateBuilder
+    RestTemplateBuilder restTemplateBuilder,
+    ObjectMapper objectMapper
   ) {
+
     RestTemplate restTemplate = restTemplateBuilder.build();
     ApiClient apiClient = new ApiClient(restTemplate);
     apiClient.setBasePath(clientConfig.getBaseUrl());
     apiClient.setBearerToken(bearerTokenHolder::get);
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
-    if (clientConfig.isPrintBodyWhenError()) {
-      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("DEBT-POSITIONS"));
-    }
+
+    restTemplate.setErrorHandler(new DebtPositionsResponseErrorHandler(clientConfig, objectMapper));
 
     this.debtPositionTypeOrgSearchControllerApi = new DebtPositionTypeOrgSearchControllerApi(apiClient);
     this.debtPositionTypeEntityControllerApi = new DebtPositionTypeEntityControllerApi(apiClient);
