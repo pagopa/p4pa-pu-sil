@@ -9,8 +9,8 @@ public enum IngestionFlowFileLegacyStatus {
   PROCESSING(IngestionFlowFileStatus.PROCESSING, "FILE_IN_CARICAMENTO"),
   COMPLETED(IngestionFlowFileStatus.COMPLETED, "FILE_CARICATO"),
   ERROR(IngestionFlowFileStatus.ERROR, "ERROR_LOAD"),
-  WAITING_FILE(IngestionFlowFileStatus.WAITING_FILE, "WAITING_FILE") /** no such value exists in the legacy system */
-  ;
+  WAITING_FILE(IngestionFlowFileStatus.WAITING_FILE, "WAITING_FILE"), // no such value exists in the legacy system
+  WARNING(IngestionFlowFileStatus.WARNING, "WARNING"); // no such value exists in the legacy system
 
   private IngestionFlowFileStatus value;
   private String legacyValue;
