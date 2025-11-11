@@ -46,7 +46,7 @@ public class IngestionFlowFileProcessingStatusService {
       .status(ingestionFlowFile.getStatus())
       .build();
 
-    if (ingestionFlowFile.getStatus().equals(IngestionFlowFileStatus.COMPLETED) || ingestionFlowFile.getStatus().equals(IngestionFlowFileStatus.ERROR)) {
+    if (ingestionFlowFile.getStatus().equals(IngestionFlowFileStatus.COMPLETED) || ingestionFlowFile.getStatus().equals(IngestionFlowFileStatus.ERROR) || ingestionFlowFile.getStatus().equals(IngestionFlowFileStatus.WARNING)) {
       addDownloadUrlsToResponse(responseDTO, ingestionFlowFile);
     }
 
