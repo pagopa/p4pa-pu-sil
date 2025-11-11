@@ -1976,7 +1976,7 @@
       "ClassificationsExportFileFilter" : {
         "type" : "object",
         "properties" : {
-          "iuf" : {
+          "iufs" : {
             "type" : "array",
             "items" : {
               "type" : "string"

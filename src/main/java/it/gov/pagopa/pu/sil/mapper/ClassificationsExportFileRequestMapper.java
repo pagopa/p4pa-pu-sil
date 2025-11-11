@@ -34,7 +34,7 @@ public class ClassificationsExportFileRequestMapper {
           .map(IdUnivocoVersamentoType::getIuvs).orElse(null))
         .iur(Optional.ofNullable(request.getIdUnivocoRiscossione())
           .map(List::of).orElse(null))
-        .iuf(Optional.ofNullable(request.getIdUnivocoRendicontazione())
+        .iufs(Optional.ofNullable(request.getIdUnivocoRendicontazione())
           .map(IdUnivocoRendicontazioneType::getIurs).orElse(null))
         .iud(request.getIdUnivocoDovuto())
         .regionValueDate(mapToLocalDateIntervalFilter(request.getDataValutaDa(), request.getDataValutaA()))
