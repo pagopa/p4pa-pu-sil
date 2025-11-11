@@ -1985,13 +1985,13 @@
           "iud" : {
             "type" : "string"
           },
-          "iuv" : {
+          "iuvs" : {
             "type" : "array",
             "items" : {
               "type" : "string"
             }
           },
-          "iur" : {
+          "iurs" : {
             "type" : "array",
             "items" : {
               "type" : "string"
