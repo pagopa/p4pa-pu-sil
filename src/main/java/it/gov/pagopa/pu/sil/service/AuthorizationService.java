@@ -44,15 +44,15 @@ public class AuthorizationService {
     }
   }
 
-  public void validateOrganizationBrokered(Organization organization, UserInfo loggedUser) {
-    if (!isOrganizationHandledByBroker(organization, loggedUser)) {
-      handleUnauthorizedUser(organization.getOrganizationId(), loggedUser);
+  public void validateOrganizationBrokered(Long orgBrokerId, UserInfo loggedUser) {
+    if (!isOrganizationHandledByBroker(orgBrokerId, loggedUser)) {
+      handleUnauthorizedBroker(orgBrokerId, loggedUser);
     }
   }
 
-  public boolean isOrganizationHandledByBroker(Organization organization, UserInfo loggedUser) {
-    return loggedUser.getBrokerId() != null && organization != null
-      && loggedUser.getBrokerId().equals(organization.getBrokerId());
+  public boolean isOrganizationHandledByBroker(Long orgBrokerId, UserInfo loggedUser) {
+    return loggedUser.getBrokerId() != null
+      && loggedUser.getBrokerId().equals(orgBrokerId);
   }
 
   public static void validateAdminRole(Long organizationId, UserInfo loggedUser) {
@@ -172,5 +172,11 @@ public class AuthorizationService {
     log.debug("Unauthorized user. [orgFiscalCode:{}]", orgFiscalCode);
     String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
     throw new AuthorizationDeniedException("Access denied on orgFiscalCode " + orgFiscalCode + " to user " + userId);
+  }
+
+  private void handleUnauthorizedBroker(Long orgBrokerId, UserInfo loggedUser) {
+    log.debug("Unauthorized user. [orgBrokerId:{}]", orgBrokerId);
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
+    throw new AuthorizationDeniedException("Access denied on orgBrokerId " + orgBrokerId + " to user " + userId);
   }
 }

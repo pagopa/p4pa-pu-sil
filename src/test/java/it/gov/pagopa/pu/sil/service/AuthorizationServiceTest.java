@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
@@ -361,21 +360,16 @@ public class AuthorizationServiceTest {
   void testValidateBrokerAdminRole(String brokerFiscalCode,
                                    String adminOrgFiscalCode,
                                    boolean expectError) {
-    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
-    userAdminRole.setRoles(List.of("TEST", "ROLE_ADMIN"));
-    userAdminRole.setOrganizationId(1L);
-    userAdminRole.setOrganizationFiscalCode(adminOrgFiscalCode);
-
-    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
-    userTestRole.setRoles(List.of("TEST"));
-    userTestRole.setOrganizationId(2L);
-    userTestRole.setOrganizationFiscalCode(brokerFiscalCode);
-
+    // Given
     UserInfo userInfo = new UserInfo();
-    userInfo.setOrganizations(List.of(userAdminRole, userTestRole));
-    userInfo.setMappedExternalUserId("externalUserId");
+    userInfo.setMappedExternalUserId("userId");
     userInfo.setBrokerFiscalCode(brokerFiscalCode);
+    userInfo.setOrganizations(List.of(
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN")),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"))
+    ));
 
+    // When/Then
     if (expectError) {
       Assertions.assertThrows(AuthorizationDeniedException.class,
         () -> authorizationService.validateBrokerAdminRole(userInfo)
@@ -387,38 +381,31 @@ public class AuthorizationServiceTest {
 
   @ParameterizedTest
   @CsvSource(value = {
-    "1, 1, 1, false",         // Valid: user and organization have matching brokerId
-    "1, 2, 1, true",          // Invalid: organization brokerId doesn't match user brokerId
-    "1, 1, null, true",       // Invalid: organization is null
-    "1, null, 1, true",       // Invalid: user brokerId is null
-    "null, 1, 1, true",       // Invalid: user is null (implicitly null brokerId)
+    "1, 1, false",
+    "1, 2, true",
+    "1, null, true",
+    "null, 1, true",
   }, nullValues = {"null"})
   void testValidateOrganizationBrokered(Long userBrokerId,
                                         Long orgBrokerId,
-                                        Long orgId,
                                         boolean expectError) {
     // Given
     UserInfo userInfo = new UserInfo();
+    userInfo.setMappedExternalUserId("userId");
     userInfo.setBrokerId(userBrokerId);
-    userInfo.setMappedExternalUserId("externalUserId");
-
-    final Organization organization;
-    if (orgId != null) {
-      organization = new Organization();
-      organization.setOrganizationId(orgId);
-      organization.setBrokerId(orgBrokerId);
-    } else {
-      organization = null;
-    }
+    userInfo.setOrganizations(List.of(
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+    ));
 
     // When/Then
     if (expectError) {
       Assertions.assertThrows(AuthorizationDeniedException.class,
-        () -> authorizationService.validateOrganizationBrokered(organization, userInfo)
+        () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
       );
     } else {
       Assertions.assertDoesNotThrow(
-        () -> authorizationService.validateOrganizationBrokered(organization, userInfo)
+        () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
       );
     }
   }
