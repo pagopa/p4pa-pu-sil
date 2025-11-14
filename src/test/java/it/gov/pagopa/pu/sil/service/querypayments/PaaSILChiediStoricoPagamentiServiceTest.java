@@ -29,7 +29,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +64,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     String orgIpaCode = "IPA123";
     long orgId = 42L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
+    List<Long> orgIds = List.of(orgId);
 
     PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
     request.setCodIpaEnte(orgIpaCode);
@@ -123,7 +123,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       .thenReturn(Optional.of(org));
 
     when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), Collections.singletonList(eq(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
+      anyString(), any(PersonEntityType.class), eq(orgIds), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
     ).thenReturn(List.of(dp));
 
     ReceiptDTO receipt = new ReceiptDTO();
@@ -170,7 +170,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), Collections.singletonList(eq(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgIds), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
     );
     verify(receiptServiceMock).getReceiptById(1001L, orgId, accessToken);
     verify(pagatiMapperMock).mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken);
