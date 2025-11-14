@@ -31,7 +31,7 @@ public class AuthorizationService {
     return authClientImpl.getUserInfo(accessToken);
   }
 
-  public void validateBrokerAdminRole(UserInfo loggedUser) {
+  public static void validateBrokerAdminRole(UserInfo loggedUser) {
     String brokerFiscalCode = loggedUser.getBrokerFiscalCode();
     boolean isBroker = loggedUser.getOrganizations()
       .stream()
@@ -44,13 +44,13 @@ public class AuthorizationService {
     }
   }
 
-  public void validateOrganizationBrokered(Long orgBrokerId, UserInfo loggedUser) {
+  public static void validateOrganizationBrokered(Long orgBrokerId, UserInfo loggedUser) {
     if (!isOrganizationHandledByBroker(orgBrokerId, loggedUser)) {
       handleUnauthorizedBroker(orgBrokerId, loggedUser);
     }
   }
 
-  public boolean isOrganizationHandledByBroker(Long orgBrokerId, UserInfo loggedUser) {
+  public static boolean isOrganizationHandledByBroker(Long orgBrokerId, UserInfo loggedUser) {
     return loggedUser.getBrokerId() != null
       && loggedUser.getBrokerId().equals(orgBrokerId);
   }
@@ -174,7 +174,7 @@ public class AuthorizationService {
     throw new AuthorizationDeniedException("Access denied on orgFiscalCode " + orgFiscalCode + " to user " + userId);
   }
 
-  private void handleUnauthorizedBroker(Long orgBrokerId, UserInfo loggedUser) {
+  private static void handleUnauthorizedBroker(Long orgBrokerId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [orgBrokerId:{}]", orgBrokerId);
     String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
     throw new AuthorizationDeniedException("Access denied on orgBrokerId " + orgBrokerId + " to user " + userId);
