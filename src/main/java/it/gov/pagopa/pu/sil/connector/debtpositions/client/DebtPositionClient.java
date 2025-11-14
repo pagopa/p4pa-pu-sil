@@ -71,10 +71,11 @@ public class DebtPositionClient {
     }
   }
 
+  @SuppressWarnings("java:S107")
   public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
-    Long organizationId,
+    List<Long> organizationIds,
     List<String> debtPositionTypeOrgCodesToExclude,
     InstallmentStatus status,
     OffsetDateTime fromDate,
@@ -86,10 +87,10 @@ public class DebtPositionClient {
       .getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         debtorFiscalCode,
         debtorEntityType,
+        organizationIds,
         status != null ? List.of(status) : null,
         null,
         debtPositionTypeOrgCodesToExclude,
-        organizationId,
         fromDate,
         toDate
       );

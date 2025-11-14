@@ -168,11 +168,12 @@ class DebtPositionServiceTest {
     String accessToken = "ACCESSTOKEN";
     OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
+    List<Long> organizationIds = List.of(1L, 2L);
 
     Mockito.when(clientMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       debtorFiscalCode,
       debtorEntityType,
-      null,
+      organizationIds,
       debtPositionTypeOrgCodesToExclude,
       null,
       null,
@@ -181,7 +182,7 @@ class DebtPositionServiceTest {
     )).thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, null, debtPositionTypeOrgCodesToExclude, null, dateFilter, accessToken);
+    List<DebtPositionDTO> result = service.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationIds, debtPositionTypeOrgCodesToExclude, null, dateFilter, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);

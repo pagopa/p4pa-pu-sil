@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -57,12 +59,17 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     );
   }
 
-  @Test
-  void givenValidRequestWhenProcessRequestThenBuildsPaymentsHistory() throws Exception {
+  @ParameterizedTest
+  @CsvSource(value = {
+    "IPA123, 1",           // With orgIpaCode - single organization path
+    "null, 2"              // Without orgIpaCode - broker organizations path (multiple orgs)
+  }, nullValues = {"null"})
+  void givenValidRequestWhenProcessRequestThenBuildsPaymentsHistory(String orgIpaCode, int expectedOrgCount) throws Exception {
     // Given
     String accessToken = "token";
-    String orgIpaCode = "IPA123";
-    long orgId = 42L;
+    long orgId1 = 42L;
+    long orgId2 = 43L;
+    Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
     PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
@@ -79,12 +86,21 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     request.setDataTo(dataTo);
 
     UserInfo userInfo = new UserInfo();
+    userInfo.setBrokerId(brokerId);
 
-    Organization org = new Organization();
-    org.setOrganizationId(orgId);
-    org.setOrgName("Comune di Test");
-    org.setOrgFiscalCode("11111111111");
-    org.setStatus(OrganizationStatus.ACTIVE);
+    Organization org1 = new Organization();
+    org1.setOrganizationId(orgId1);
+    org1.setOrgName("Comune di Test");
+    org1.setOrgFiscalCode("11111111111");
+    org1.setStatus(OrganizationStatus.ACTIVE);
+    org1.setBrokerId(brokerId);
+
+    Organization org2 = new Organization();
+    org2.setOrganizationId(orgId2);
+    org2.setOrgName("Comune di Test 2");
+    org2.setOrgFiscalCode("22222222222");
+    org2.setStatus(OrganizationStatus.ACTIVE);
+    org2.setBrokerId(brokerId);
 
     InstallmentDTO installment = new InstallmentDTO();
     installment.setReceiptId(1001L);
@@ -115,40 +131,44 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     paymentOption.setInstallments(List.of(installment));
 
     DebtPositionDTO dp = new DebtPositionDTO();
-    dp.setOrganizationId(orgId);
+    dp.setOrganizationId(orgId1);
     dp.setPaymentOptions(List.of(paymentOption));
 
-    when(organizationServiceMock.getOrganizationById(eq(orgId), eq(accessToken)))
-      .thenReturn(Optional.of(org));
-
-    when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
-    ).thenReturn(List.of(dp));
-
-    ReceiptDTO receipt = new ReceiptDTO();
-    receipt.setIdPsp("PSP001");
-    receipt.setPspCompanyName("PSP Test");
-    receipt.setPaymentReceiptId("RCP-123");
-    receipt.setPaymentDateTime(java.time.OffsetDateTime.parse("2025-01-15T10:15:30+01:00"));
-    receipt.setPaymentNote("note");
-    receipt.setCreditorReferenceId("IUV123");
-    receipt.setPaymentAmountCents(12345L);
-    receipt.setFeeCents(200L);
-
     byte[] marshalledReceipt = "receipt".getBytes(StandardCharsets.UTF_8);
+    byte[] pagatiBytes = "pagati".getBytes(StandardCharsets.UTF_8);
 
-    when(receiptServiceMock.getReceiptById(1001L, orgId, accessToken)).thenReturn(marshalledReceipt);
-
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken))
-      .thenReturn("pagati".getBytes(StandardCharsets.UTF_8));
+    when(receiptServiceMock.getReceiptById(1001L, orgId1, accessToken)).thenReturn(marshalledReceipt);
+    when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org1, accessToken))
+      .thenReturn(pagatiBytes);
 
     // When
     PaaSILChiediStoricoPagamentiRisposta response;
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
-      mockedAuth.when(() -> AuthorizationService.validateAdminRole(eq(orgIpaCode), eq(userInfo)))
+      mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
-      mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-        .thenReturn(orgId);
+
+      if (orgIpaCode != null) {
+        // Single organization path
+        mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
+          .thenReturn(orgId1);
+        mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
+          .thenAnswer(inv -> null);
+
+        when(organizationServiceMock.getOrganizationById(orgId1, accessToken))
+          .thenReturn(Optional.of(org1));
+
+        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
+        ).thenReturn(List.of(dp));
+      } else {
+        // Broker organizations path
+        when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+          .thenReturn(List.of(org1, org2));
+
+        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
+        ).thenReturn(List.of(dp));
+      }
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -157,9 +177,9 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(dataTo, response.getDateTo());
     Assertions.assertNotNull(response.getPaaSILStoricoPagamentis());
-    Assertions.assertEquals(1, response.getPaaSILStoricoPagamentis().size());
+    Assertions.assertEquals(expectedOrgCount, response.getPaaSILStoricoPagamentis().size());
 
-    var item = response.getPaaSILStoricoPagamentis().get(0);
+    var item = response.getPaaSILStoricoPagamentis().getFirst();
     Assertions.assertEquals(orgIpaCode, item.getCodIpaEnte());
     Assertions.assertEquals("Comune di Test", item.getDeNomeEnte());
     DataHandler rtDh = item.getRt();
@@ -167,20 +187,29 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     Assertions.assertNotNull(rtDh, "RT DataHandler should be set");
     Assertions.assertNotNull(ctDh, "CtPagatiConRicevuta DataHandler should be set");
 
-    verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-    verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
-    );
-    verify(receiptServiceMock).getReceiptById(1001L, orgId, accessToken);
-    verify(pagatiMapperMock).mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken);
+    // Verify interactions
+    if (orgIpaCode != null) {
+      verify(organizationServiceMock).getOrganizationById(orgId1, accessToken);
+      verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
+      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
+      );
+    } else {
+      verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
+      verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
+      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
+      );
+    }
   }
 
   @Test
-  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() throws Exception {
+  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
     long orgId = 42L;
+    Long brokerId = 100L;
 
     PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
     request.setCodIpaEnte(orgIpaCode);
@@ -191,13 +220,14 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     request.setIdentificativoUnivocoPersonaFG(idFG);
 
     UserInfo userInfo = new UserInfo();
+    userInfo.setBrokerId(brokerId);
 
-    when(organizationServiceMock.getOrganizationById(eq(orgId), eq(accessToken)))
+    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
       .thenReturn(Optional.empty());
 
     // When - Then
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
-      mockedAuth.when(() -> AuthorizationService.validateAdminRole(eq(orgIpaCode), eq(userInfo)))
+      mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
       mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
         .thenReturn(orgId);
