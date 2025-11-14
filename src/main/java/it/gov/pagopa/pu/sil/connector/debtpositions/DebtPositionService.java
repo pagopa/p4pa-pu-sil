@@ -75,7 +75,7 @@ public interface DebtPositionService {
    *
    * @param debtorFiscalCode the fiscal code of the debtor
    * @param debtorEntityType the entity type of the debtor
-   * @param organizationId the ID of the organization
+   * @param organizationIds the IDs of the organizations
    * @param status the status of the installments to filter by
    * @param dateFilter the date interval filter (containing start and end dates) for filtering debt positions (inclusive)
    * @param accessToken the access token for authentication
@@ -84,7 +84,7 @@ public interface DebtPositionService {
   List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
-    Long organizationId,
+    List<Long> organizationIds,
     List<String> debtPositionTypeOrgCodesToExclude,
     InstallmentStatus status,
     OffsetDateTimeIntervalFilter dateFilter,

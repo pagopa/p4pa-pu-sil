@@ -29,6 +29,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
@@ -118,11 +119,11 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     dp.setOrganizationId(orgId);
     dp.setPaymentOptions(List.of(paymentOption));
 
-    when(organizationServiceMock.getOrganizationById(eq(orgId), eq(accessToken)))
+    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
       .thenReturn(Optional.of(org));
 
     when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
+      anyString(), any(PersonEntityType.class), Collections.singletonList(eq(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
     ).thenReturn(List.of(dp));
 
     ReceiptDTO receipt = new ReceiptDTO();
@@ -169,14 +170,14 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), Collections.singletonList(eq(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
     );
     verify(receiptServiceMock).getReceiptById(1001L, orgId, accessToken);
     verify(pagatiMapperMock).mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken);
   }
 
   @Test
-  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() throws Exception {
+  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
@@ -192,7 +193,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
     UserInfo userInfo = new UserInfo();
 
-    when(organizationServiceMock.getOrganizationById(eq(orgId), eq(accessToken)))
+    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
       .thenReturn(Optional.empty());
 
     // When - Then
