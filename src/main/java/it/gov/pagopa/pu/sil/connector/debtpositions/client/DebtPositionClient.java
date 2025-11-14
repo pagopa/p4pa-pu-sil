@@ -71,7 +71,6 @@ public class DebtPositionClient {
     }
   }
 
-  @SuppressWarnings("java:S107")
   public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
