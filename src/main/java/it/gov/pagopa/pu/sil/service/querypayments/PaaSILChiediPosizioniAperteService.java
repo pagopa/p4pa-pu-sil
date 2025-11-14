@@ -60,12 +60,13 @@ public class PaaSILChiediPosizioniAperteService {
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
 
+
     OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
 
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
-      organizationId,
+      List.of(organizationId),
       EXCLUDED_DEBT_POSITION_TYPE_CODES,
       InstallmentStatus.UNPAID,
       dateFilter,

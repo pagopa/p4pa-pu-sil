@@ -67,6 +67,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
     long orgId = 42L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
     OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
+    List<Long> orgIds = List.of(orgId);
 
     PaaSILChiediPosizioniAperte request = new PaaSILChiediPosizioniAperte();
     request.setCodIpaEnte(orgIpaCode);
@@ -105,11 +106,11 @@ class PaaSILChiediPosizioniAperteServiceTest {
     DebtPositionDTO dp = new DebtPositionDTO();
     dp.setPaymentOptions(List.of(paymentOption));
 
-    when(organizationServiceMock.getOrganizationById(eq(orgId), eq(accessToken)))
+    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
       .thenReturn(Optional.of(org));
 
     when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
+      anyString(), any(PersonEntityType.class), eq(orgIds), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
     ).thenReturn(List.of(dp));
 
     byte[] marshalledBytes = "dovuti-xml".getBytes();
@@ -140,7 +141,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgId), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgIds), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
     );
     verify(jaxbTransformServiceMock, times(1)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
   }

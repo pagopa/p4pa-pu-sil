@@ -64,12 +64,12 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
     String debtorFiscalCode,
     PersonEntityType debtorEntityType,
-    Long organizationId,
+    List<Long> organizationIds,
     List<String> debtPositionTypeOrgCodesToExclude,
     InstallmentStatus status,
     OffsetDateTimeIntervalFilter dateFilter,
     String accessToken
   ) {
-    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationId, debtPositionTypeOrgCodesToExclude, status, dateFilter.getFrom(), dateFilter.getTo(), accessToken);
+    return client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationIds, debtPositionTypeOrgCodesToExclude, status, dateFilter.getFrom(), dateFilter.getTo(), accessToken);
   }
 }
