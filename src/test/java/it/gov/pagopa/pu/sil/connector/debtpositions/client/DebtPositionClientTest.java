@@ -207,14 +207,15 @@ class DebtPositionClientTest {
     PersonEntityType debtorEntityType = PersonEntityType.F;
     List<String> debtPositionTypeOrgCodesToExclude = Collections.emptyList();
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
+    List<Long> organizationIds = List.of(1L);
 
     Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
       .thenReturn(debtPositionApiMock);
-    Mockito.when(debtPositionApiMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, List.of(1L), List.of(InstallmentStatus.UNPAID), null, debtPositionTypeOrgCodesToExclude, null, null))
+    Mockito.when(debtPositionApiMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationIds, List.of(InstallmentStatus.UNPAID), null, debtPositionTypeOrgCodesToExclude, null, null))
       .thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, List.of(1L), debtPositionTypeOrgCodesToExclude, InstallmentStatus.UNPAID, null, null, accessToken);
+    List<DebtPositionDTO> result = client.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(debtorFiscalCode, debtorEntityType, organizationIds, debtPositionTypeOrgCodesToExclude, InstallmentStatus.UNPAID, null, null, accessToken);
 
     // Then
     Assertions.assertEquals(expectedResult, result);
