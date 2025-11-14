@@ -40,20 +40,24 @@ public class PaaSILChiediStoricoPagamentiService {
   private final ReceiptService receiptService;
   private final PagatiMapper pagatiMapper;
 
-  public PaaSILChiediStoricoPagamentiRisposta processRequest(
-    PaaSILChiediStoricoPagamenti request,
-    UserInfo userInfo,
-    String accessToken
-  ) {
+  public PaaSILChiediStoricoPagamentiRisposta processRequest(PaaSILChiediStoricoPagamenti request,
+                                                             UserInfo userInfo,
+                                                             String accessToken) {
     PaaSILChiediStoricoPagamentiRisposta response = new PaaSILChiediStoricoPagamentiRisposta();
-    AuthorizationService.validateAdminRole(request.getCodIpaEnte(), userInfo);
+    AuthorizationService.validateBrokerAdminRole(userInfo);
 
-    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, request.getCodIpaEnte());
-    Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
-      .orElse(null);
-    if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+    List<Organization> organizations;
+    if (request.getCodIpaEnte() != null) {
+      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, request.getCodIpaEnte());
+      Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
+        .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
+        .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
+      AuthorizationService.isOrganizationHandledByBroker(organization.getBrokerId(), userInfo);
+      organizations = List.of(organization);
+    } else {
+      organizations = organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken);
     }
+
 
     OffsetDateTime dateFrom = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS);
     if (request.getDataFrom() != null) {
@@ -70,7 +74,7 @@ public class PaaSILChiediStoricoPagamentiService {
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
-      List.of(organizationId),
+      organizations.stream().map(Organization::getOrganizationId).toList(),
       EXCLUDED_DEBT_POSITION_TYPE_CODES,
       InstallmentStatus.PAID,
       dateFilter,
@@ -78,7 +82,9 @@ public class PaaSILChiediStoricoPagamentiService {
     );
 
     response.setDateTo(ConversionUtils.toXMLGregorianCalendar(dateTo));
-    response.getPaaSILStoricoPagamentis().addAll(processDebtPositions(request, organization, debtPositions, accessToken));
+    organizations.forEach(organization ->
+      response.getPaaSILStoricoPagamentis().addAll(processDebtPositions(request, organization, debtPositions, accessToken))
+    );
     return response;
   }
 

@@ -2,7 +2,9 @@ package it.gov.pagopa.pu.sil.service;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
+import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.function.Function;
 @Slf4j
 public class AuthorizationService {
   public static final String ROLE_ADMIN = "ROLE_ADMIN";
+  public static final String UNKNOWN = "unknown";
 
   private final AuthnClient authClientImpl;
 
@@ -26,6 +29,30 @@ public class AuthorizationService {
   public UserInfo validateToken(String accessToken) {
     log.info("Requesting validate token");
     return authClientImpl.getUserInfo(accessToken);
+  }
+
+  public static void validateBrokerAdminRole(UserInfo loggedUser) {
+    String brokerFiscalCode = loggedUser.getBrokerFiscalCode();
+    boolean isBroker = loggedUser.getOrganizations()
+      .stream()
+      .anyMatch(o ->
+        o.getOrganizationFiscalCode().equals(brokerFiscalCode) &&
+          !CollectionUtils.isEmpty(o.getRoles()) &&
+          o.getRoles().contains(ROLE_ADMIN));
+    if (!isBroker) {
+      handleUnauthorizedUserFiscalCode(brokerFiscalCode, loggedUser);
+    }
+  }
+
+  public static void validateOrganizationBrokered(Long orgBrokerId, UserInfo loggedUser) {
+    if (!isOrganizationHandledByBroker(orgBrokerId, loggedUser)) {
+      handleUnauthorizedBroker(orgBrokerId, loggedUser);
+    }
+  }
+
+  public static boolean isOrganizationHandledByBroker(Long orgBrokerId, UserInfo loggedUser) {
+    return loggedUser.getBrokerId() != null
+      && loggedUser.getBrokerId().equals(orgBrokerId);
   }
 
   public static void validateAdminRole(Long organizationId, UserInfo loggedUser) {
@@ -131,13 +158,25 @@ public class AuthorizationService {
 
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
-    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : "unknown";
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
     throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + userId);
   }
 
   private static void handleUnauthorizedUser(String orgIpaCode, UserInfo loggedUser) {
     log.debug("Unauthorized user. [orgIpaCode:{}]", orgIpaCode);
-    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : "unknown";
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
     throw new AuthorizationDeniedException("Access denied on orgIpaCode " + orgIpaCode + " to user " + userId);
+  }
+
+  private static void handleUnauthorizedUserFiscalCode(String orgFiscalCode, UserInfo loggedUser) {
+    log.debug("Unauthorized user. [orgFiscalCode:{}]", orgFiscalCode);
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
+    throw new AuthorizationDeniedException("Access denied on orgFiscalCode " + orgFiscalCode + " to user " + userId);
+  }
+
+  private static void handleUnauthorizedBroker(Long orgBrokerId, UserInfo loggedUser) {
+    log.debug("Unauthorized user. [orgBrokerId:{}]", orgBrokerId);
+    String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
+    throw new AuthorizationDeniedException("Access denied on orgBrokerId " + orgBrokerId + " to user " + userId);
   }
 }

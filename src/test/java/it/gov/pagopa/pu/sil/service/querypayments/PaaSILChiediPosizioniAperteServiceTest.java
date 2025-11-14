@@ -21,8 +21,9 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivoc
 import jakarta.activation.DataHandler;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -59,15 +60,19 @@ class PaaSILChiediPosizioniAperteServiceTest {
     );
   }
 
-  @Test
-  void givenValidRequestWhenProcessRequestThenBuildsOpenPositions() {
+  @ParameterizedTest
+  @CsvSource(value = {
+    "IPA123, 1",           // With orgIpaCode - single organization path
+    "null, 2"              // Without orgIpaCode - broker organizations path (multiple orgs)
+  }, nullValues = {"null"})
+  void givenValidRequestWhenProcessRequestThenBuildsOpenPositions(String orgIpaCode, int expectedOrgCount) {
     // Given
     String accessToken = "token";
-    String orgIpaCode = "IPA123";
-    long orgId = 42L;
+    long orgId1 = 42L;
+    long orgId2 = 43L;
+    Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
     OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
-    List<Long> orgIds = List.of(orgId);
 
     PaaSILChiediPosizioniAperte request = new PaaSILChiediPosizioniAperte();
     request.setCodIpaEnte(orgIpaCode);
@@ -78,11 +83,19 @@ class PaaSILChiediPosizioniAperteServiceTest {
     request.setIdentificativoUnivocoPersonaFG(idFG);
 
     UserInfo userInfo = new UserInfo();
+    userInfo.setBrokerId(brokerId);
 
-    Organization org = new Organization();
-    org.setOrganizationId(orgId);
-    org.setOrgName("Comune di Test");
-    org.setStatus(OrganizationStatus.ACTIVE);
+    Organization org1 = new Organization();
+    org1.setOrganizationId(orgId1);
+    org1.setOrgName("Comune di Test");
+    org1.setStatus(OrganizationStatus.ACTIVE);
+    org1.setBrokerId(brokerId);
+
+    Organization org2 = new Organization();
+    org2.setOrganizationId(orgId2);
+    org2.setOrgName("Comune di Test 2");
+    org2.setStatus(OrganizationStatus.ACTIVE);
+    org2.setBrokerId(brokerId);
 
     InstallmentDTO installment = new InstallmentDTO();
     PersonDTO debtor = new PersonDTO();
@@ -100,18 +113,11 @@ class PaaSILChiediPosizioniAperteServiceTest {
     installment.setIuv("IUV123");
 
     PaymentOptionDTO paymentOption = new PaymentOptionDTO();
-    paymentOption.setPaymentOptionType(PaymentOptionTypeEnum.DOWN_PAYMENT); // use a valid value from your enum
+    paymentOption.setPaymentOptionType(PaymentOptionTypeEnum.DOWN_PAYMENT);
     paymentOption.setInstallments(List.of(installment));
 
     DebtPositionDTO dp = new DebtPositionDTO();
     dp.setPaymentOptions(List.of(paymentOption));
-
-    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
-      .thenReturn(Optional.of(org));
-
-    when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      anyString(), any(PersonEntityType.class), eq(orgIds), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
-    ).thenReturn(List.of(dp));
 
     byte[] marshalledBytes = "dovuti-xml".getBytes();
     when(jaxbTransformServiceMock.marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class)))
@@ -120,29 +126,61 @@ class PaaSILChiediPosizioniAperteServiceTest {
     // When
     PaaSILChiediPosizioniAperteRisposta response;
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
-      mockedAuth.when(() -> AuthorizationService.validateAdminRole(eq(orgIpaCode), eq(userInfo)))
+      mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
-      mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-        .thenReturn(orgId);
 
-      response = service.processRequest(request, userInfo, accessToken, orgIpaCode);
+      if (orgIpaCode != null) {
+        // Single organization path
+        mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
+          .thenReturn(orgId1);
+        mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
+          .thenAnswer(inv -> null);
+
+        when(organizationServiceMock.getOrganizationById(orgId1, accessToken))
+          .thenReturn(Optional.of(org1));
+
+        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
+        ).thenReturn(List.of(dp));
+      } else {
+        // Broker organizations path
+        when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+          .thenReturn(List.of(org1, org2));
+
+        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
+        ).thenReturn(List.of(dp));
+      }
+
+      response = service.processRequest(request, userInfo, accessToken);
     }
 
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertNotNull(response.getPaaSILPosizioniApertes());
-    Assertions.assertEquals(1, response.getPaaSILPosizioniApertes().size());
+    Assertions.assertEquals(expectedOrgCount, response.getPaaSILPosizioniApertes().size());
 
-    PaaSILPosizioniAperte item = response.getPaaSILPosizioniApertes().get(0);
+    PaaSILPosizioniAperte item = response.getPaaSILPosizioniApertes().getFirst();
     Assertions.assertEquals(orgIpaCode, item.getCodIpaEnte());
     Assertions.assertEquals("Comune di Test", item.getDeNomeEnte());
     DataHandler dh = item.getDovuti();
     Assertions.assertNotNull(dh, "Dovuti DataHandler should be set");
 
-    verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-    verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(orgIds), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
-    );
-    verify(jaxbTransformServiceMock, times(1)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
+    // Verify interactions
+    if (orgIpaCode != null) {
+      verify(organizationServiceMock).getOrganizationById(orgId1, accessToken);
+      verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
+      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
+      );
+    } else {
+      verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
+      verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
+      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
+      );
+    }
+
+    verify(jaxbTransformServiceMock, times(expectedOrgCount)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
   }
 }
