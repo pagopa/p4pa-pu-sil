@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.organization.client;
 
+import it.gov.pagopa.pu.organization.dto.generated.CollectionModelOrganization;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.config.OrganizationApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -46,4 +48,8 @@ public class OrganizationSearchClient {
     }
   }
 
+  public CollectionModelOrganization findByBrokerIdAndStatus(Long brokerId, OrganizationStatus status, String accessToken) {
+    return organizationApisHolder.getOrganizationSearchControllerApi(accessToken)
+      .crudOrganizationsFindByBrokerIdAndStatus(brokerId, status);
+  }
 }

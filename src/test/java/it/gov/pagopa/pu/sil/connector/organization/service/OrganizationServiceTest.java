@@ -1,16 +1,22 @@
 package it.gov.pagopa.pu.sil.connector.organization.service;
 
+import it.gov.pagopa.pu.organization.dto.generated.CollectionModelOrganization;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
+import it.gov.pagopa.pu.organization.dto.generated.PagedModelOrganizationEmbedded;
 import it.gov.pagopa.pu.sil.connector.organization.client.OrganizationSearchClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -130,6 +136,78 @@ class OrganizationServiceTest {
     Assertions.assertTrue(result.isPresent());
     Assertions.assertSame(expectedResult, result.get());
   }
+//endregion
 
+  //region findByBrokerIdAndStatus tests
+
+  @ParameterizedTest
+  @EnumSource(OrganizationStatus.class)
+  void givenBrokerIdAndAllStatusesWhenFindByBrokerIdAndStatusThenReturnList(OrganizationStatus status) {
+    // Given
+    Long brokerId = 200L;
+    Organization org = new Organization();
+    org.setOrganizationId(999L);
+    List<Organization> expectedOrganizations = List.of(org);
+
+    CollectionModelOrganization collectionModel = new CollectionModelOrganization();
+    PagedModelOrganizationEmbedded embedded = new PagedModelOrganizationEmbedded();
+    embedded.setOrganizations(expectedOrganizations);
+    collectionModel.setEmbedded(embedded);
+
+    Mockito.when(organizationSearchClientMock.findByBrokerIdAndStatus(brokerId, status, accessToken))
+      .thenReturn(collectionModel);
+
+    // When
+    List<Organization> result = organizationService.findByBrokerIdAndStatus(brokerId, status, accessToken);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(1, result.size());
+    Assertions.assertSame(org, result.getFirst());
+    Mockito.verify(organizationSearchClientMock).findByBrokerIdAndStatus(brokerId, status, accessToken);
+  }
+
+  @Test
+  void givenBrokerIdAndStatusWhenFindByBrokerIdAndStatusWithEmptyCollectionThenReturnEmptyList() {
+    // Given
+    Long brokerId = 100L;
+    OrganizationStatus status = OrganizationStatus.CANCELLED;
+    List<Organization> expectedOrganizations = List.of();
+
+    CollectionModelOrganization collectionModel = new CollectionModelOrganization();
+    PagedModelOrganizationEmbedded embedded = new PagedModelOrganizationEmbedded();
+    embedded.setOrganizations(expectedOrganizations);
+    collectionModel.setEmbedded(embedded);
+
+    Mockito.when(organizationSearchClientMock.findByBrokerIdAndStatus(brokerId, status, accessToken))
+      .thenReturn(collectionModel);
+
+    // When
+    List<Organization> result = organizationService.findByBrokerIdAndStatus(brokerId, status, accessToken);
+
+    // Then
+    Assertions.assertNotNull(result);
+    Assertions.assertTrue(result.isEmpty());
+    Mockito.verify(organizationSearchClientMock).findByBrokerIdAndStatus(brokerId, status, accessToken);
+  }
+
+  @Test
+  void givenBrokerIdAndStatusWhenFindByBrokerIdAndStatusWithNullEmbeddedThenThrowNPE() {
+    // Given
+    Long brokerId = 100L;
+    OrganizationStatus status = OrganizationStatus.ACTIVE;
+
+    CollectionModelOrganization collectionModel = new CollectionModelOrganization();
+    collectionModel.setEmbedded(null);
+
+    Mockito.when(organizationSearchClientMock.findByBrokerIdAndStatus(brokerId, status, accessToken))
+      .thenReturn(collectionModel);
+
+    // When / Then
+    Assertions.assertThrows(NullPointerException.class,
+      () -> organizationService.findByBrokerIdAndStatus(brokerId, status, accessToken));
+    Mockito.verify(organizationSearchClientMock).findByBrokerIdAndStatus(brokerId, status, accessToken);
+  }
+//endregion
 
 }
