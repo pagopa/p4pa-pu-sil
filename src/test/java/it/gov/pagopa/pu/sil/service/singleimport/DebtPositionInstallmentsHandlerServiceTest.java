@@ -37,8 +37,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -174,16 +173,23 @@ class DebtPositionInstallmentsHandlerServiceTest {
     // Arrange
     String iud = "iud";
     String iuv = "iuv";
+
     request.getInstallments().getFirst().setAction(action);
     request.getInstallments().getFirst().getInstallment().setIud(iud);
     request.setIud(iud);
+
     InstallmentDTO installment = podamFactory.manufacturePojo(InstallmentDTO.class);
     installment.setIud(iud);
     installment.setIuv(iuv);
+
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
     debtPosition.setStatus(DebtPositionStatus.UNPAID);
     debtPosition.organizationId(org.getOrganizationId());
     debtPosition.getPaymentOptions().getFirst().setInstallments(List.of(installment));
+
+    DebtPositionDTO debtPositionToSync = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    debtPositionToSync.getPaymentOptions().getFirst().setInstallments(List.of(installment));
+
     ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
     Triple<DebtPositionDTO, String, RegistryOutcome> expected = Triple.of(debtPosition, iuv, RegistryOutcome.OK);
 
@@ -192,8 +198,13 @@ class DebtPositionInstallmentsHandlerServiceTest {
       .thenReturn(installment);
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), iud, Constants.ORDINARY_DEBT_POSITION_ORIGINS, TOKEN))
       .thenReturn(List.of(debtPosition));
-    when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(debtPosition, debtPosition, installment, request.getInstallments().getFirst().getAction().getValue(), false))
-      .thenReturn(manageDebtPositionDTO);
+    when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(
+      eq(debtPosition),
+      eq(debtPositionToSync),
+      eq(installment),
+      eq(action.getValue()),
+      eq(false)
+    )).thenReturn(manageDebtPositionDTO);
     when(manageDebtPositionServiceMock.manageDebtPositionInstallments(debtPosition.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
       .thenReturn(debtPosition);
 
