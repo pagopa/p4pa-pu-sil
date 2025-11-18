@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediStoricoPagamenti;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediStoricoPagamentiRisposta;
+import it.veneto.regione.pagamenti.ente.PaaSILStoricoPagamenti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import jakarta.activation.DataHandler;
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -52,6 +53,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
   @BeforeEach
   void setUp() {
     service = new PaaSILChiediStoricoPagamentiService(
+      "http://test-url",
       debtPositionServiceMock,
       organizationServiceMock,
       receiptServiceMock,
@@ -60,15 +62,12 @@ class PaaSILChiediStoricoPagamentiServiceTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = {
-    "IPA123, 1",           // With orgIpaCode - single organization path
-    "null, 2"              // Without orgIpaCode - broker organizations path (multiple orgs)
-  }, nullValues = {"null"})
-  void givenValidRequestWhenProcessRequestThenBuildsPaymentsHistory(String orgIpaCode, int expectedOrgCount) throws Exception {
+  @ValueSource(booleans =  {true, false})
+  void givenValidRequestWhenProcessRequestThenBuildsPaymentsHistory(boolean useIpaCode) throws Exception {
     // Given
+    String orgIpaCode = useIpaCode ? "IPA123" : null;
     String accessToken = "token";
-    long orgId1 = 42L;
-    long orgId2 = 43L;
+    long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
@@ -88,19 +87,13 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setBrokerId(brokerId);
 
-    Organization org1 = new Organization();
-    org1.setOrganizationId(orgId1);
-    org1.setOrgName("Comune di Test");
-    org1.setOrgFiscalCode("11111111111");
-    org1.setStatus(OrganizationStatus.ACTIVE);
-    org1.setBrokerId(brokerId);
-
-    Organization org2 = new Organization();
-    org2.setOrganizationId(orgId2);
-    org2.setOrgName("Comune di Test 2");
-    org2.setOrgFiscalCode("22222222222");
-    org2.setStatus(OrganizationStatus.ACTIVE);
-    org2.setBrokerId(brokerId);
+    Organization org = new Organization();
+    org.setOrganizationId(orgId);
+    org.setOrgName("Comune di Test");
+    org.setOrgFiscalCode("11111111111");
+    org.setStatus(OrganizationStatus.ACTIVE);
+    org.setBrokerId(brokerId);
+    Optional.ofNullable(orgIpaCode).ifPresent(org::setIpaCode);
 
     InstallmentDTO installment = new InstallmentDTO();
     installment.setReceiptId(1001L);
@@ -131,15 +124,11 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     paymentOption.setInstallments(List.of(installment));
 
     DebtPositionDTO dp = new DebtPositionDTO();
-    dp.setOrganizationId(orgId1);
+    dp.setOrganizationId(orgId);
     dp.setPaymentOptions(List.of(paymentOption));
 
     byte[] marshalledReceipt = "receipt".getBytes(StandardCharsets.UTF_8);
     byte[] pagatiBytes = "pagati".getBytes(StandardCharsets.UTF_8);
-
-    when(receiptServiceMock.getReceiptById(1001L, orgId1, accessToken)).thenReturn(marshalledReceipt);
-    when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org1, accessToken))
-      .thenReturn(pagatiBytes);
 
     // When
     PaaSILChiediStoricoPagamentiRisposta response;
@@ -150,25 +139,25 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       if (orgIpaCode != null) {
         // Single organization path
         mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-          .thenReturn(orgId1);
+          .thenReturn(orgId);
         mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
           .thenAnswer(inv -> null);
 
-        when(organizationServiceMock.getOrganizationById(orgId1, accessToken))
-          .thenReturn(Optional.of(org1));
-
-        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
-        ).thenReturn(List.of(dp));
+        when(organizationServiceMock.getOrganizationById(orgId, accessToken))
+          .thenReturn(Optional.of(org));
       } else {
         // Broker organizations path
         when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
-          .thenReturn(List.of(org1, org2));
-
-        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
-        ).thenReturn(List.of(dp));
+          .thenReturn(List.of(org));
       }
+
+      when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
+      ).thenReturn(List.of(dp));
+
+      when(receiptServiceMock.getReceiptById(1001L, orgId, accessToken)).thenReturn(marshalledReceipt);
+      when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken))
+        .thenReturn(pagatiBytes);
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -177,9 +166,9 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(dataTo, response.getDateTo());
     Assertions.assertNotNull(response.getPaaSILStoricoPagamentis());
-    Assertions.assertEquals(expectedOrgCount, response.getPaaSILStoricoPagamentis().size());
+    Assertions.assertEquals(1, response.getPaaSILStoricoPagamentis().size());
 
-    var item = response.getPaaSILStoricoPagamentis().getFirst();
+    PaaSILStoricoPagamenti item = response.getPaaSILStoricoPagamentis().getFirst();
     Assertions.assertEquals(orgIpaCode, item.getCodIpaEnte());
     Assertions.assertEquals("Comune di Test", item.getDeNomeEnte());
     DataHandler rtDh = item.getRt();
@@ -189,18 +178,15 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
     // Verify interactions
     if (orgIpaCode != null) {
-      verify(organizationServiceMock).getOrganizationById(orgId1, accessToken);
+      verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
       verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
-      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
-      );
     } else {
       verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
       verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
-      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
-      );
     }
+    verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
+    );
   }
 
   @Test
@@ -238,7 +224,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     }
 
     verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-    verifyNoInteractions(debtPositionServiceMock, receiptServiceMock, receiptServiceMock, pagatiMapperMock);
+    verifyNoInteractions(debtPositionServiceMock, receiptServiceMock, pagatiMapperMock);
   }
 
   private static XMLGregorianCalendar toXmlCal(ZonedDateTime zdt) throws Exception {

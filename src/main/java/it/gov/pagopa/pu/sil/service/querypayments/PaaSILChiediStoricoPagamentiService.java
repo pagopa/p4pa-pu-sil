@@ -1,18 +1,13 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
-import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
@@ -20,45 +15,51 @@ import it.veneto.regione.pagamenti.ente.PaaSILChiediStoricoPagamenti;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediStoricoPagamentiRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILStoricoPagamenti;
 import jakarta.activation.DataHandler;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-
 @Service
 @Slf4j
-@RequiredArgsConstructor
-public class PaaSILChiediStoricoPagamentiService {
+public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaymentService<PaaSILChiediStoricoPagamenti, PaaSILChiediStoricoPagamentiRisposta> {
 
-  private final DebtPositionService debtPositionService;
-  private final OrganizationService organizationService;
   private final ReceiptService receiptService;
   private final PagatiMapper pagatiMapper;
 
-  public PaaSILChiediStoricoPagamentiRisposta processRequest(PaaSILChiediStoricoPagamenti request,
-                                                             UserInfo userInfo,
-                                                             String accessToken) {
-    PaaSILChiediStoricoPagamentiRisposta response = new PaaSILChiediStoricoPagamentiRisposta();
-    AuthorizationService.validateBrokerAdminRole(userInfo);
+  public PaaSILChiediStoricoPagamentiService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+                                             DebtPositionService debtPositionService,
+                                             OrganizationService organizationService,
+                                             ReceiptService receiptService,
+                                             PagatiMapper pagatiMapper) {
+    super(fileShareBaseUrl, debtPositionService, organizationService);
+    this.receiptService = receiptService;
+    this.pagatiMapper = pagatiMapper;
+  }
 
-    List<Organization> organizations;
-    if (request.getCodIpaEnte() != null) {
-      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, request.getCodIpaEnte());
-      Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
-        .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
-        .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
-      AuthorizationService.isOrganizationHandledByBroker(organization.getBrokerId(), userInfo);
-      organizations = List.of(organization);
-    } else {
-      organizations = organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken);
-    }
+  @Override
+  protected String getCodIpaEnte(PaaSILChiediStoricoPagamenti request) {
+    return request.getCodIpaEnte();
+  }
 
+  @Override
+  protected String getDebtorFiscalCode(PaaSILChiediStoricoPagamenti request) {
+    return request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco();
+  }
 
+  @Override
+  protected PersonEntityType getDebtorEntityType(PaaSILChiediStoricoPagamenti request) {
+    return PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value());
+  }
+
+  @Override
+  protected InstallmentStatus getInstallmentStatus() { return InstallmentStatus.PAID; }
+
+  @Override
+  protected OffsetDateTimeIntervalFilter getDateFilter(PaaSILChiediStoricoPagamenti request) {
     OffsetDateTime dateFrom = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS);
     if (request.getDataFrom() != null) {
       dateFrom = ConversionUtils.toOffsetDateTime(request.getDataFrom());
@@ -69,26 +70,26 @@ public class PaaSILChiediStoricoPagamentiService {
       dateTo = ConversionUtils.toOffsetDateTime(request.getDataTo());
     }
 
-    OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(dateFrom, dateTo);
-
-    List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
-      PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
-      organizations.stream().map(Organization::getOrganizationId).toList(),
-      EXCLUDED_DEBT_POSITION_TYPE_CODES,
-      InstallmentStatus.PAID,
-      dateFilter,
-      accessToken
-    );
-
-    response.setDateTo(ConversionUtils.toXMLGregorianCalendar(dateTo));
-    organizations.forEach(organization ->
-      response.getPaaSILStoricoPagamentis().addAll(processDebtPositions(request, organization, debtPositions, accessToken))
-    );
-    return response;
+    return new OffsetDateTimeIntervalFilter(dateFrom, dateTo);
   }
 
-  private List<PaaSILStoricoPagamenti> processDebtPositions(PaaSILChiediStoricoPagamenti request, Organization organization, List<DebtPositionDTO> debtPositions, String accessToken) {
+  @Override
+  protected PaaSILChiediStoricoPagamentiRisposta createResponse() {
+    return new PaaSILChiediStoricoPagamentiRisposta();
+  }
+
+  @Override
+  protected void gatherToResponse(PaaSILChiediStoricoPagamenti request,
+                                  Organization organization,
+                                  List<DebtPositionDTO> debtPositions,
+                                  String accessToken,
+                                  PaaSILChiediStoricoPagamentiRisposta response) {
+    OffsetDateTimeIntervalFilter dateFilter = getDateFilter(request);
+    response.setDateTo(ConversionUtils.toXMLGregorianCalendar(dateFilter.getTo()));
+    response.getPaaSILStoricoPagamentis().addAll(processDebtPositions(organization, debtPositions, accessToken));
+  }
+
+  private List<PaaSILStoricoPagamenti> processDebtPositions(Organization organization, List<DebtPositionDTO> debtPositions, String accessToken) {
     return debtPositions.stream()
       .flatMap(debtPosition -> debtPosition.getPaymentOptions().stream()
         .flatMap(paymentOption -> paymentOption.getInstallments().stream()
@@ -98,9 +99,9 @@ public class PaaSILChiediStoricoPagamentiService {
             payment.setRt(new DataHandler(new ByteArrayDataSource(
               "application/octet-stream", receiptData
             )));
-            payment.setCodIpaEnte(request.getCodIpaEnte());
+            payment.setCodIpaEnte(organization.getIpaCode());
             payment.setDeNomeEnte(organization.getOrgName());
-            payment.setUrlDownloadRT(null); // @TODO: da implementare con la P4PU-1026
+            payment.setUrlDownloadRT(composeReceiptDownloadUrl(installment.getReceiptId(), organization.getOrganizationId()));
             byte[] pagatiConRicevuta = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, accessToken);
 
             payment.setCtPagatiConRicevuta(
@@ -115,5 +116,4 @@ public class PaaSILChiediStoricoPagamentiService {
       )
       .toList();
   }
-
 }
