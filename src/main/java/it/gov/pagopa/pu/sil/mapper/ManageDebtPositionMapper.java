@@ -48,7 +48,7 @@ public class ManageDebtPositionMapper {
       .debtPositionDescription(debtPositionToSync.getDescription())
       .paymentOptionId(paymentOptionOnDb.getPaymentOptionId())
       .paymentOptionDescription(debtPositionToSync.getPaymentOptions().getFirst().getDescription())
-      .validityDate(debtPositionOnDb.getValidityDate())
+      .validityDate(debtPositionToSync.getValidityDate())
       .installments(List.of(manageInstallmentDTO))
       .build();
   }
