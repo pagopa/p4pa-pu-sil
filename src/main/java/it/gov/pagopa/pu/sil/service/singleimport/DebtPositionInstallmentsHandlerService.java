@@ -69,7 +69,7 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
   @Override
   protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action) {
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
-    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action, false);
+    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, action, false);
   }
 
   private DebtPositionDTO initDebtPosition(Long orgId, InstallmentDTO installmentDTO) {
