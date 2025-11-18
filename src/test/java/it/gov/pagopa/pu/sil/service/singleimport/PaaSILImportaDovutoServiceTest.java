@@ -124,7 +124,7 @@ class PaaSILImportaDovutoServiceTest {
         Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
-        Mockito.when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(processedDebtPositionDTO, installmentDTO, action, true))
+        Mockito.when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(processedDebtPositionDTO, processedDebtPositionDTO, installmentDTO, action, true))
           .thenReturn(manageDebtPositionDTO);
         Mockito.when(manageDebtPositionServiceMock.manageDebtPositionInstallments(processedDebtPositionDTO.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
           .thenReturn(processedDebtPositionDTO);
