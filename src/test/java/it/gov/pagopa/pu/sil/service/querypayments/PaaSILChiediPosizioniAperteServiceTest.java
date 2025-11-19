@@ -109,6 +109,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
     paymentOption.setInstallments(List.of(installment));
 
     DebtPositionDTO dp = new DebtPositionDTO();
+    dp.setOrganizationId(orgId);
     dp.setPaymentOptions(List.of(paymentOption));
 
     byte[] marshalledBytes = "dovuti-xml".getBytes();

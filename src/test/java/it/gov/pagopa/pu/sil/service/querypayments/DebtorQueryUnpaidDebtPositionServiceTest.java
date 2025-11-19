@@ -79,6 +79,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
       orgIpaCode,
       PersonEntityType.F,
       "RSSMRA80A01H501U",
+      InstallmentStatus.UNPAID,
       dateFilter.getFrom(),
       dateFilter.getTo()
     );
@@ -113,6 +114,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
     paymentOption.setInstallments(List.of(installment));
 
     DebtPositionDTO dp = new DebtPositionDTO();
+    dp.setOrganizationId(orgId);
     dp.setPaymentOptions(List.of(paymentOption));
 
     PaymentDTO paymentDTO = podamFactory.manufacturePojo(PaymentDTO.class);

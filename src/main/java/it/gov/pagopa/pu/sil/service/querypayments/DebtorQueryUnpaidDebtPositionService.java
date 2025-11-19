@@ -3,9 +3,7 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.client.CheckoutClient;
@@ -41,51 +39,48 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
   }
 
   @Override
-  protected String getCodIpaEnte(DebtorQueryPaymentRequest request) {
-    return request.ipaCode();
+  protected DebtorQueryPaymentRequest transformRequest(DebtorQueryPaymentRequest request) {
+    // Request is already in the correct format, just ensure status is UNPAID
+    return new DebtorQueryPaymentRequest(
+      request.ipaCode(),
+      request.debtorEntityType(),
+      request.debtorFiscalCode(),
+      InstallmentStatus.UNPAID,
+      null,
+      null
+    );
   }
 
   @Override
-  protected String getDebtorFiscalCode(DebtorQueryPaymentRequest request) {
-    return request.debtorFiscalCode();
-  }
+  protected UnpaidDebtPositionsResponseDTO gatherToResponse(DebtorQueryPaymentRequest request,
+                                                            List<Organization> organizations,
+                                                            List<DebtPositionDTO> debtPositions,
+                                                            String accessToken) {
+    UnpaidDebtPositionsResponseDTO response = new UnpaidDebtPositionsResponseDTO();
 
-  @Override
-  protected PersonEntityType getDebtorEntityType(DebtorQueryPaymentRequest request) {
-    return request.debtorEntityType();
-  }
-
-  @Override
-  protected InstallmentStatus getInstallmentStatus() {
-    return InstallmentStatus.UNPAID;
-  }
-
-  @Override
-  protected OffsetDateTimeIntervalFilter getDateFilter(DebtorQueryPaymentRequest debtorQueryPaymentRequest) {
-    return new OffsetDateTimeIntervalFilter(null, null);
-  }
-
-  @Override
-  protected UnpaidDebtPositionsResponseDTO createResponse() {
-    return new UnpaidDebtPositionsResponseDTO();
-  }
-
-  @Override
-  protected void gatherToResponse(DebtorQueryPaymentRequest debtorQueryPaymentRequest, Organization organization, List<DebtPositionDTO> debtPositions, String accessToken, UnpaidDebtPositionsResponseDTO response) {
     debtPositions.stream()
-      .flatMap(debtPosition -> debtPosition.getPaymentOptions().stream())
-      .flatMap(paymentOption -> paymentOption.getInstallments().stream())
-      .map(installment -> {
-        String cartId = UUID.randomUUID().toString();
-        CartRequest cartRequest = cartRequestMapper.mapInstallmentToCartRequest(installment, organization, cartId, null);
-        String checkoutCart = checkoutClient.checkoutCart(cartRequest);
-        return UnpaidDebtPositionsDTO.builder()
-          .ipaCode(organization.getIpaCode())
-          .orgName(organization.getOrgName())
-          .paymentTriggerUrl(composeCheckoutUrl(checkoutCart)) // @TODO: da implementare con la P4ADEV-4043
-          .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, accessToken))
-          .build();
+      .flatMap(debtPosition -> {
+        Organization organization = organizations.stream()
+          .filter(org -> org.getOrganizationId().equals(debtPosition.getOrganizationId()))
+          .findFirst()
+          .orElseThrow();
+
+        return debtPosition.getPaymentOptions().stream()
+          .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .map(installment -> {
+              String cartId = UUID.randomUUID().toString();
+              CartRequest cartRequest = cartRequestMapper.mapInstallmentToCartRequest(installment, organization, cartId, null);
+              String checkoutCart = checkoutClient.checkoutCart(cartRequest);
+              return UnpaidDebtPositionsDTO.builder()
+                .ipaCode(organization.getIpaCode())
+                .orgName(organization.getOrgName())
+                .paymentTriggerUrl(composeCheckoutUrl(checkoutCart)) // @TODO: da implementare con la P4ADEV-4043
+                .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, accessToken))
+                .build();
+            }));
       })
       .forEach(response::addDebtPositionsItem);
+
+    return response;
   }
 }
