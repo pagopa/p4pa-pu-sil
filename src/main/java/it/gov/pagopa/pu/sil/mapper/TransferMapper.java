@@ -21,4 +21,20 @@ public class TransferMapper {
       .iban(silTransferDTO.getIban())
       .build();
   }
+
+  public it.gov.pagopa.pu.sil.dto.generated.TransferDTO mapToSilTransferDTO(
+      TransferDTO debtPositionTransferDTO) {
+    return it.gov.pagopa.pu.sil.dto.generated.TransferDTO.builder()
+      .amountCents(debtPositionTransferDTO.getAmountCents())
+      .category(debtPositionTransferDTO.getCategory())
+      .orgFiscalCode(debtPositionTransferDTO.getOrgFiscalCode())
+      .orgName(debtPositionTransferDTO.getOrgName())
+      .remittanceInformation(debtPositionTransferDTO.getRemittanceInformation())
+      .transferIndex(debtPositionTransferDTO.getTransferIndex())
+      .stampHashDocument(debtPositionTransferDTO.getStampHashDocument())
+      .stampType(debtPositionTransferDTO.getStampType())
+      .stampProvincialResidence(debtPositionTransferDTO.getStampProvincialResidence())
+      .iban(debtPositionTransferDTO.getIban())
+      .build();
+  }
 }
