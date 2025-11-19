@@ -146,6 +146,11 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       .toUriString();
   }
 
+  // @TODO: da implementare con la P4ADEV-4043
+  protected String composeCheckoutUrl(String checkoutCart) {
+    return checkoutCart;
+  }
+
   protected abstract String getCodIpaEnte(I request);
   protected abstract String getDebtorFiscalCode(I request);
   protected abstract PersonEntityType getDebtorEntityType(I request);
