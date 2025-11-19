@@ -88,6 +88,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
     org.setOrgName("Comune di Test");
     org.setStatus(OrganizationStatus.ACTIVE);
     org.setBrokerId(brokerId);
+    Optional.ofNullable(orgIpaCode).ifPresent(org::setIpaCode);
 
     InstallmentDTO installment = new InstallmentDTO();
     PersonDTO debtor = new PersonDTO();
