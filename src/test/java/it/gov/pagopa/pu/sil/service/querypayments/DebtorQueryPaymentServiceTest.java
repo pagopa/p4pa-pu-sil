@@ -77,6 +77,7 @@ class DebtorQueryPaymentServiceTest {
       orgIpaCode,
       PersonEntityType.F,
       "RSSMRA80A01H501U",
+      InstallmentStatus.PAID,
       OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS),
       OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.DAYS)
     );
@@ -212,6 +213,7 @@ class DebtorQueryPaymentServiceTest {
       orgIpaCode,
       PersonEntityType.F,
       "RSSMRA80A01H501U",
+      InstallmentStatus.PAID,
       OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS),
       OffsetDateTime.now().plusDays(1).truncatedTo(ChronoUnit.DAYS)
     );

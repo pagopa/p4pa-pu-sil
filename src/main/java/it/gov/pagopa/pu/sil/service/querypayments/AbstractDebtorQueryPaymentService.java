@@ -2,11 +2,8 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -55,18 +52,17 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
     // Validate authorization
     AuthorizationService.validateBrokerAdminRole(userInfo);
 
+    // Transform request
+    DebtorQueryPaymentRequest transformedRequest = transformRequest(request);
+
     // Resolve organizations
-    List<Organization> organizations = resolveOrganizations(request, userInfo, accessToken);
+    List<Organization> organizations = resolveOrganizations(transformedRequest, userInfo, accessToken);
 
-    // Create response object
-    O response = createResponse();
+    // Fetch debt positions for all organizations
+    List<DebtPositionDTO> debtPositions = fetchDebtPositions(transformedRequest, organizations, accessToken);
 
-    // Process organizations and debt positions
-    organizations.forEach(organization ->
-      processByOrganization(request, organization, accessToken, response)
-    );
-
-    return response;
+    // Process organizations and gather response
+    return gatherToResponse(transformedRequest, organizations, debtPositions, accessToken);
   }
 
   /**
@@ -79,11 +75,11 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
    * @param accessToken the access token for calling downstream services
    * @return the list of organizations to process
    */
-  protected List<Organization> resolveOrganizations(I request, UserInfo userInfo, String accessToken) {
-    String codIpaEnte = getCodIpaEnte(request);
+  protected List<Organization> resolveOrganizations(DebtorQueryPaymentRequest request, UserInfo userInfo, String accessToken) {
+    String ipaCode = request.ipaCode();
 
-    if (codIpaEnte != null) {
-      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, codIpaEnte);
+    if (ipaCode != null) {
+      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, ipaCode);
       Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
         .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
         .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
@@ -97,39 +93,25 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
   /**
    * Fetches debt positions based on the debtor information and date filters from the request.
    *
-   * @param request         the incoming request
-   * @param organizationIds the list of organization IDs to filter by
-   * @param accessToken     the access token for calling downstream services
+   * @param request       the incoming request
+   * @param organizations the list of organizations to filter by
+   * @param accessToken   the access token for calling downstream services
    * @return the list of debt positions matching the criteria
    */
-  protected List<DebtPositionDTO> fetchDebtPositions(I request, List<Long> organizationIds, String accessToken) {
-    OffsetDateTimeIntervalFilter dateFilter = getDateFilter(request);
+  protected List<DebtPositionDTO> fetchDebtPositions(DebtorQueryPaymentRequest request, List<Organization> organizations, String accessToken) {
+    List<Long> organizationIds = organizations.stream()
+      .map(Organization::getOrganizationId)
+      .toList();
 
     return debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      getDebtorFiscalCode(request),
-      getDebtorEntityType(request),
+      request.debtorFiscalCode(),
+      request.debtorEntityType(),
       organizationIds,
       EXCLUDED_DEBT_POSITION_TYPE_CODES,
-      getInstallmentStatus(),
-      dateFilter,
+      request.status(),
+      request.getDateFilter(),
       accessToken
     );
-  }
-
-  /**
-   * Processes a single organization with its debt positions.
-   * Fetches the debt positions for the organization and delegates to the subclass
-   * implementation to populate the response.
-   *
-   * @param request      the incoming request
-   * @param organization the organization to process
-   * @param accessToken  the access token for calling downstream services
-   * @param response     the response object to populate
-   */
-  protected void processByOrganization(I request, Organization organization,
-                                       String accessToken, O response) {
-    List<DebtPositionDTO> debtPositions = fetchDebtPositions(request, List.of(organization.getOrganizationId()), accessToken);
-    gatherToResponse(request, organization, debtPositions, accessToken, response);
   }
 
   /**
@@ -146,13 +128,8 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       .toUriString();
   }
 
-  protected abstract String getCodIpaEnte(I request);
-  protected abstract String getDebtorFiscalCode(I request);
-  protected abstract PersonEntityType getDebtorEntityType(I request);
-  protected abstract InstallmentStatus getInstallmentStatus();
-  protected abstract OffsetDateTimeIntervalFilter getDateFilter(I request);
-  protected abstract O createResponse();
-  protected abstract void gatherToResponse(I request, Organization organization,
-                                           List<DebtPositionDTO> debtPositions, String accessToken, O response);
+  protected abstract DebtorQueryPaymentRequest transformRequest(I request);
+  protected abstract O gatherToResponse(DebtorQueryPaymentRequest request, List<Organization> organizations,
+                                        List<DebtPositionDTO> debtPositions, String accessToken);
 }
 
