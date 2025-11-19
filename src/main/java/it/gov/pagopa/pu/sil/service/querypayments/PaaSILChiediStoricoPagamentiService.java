@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
@@ -41,25 +40,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
   }
 
   @Override
-  protected String getCodIpaEnte(PaaSILChiediStoricoPagamenti request) {
-    return request.getCodIpaEnte();
-  }
-
-  @Override
-  protected String getDebtorFiscalCode(PaaSILChiediStoricoPagamenti request) {
-    return request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco();
-  }
-
-  @Override
-  protected PersonEntityType getDebtorEntityType(PaaSILChiediStoricoPagamenti request) {
-    return PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value());
-  }
-
-  @Override
-  protected InstallmentStatus getInstallmentStatus() { return InstallmentStatus.PAID; }
-
-  @Override
-  protected OffsetDateTimeIntervalFilter getDateFilter(PaaSILChiediStoricoPagamenti request) {
+  protected DebtorQueryPaymentRequest transformRequest(PaaSILChiediStoricoPagamenti request) {
     OffsetDateTime dateFrom = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS);
     if (request.getDataFrom() != null) {
       dateFrom = ConversionUtils.toOffsetDateTime(request.getDataFrom());
@@ -69,51 +50,45 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
     if (request.getDataTo() != null) {
       dateTo = ConversionUtils.toOffsetDateTime(request.getDataTo());
     }
-
-    return new OffsetDateTimeIntervalFilter(dateFrom, dateTo);
+    return new DebtorQueryPaymentRequest(request.getCodIpaEnte(),
+      PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
+      request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
+      InstallmentStatus.PAID,
+      dateFrom,
+      dateTo);
   }
 
   @Override
-  protected PaaSILChiediStoricoPagamentiRisposta createResponse() {
-    return new PaaSILChiediStoricoPagamentiRisposta();
-  }
+  protected PaaSILChiediStoricoPagamentiRisposta gatherToResponse(DebtorQueryPaymentRequest request,
+                                                                   List<Organization> organizations,
+                                                                   List<DebtPositionDTO> debtPositions,
+                                                                   String accessToken) {
+    PaaSILChiediStoricoPagamentiRisposta response = new PaaSILChiediStoricoPagamentiRisposta();
+    response.setDateTo(ConversionUtils.toXMLGregorianCalendar(request.dateTo()));
 
-  @Override
-  protected void gatherToResponse(PaaSILChiediStoricoPagamenti request,
-                                  Organization organization,
-                                  List<DebtPositionDTO> debtPositions,
-                                  String accessToken,
-                                  PaaSILChiediStoricoPagamentiRisposta response) {
-    OffsetDateTimeIntervalFilter dateFilter = getDateFilter(request);
-    response.setDateTo(ConversionUtils.toXMLGregorianCalendar(dateFilter.getTo()));
-    response.getPaaSILStoricoPagamentis().addAll(processDebtPositions(organization, debtPositions, accessToken));
-  }
+    debtPositions.stream()
+      .flatMap(debtPosition -> {
+        Organization organization = organizations.stream()
+          .filter(org -> org.getOrganizationId().equals(debtPosition.getOrganizationId()))
+          .findFirst()
+          .orElseThrow();
 
-  private List<PaaSILStoricoPagamenti> processDebtPositions(Organization organization, List<DebtPositionDTO> debtPositions, String accessToken) {
-    return debtPositions.stream()
-      .flatMap(debtPosition -> debtPosition.getPaymentOptions().stream()
-        .flatMap(paymentOption -> paymentOption.getInstallments().stream()
-          .map(installment -> {
-            PaaSILStoricoPagamenti payment = new PaaSILStoricoPagamenti();
-            byte[] receiptData = receiptService.getReceiptById(installment.getReceiptId(), debtPosition.getOrganizationId(), accessToken);
-            payment.setRt(new DataHandler(new ByteArrayDataSource(
-              "application/octet-stream", receiptData
-            )));
-            payment.setCodIpaEnte(organization.getIpaCode());
-            payment.setDeNomeEnte(organization.getOrgName());
-            payment.setUrlDownloadRT(composeReceiptDownloadUrl(installment.getReceiptId(), organization.getOrganizationId()));
-            byte[] pagatiConRicevuta = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, accessToken);
+        return debtPosition.getPaymentOptions().stream()
+          .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .map(installment -> {
+              PaaSILStoricoPagamenti payment = new PaaSILStoricoPagamenti();
+              byte[] receiptData = receiptService.getReceiptById(installment.getReceiptId(), debtPosition.getOrganizationId(), accessToken);
+              payment.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", receiptData)));
+              payment.setCodIpaEnte(organization.getIpaCode());
+              payment.setDeNomeEnte(organization.getOrgName());
+              payment.setUrlDownloadRT(composeReceiptDownloadUrl(installment.getReceiptId(), organization.getOrganizationId()));
+              byte[] pagatiConRicevuta = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, accessToken);
+              payment.setCtPagatiConRicevuta(new DataHandler(new ByteArrayDataSource("application/octet-stream", pagatiConRicevuta)));
+              return payment;
+            }));
+      })
+      .forEach(response.getPaaSILStoricoPagamentis()::add);
 
-            payment.setCtPagatiConRicevuta(
-              new DataHandler(
-                new ByteArrayDataSource("application/octet-stream", pagatiConRicevuta)
-              )
-            );
-
-            return payment;
-          })
-        )
-      )
-      .toList();
+    return response;
   }
 }

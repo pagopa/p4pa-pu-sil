@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.controller;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.sil.controller.generated.DebtorQueryPaymentApi;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryResponseDTO;
@@ -30,6 +31,7 @@ public class DebtorQueryPaymentController implements DebtorQueryPaymentApi {
       ipaCode,
       debtorEntityType,
       debtorFiscalCode,
+      InstallmentStatus.PAID,
       dateFrom,
       dateTo
     );
