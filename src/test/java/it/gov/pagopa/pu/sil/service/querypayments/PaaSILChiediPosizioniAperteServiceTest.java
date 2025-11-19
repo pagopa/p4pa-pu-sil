@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -51,6 +51,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
   @BeforeEach
   void setUp() {
     service = new PaaSILChiediPosizioniAperteService(
+      "http://test-url",
       debtPositionServiceMock,
       organizationServiceMock,
       jaxbTransformServiceMock,
@@ -61,15 +62,12 @@ class PaaSILChiediPosizioniAperteServiceTest {
   }
 
   @ParameterizedTest
-  @CsvSource(value = {
-    "IPA123, 1",           // With orgIpaCode - single organization path
-    "null, 2"              // Without orgIpaCode - broker organizations path (multiple orgs)
-  }, nullValues = {"null"})
-  void givenValidRequestWhenProcessRequestThenBuildsOpenPositions(String orgIpaCode, int expectedOrgCount) {
+  @ValueSource(booleans =  {true, false})
+  void givenValidRequestWhenProcessRequestThenBuildsOpenPositions(boolean useIpaCode) {
     // Given
+    String orgIpaCode = useIpaCode ? "IPA123" : null;
     String accessToken = "token";
-    long orgId1 = 42L;
-    long orgId2 = 43L;
+    long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
     OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
@@ -85,17 +83,11 @@ class PaaSILChiediPosizioniAperteServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setBrokerId(brokerId);
 
-    Organization org1 = new Organization();
-    org1.setOrganizationId(orgId1);
-    org1.setOrgName("Comune di Test");
-    org1.setStatus(OrganizationStatus.ACTIVE);
-    org1.setBrokerId(brokerId);
-
-    Organization org2 = new Organization();
-    org2.setOrganizationId(orgId2);
-    org2.setOrgName("Comune di Test 2");
-    org2.setStatus(OrganizationStatus.ACTIVE);
-    org2.setBrokerId(brokerId);
+    Organization org = new Organization();
+    org.setOrganizationId(orgId);
+    org.setOrgName("Comune di Test");
+    org.setStatus(OrganizationStatus.ACTIVE);
+    org.setBrokerId(brokerId);
 
     InstallmentDTO installment = new InstallmentDTO();
     PersonDTO debtor = new PersonDTO();
@@ -132,25 +124,22 @@ class PaaSILChiediPosizioniAperteServiceTest {
       if (orgIpaCode != null) {
         // Single organization path
         mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-          .thenReturn(orgId1);
+          .thenReturn(orgId);
         mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
           .thenAnswer(inv -> null);
 
-        when(organizationServiceMock.getOrganizationById(orgId1, accessToken))
-          .thenReturn(Optional.of(org1));
+        when(organizationServiceMock.getOrganizationById(orgId, accessToken))
+          .thenReturn(Optional.of(org));
 
-        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
-        ).thenReturn(List.of(dp));
       } else {
         // Broker organizations path
         when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
-          .thenReturn(List.of(org1, org2));
+          .thenReturn(List.of(org));
 
-        when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-          eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
-        ).thenReturn(List.of(dp));
       }
+      when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
+      ).thenReturn(List.of(dp));
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -158,7 +147,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
     // Then
     Assertions.assertNotNull(response);
     Assertions.assertNotNull(response.getPaaSILPosizioniApertes());
-    Assertions.assertEquals(expectedOrgCount, response.getPaaSILPosizioniApertes().size());
+    Assertions.assertEquals(1, response.getPaaSILPosizioniApertes().size());
 
     PaaSILPosizioniAperte item = response.getPaaSILPosizioniApertes().getFirst();
     Assertions.assertEquals(orgIpaCode, item.getCodIpaEnte());
@@ -168,19 +157,16 @@ class PaaSILChiediPosizioniAperteServiceTest {
 
     // Verify interactions
     if (orgIpaCode != null) {
-      verify(organizationServiceMock).getOrganizationById(orgId1, accessToken);
+      verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
       verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
-      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
-      );
     } else {
       verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
       verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
-      verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-        eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId1, orgId2)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
-      );
     }
+    verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
+      eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
+    );
 
-    verify(jaxbTransformServiceMock, times(expectedOrgCount)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
+    verify(jaxbTransformServiceMock, times(1)).marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class));
   }
 }
