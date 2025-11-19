@@ -83,7 +83,7 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
       .flagPuPagoPaPayment(true)
       .paymentOptions(List.of(PaymentOptionDTO.builder()
         .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
-          .description(source.getPaymentOptionDescription())
+        .description(source.getPaymentOptionDescription())
         .totalAmountCents(0L)
         .installments(List.of(installmentDTO))
         .build()))
