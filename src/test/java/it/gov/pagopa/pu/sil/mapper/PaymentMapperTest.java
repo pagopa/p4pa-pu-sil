@@ -110,8 +110,6 @@ class PaymentMapperTest {
     assertEquals(silTransfer, result.getTransfers().getFirst());
 
     TestUtils.checkNotNullFields(result);
-    result.getTransfers().forEach(transfer ->
-      TestUtils.checkNotNullFields(transfer)
-    );
+    result.getTransfers().forEach(TestUtils::checkNotNullFields);
   }
 }
