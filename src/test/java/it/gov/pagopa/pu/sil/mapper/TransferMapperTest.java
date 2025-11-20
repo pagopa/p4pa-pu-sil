@@ -44,4 +44,41 @@ class TransferMapperTest {
     TestUtils.checkNotNullFields(result, "transferId", "installmentId", "postalIban",
       "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "mbdAttachment");
   }
+
+  @Test
+  void mapToSilTransferDTO() {
+    // Given
+    TransferDTO debtPositionTransferDTO = TransferDTO.builder()
+      .amountCents(1000L)
+      .category("Utilities")
+      .orgFiscalCode("12345678901")
+      .orgName("Test Organization")
+      .remittanceInformation("Payment for services")
+      .transferIndex(1)
+      .stampHashDocument("hash123")
+      .stampType("TypeA")
+      .stampProvincialResidence("ProvinceX")
+      .iban("IT60X0542811101000000123456")
+      .postalIban("IT60X0542811101000000654321")
+      .build();
+
+    // When
+    it.gov.pagopa.pu.sil.dto.generated.TransferDTO result = transferMapper.mapToSilTransferDTO(debtPositionTransferDTO);
+
+    // Then
+    assertNotNull(result);
+    assertEquals(debtPositionTransferDTO.getAmountCents(), result.getAmountCents());
+    assertEquals(debtPositionTransferDTO.getCategory(), result.getCategory());
+    assertEquals(debtPositionTransferDTO.getOrgFiscalCode(), result.getOrgFiscalCode());
+    assertEquals(debtPositionTransferDTO.getOrgName(), result.getOrgName());
+    assertEquals(debtPositionTransferDTO.getRemittanceInformation(), result.getRemittanceInformation());
+    assertEquals(debtPositionTransferDTO.getTransferIndex(), result.getTransferIndex());
+    assertEquals(debtPositionTransferDTO.getStampHashDocument(), result.getStampHashDocument());
+    assertEquals(debtPositionTransferDTO.getStampType(), result.getStampType());
+    assertEquals(debtPositionTransferDTO.getStampProvincialResidence(), result.getStampProvincialResidence());
+    assertEquals(debtPositionTransferDTO.getIban(), result.getIban());
+    assertEquals(debtPositionTransferDTO.getPostalIban(), result.getPostalIban());
+
+    TestUtils.checkNotNullFields(result);
+  }
 }
