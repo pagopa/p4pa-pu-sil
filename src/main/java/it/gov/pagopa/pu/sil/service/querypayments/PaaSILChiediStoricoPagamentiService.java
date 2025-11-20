@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,7 +45,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
     OffsetDateTime dateTo = Optional.ofNullable(request.getDataTo())
         .map(ConversionUtils::toOffsetDateTime)
         .orElse(dateFrom.plusDays(1));
-    
+
     return new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(request.getCodIpaEnte(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
