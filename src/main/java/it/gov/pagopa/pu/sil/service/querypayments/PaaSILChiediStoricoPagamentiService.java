@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -40,17 +41,15 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
   }
 
   @Override
-  protected DebtorQueryPaymentRequest transformRequest(PaaSILChiediStoricoPagamenti request) {
-    OffsetDateTime dateFrom = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS);
-    if (request.getDataFrom() != null) {
-      dateFrom = ConversionUtils.toOffsetDateTime(request.getDataFrom());
-    }
+  protected AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest transformRequest(PaaSILChiediStoricoPagamenti request) {
+    OffsetDateTime dateFrom = Optional.ofNullable(request.getDataFrom())
+        .map(ConversionUtils::toOffsetDateTime)
+        .orElseGet(() -> OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS));
 
-    OffsetDateTime dateTo = dateFrom.plusDays(1);
-    if (request.getDataTo() != null) {
-      dateTo = ConversionUtils.toOffsetDateTime(request.getDataTo());
-    }
-    return new DebtorQueryPaymentRequest(request.getCodIpaEnte(),
+    OffsetDateTime dateTo = Optional.ofNullable(request.getDataTo())
+        .map(ConversionUtils::toOffsetDateTime)
+        .orElse(dateFrom.plusDays(1));
+    return new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(request.getCodIpaEnte(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
       InstallmentStatus.PAID,
@@ -59,12 +58,12 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
   }
 
   @Override
-  protected PaaSILChiediStoricoPagamentiRisposta gatherToResponse(DebtorQueryPaymentRequest request,
+  protected PaaSILChiediStoricoPagamentiRisposta gatherToResponse(AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest request,
                                                                    List<Organization> organizations,
                                                                    List<DebtPositionDTO> debtPositions,
                                                                    String accessToken) {
     PaaSILChiediStoricoPagamentiRisposta response = new PaaSILChiediStoricoPagamentiRisposta();
-    response.setDateTo(ConversionUtils.toXMLGregorianCalendar(request.dateTo()));
+    response.setDateTo(ConversionUtils.toXMLGregorianCalendar(request.getDateTo()));
 
     debtPositions.stream()
       .flatMap(debtPosition -> {

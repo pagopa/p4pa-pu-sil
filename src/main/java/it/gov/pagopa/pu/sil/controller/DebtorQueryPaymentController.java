@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.sil.controller.generated.DebtorQueryPaymentApi;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryResponseDTO;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
-import it.gov.pagopa.pu.sil.service.querypayments.DebtorQueryPaymentRequest;
+import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.service.querypayments.DebtorQueryPaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

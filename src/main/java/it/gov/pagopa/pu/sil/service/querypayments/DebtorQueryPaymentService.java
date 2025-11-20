@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryDTO;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryResponseDTO;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
+import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -35,14 +37,14 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
 
   @Override
   protected DebtorQueryPaymentRequest transformRequest(DebtorQueryPaymentRequest request) {
-    OffsetDateTime dateFrom = Optional.ofNullable(request.dateFrom())
+    OffsetDateTime dateFrom = Optional.ofNullable(request.getDateFrom())
       .orElseGet(() -> OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS));
-    OffsetDateTime dateTo = Optional.ofNullable(request.dateTo())
+    OffsetDateTime dateTo = Optional.ofNullable(request.getDateTo())
       .orElseGet(() -> dateFrom.plusDays(1));
-    return new DebtorQueryPaymentRequest(request.ipaCode(),
-      request.debtorEntityType(),
-      request.debtorFiscalCode(),
-      request.status(),
+    return new DebtorQueryPaymentRequest(request.getIpaCode(),
+      request.getDebtorEntityType(),
+      request.getDebtorFiscalCode(),
+      request.getStatus(),
       dateFrom,
       dateTo);
   }
@@ -53,12 +55,12 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
                                                        List<DebtPositionDTO> debtPositions,
                                                        String accessToken) {
     PaymentHistoryResponseDTO response = new PaymentHistoryResponseDTO();
-    response.setDateTo(request.dateTo());
+    response.setDateTo(request.getDateTo());
 
     debtPositions.stream()
       .flatMap(debtPosition -> {
         Organization organization = organizations.stream()
-          .filter(org -> org.getOrganizationId().equals(debtPosition.getOrganizationId()))
+          .filter(org -> Objects.equals(org.getOrganizationId(), debtPosition.getOrganizationId()))
           .findFirst()
           .orElseThrow();
 

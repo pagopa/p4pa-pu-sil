@@ -2,17 +2,23 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
@@ -76,7 +82,7 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
    * @return the list of organizations to process
    */
   protected List<Organization> resolveOrganizations(DebtorQueryPaymentRequest request, UserInfo userInfo, String accessToken) {
-    String ipaCode = request.ipaCode();
+    String ipaCode = request.getIpaCode();
 
     if (ipaCode != null) {
       Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, ipaCode);
@@ -104,11 +110,11 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       .toList();
 
     return debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      request.debtorFiscalCode(),
-      request.debtorEntityType(),
+      request.getDebtorFiscalCode(),
+      request.getDebtorEntityType(),
       organizationIds,
       EXCLUDED_DEBT_POSITION_TYPE_CODES,
-      request.status(),
+      request.getStatus(),
       request.getDateFilter(),
       accessToken
     );
@@ -131,5 +137,22 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
   protected abstract DebtorQueryPaymentRequest transformRequest(I request);
   protected abstract O gatherToResponse(DebtorQueryPaymentRequest request, List<Organization> organizations,
                                         List<DebtPositionDTO> debtPositions, String accessToken);
-}
 
+  /**
+   * Request class for debtor query payment operations.
+   */
+  @Getter
+  @AllArgsConstructor
+  public static class DebtorQueryPaymentRequest {
+    private final String ipaCode;
+    private final PersonEntityType debtorEntityType;
+    private final String debtorFiscalCode;
+    private final InstallmentStatus status;
+    private final OffsetDateTime dateFrom;
+    private final OffsetDateTime dateTo;
+
+    public OffsetDateTimeIntervalFilter getDateFilter() {
+      return new OffsetDateTimeIntervalFilter(dateFrom, dateTo);
+    }
+  }
+}
