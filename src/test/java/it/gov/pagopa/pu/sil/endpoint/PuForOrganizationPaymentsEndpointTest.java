@@ -706,6 +706,21 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   @Test
+  void givenRequestWithoutFromDateWhenPaaSILPrenotaExportFlussoThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
+    PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
+    request.setDateFrom(null);
+    request.setIdentificativoTipoDovuto("THAT_TYPE");
+    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
+    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
+    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
+
+    PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
+
+    Assertions.assertNotNull(response);
+    Assertions.assertEquals(SilFaults.PAA_DATE_FROM_NON_VALIDO.code(), response.getFault().getFaultCode());
+  }
+
+  @Test
   void givenValidRequestWhenPaaSILPrenotaExportFlussoThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
     // Given
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
