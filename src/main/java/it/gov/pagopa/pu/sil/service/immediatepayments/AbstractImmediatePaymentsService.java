@@ -99,7 +99,7 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(debtPositions, organization, cartId, getCallbackUrl(request));
 
     //invoke carts API to trigger the payment on Checkout
-    String checkoutUrl = checkoutService.checkoutCart(cartRequest);
+    String checkoutUrl = checkoutService.checkoutCart(cartRequest); // @TODO: da implementare con la P4ADEV-4043
     if(StringUtils.isBlank(checkoutUrl)){
       throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore durante la creazione del carrello di pagamento");
     }

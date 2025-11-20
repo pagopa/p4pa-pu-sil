@@ -211,4 +211,40 @@ class IngestionFlowFileProcessingStatusServiceTest {
     assertDoesNotThrow(() -> service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, (IngestionFlowFileTypeEnum[]) null));
     assertDoesNotThrow(() -> service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L));
   }
+
+  @Test
+  void testWarningStatusWithErrorGeneratesOutputAndDiscardedUrls() {
+    Long ingestionFlowFileId = 1L;
+    String orgIpaCode = "ORG1";
+    String accessToken = "accessToken";
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
+
+    IngestionFlowFile file = podamFactory.manufacturePojo(IngestionFlowFile.class)
+      .ingestionFlowFileType(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      .status(IngestionFlowFileStatus.WARNING)
+      .organizationId(1L)
+      .ingestionFlowFileId(ingestionFlowFileId)
+      .numCorrectlyImportedRows(10L)
+      .errorDescription("Partial warning")
+      .discardFileName("discarded.csv");
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(file);
+
+    ImportStatusResponseDTO response = service.getProcessingStatus(
+      userInfo,
+      accessToken,
+      orgIpaCode,
+      ingestionFlowFileId,
+      IngestionFlowFileTypeEnum.DP_INSTALLMENTS
+    );
+
+    assertNotNull(response);
+    assertEquals(IngestionFlowFileStatus.WARNING, response.getStatus());
+    List<DownloadUrl> urls = response.getDownloadUrls();
+    assertNotNull(urls);
+    assertEquals(2, urls.size());
+    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.OUTPUT_FILE));
+    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.DISCARDED_FILE));
+  }
 }

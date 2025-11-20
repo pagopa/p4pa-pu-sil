@@ -1,7 +1,6 @@
-package it.gov.pagopa.pu.sil;
+package it.gov.pagopa.pu.sil.util;
 
 import io.micrometer.common.util.StringUtils;
-import it.gov.pagopa.pu.sil.util.Utilities;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

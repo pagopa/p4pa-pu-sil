@@ -1,11 +1,15 @@
 package it.gov.pagopa.pu.sil.connector.organization.service;
 
+import it.gov.pagopa.pu.organization.dto.generated.CollectionModelOrganization;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.client.OrganizationSearchClient;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -40,5 +44,12 @@ public class OrganizationServiceImpl implements OrganizationService {
     return Optional.ofNullable(
       organizationSearchClient.findByOrganizationId(orgId, accessToken)
     );
+  }
+
+  @Override
+  @Cacheable(key = "'brokerId-' + #brokerId + '-status-' + #status", unless = "#result == null || #result.isEmpty()")
+  public List<Organization> findByBrokerIdAndStatus(Long brokerId, OrganizationStatus status, String accessToken) {
+    CollectionModelOrganization collectionModelOrganization = organizationSearchClient.findByBrokerIdAndStatus(brokerId, status, accessToken);
+    return Objects.requireNonNull(collectionModelOrganization.getEmbedded()).getOrganizations();
   }
 }

@@ -51,8 +51,9 @@ class ClassificationsExportFileRequestMapperTest {
     idUnivocoVersamentoType.getIuvs().addAll(List.of("IUV123"));
     request.setIdUnivocoVersamento(idUnivocoVersamentoType);
     IdUnivocoRendicontazioneType idUnivocoRendicontazioneType = new IdUnivocoRendicontazioneType();
-    idUnivocoRendicontazioneType.getIurs().addAll(List.of("IUR123"));
+    idUnivocoRendicontazioneType.getIurs().addAll(List.of("IUF123"));
     request.setIdUnivocoRendicontazione(idUnivocoRendicontazioneType);
+    request.setIdUnivocoRiscossione("IUR123");
 
     Long orgId = 123L;
     ClassificationsExportFileRequestDTO dto = mapper.mapToExportFileRequest(orgId, request);
@@ -63,7 +64,7 @@ class ClassificationsExportFileRequestMapperTest {
     assertEquals("v1", dto.getFileVersion());
     ClassificationsExportFileFilter filter = dto.getFilterFields();
     assertNotNull(filter);
-    TestUtils.checkNotNullFields(filter, "iuf","lastClassificationDate");
+    TestUtils.checkNotNullFields(filter, "lastClassificationDate");
     assertEquals("IUD123", filter.getIud());
     assertEquals(LocalDate.of(2023, 1, 1), filter.getRegionValueDate().getFrom());
     assertEquals(LocalDate.of(2023, 12, 31), filter.getRegionValueDate().getTo());

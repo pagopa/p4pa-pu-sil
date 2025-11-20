@@ -20,6 +20,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PaaSILImportaDovutoMapper {
 
-  public static final String IMPORT_DOVUTO = "_IMPORT-DOVUTO";
+  public static final String IMPORT_DOVUTO = "_IMPORT-DOVUTO_";
 
   private final DebtPositionTypeService debtPositionTypeService;
   private final JAXBTransformService jaxbTransformService;
@@ -105,6 +106,8 @@ public class PaaSILImportaDovutoMapper {
       throw new ApplicationException("Invalid bilancio format", e);
     }
 
+    String now = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
     return installmentDTO
       .status(InstallmentStatus.UNPAID)
       .iud(datiVersamento.getIdentificativoUnivocoDovuto())
@@ -117,7 +120,7 @@ public class PaaSILImportaDovutoMapper {
       .balance(balanceString)
       .debtor(debtor)
       .generateNotice(false)
-      .sourceFlowName(ipaCode + IMPORT_DOVUTO);
+      .sourceFlowName(ipaCode + IMPORT_DOVUTO + now);
   }
 
 }

@@ -638,19 +638,16 @@ class PuForOrganizationPaymentsEndpointTest {
 
   // region PaaSILChiediPosizioniAperte
   @Test
-  void givenValidRequestWhenPaaSILChiediPosizioniAperteThenOk() throws Exception {
+  void givenValidRequestWhenPaaSILChiediPosizioniAperteThenOk() {
     // Given
     PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
-    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
-    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     PaaSILChiediPosizioniAperteRisposta expectedResponse = new PaaSILChiediPosizioniAperteRisposta();
 
-    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken, VALID_ORG_IPA_CODE))
+    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
-    PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, header);
+    PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, null);
 
     // Then
     Assertions.assertNotNull(result);
@@ -658,18 +655,15 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   @Test
-  void givenAnErrorWhenPaaSILChiediPosizioniAperteThenKo() throws Exception {
+  void givenAnErrorWhenPaaSILChiediPosizioniAperteThenKo() {
     // Given
     PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
-    IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
-    intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
-    SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken, VALID_ORG_IPA_CODE))
+    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
 
     // When
-    PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, header);
+    PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, null);
 
     // Then
     Assertions.assertNotNull(result);

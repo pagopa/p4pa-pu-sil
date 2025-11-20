@@ -351,4 +351,62 @@ public class AuthorizationServiceTest {
     // Then
     Assertions.assertEquals(organizationIpaCode, result);
   }
+
+  @ParameterizedTest
+  @CsvSource({
+    "orgFiscalCode, orgFiscalCode, false",
+    "orgFiscalCode, adminOrgFiscalCode, true"
+  })
+  void testValidateBrokerAdminRole(String brokerFiscalCode,
+                                   String adminOrgFiscalCode,
+                                   boolean expectError) {
+    // Given
+    UserInfo userInfo = new UserInfo();
+    userInfo.setMappedExternalUserId("userId");
+    userInfo.setBrokerFiscalCode(brokerFiscalCode);
+    userInfo.setOrganizations(List.of(
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN")),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"))
+    ));
+
+    // When/Then
+    if (expectError) {
+      Assertions.assertThrows(AuthorizationDeniedException.class,
+        () -> authorizationService.validateBrokerAdminRole(userInfo)
+      );
+    } else {
+      Assertions.assertDoesNotThrow(() -> authorizationService.validateBrokerAdminRole(userInfo));
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource(value = {
+    "1, 1, false",
+    "1, 2, true",
+    "1, null, true",
+    "null, 1, true",
+  }, nullValues = {"null"})
+  void testValidateOrganizationBrokered(Long userBrokerId,
+                                        Long orgBrokerId,
+                                        boolean expectError) {
+    // Given
+    UserInfo userInfo = new UserInfo();
+    userInfo.setMappedExternalUserId("userId");
+    userInfo.setBrokerId(userBrokerId);
+    userInfo.setOrganizations(List.of(
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+    ));
+
+    // When/Then
+    if (expectError) {
+      Assertions.assertThrows(AuthorizationDeniedException.class,
+        () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
+      );
+    } else {
+      Assertions.assertDoesNotThrow(
+        () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
+      );
+    }
+  }
 }

@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -110,7 +111,7 @@ public class PuSilExceptionHandler {
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new PuSilErrorDTO(errorEnum, message));
+      .body(new PuSilErrorDTO(errorEnum, message, Utilities.getTraceId()));
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {

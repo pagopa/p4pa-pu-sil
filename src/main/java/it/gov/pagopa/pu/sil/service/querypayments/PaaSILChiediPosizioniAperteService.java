@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
@@ -44,20 +45,22 @@ public class PaaSILChiediPosizioniAperteService {
   private final CartRequestMapper cartRequestMapper;
   private final DebtPositionTypeService debtPositionTypeService;
 
-  public PaaSILChiediPosizioniAperteRisposta processRequest(
-    PaaSILChiediPosizioniAperte request,
-    UserInfo userInfo,
-    String accessToken,
-    String orgIpaCode
-  ) {
+  public PaaSILChiediPosizioniAperteRisposta processRequest(PaaSILChiediPosizioniAperte request,
+                                                            UserInfo userInfo,
+                                                            String accessToken) {
     PaaSILChiediPosizioniAperteRisposta response = new PaaSILChiediPosizioniAperteRisposta();
-    AuthorizationService.validateAdminRole(request.getCodIpaEnte(), userInfo);
+    AuthorizationService.validateBrokerAdminRole(userInfo);
 
-    Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, request.getCodIpaEnte());
-    Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
-      .orElse(null);
-    if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+    List<Organization> organizations;
+    if (request.getCodIpaEnte() != null) {
+      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, request.getCodIpaEnte());
+      Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
+        .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
+        .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
+      AuthorizationService.isOrganizationHandledByBroker(organization.getBrokerId(), userInfo);
+      organizations = List.of(organization);
+    } else {
+      organizations = organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken);
     }
 
     OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
@@ -65,14 +68,16 @@ public class PaaSILChiediPosizioniAperteService {
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
-      organizationId,
+      organizations.stream().map(Organization::getOrganizationId).toList(),
       EXCLUDED_DEBT_POSITION_TYPE_CODES,
       InstallmentStatus.UNPAID,
       dateFilter,
       accessToken
     );
 
-    response.getPaaSILPosizioniApertes().addAll(processOpenPositions(request, organization, debtPositions, accessToken));
+    organizations.forEach(organization ->
+      response.getPaaSILPosizioniApertes().addAll(processOpenPositions(request, organization, debtPositions, accessToken))
+    );
     return response;
   }
 
