@@ -308,7 +308,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /internal/debtor/{debtorFiscalCode}/payment/history:
+  /sil/debtor/{debtorFiscalCode}/payment/history:
     get:
       tags:
         - DebtorQueryPayment

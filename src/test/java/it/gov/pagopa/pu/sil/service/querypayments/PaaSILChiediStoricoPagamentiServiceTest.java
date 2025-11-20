@@ -190,19 +190,20 @@ class PaaSILChiediStoricoPagamentiServiceTest {
   }
 
   @Test
-  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() {
+  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() throws Exception {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
     long orgId = 42L;
     Long brokerId = 100L;
-
-    PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
-    request.setCodIpaEnte(orgIpaCode);
-
+    XMLGregorianCalendar dataFrom = toXmlCal(ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneId.systemDefault()));
     CtIdentificativoUnivocoPersonaFG idFG = new CtIdentificativoUnivocoPersonaFG();
     idFG.setCodiceIdentificativoUnivoco("RSSMRA80A01H501U");
     idFG.setTipoIdentificativoUnivoco(StTipoIdentificativoUnivocoPersFG.F);
+
+    PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
+    request.setCodIpaEnte(orgIpaCode);
+    request.setDataFrom(dataFrom);
     request.setIdentificativoUnivocoPersonaFG(idFG);
 
     UserInfo userInfo = new UserInfo();

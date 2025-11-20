@@ -73,7 +73,7 @@ class DebtorQueryPaymentServiceTest {
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
-    DebtorQueryPaymentRequest request = new DebtorQueryPaymentRequest(
+    AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest request = new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(
       orgIpaCode,
       PersonEntityType.F,
       "RSSMRA80A01H501U",
@@ -128,7 +128,7 @@ class DebtorQueryPaymentServiceTest {
     byte[] marshalledReceipt = "receipt".getBytes(StandardCharsets.UTF_8);
     ReceiptWithAdditionalNodeDataDTO receipt = new ReceiptWithAdditionalNodeDataDTO();
 
-    OffsetDateTimeIntervalFilter intervalFilter = new OffsetDateTimeIntervalFilter(request.dateFrom(), request.dateTo());
+    OffsetDateTimeIntervalFilter intervalFilter = new OffsetDateTimeIntervalFilter(request.getDateFrom(), request.getDateTo());
 
     // When
     PaymentHistoryResponseDTO response;
@@ -170,7 +170,7 @@ class DebtorQueryPaymentServiceTest {
 
     // Then
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(request.dateTo(), response.getDateTo());
+    Assertions.assertEquals(request.getDateTo(), response.getDateTo());
     Assertions.assertNotNull(response.getPayments());
     Assertions.assertEquals(1, response.getPayments().size());
 
@@ -209,7 +209,7 @@ class DebtorQueryPaymentServiceTest {
     long orgId = 42L;
     Long brokerId = 100L;
 
-    DebtorQueryPaymentRequest request = new DebtorQueryPaymentRequest(
+    AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest request = new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(
       orgIpaCode,
       PersonEntityType.F,
       "RSSMRA80A01H501U",
