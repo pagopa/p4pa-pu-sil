@@ -21,6 +21,7 @@ public class PaymentMapper {
 
     return PaymentDTO.builder()
       .debtPositionTypeOrgCode(debtPositionTypeOrg.getCode())
+      .notificationFeeCents(installment.getNotificationFeeCents())
       .iud(installment.getIud())
       .totalAmountCents(installment.getAmountCents())
       .description(installment.getRemittanceInformation())

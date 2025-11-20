@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentDTO;
@@ -40,17 +41,21 @@ class PaymentMapperTest {
     Long amountCents = 10000L;
     String remittanceInfo = "Payment for services";
     String balance = "5000";
-    it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO debtorInfo =
-      podamFactory.manufacturePojo(it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO.class);
+    PersonDTO debtorInfo =
+      podamFactory.manufacturePojo(PersonDTO.class);
 
     TransferDTO debtPositionTransfer = TransferDTO.builder()
-      .amountCents(10000L)
+      .amountCents(1000L)
       .category("Utilities")
       .orgFiscalCode("12345678901")
       .orgName("Test Organization")
       .remittanceInformation("Payment for services")
       .transferIndex(1)
+      .stampHashDocument("hash123")
+      .stampType("TypeA")
+      .stampProvincialResidence("ProvinceX")
       .iban("IT60X0542811101000000123456")
+      .postalIban("IT60X0542811101000000654321")
       .build();
 
     InstallmentDTO installment = InstallmentDTO.builder()
@@ -58,6 +63,7 @@ class PaymentMapperTest {
       .iud(iud)
       .amountCents(amountCents)
       .remittanceInformation(remittanceInfo)
+      .notificationFeeCents(100L)
       .balance(balance)
       .debtor(debtorInfo)
       .transfers(List.of(debtPositionTransfer))
@@ -67,13 +73,17 @@ class PaymentMapperTest {
 
     it.gov.pagopa.pu.sil.dto.generated.TransferDTO silTransfer =
       it.gov.pagopa.pu.sil.dto.generated.TransferDTO.builder()
-        .amountCents(10000L)
+        .amountCents(1000L)
         .category("Utilities")
         .orgFiscalCode("12345678901")
         .orgName("Test Organization")
         .remittanceInformation("Payment for services")
         .transferIndex(1)
+        .stampHashDocument("hash123")
+        .stampType("TypeA")
+        .stampProvincialResidence("ProvinceX")
         .iban("IT60X0542811101000000123456")
+        .postalIban("IT60X0542811101000000654321")
         .build();
 
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByInstallmentId(installmentId, accessToken))
@@ -94,8 +104,14 @@ class PaymentMapperTest {
     assertNotNull(result.getDebtor());
     assertEquals(debtorInfo.getFiscalCode(), result.getDebtor().getFiscalCode());
     assertEquals(debtorInfo.getFullName(), result.getDebtor().getFullName());
+    assertEquals(100L, result.getNotificationFeeCents());
     assertNotNull(result.getTransfers());
     assertEquals(1, result.getTransfers().size());
     assertEquals(silTransfer, result.getTransfers().getFirst());
+
+    TestUtils.checkNotNullFields(result);
+    result.getTransfers().forEach(transfer ->
+      TestUtils.checkNotNullFields(transfer)
+    );
   }
 }

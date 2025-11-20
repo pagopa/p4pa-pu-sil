@@ -35,6 +35,7 @@ public class TransferMapper {
       .stampType(debtPositionTransferDTO.getStampType())
       .stampProvincialResidence(debtPositionTransferDTO.getStampProvincialResidence())
       .iban(debtPositionTransferDTO.getIban())
+      .postalIban(debtPositionTransferDTO.getPostalIban())
       .build();
   }
 }

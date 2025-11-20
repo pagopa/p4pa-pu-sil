@@ -59,6 +59,7 @@ class TransferMapperTest {
       .stampType("TypeA")
       .stampProvincialResidence("ProvinceX")
       .iban("IT60X0542811101000000123456")
+      .postalIban("IT60X0542811101000000654321")
       .build();
 
     // When
@@ -76,5 +77,8 @@ class TransferMapperTest {
     assertEquals(debtPositionTransferDTO.getStampType(), result.getStampType());
     assertEquals(debtPositionTransferDTO.getStampProvincialResidence(), result.getStampProvincialResidence());
     assertEquals(debtPositionTransferDTO.getIban(), result.getIban());
+    assertEquals(debtPositionTransferDTO.getPostalIban(), result.getPostalIban());
+
+    TestUtils.checkNotNullFields(result);
   }
 }
