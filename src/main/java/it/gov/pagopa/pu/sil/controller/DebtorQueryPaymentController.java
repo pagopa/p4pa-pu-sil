@@ -31,6 +31,7 @@ public class DebtorQueryPaymentController implements DebtorQueryPaymentApi {
   @Override
   public ResponseEntity<PaymentHistoryResponseDTO> getPaymentHistory(String debtorFiscalCode, PersonEntityType debtorEntityType, OffsetDateTime dateFrom, OffsetDateTime dateTo, String ipaCode) {
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    log.info("Requesting citizen payment history on brokerId {} and organization {}", userInfo.getBrokerId(), ipaCode);
     String accessToken = SecurityUtils.getAccessToken();
     DebtorQueryPaymentRequest request = new DebtorQueryPaymentRequest(
       ipaCode,
@@ -47,6 +48,7 @@ public class DebtorQueryPaymentController implements DebtorQueryPaymentApi {
   @Override
   public ResponseEntity<UnpaidDebtPositionsResponseDTO> getUnpaidDebtPositions(String debtorFiscalCode, PersonEntityType debtorEntityType, String ipaCode) {
     UserInfo userInfo = SecurityUtils.getLoggedUser();
+    log.info("Requesting citizen unpaid debt positions on brokerId {} and organization {}", userInfo.getBrokerId(), ipaCode);
     String accessToken = SecurityUtils.getAccessToken();
     DebtorQueryPaymentRequest request = new DebtorQueryPaymentRequest(
       ipaCode,
