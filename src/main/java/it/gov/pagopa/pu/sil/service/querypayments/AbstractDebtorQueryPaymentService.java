@@ -135,18 +135,6 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       .toUriString();
   }
 
-  /**
-   * Composes the checkout URL from the checkout cart response.
-   * This is a placeholder implementation pending P4ADEV-4043.
-   *
-   * @param checkoutCart the checkout cart identifier
-   * @return the composed checkout URL
-   */
-  protected String composeCheckoutUrl(String checkoutCart) {
-    // @TODO: da implementare con la P4ADEV-4043
-    return checkoutCart;
-  }
-
   protected abstract DebtorQueryPaymentRequest transformRequest(I request);
   protected abstract O gatherToResponse(DebtorQueryPaymentRequest request, List<Organization> organizations,
                                         List<DebtPositionDTO> debtPositions, String accessToken);

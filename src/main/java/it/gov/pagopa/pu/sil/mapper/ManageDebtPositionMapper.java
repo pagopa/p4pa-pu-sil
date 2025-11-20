@@ -18,7 +18,7 @@ public class ManageDebtPositionMapper {
 
   private final SecondaryTransferMapper secondaryTransferMapper;
 
-  public ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, InstallmentDTO installmentToSync, String action, boolean legacyMode) {
+  public ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, InstallmentDTO installmentToSync, String action, boolean legacyMode) {
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions()
       .stream().flatMap(po -> po.getInstallments().stream())
       .filter(i -> Objects.equals(i.getIud(), installmentToSync.getIud()))
@@ -45,10 +45,10 @@ public class ManageDebtPositionMapper {
       .build();
 
     return ManageDebtPositionDTO.builder()
-      .debtPositionDescription(debtPositionOnDb.getDescription())
+      .debtPositionDescription(debtPositionToSync.getDescription())
       .paymentOptionId(paymentOptionOnDb.getPaymentOptionId())
-      .paymentOptionDescription(paymentOptionOnDb.getDescription())
-      .validityDate(debtPositionOnDb.getValidityDate())
+      .paymentOptionDescription(debtPositionToSync.getPaymentOptions().getFirst().getDescription())
+      .validityDate(debtPositionToSync.getValidityDate())
       .installments(List.of(manageInstallmentDTO))
       .build();
   }

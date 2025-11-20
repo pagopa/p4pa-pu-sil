@@ -57,7 +57,7 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
     InstallmentDTO installmentToSync = debtPositionMapper
       .mapSilInstallmentToInstallmentDTO(manageInstallmentDTO.getInstallment(), organization.getIpaCode());
     // build debtPositionDTO just to provide installment (values of DebtPosition and PaymentOption are not used in this flow)
-    DebtPositionDTO debtPositionDTO = initDebtPosition(organization.getOrganizationId(), installmentToSync);
+    DebtPositionDTO debtPositionDTO = initDebtPosition(organization.getOrganizationId(), installmentToSync, request);
     return Pair.of(debtPositionDTO, manageInstallmentDTO.getAction().getValue());
   }
 
@@ -69,18 +69,21 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
   @Override
   protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action) {
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
-    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action, false);
+    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, action, false);
   }
 
-  private DebtPositionDTO initDebtPosition(Long orgId, InstallmentDTO installmentDTO) {
+  private DebtPositionDTO initDebtPosition(Long orgId, InstallmentDTO installmentDTO, ManageDebtPositionWithIudDTO source) {
     //since we need only the installment to sync, we can initialize the debt position with non-nullable values only
     return DebtPositionDTO.builder()
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .organizationId(orgId)
       .debtPositionTypeOrgId(0L)
+      .description(source.getDebtPositionDescription())
+      .validityDate(source.getValidityDate())
       .flagPuPagoPaPayment(true)
       .paymentOptions(List.of(PaymentOptionDTO.builder()
         .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+        .description(source.getPaymentOptionDescription())
         .totalAmountCents(0L)
         .installments(List.of(installmentDTO))
         .build()))

@@ -6,9 +6,12 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @Component
 public class DebtPositionMapper {
-  public static final String IMPORT_DOVUTO = "_IMPORT-DOVUTO";
+  public static final String IMPORT_DOVUTO = "_IMPORT-DOVUTO_";
 
   private final DebtPositionTypeService debtPositionTypeService;
   private final TransferMapper transferMapper;
@@ -54,6 +57,8 @@ public class DebtPositionMapper {
   }
 
   public InstallmentDTO mapSilInstallmentToInstallmentDTO(it.gov.pagopa.pu.sil.dto.generated.InstallmentDTO source, String orgIpaCode) {
+    String now = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
     return InstallmentDTO.builder()
       .status(InstallmentStatus.UNPAID)
       .iud(source.getIud())
@@ -66,7 +71,7 @@ public class DebtPositionMapper {
       .balance(source.getBalance())
       .debtor(source.getDebtor())
       .generateNotice(false)
-      .sourceFlowName(orgIpaCode + IMPORT_DOVUTO)
+      .sourceFlowName(orgIpaCode + IMPORT_DOVUTO + now)
       .transfers(source.getTransfers().stream().map(transferMapper::mapToDebtPositionTransferDTO).toList())
       .build();
   }

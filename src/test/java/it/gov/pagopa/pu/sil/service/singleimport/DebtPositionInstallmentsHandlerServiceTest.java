@@ -37,8 +37,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -192,8 +191,14 @@ class DebtPositionInstallmentsHandlerServiceTest {
       .thenReturn(installment);
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), iud, Constants.ORDINARY_DEBT_POSITION_ORIGINS, TOKEN))
       .thenReturn(List.of(debtPosition));
-    when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(debtPosition, installment, request.getInstallments().getFirst().getAction().getValue(), false))
-      .thenReturn(manageDebtPositionDTO);
+    when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(
+      any(DebtPositionDTO.class),
+      any(DebtPositionDTO.class),
+      any(InstallmentDTO.class),
+      eq(request.getInstallments().getFirst().getAction().getValue()),
+      eq(false)
+    )).thenReturn(manageDebtPositionDTO);
+
     when(manageDebtPositionServiceMock.manageDebtPositionInstallments(debtPosition.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
       .thenReturn(debtPosition);
 

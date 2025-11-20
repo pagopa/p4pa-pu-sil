@@ -101,9 +101,9 @@ public abstract class BaseDebtPositionHandler<I, O> {
 
     //execute the action on the installment
     log.info("executing action {} on installment with iud[{}] for organizationId[{}]", action, iud, organization.getOrganizationId());
-    manageDebtPositionService.manageDebtPositionInstallments(debtPositionOnDb.getDebtPositionId(), manageDebtPositionDTO, accessToken);
+    DebtPositionDTO debtPositionDTO = manageDebtPositionService.manageDebtPositionInstallments(debtPositionOnDb.getDebtPositionId(), manageDebtPositionDTO, accessToken);
 
-    O response = mapToRespone(debtPositionOnDb, organization.getOrgFiscalCode(), null, action);
+    O response = mapToRespone(debtPositionDTO, organization.getOrgFiscalCode(), null, action);
 
     return Triple.of(response, installmentOnDb.getIuv(), RegistryOutcome.OK);
   }
