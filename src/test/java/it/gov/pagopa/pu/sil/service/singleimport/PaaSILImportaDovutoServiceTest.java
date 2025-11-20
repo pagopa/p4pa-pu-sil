@@ -40,8 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -121,16 +120,21 @@ class PaaSILImportaDovutoServiceTest {
         Mockito.when(manageDebtPositionServiceMock.createDebtPositions(List.of(debtPositionDTO), TOKEN)).thenReturn(List.of(processedDebtPositionDTO));
         break;
       case Constants.LEGACY_IMPORT_ACTION_MODIFY, Constants.LEGACY_IMPORT_ACTION_CANCEL:
-        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
+        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(eq(orgId), eq(iud), Mockito.any(), eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
-        Mockito.when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(processedDebtPositionDTO, installmentDTO, action, true))
-          .thenReturn(manageDebtPositionDTO);
+        Mockito.when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(
+          eq(processedDebtPositionDTO),
+          eq(debtPositionDTO),
+          eq(installmentDTO),
+          eq(action),
+          eq(true)
+        )).thenReturn(manageDebtPositionDTO);
         Mockito.when(manageDebtPositionServiceMock.manageDebtPositionInstallments(processedDebtPositionDTO.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
           .thenReturn(processedDebtPositionDTO);
         break;
       case Constants.LEGACY_IMPORT_ACTION_PRINT:
-        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
+        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(eq(orgId), eq(iud), Mockito.any(), eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         Mockito.when(noticeServiceMock.generateNotice(processedInstallmentDTO.getIuv(), processedDebtPositionDTO, TOKEN))
           .thenReturn("PDF NOTICE".getBytes());
@@ -213,12 +217,12 @@ class PaaSILImportaDovutoServiceTest {
         break;
       case "invalidDpStatus":
         processedDebtPositionDTO.setStatus(DebtPositionStatus.PAID);
-        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
+        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(eq(orgId), eq(iud), Mockito.any(), eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         break;
       case "installmentNotFound":
         processedInstallmentDTO.setIud("invalid_iud");
-        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(Mockito.eq(orgId), Mockito.eq(iud), Mockito.any(), Mockito.eq(TOKEN)))
+        Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(eq(orgId), eq(iud), Mockito.any(), eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
         break;
       default:

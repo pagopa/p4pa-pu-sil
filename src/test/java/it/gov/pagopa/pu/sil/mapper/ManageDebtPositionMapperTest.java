@@ -58,6 +58,7 @@ class ManageDebtPositionMapperTest {
   @CsvSource({"M, true", "M, false", "A, true", "A, false"})
   void mapToManageDebtPositionDTO_validData_ReturnsOk(String action, boolean legacyMode) {
     DebtPositionDTO debtPositionOnDb = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    DebtPositionDTO debtPositionToSync = podamFactory.manufacturePojo(DebtPositionDTO.class);
     InstallmentDTO installmentToSync = podamFactory.manufacturePojo(InstallmentDTO.class);
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().getLast().getInstallments().getLast();
     installmentOnDb.setIud(installmentToSync.getIud());
@@ -67,20 +68,23 @@ class ManageDebtPositionMapperTest {
       doNothing().when(secondaryTransferMapperMock).checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode);
     }
 
-    ManageDebtPositionDTO response = mapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action, legacyMode);
+    ManageDebtPositionDTO response = mapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, action, legacyMode);
 
     Assertions.assertNotNull(response);
     TestUtils.checkNotNullFields(response);
+    assertEquals(debtPositionToSync.getDescription(), response.getDebtPositionDescription());
+    assertEquals(debtPositionToSync.getPaymentOptions().getFirst().getDescription(), response.getPaymentOptionDescription());
   }
 
   @Test
   void mapToManageDebtPositionDTO_UnmarshallingFailure_ReturnsError() {
     DebtPositionDTO debtPositionOnDb = podamFactory.manufacturePojo(DebtPositionDTO.class);
+    DebtPositionDTO debtPositionToSync = podamFactory.manufacturePojo(DebtPositionDTO.class);
     InstallmentDTO installmentToSync = podamFactory.manufacturePojo(InstallmentDTO.class);
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().getLast().getInstallments().getLast();
     installmentOnDb.setIud(installmentToSync.getIud()+"invalid");
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, Constants.LEGACY_IMPORT_ACTION_MODIFY, false));
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, Constants.LEGACY_IMPORT_ACTION_MODIFY, false));
 
     assertEquals(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, exception.getFault());
     assertTrue(exception.getDescription().contains("Dovuto non trovato"));

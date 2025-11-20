@@ -71,7 +71,7 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
     }
 
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
-    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, installmentToSync, action, true);
+    return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, action, true);
   }
 
   private String composeDownloadPdfNoticeUrl(String orgFiscalCode, String iuv) {
