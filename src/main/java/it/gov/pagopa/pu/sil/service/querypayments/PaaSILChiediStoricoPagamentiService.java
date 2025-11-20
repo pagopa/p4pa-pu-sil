@@ -42,13 +42,11 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
 
   @Override
   protected AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest transformRequest(PaaSILChiediStoricoPagamenti request) {
-    OffsetDateTime dateFrom = Optional.ofNullable(request.getDataFrom())
-        .map(ConversionUtils::toOffsetDateTime)
-        .orElseGet(() -> OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS));
-
+    OffsetDateTime dateFrom = ConversionUtils.toOffsetDateTime(request.getDataFrom());
     OffsetDateTime dateTo = Optional.ofNullable(request.getDataTo())
         .map(ConversionUtils::toOffsetDateTime)
         .orElse(dateFrom.plusDays(1));
+    
     return new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(request.getCodIpaEnte(),
       PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
       request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
