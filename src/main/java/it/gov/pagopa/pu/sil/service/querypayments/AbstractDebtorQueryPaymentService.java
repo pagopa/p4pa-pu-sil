@@ -128,6 +128,7 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
    * @return the composed URL to download the receipt PDF
    */
   protected String composeReceiptDownloadUrl(Long organizationId, Long receiptId) {
+    // TODO: implementation description https://pagopa.atlassian.net/browse/P4ADEV-4254
     return UriComponentsBuilder.fromUriString(fileShareBaseUrl)
       .path("/organization/{organizationId}/rt/{receiptId}")
       .buildAndExpand(organizationId, receiptId)
