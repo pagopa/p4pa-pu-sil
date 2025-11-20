@@ -506,6 +506,8 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlusso");
 
+    PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
+
     Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
 
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato).orElse(null);
@@ -515,6 +517,16 @@ public class PuForOrganizationPaymentsEndpoint {
       .map(GregorianCalendar::toZonedDateTime)
       .map(DateUtils::toOffsetDateTimeStartOfTheDay)
       .orElse(null);
+
+    if (from == null) {
+      SilFaults fault = SilFaults.PAA_DATE_FROM_NON_VALIDO;
+
+      return FaultUtils.setFaultOnResponse(
+        response,
+        fault,
+        fault.description()
+      );
+    }
 
     OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlusso::getDateTo)
       .map(XMLGregorianCalendar::toGregorianCalendar)
@@ -540,7 +552,6 @@ public class PuForOrganizationPaymentsEndpoint {
         to,
         debtPositionTypeOrgCode
       );
-      PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
       response.setRequestToken(String.valueOf(result));
       return response;
     } catch (Exception e) {

@@ -58,10 +58,6 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
         .orElse(null);
     }
 
-    if (from == null) {
-      throw new SilFaultException(SilFaults.PAA_DATE_FROM_NON_VALIDO);
-    }
-
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgCode, debtPositionTypeOrgId);
     Long exportFileId = exportFileService.createPaidExportFile(requestDTO, accessToken);
     log.debug("Export file created with ID: {}", exportFileId);
