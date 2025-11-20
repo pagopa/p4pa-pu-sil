@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsDTO;
 import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsResponseDTO;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaymentMapper;
+import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,9 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
   protected DebtorQueryPaymentRequest transformRequest(DebtorQueryPaymentRequest request) {
     // Request is already in the correct format, just ensure status is UNPAID
     return new DebtorQueryPaymentRequest(
-      request.ipaCode(),
-      request.debtorEntityType(),
-      request.debtorFiscalCode(),
+      request.getIpaCode(),
+      request.getDebtorEntityType(),
+      request.getDebtorFiscalCode(),
       InstallmentStatus.UNPAID,
       null,
       null
