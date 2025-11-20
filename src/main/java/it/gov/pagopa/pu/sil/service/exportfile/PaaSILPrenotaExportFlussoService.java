@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import java.util.Arrays;
 import java.util.List;
@@ -55,6 +56,10 @@ public class PaaSILPrenotaExportFlussoService extends AbstractExportFileReservat
           SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO))
         .map(DebtPositionTypeOrg::getDebtPositionTypeOrgId)
         .orElse(null);
+    }
+
+    if (from == null) {
+      throw new SilFaultException(SilFaults.PAA_DATE_FROM_NON_VALIDO);
     }
 
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, fileVersion, from, to, debtPositionTypeOrgCode, debtPositionTypeOrgId);
