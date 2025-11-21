@@ -519,12 +519,10 @@ public class PuForOrganizationPaymentsEndpoint {
       .orElse(null);
 
     if (from == null) {
-      SilFaults fault = SilFaults.PAA_DATE_FROM_NON_VALIDO;
-
       return FaultUtils.setFaultOnResponse(
         response,
-        fault,
-        fault.description()
+        SilFaults.PAA_DATE_FROM_NON_VALIDO,
+        SilFaults.PAA_DATE_FROM_NON_VALIDO.description()
       );
     }
 
