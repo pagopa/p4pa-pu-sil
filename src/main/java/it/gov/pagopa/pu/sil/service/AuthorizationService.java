@@ -29,7 +29,7 @@ public class AuthorizationService {
   }
 
   public AccessToken requestLimitedToken(LimitedTokenRequest limitedTokenRequest, String accessToken) {
-    log.info("Requesting limited token for {}", limitedTokenRequest);
+    log.debug("Requesting limited token for {}", limitedTokenRequest);
     return authClientImpl.postLimitedToken(limitedTokenRequest, accessToken);
   }
 

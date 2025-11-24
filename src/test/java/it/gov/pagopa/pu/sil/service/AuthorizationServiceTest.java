@@ -431,21 +431,4 @@ public class AuthorizationServiceTest {
 
     Assertions.assertEquals(expectedToken, result);
   }
-
-  @Test
-  void givenInvalidAccessTokenWhenRequestLimitedTokenThenInvalidAccessTokenException() {
-    LimitedTokenRequest ltr = LimitedTokenRequest.builder()
-      .organizationId(1L)
-      .resource("resource")
-      .app("app")
-      .build();
-
-    when(authClientImplMock.postLimitedToken(ltr, "INVALIDACCESSTOKEN"))
-      .thenThrow(new InvalidAccessTokenException("Bad Access Token provided"));
-
-    InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
-      () -> authorizationService.requestLimitedToken(ltr,"INVALIDACCESSTOKEN"));
-
-    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
-  }
 }

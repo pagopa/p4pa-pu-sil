@@ -29,11 +29,7 @@ public class AuthnClient {
   }
 
   public AccessToken postLimitedToken(LimitedTokenRequest limitedTokenRequest, String accessToken) {
-    try {
-      return authApisHolder.getAuthnApi(accessToken)
-        .postLimitedToken(limitedTokenRequest);
-    } catch (HttpClientErrorException.Unauthorized e) {
-      throw new InvalidAccessTokenException(e.getResponseBodyAsString());
-    }
+    return authApisHolder.getAuthnApi(accessToken)
+      .postLimitedToken(limitedTokenRequest);
   }
 }
