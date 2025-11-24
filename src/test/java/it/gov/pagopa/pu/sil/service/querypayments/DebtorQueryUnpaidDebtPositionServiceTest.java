@@ -47,6 +47,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
 
   @Mock private DebtPositionService debtPositionServiceMock;
   @Mock private OrganizationService organizationServiceMock;
+  @Mock private AuthorizationService authorizationServiceMock;
   @Mock private CheckoutClient checkoutClientMock;
   @Mock private CartRequestMapper cartRequestMapperMock;
   @Mock private PaymentMapper paymentMapperMock;
@@ -59,6 +60,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
       "http://test-url",
       debtPositionServiceMock,
       organizationServiceMock,
+      authorizationServiceMock,
       checkoutClientMock,
       cartRequestMapperMock,
       paymentMapperMock

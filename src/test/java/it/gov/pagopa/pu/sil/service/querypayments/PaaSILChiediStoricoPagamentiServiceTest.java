@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
@@ -45,6 +47,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
   @Mock private DebtPositionService debtPositionServiceMock;
   @Mock private OrganizationService organizationServiceMock;
+  @Mock private AuthorizationService authorizationServiceMock;
   @Mock private ReceiptService receiptServiceMock;
   @Mock private PagatiMapper pagatiMapperMock;
 
@@ -56,6 +59,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       "http://test-url",
       debtPositionServiceMock,
       organizationServiceMock,
+      authorizationServiceMock,
       receiptServiceMock,
       pagatiMapperMock
     );
@@ -70,6 +74,12 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
+
+    AccessToken limitedScopeToken = AccessToken.builder()
+      .accessToken("limited-token")
+      .tokenType("typ")
+      .expiresIn(24 * 60 * 60)
+      .build();
 
     PaaSILChiediStoricoPagamenti request = new PaaSILChiediStoricoPagamenti();
     request.setCodIpaEnte(orgIpaCode);
@@ -129,7 +139,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
 
     byte[] marshalledReceipt = "receipt".getBytes(StandardCharsets.UTF_8);
     byte[] pagatiBytes = "pagati".getBytes(StandardCharsets.UTF_8);
-
+    String expectedReceiptUrl = String.format("http://test-url/organization/%d/receipts/%d/pdf?token=%s", orgId, installment.getReceiptId(), limitedScopeToken.getAccessToken());
     // When
     PaaSILChiediStoricoPagamentiRisposta response;
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
@@ -158,6 +168,14 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       when(receiptServiceMock.getReceiptById(1001L, orgId, accessToken)).thenReturn(marshalledReceipt);
       when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken))
         .thenReturn(pagatiBytes);
+      doReturn(limitedScopeToken).when(authorizationServiceMock).requestLimitedToken(LimitedTokenRequest.builder()
+        .organizationId(orgId)
+        .app("pu-bff")
+        .resource("receipt")
+        .resourceId(installment.getReceiptId().toString())
+        .expireInSeconds(24L * 60 * 60)
+        .singleUsage(false)
+        .build(), accessToken);
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -171,6 +189,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     PaaSILStoricoPagamenti item = response.getPaaSILStoricoPagamentis().getFirst();
     Assertions.assertEquals(orgIpaCode, item.getCodIpaEnte());
     Assertions.assertEquals("Comune di Test", item.getDeNomeEnte());
+    Assertions.assertEquals(expectedReceiptUrl, item.getUrlDownloadRT());
     DataHandler rtDh = item.getRt();
     DataHandler ctDh = item.getCtPagatiConRicevuta();
     Assertions.assertNotNull(rtDh, "RT DataHandler should be set");

@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
@@ -47,6 +49,7 @@ class DebtorQueryPaymentServiceTest {
 
   @Mock private DebtPositionService debtPositionServiceMock;
   @Mock private OrganizationService organizationServiceMock;
+  @Mock private AuthorizationService authorizationServiceMock;
   @Mock private ReceiptService receiptServiceMock;
   @Mock private ReceiptMapper receiptMapperMock;
 
@@ -58,6 +61,7 @@ class DebtorQueryPaymentServiceTest {
       "http://test-url",
       debtPositionServiceMock,
       organizationServiceMock,
+      authorizationServiceMock,
       receiptServiceMock,
       receiptMapperMock
     );
@@ -72,6 +76,12 @@ class DebtorQueryPaymentServiceTest {
     long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
+
+    AccessToken limitedScopeToken = AccessToken.builder()
+      .accessToken("limited-token")
+      .tokenType("typ")
+      .expiresIn(24 * 60 * 60)
+      .build();
 
     AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest request = new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(
       orgIpaCode,
@@ -129,6 +139,7 @@ class DebtorQueryPaymentServiceTest {
     ReceiptWithAdditionalNodeDataDTO receipt = new ReceiptWithAdditionalNodeDataDTO();
 
     OffsetDateTimeIntervalFilter intervalFilter = new OffsetDateTimeIntervalFilter(request.getDateFrom(), request.getDateTo());
+    String expectedReceiptUrl = String.format("http://test-url/organization/%d/receipts/%d/pdf?token=%s", orgId, installment.getReceiptId(), limitedScopeToken.getAccessToken());
 
     // When
     PaymentHistoryResponseDTO response;
@@ -164,6 +175,14 @@ class DebtorQueryPaymentServiceTest {
         .thenReturn(marshalledReceipt);
       when(receiptMapperMock.map2ReceiptWithAdditionalNodeDataDTO(installment, accessToken))
         .thenReturn(receipt);
+      doReturn(limitedScopeToken).when(authorizationServiceMock).requestLimitedToken(LimitedTokenRequest.builder()
+        .organizationId(orgId)
+        .app("pu-bff")
+        .resource("receipt")
+        .resourceId(installment.getReceiptId().toString())
+        .expireInSeconds(24L * 60 * 60)
+        .singleUsage(false)
+        .build(), accessToken);
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -179,7 +198,6 @@ class DebtorQueryPaymentServiceTest {
     Assertions.assertEquals("Comune di Test", item.getOrgName());
     Assertions.assertEquals(receipt, item.getReceipt());
     Assertions.assertArrayEquals(marshalledReceipt, item.getReceiptBytes());
-    String expectedReceiptUrl = String.format("http://test-url/organization/%d/rt/%d", orgId, installment.getReceiptId());
     Assertions.assertEquals(expectedReceiptUrl, item.getReceiptDownloadUrl());
 
     // Verify interactions

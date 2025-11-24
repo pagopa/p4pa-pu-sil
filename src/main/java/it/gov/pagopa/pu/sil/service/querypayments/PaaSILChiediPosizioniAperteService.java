@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.client.CheckoutClient;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
@@ -33,14 +34,15 @@ public class PaaSILChiediPosizioniAperteService extends AbstractDebtorQueryPayme
   private final CartRequestMapper cartRequestMapper;
   private final DebtPositionTypeService debtPositionTypeService;
 
-  protected PaaSILChiediPosizioniAperteService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+  protected PaaSILChiediPosizioniAperteService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                                DebtPositionService debtPositionService,
                                                OrganizationService organizationService,
+                                               AuthorizationService authorizationService,
                                                JAXBTransformService jaxbTransformService,
                                                CheckoutClient checkoutClient,
                                                CartRequestMapper cartRequestMapper,
                                                DebtPositionTypeService debtPositionTypeService) {
-    super(fileShareBaseUrl, debtPositionService, organizationService);
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
     this.jaxbTransformService = jaxbTransformService;
     this.checkoutClient = checkoutClient;
     this.cartRequestMapper = cartRequestMapper;

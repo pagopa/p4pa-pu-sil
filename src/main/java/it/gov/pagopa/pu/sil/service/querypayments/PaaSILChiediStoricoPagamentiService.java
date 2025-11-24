@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
@@ -29,12 +30,13 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
   private final ReceiptService receiptService;
   private final PagatiMapper pagatiMapper;
 
-  public PaaSILChiediStoricoPagamentiService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+  public PaaSILChiediStoricoPagamentiService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                              DebtPositionService debtPositionService,
                                              OrganizationService organizationService,
+                                             AuthorizationService authorizationService,
                                              ReceiptService receiptService,
                                              PagatiMapper pagatiMapper) {
-    super(fileShareBaseUrl, debtPositionService, organizationService);
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
     this.receiptService = receiptService;
     this.pagatiMapper = pagatiMapper;
   }
@@ -77,7 +79,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
               payment.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", receiptData)));
               payment.setCodIpaEnte(organization.getIpaCode());
               payment.setDeNomeEnte(organization.getOrgName());
-              payment.setUrlDownloadRT(composeReceiptDownloadUrl(installment.getReceiptId(), organization.getOrganizationId()));
+              payment.setUrlDownloadRT(composeReceiptDownloadUrl(installment.getReceiptId(), organization.getOrganizationId(), accessToken));
               byte[] pagatiConRicevuta = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, accessToken);
               payment.setCtPagatiConRicevuta(new DataHandler(new ByteArrayDataSource("application/octet-stream", pagatiConRicevuta)));
               return payment;

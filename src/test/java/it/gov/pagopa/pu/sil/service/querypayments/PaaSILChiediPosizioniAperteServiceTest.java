@@ -41,6 +41,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
 
   @Mock private DebtPositionService debtPositionServiceMock;
   @Mock private OrganizationService organizationServiceMock;
+  @Mock private AuthorizationService authorizationServiceMock;
   @Mock private JAXBTransformService jaxbTransformServiceMock;
   @Mock private CheckoutClient checkoutClientMock;
   @Mock private CartRequestMapper cartRequestMapperMock;
@@ -54,6 +55,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
       "http://test-url",
       debtPositionServiceMock,
       organizationServiceMock,
+      authorizationServiceMock,
       jaxbTransformServiceMock,
       checkoutClientMock,
       cartRequestMapperMock,
