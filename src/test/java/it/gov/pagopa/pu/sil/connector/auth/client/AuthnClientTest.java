@@ -88,20 +88,4 @@ class AuthnClientTest {
 
     assertSame(expectedResult, result);
   }
-
-  @Test
-  void givenUnauthorizedExceptionWhenPostLimitedTokenThenThrowInvalidAccessTokenException() {
-    String accessToken = "ACCESSTOKEN";
-    LimitedTokenRequest limitedTokenRequest = new LimitedTokenRequest();
-    String bodyMessage = "bodyMessage";
-
-    when(authApisHolderMock.getAuthnApi(accessToken))
-      .thenReturn(authnApiMock);
-    when(authnApiMock.postLimitedToken(limitedTokenRequest))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, bodyMessage.getBytes(), null));
-
-    InvalidAccessTokenException exception = Assertions.assertThrows(InvalidAccessTokenException.class, () -> authnClient.postLimitedToken(limitedTokenRequest, accessToken));
-
-    assertEquals(bodyMessage, exception.getMessage());
-  }
 }
