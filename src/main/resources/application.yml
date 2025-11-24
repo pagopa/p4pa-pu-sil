@@ -200,6 +200,7 @@ legacy-auth:
   jwt-legacy-expiration-seconds: "${JWT_LEGACY_AUTH_EXPIRATION_TIMEOUT_SECONDS:3600}" # 1 hour
 
 public-base-url:
+  bff: "\${PUBLIC_BASE_URL_BFF:}"
   fileshare: "\${PUBLIC_BASE_URL_FILESHARE:}"
   pu-sil: "\${PUBLIC_BASE_URL_PU_SIL:}"
 
