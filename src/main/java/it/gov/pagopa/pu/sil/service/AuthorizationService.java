@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.service;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
@@ -24,6 +26,11 @@ public class AuthorizationService {
 
   public AuthorizationService(AuthnClient authClientImpl) {
     this.authClientImpl = authClientImpl;
+  }
+
+  public AccessToken requestLimitedToken(LimitedTokenRequest limitedTokenRequest, String accessToken) {
+    log.info("Requesting limited token for {}", limitedTokenRequest);
+    return authClientImpl.postLimitedToken(limitedTokenRequest, accessToken);
   }
 
   public UserInfo validateToken(String accessToken) {

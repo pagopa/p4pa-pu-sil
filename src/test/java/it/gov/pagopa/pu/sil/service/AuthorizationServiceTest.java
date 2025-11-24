@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.service;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
@@ -408,5 +410,42 @@ public class AuthorizationServiceTest {
         () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
       );
     }
+  }
+
+  @Test
+  void givenValidAccessTokenWhenRequestLimitedTokenThenOk() {
+    AccessToken expectedToken = AccessToken.builder()
+      .accessToken("LIMITEDACCESSTOKEN")
+      .tokenType("typ")
+      .expiresIn(3600)
+      .build();
+    LimitedTokenRequest ltr = LimitedTokenRequest.builder()
+      .organizationId(1L)
+      .resource("resource")
+      .app("app")
+      .build();
+
+    when(authClientImplMock.postLimitedToken(ltr, "ACCESSTOKEN")).thenReturn(expectedToken);
+
+    AccessToken result = authorizationService.requestLimitedToken(ltr, "ACCESSTOKEN");
+
+    Assertions.assertEquals(expectedToken, result);
+  }
+
+  @Test
+  void givenInvalidAccessTokenWhenRequestLimitedTokenThenInvalidAccessTokenException() {
+    LimitedTokenRequest ltr = LimitedTokenRequest.builder()
+      .organizationId(1L)
+      .resource("resource")
+      .app("app")
+      .build();
+
+    when(authClientImplMock.postLimitedToken(ltr, "INVALIDACCESSTOKEN"))
+      .thenThrow(new InvalidAccessTokenException("Bad Access Token provided"));
+
+    InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
+      () -> authorizationService.requestLimitedToken(ltr,"INVALIDACCESSTOKEN"));
+
+    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
   }
 }
