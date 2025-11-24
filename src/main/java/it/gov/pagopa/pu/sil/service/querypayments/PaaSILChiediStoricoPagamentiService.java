@@ -79,7 +79,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
               payment.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", receiptData)));
               payment.setCodIpaEnte(organization.getIpaCode());
               payment.setDeNomeEnte(organization.getOrgName());
-              payment.setUrlDownloadRT(composeReceiptDownloadUrl(installment.getReceiptId(), organization.getOrganizationId(), accessToken));
+              payment.setUrlDownloadRT(composeReceiptDownloadUrl(organization.getOrganizationId(), installment.getReceiptId(), accessToken));
               byte[] pagatiConRicevuta = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, accessToken);
               payment.setCtPagatiConRicevuta(new DataHandler(new ByteArrayDataSource("application/octet-stream", pagatiConRicevuta)));
               return payment;
