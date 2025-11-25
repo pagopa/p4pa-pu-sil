@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.auth.client;
 
 import it.gov.pagopa.pu.auth.controller.generated.AuthnApi;
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
@@ -69,5 +71,21 @@ class AuthnClientTest {
     InvalidAccessTokenException exception = Assertions.assertThrows(InvalidAccessTokenException.class, () -> authnClient.getUserInfo(accessToken));
 
     assertEquals(bodyMessage, exception.getMessage());
+  }
+
+  @Test
+  void whenPostLimitedTokenThenInvokeWithAccessToken() {
+    String accessToken = "ACCESSTOKEN";
+    LimitedTokenRequest limitedTokenRequest = new LimitedTokenRequest();
+    AccessToken expectedResult = new AccessToken();
+
+    when(authApisHolderMock.getAuthnApi(accessToken))
+      .thenReturn(authnApiMock);
+    when(authnApiMock.postLimitedToken(limitedTokenRequest))
+      .thenReturn(expectedResult);
+
+    AccessToken result = authnClient.postLimitedToken(limitedTokenRequest, accessToken);
+
+    assertSame(expectedResult, result);
   }
 }

@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryDTO;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryResponseDTO;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,12 +26,13 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
   private final ReceiptService receiptService;
   private final ReceiptMapper receiptMapper;
 
-  protected DebtorQueryPaymentService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+  protected DebtorQueryPaymentService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                       DebtPositionService debtPositionService,
                                       OrganizationService organizationService,
+                                      AuthorizationService authorizationService,
                                       ReceiptService receiptService,
                                       ReceiptMapper receiptMapper) {
-    super(fileShareBaseUrl, debtPositionService, organizationService);
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
     this.receiptService = receiptService;
     this.receiptMapper = receiptMapper;
   }
@@ -71,7 +73,7 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
               .orgName(organization.getOrgName())
               .receipt(receiptMapper.map2ReceiptWithAdditionalNodeDataDTO(installment, accessToken))
               .receiptBytes(receiptService.getReceiptById(installment.getReceiptId(), organization.getOrganizationId(), accessToken))
-              .receiptDownloadUrl(composeReceiptDownloadUrl(organization.getOrganizationId(), installment.getReceiptId()))
+              .receiptDownloadUrl(composeReceiptDownloadUrl(organization.getOrganizationId(), installment.getReceiptId(), accessToken))
               .build()));
       })
       .forEach(response::addPaymentsItem);

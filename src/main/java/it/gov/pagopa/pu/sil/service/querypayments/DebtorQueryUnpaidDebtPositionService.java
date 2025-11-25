@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsDTO;
 import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsResponseDTO;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaymentMapper;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,13 +28,14 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
   private final CartRequestMapper cartRequestMapper;
   private final PaymentMapper paymentMapper;
 
-  protected DebtorQueryUnpaidDebtPositionService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+  protected DebtorQueryUnpaidDebtPositionService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                                  DebtPositionService debtPositionService,
                                                  OrganizationService organizationService,
+                                                 AuthorizationService authorizationService,
                                                  CheckoutClient checkoutClient,
                                                  CartRequestMapper cartRequestMapper,
                                                  PaymentMapper paymentMapper) {
-    super(fileShareBaseUrl, debtPositionService, organizationService);
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
     this.checkoutClient = checkoutClient;
     this.cartRequestMapper = cartRequestMapper;
     this.paymentMapper = paymentMapper;

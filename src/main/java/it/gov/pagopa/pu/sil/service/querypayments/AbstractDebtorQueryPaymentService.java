@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
@@ -7,6 +9,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
+import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -33,16 +36,19 @@ import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CO
  */
 @Slf4j
 public abstract class AbstractDebtorQueryPaymentService<I, O> {
-  private final String fileShareBaseUrl;
+  private final String bffBaseUrl;
   protected final DebtPositionService debtPositionService;
   protected final OrganizationService organizationService;
+  protected final AuthorizationService authorizationService;
 
-  protected AbstractDebtorQueryPaymentService(@Value("${public-base-url.fileshare}") String fileShareBaseUrl,
+  protected AbstractDebtorQueryPaymentService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                               DebtPositionService debtPositionService,
-                                              OrganizationService organizationService) {
-    this.fileShareBaseUrl = fileShareBaseUrl;
+                                              OrganizationService organizationService,
+                                              AuthorizationService authorizationService) {
+    this.bffBaseUrl = bffBaseUrl;
     this.debtPositionService = debtPositionService;
     this.organizationService = organizationService;
+    this.authorizationService = authorizationService;
   }
 
   /**
@@ -125,12 +131,22 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
    *
    * @param organizationId the organization ID
    * @param receiptId      the receipt ID
+   * @param accessToken    the access token for calling downstream services
    * @return the composed URL to download the receipt PDF
    */
-  protected String composeReceiptDownloadUrl(Long organizationId, Long receiptId) {
-    // TODO: implementation description https://pagopa.atlassian.net/browse/P4ADEV-4254
-    return UriComponentsBuilder.fromUriString(fileShareBaseUrl)
-      .path("/organization/{organizationId}/rt/{receiptId}")
+  protected String composeReceiptDownloadUrl(Long organizationId, Long receiptId, String accessToken) {
+    LimitedTokenRequest limitedTokenRequest = LimitedTokenRequest.builder()
+      .organizationId(organizationId)
+      .app("pu-bff")
+      .resource("receipt")
+      .resourceId(receiptId.toString())
+      .expireInSeconds(24L * 60 * 60)
+      .singleUsage(false)
+      .build();
+    AccessToken limitedScopeToken = authorizationService.requestLimitedToken(limitedTokenRequest, accessToken);
+    return UriComponentsBuilder.fromUriString(bffBaseUrl)
+      .path("/organization/{organizationId}/receipts/{receiptId}/pdf")
+      .queryParam("token", limitedScopeToken.getAccessToken())
       .buildAndExpand(organizationId, receiptId)
       .toUriString();
   }
