@@ -70,7 +70,7 @@ class InstantPaymentMapperTest {
     PaymentOptionDTO poDTO = dp.getPaymentOptions().getFirst();
     assertEquals(PaymentOptionStatus.UNPAID, poDTO.getStatus());
     assertEquals(1, poDTO.getPaymentOptionIndex());
-    assertEquals(PaymentOptionTypeEnum.SINGLE_INSTALLMENT, poDTO.getPaymentOptionType());
+    assertEquals(PaymentOptionType.SINGLE_INSTALLMENT, poDTO.getPaymentOptionType());
     assertEquals(paymentDTO.getTotalAmountCents(), poDTO.getTotalAmountCents());
     assertEquals(transferDTO.getRemittanceInformation(), poDTO.getDescription());
 
