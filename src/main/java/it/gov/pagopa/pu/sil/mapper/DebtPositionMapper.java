@@ -35,7 +35,6 @@ public class DebtPositionMapper {
       .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
       .description(source.getDescription())
       .flagPuPagoPaPayment(source.getFlagPagoPaPayment())
-      .flagIuvVolatile(false)
       .multiDebtor(source.getMultiDebtor())
       .paymentOptions(source.getPaymentOptions().stream()
         .map(po -> fillPaymentOptionFields(po, organization.getIpaCode()))

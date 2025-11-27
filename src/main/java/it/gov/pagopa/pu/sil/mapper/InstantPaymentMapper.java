@@ -67,7 +67,6 @@ public class InstantPaymentMapper {
       .status(DebtPositionStatus.UNPAID)
       .debtPositionOrigin(DebtPositionOrigin.SPONTANEOUS_SIL)
       .organizationId(org.getOrganizationId())
-      .flagIuvVolatile(true)
       .flagPuPagoPaPayment(true)
       .multiDebtor(false)
       .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))
