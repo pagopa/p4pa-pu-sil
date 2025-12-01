@@ -44,7 +44,7 @@ public class InstantPaymentMapper {
     PaymentOptionDTO paymentOption = PaymentOptionDTO.builder()
       .status(PaymentOptionStatus.UNPAID)
       .paymentOptionIndex(1)
-      .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+      .paymentOptionType(PaymentOptionType.SINGLE_INSTALLMENT)
       .totalAmountCents(payment.getTotalAmountCents())
       .description(transfer.getRemittanceInformation())
       .installments(List.of(

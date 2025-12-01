@@ -44,7 +44,7 @@ public class DebtPositionMapper {
 
   private PaymentOptionDTO fillPaymentOptionFields(it.gov.pagopa.pu.sil.dto.generated.PaymentOptionDTO source, String orgIpaCode) {
     return PaymentOptionDTO.builder()
-      .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+      .paymentOptionType(PaymentOptionType.SINGLE_INSTALLMENT)
       .paymentOptionIndex(source.getPaymentOptionIndex())
       .description(source.getDescription())
       .totalAmountCents(source.getTotalAmountCents())

@@ -99,7 +99,7 @@ abstract class AbstractImmediatePaymentsMapper {
     PaymentOptionDTO paymentOption = PaymentOptionDTO.builder()
       .status(PaymentOptionStatus.UNPAID)
       .paymentOptionIndex(1)
-      .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+      .paymentOptionType(PaymentOptionType.SINGLE_INSTALLMENT)
       .totalAmountCents(amount)
       .installments(List.of(installment))
       .build();

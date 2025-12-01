@@ -82,7 +82,7 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
       .validityDate(source.getValidityDate())
       .flagPuPagoPaPayment(true)
       .paymentOptions(List.of(PaymentOptionDTO.builder()
-        .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+        .paymentOptionType(PaymentOptionType.SINGLE_INSTALLMENT)
         .description(source.getPaymentOptionDescription())
         .totalAmountCents(0L)
         .installments(List.of(installmentDTO))

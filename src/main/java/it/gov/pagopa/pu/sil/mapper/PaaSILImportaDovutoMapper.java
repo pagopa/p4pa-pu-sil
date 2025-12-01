@@ -69,7 +69,7 @@ public class PaaSILImportaDovutoMapper {
       .paymentOptions(List.of(PaymentOptionDTO.builder()
         .status(PaymentOptionStatus.UNPAID)
         .paymentOptionIndex(1)
-        .paymentOptionType(PaymentOptionTypeEnum.SINGLE_INSTALLMENT)
+        .paymentOptionType(PaymentOptionType.SINGLE_INSTALLMENT)
         .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
         .totalAmountCents(amountCents)
         .installments(List.of(fillInstallmentFields(organization.getIpaCode(), versamento, new InstallmentDTO())))
