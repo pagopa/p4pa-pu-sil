@@ -888,6 +888,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
+  /sil/organization/{orgFiscalCode}/checkout/redirect:
+    post:
+      tags:
+        - Checkout
+      operationId:
+        redirectToCheckout
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+      responses:
+        '200':
+          description: Ok
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
 security:
   - BearerAuth: []
 components:
