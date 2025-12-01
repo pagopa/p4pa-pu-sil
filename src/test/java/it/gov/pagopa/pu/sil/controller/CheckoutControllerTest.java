@@ -3,8 +3,7 @@ package it.gov.pagopa.pu.sil.controller;
 import static it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService.CHECKOUT_RESOURCE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
 import it.gov.pagopa.pu.sil.security.SecurityUtilsTest;
@@ -31,13 +30,13 @@ class CheckoutControllerTest {
 
   private final String accessToken = "fakeAccessToken";
   private final String orgFiscalCode = "ORG123456789";
-  private final String orgIpaCode = "userIpaCode";
   private UserInfoLimitedScope loggedUser;
 
   @BeforeEach
   void setUp() {
     String validResourceId = "IUV1,IUV2,IUV3";
 
+    String orgIpaCode = "userIpaCode";
     loggedUser = AuthorizationServiceTest.buildUserLimitedScope(1L,
       orgFiscalCode, orgIpaCode, CHECKOUT_RESOURCE, validResourceId);
     loggedUser.setMappedExternalUserId("fakeExternalUser");
@@ -52,17 +51,16 @@ class CheckoutControllerTest {
   @Test
   void givenValidUserInfoLimitedScopeWhenRedirectToCheckoutThenOk() {
     // Given
-    doNothing().when(debtPositionCheckoutServiceMock)
-      .redirectToCheckout(loggedUser, orgIpaCode, accessToken);
+    String checkoutUrl = "http://www.test.com";
+    when(debtPositionCheckoutServiceMock.redirectToCheckout(loggedUser, accessToken))
+      .thenReturn(checkoutUrl);
 
     // When
-    ResponseEntity<Void> response = controller.redirectToCheckout(
-      orgFiscalCode);
+    ResponseEntity<Void> response = controller.checkout(orgFiscalCode);
 
     // Then
     assertNotNull(response);
-    assertEquals(HttpStatusCode.valueOf(200), response.getStatusCode());
-    verify(debtPositionCheckoutServiceMock).redirectToCheckout(loggedUser, orgIpaCode,
-      accessToken);
+    assertEquals(HttpStatusCode.valueOf(301), response.getStatusCode());
+    assertEquals(checkoutUrl, response.getHeaders().getLocation().toString());
   }
 }

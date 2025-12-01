@@ -66,7 +66,6 @@ public class PaaSILImportaDovutoMapper {
       .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
       .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
       .flagPuPagoPaPayment(true)
-      .flagIuvVolatile(false)
       .paymentOptions(List.of(PaymentOptionDTO.builder()
         .status(PaymentOptionStatus.UNPAID)
         .paymentOptionIndex(1)

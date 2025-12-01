@@ -888,12 +888,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
-  /sil/organization/{orgFiscalCode}/checkout/redirect:
+  /sil/organization/{orgFiscalCode}/checkout:
     post:
       tags:
         - Checkout
       operationId:
-        redirectToCheckout
+        checkout
       parameters:
         - name: orgFiscalCode
           description: the fiscal code of the organization
@@ -902,8 +902,14 @@ paths:
           schema:
             $ref: '#/components/schemas/OrgFiscalCode'
       responses:
-        '200':
-          description: Ok
+        '301':
+          description: Moved Permanently
+          headers:
+            Location:
+              description: Checkout URL
+              schema:
+                type: string
+                format: url
         '404':
           description: Not found
           content:

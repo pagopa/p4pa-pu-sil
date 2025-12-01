@@ -1,22 +1,17 @@
 package it.gov.pagopa.pu.sil.service.debtposition;
 
 import static it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService.CHECKOUT_RESOURCE;
-import static it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService.PU_SIL_SCOPE;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
@@ -56,9 +51,6 @@ class DebtPositionCheckoutServiceTest {
   @Mock
   private CartRequestMapper cartRequestMapperMock;
 
-  @Mock
-  private ObjectMapper objectMapperMock;
-
   @InjectMocks
   private DebtPositionCheckoutService debtPositionCheckoutService;
 
@@ -75,16 +67,12 @@ class DebtPositionCheckoutServiceTest {
       organizationServiceMock,
       debtPositionServiceMock,
       checkoutServiceMock,
-      cartRequestMapperMock,
-      objectMapperMock
+      cartRequestMapperMock
     );
   }
 
   @Test
-  void givenValidAuthorizationWhenRedirectToCheckoutThenOk()
-    throws JsonProcessingException {
-    JsonNode payloadMock = mock(JsonNode.class);
-    JsonNode scopeNodeMock = mock(JsonNode.class);
+  void givenValidAuthorizationWhenRedirectToCheckoutThenOk() {
 
     Organization organization = podamFactory.manufacturePojo(Organization.class);
     organization.setOrganizationId(1L);
@@ -98,11 +86,7 @@ class DebtPositionCheckoutServiceTest {
     }).toList();
     CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
 
-    when(objectMapperMock.readTree(anyString())).thenReturn(payloadMock);
-    when(payloadMock.get("scope")).thenReturn(scopeNodeMock);
-    when(scopeNodeMock.asText()).thenReturn(PU_SIL_SCOPE);
-
-    when(organizationServiceMock.getOrganizationByIpaCode(orgIpaCode, accessToken)).thenReturn(
+    when(organizationServiceMock.getOrganizationById(anyLong(), eq(accessToken))).thenReturn(
       Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()), anyString(),
       eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken)))
@@ -113,9 +97,9 @@ class DebtPositionCheckoutServiceTest {
       .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("http://www.test.com");
 
-    assertDoesNotThrow(() -> debtPositionCheckoutService.redirectToCheckout(loggedUser, orgIpaCode, accessToken));
+    assertDoesNotThrow(() -> debtPositionCheckoutService.redirectToCheckout(loggedUser, accessToken));
 
-    verify(organizationServiceMock).getOrganizationByIpaCode(orgIpaCode, accessToken);
+    verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(), eq(null));
     verify(checkoutServiceMock).checkoutCart(cartRequest);
@@ -125,9 +109,9 @@ class DebtPositionCheckoutServiceTest {
   void givenUserNotLimitedScopeWhenRedirectToCheckoutThenKo() {
     UserInfo notLimitedUser = AuthorizationServiceTest.buildAdminUser(1L, orgFiscalCode, orgIpaCode);
 
-    assertThrows(AuthorizationDeniedException.class, () -> debtPositionCheckoutService.redirectToCheckout(notLimitedUser, orgIpaCode, accessToken));
+    assertThrows(AuthorizationDeniedException.class, () -> debtPositionCheckoutService.redirectToCheckout(notLimitedUser, accessToken));
 
-    verify(organizationServiceMock, never()).getOrganizationByIpaCode(anyString(), anyString());
+    verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
     verify(debtPositionServiceMock, never()).getDebtPositionsByOrganizationIdAndIuv(anyLong(), anyString(), any(), any());
     verify(cartRequestMapperMock, never()).mapDebtPositionsToCartRequest(any(), any(), anyString(), any());
     verify(checkoutServiceMock, never()).checkoutCart(any());
@@ -137,59 +121,42 @@ class DebtPositionCheckoutServiceTest {
   void givenInvalidLimitedScopeResourceWhenRedirectToCheckoutThenKo() {
     UserInfoLimitedScope limitedScopeUser = AuthorizationServiceTest.buildUserLimitedScope(1L, orgFiscalCode, orgIpaCode, "INVALID-RESOURCE", "IUV1,IUV2,IUV3");
 
-    assertThrows(AuthorizationDeniedException.class, () -> debtPositionCheckoutService.redirectToCheckout(limitedScopeUser, orgIpaCode, accessToken));
+    assertThrows(AuthorizationDeniedException.class, () -> debtPositionCheckoutService.redirectToCheckout(limitedScopeUser, accessToken));
 
-    verify(organizationServiceMock, never()).getOrganizationByIpaCode(anyString(), anyString());
+    verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
     verify(debtPositionServiceMock, never()).getDebtPositionsByOrganizationIdAndIuv(anyLong(), anyString(), any(), any());
     verify(cartRequestMapperMock, never()).mapDebtPositionsToCartRequest(any(), any(), anyString(), any());
     verify(checkoutServiceMock, never()).checkoutCart(any());
   }
 
   @Test
-  void givenInvalidScopeWhenRedirectToCheckoutThenKo()
-    throws JsonProcessingException {
-    JsonNode payloadMock = mock(JsonNode.class);
-    JsonNode scopeNodeMock = mock(JsonNode.class);
+  void givenInvalidScopeWhenRedirectToCheckoutThenKo() {
+    UserInfoLimitedScope limitedScopeUser = AuthorizationServiceTest.buildUserLimitedScope(1L, orgFiscalCode, orgIpaCode, "INVALID-RESOURCE", "IUV1,IUV2,IUV3");
+    limitedScopeUser.getResource().setApp("invalid-scope");
 
-    when(objectMapperMock.readTree(anyString())).thenReturn(payloadMock);
-    when(payloadMock.get("scope")).thenReturn(scopeNodeMock);
-    when(scopeNodeMock.asText()).thenReturn("invalid-scope");
+    assertThrows(AuthorizationDeniedException.class, () -> debtPositionCheckoutService.redirectToCheckout(limitedScopeUser, accessToken));
 
-    assertThrows(AuthorizationDeniedException.class, () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, orgIpaCode, accessToken));
-
-    verify(organizationServiceMock, never()).getOrganizationByIpaCode(anyString(), anyString());
+    verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
     verify(debtPositionServiceMock, never()).getDebtPositionsByOrganizationIdAndIuv(anyLong(), anyString(), any(), any());
     verify(cartRequestMapperMock, never()).mapDebtPositionsToCartRequest(any(), any(), anyString(), any());
     verify(checkoutServiceMock, never()).checkoutCart(any());
   }
 
   @Test
-  void givenNotFoundOrganizationWhenRedirectToCheckoutThenKo()
-    throws JsonProcessingException {
-    JsonNode payloadMock = mock(JsonNode.class);
-    JsonNode scopeNodeMock = mock(JsonNode.class);
-
-    when(objectMapperMock.readTree(anyString())).thenReturn(payloadMock);
-    when(payloadMock.get("scope")).thenReturn(scopeNodeMock);
-    when(scopeNodeMock.asText()).thenReturn(PU_SIL_SCOPE);
-
-    when(organizationServiceMock.getOrganizationByIpaCode(orgIpaCode, accessToken)).thenReturn(
+  void givenNotFoundOrganizationWhenRedirectToCheckoutThenKo() {
+    when(organizationServiceMock.getOrganizationById(anyLong(), eq(accessToken))).thenReturn(
       Optional.empty());
 
-    assertThrows(SilFaultException.class, () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, orgIpaCode, accessToken));
+    assertThrows(SilFaultException.class, () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, accessToken));
 
-    verify(organizationServiceMock).getOrganizationByIpaCode(orgIpaCode, accessToken);
+    verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, never()).getDebtPositionsByOrganizationIdAndIuv(anyLong(), anyString(), any(), any());
     verify(cartRequestMapperMock, never()).mapDebtPositionsToCartRequest(any(), any(), anyString(), any());
     verify(checkoutServiceMock, never()).checkoutCart(any());
   }
 
   @Test
-  void givenCheckoutResponseIsBlankWhenRedirectToCheckoutThenKo()
-    throws JsonProcessingException {
-    JsonNode payloadMock = mock(JsonNode.class);
-    JsonNode scopeNodeMock = mock(JsonNode.class);
-
+  void givenCheckoutResponseIsBlankWhenRedirectToCheckoutThenKo() {
     Organization organization = podamFactory.manufacturePojo(Organization.class);
     organization.setOrganizationId(1L);
     List<DebtPositionDTO> debtPositionDTOList = IntStream.range(1, 4).mapToObj(i -> {
@@ -202,11 +169,7 @@ class DebtPositionCheckoutServiceTest {
     }).toList();
     CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
 
-    when(objectMapperMock.readTree(anyString())).thenReturn(payloadMock);
-    when(payloadMock.get("scope")).thenReturn(scopeNodeMock);
-    when(scopeNodeMock.asText()).thenReturn(PU_SIL_SCOPE);
-
-    when(organizationServiceMock.getOrganizationByIpaCode(orgIpaCode, accessToken)).thenReturn(
+    when(organizationServiceMock.getOrganizationById(anyLong(), eq(accessToken))).thenReturn(
       Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()), anyString(),
       eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken)))
@@ -217,9 +180,9 @@ class DebtPositionCheckoutServiceTest {
       .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("");
 
-    assertThrows(SilFaultException.class, () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, orgIpaCode, accessToken));
+    assertThrows(SilFaultException.class, () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, accessToken));
 
-    verify(organizationServiceMock).getOrganizationByIpaCode(orgIpaCode, accessToken);
+    verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(), eq(null));
     verify(checkoutServiceMock).checkoutCart(cartRequest);

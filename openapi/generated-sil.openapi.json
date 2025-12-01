@@ -467,10 +467,10 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/checkout/redirect" : {
+    "/sil/organization/{orgFiscalCode}/checkout" : {
       "post" : {
         "tags" : [ "Checkout" ],
-        "operationId" : "redirectToCheckout",
+        "operationId" : "checkout",
         "parameters" : [ {
           "name" : "orgFiscalCode",
           "in" : "path",
@@ -482,8 +482,8 @@
           }
         } ],
         "responses" : {
-          "200" : {
-            "description" : "Ok"
+          "301" : {
+            "description" : "Moved Permanently"
           },
           "404" : {
             "description" : "Not found",
@@ -1420,9 +1420,6 @@
           "validityDate" : {
             "type" : "string",
             "format" : "date"
-          },
-          "flagIuvVolatile" : {
-            "type" : "boolean"
           },
           "multiDebtor" : {
             "type" : "boolean"
