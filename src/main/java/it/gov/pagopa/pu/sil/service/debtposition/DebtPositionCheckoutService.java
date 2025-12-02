@@ -72,7 +72,7 @@ public class DebtPositionCheckoutService {
       null); // @TODO: implementare callbackUrl con P4ADEV-4283
 
     String checkoutUrl = checkoutService.checkoutCart(
-      cartRequest); // @TODO: da implementare con la P4ADEV-4043
+      cartRequest);
     if (StringUtils.isBlank(checkoutUrl)) {
       throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR,
         "Errore durante la creazione del carrello di pagamento");
