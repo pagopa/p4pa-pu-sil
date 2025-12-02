@@ -1,17 +1,12 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.client.CheckoutClient;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -22,103 +17,101 @@ import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperteRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILPosizioniAperte;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
 import jakarta.activation.DataHandler;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
-public class PaaSILChiediPosizioniAperteService {
+public class PaaSILChiediPosizioniAperteService extends AbstractDebtorQueryPaymentService<PaaSILChiediPosizioniAperte, PaaSILChiediPosizioniAperteRisposta> {
 
   private static final String OBJECT_VERSION = "6.2.0";
 
-  private final DebtPositionService debtPositionService;
-  private final OrganizationService organizationService;
   private final JAXBTransformService jaxbTransformService;
   private final CheckoutClient checkoutClient;
   private final CartRequestMapper cartRequestMapper;
   private final DebtPositionTypeService debtPositionTypeService;
 
-  public PaaSILChiediPosizioniAperteRisposta processRequest(PaaSILChiediPosizioniAperte request,
-                                                            UserInfo userInfo,
-                                                            String accessToken) {
-    PaaSILChiediPosizioniAperteRisposta response = new PaaSILChiediPosizioniAperteRisposta();
-    AuthorizationService.validateBrokerAdminRole(userInfo);
-
-    List<Organization> organizations;
-    if (request.getCodIpaEnte() != null) {
-      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, request.getCodIpaEnte());
-      Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
-        .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
-        .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
-      AuthorizationService.isOrganizationHandledByBroker(organization.getBrokerId(), userInfo);
-      organizations = List.of(organization);
-    } else {
-      organizations = organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken);
-    }
-
-    OffsetDateTimeIntervalFilter dateFilter = new OffsetDateTimeIntervalFilter(null, null);
-
-    List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
-      request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
-      PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
-      organizations.stream().map(Organization::getOrganizationId).toList(),
-      EXCLUDED_DEBT_POSITION_TYPE_CODES,
-      InstallmentStatus.UNPAID,
-      dateFilter,
-      accessToken
-    );
-
-    organizations.forEach(organization ->
-      response.getPaaSILPosizioniApertes().addAll(processOpenPositions(request, organization, debtPositions, accessToken))
-    );
-    return response;
+  protected PaaSILChiediPosizioniAperteService(@Value("${public-base-url.bff}") String bffBaseUrl,
+                                               DebtPositionService debtPositionService,
+                                               OrganizationService organizationService,
+                                               AuthorizationService authorizationService,
+                                               JAXBTransformService jaxbTransformService,
+                                               CheckoutClient checkoutClient,
+                                               CartRequestMapper cartRequestMapper,
+                                               DebtPositionTypeService debtPositionTypeService) {
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
+    this.jaxbTransformService = jaxbTransformService;
+    this.checkoutClient = checkoutClient;
+    this.cartRequestMapper = cartRequestMapper;
+    this.debtPositionTypeService = debtPositionTypeService;
   }
 
-  private List<PaaSILPosizioniAperte> processOpenPositions(PaaSILChiediPosizioniAperte request, Organization organization, List<DebtPositionDTO> debtPositions, String accessToken) {
-    return debtPositions.stream()
-      .flatMap(debtPosition -> debtPosition.getPaymentOptions().stream()
-        .flatMap(paymentOption -> paymentOption.getInstallments().stream()
-          .map(installment -> {
-            PaaSILPosizioniAperte openPosition = new PaaSILPosizioniAperte();
-            openPosition.setCodIpaEnte(request.getCodIpaEnte());
-            openPosition.setDeNomeEnte(organization.getOrgName());
+  @Override
+  protected DebtorQueryPaymentRequest transformRequest(PaaSILChiediPosizioniAperte request) {
+    return new DebtorQueryPaymentRequest(
+      request.getCodIpaEnte(),
+      PersonEntityType.fromValue(request.getIdentificativoUnivocoPersonaFG().getTipoIdentificativoUnivoco().value()),
+      request.getIdentificativoUnivocoPersonaFG().getCodiceIdentificativoUnivoco(),
+      InstallmentStatus.UNPAID,
+      null,
+      null
+    );
+  }
 
-            try {
-              CartRequest cartRequest = cartRequestMapper.mapInstallmentToCartRequest(installment, organization, null, null);
-              openPosition.setUrlPagamento(checkoutClient.checkoutCart(cartRequest)); // @TODO: da implementare con la P4ADEV-4043
-            } catch (Exception e) {
-              log.error("Error generating payment URL for installment[{}]", installment.getInstallmentId(), e);
-            }
+  @Override
+  protected PaaSILChiediPosizioniAperteRisposta gatherToResponse(DebtorQueryPaymentRequest request,
+                                                                  List<Organization> organizations,
+                                                                  List<DebtPositionDTO> debtPositions,
+                                                                  String accessToken) {
+    PaaSILChiediPosizioniAperteRisposta response = new PaaSILChiediPosizioniAperteRisposta();
 
-            DebtPositionTypeOrg debtPositionTypeOrg = null;
+    debtPositions.stream()
+      .flatMap(debtPosition -> {
+        Organization organization = organizations.stream()
+          .filter(org -> org.getOrganizationId().equals(debtPosition.getOrganizationId()))
+          .findFirst()
+          .orElseThrow();
 
-            try {
-              debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByInstallmentId(installment.getInstallmentId(), accessToken);
-            } catch (Exception e) {
-              log.error("Error fetching DebtPositionTypeOrg for installment[{}]", installment.getInstallmentId(), e);
-            }
+        return debtPosition.getPaymentOptions().stream()
+          .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .map(installment -> {
+              PaaSILPosizioniAperte openPosition = new PaaSILPosizioniAperte();
+              openPosition.setCodIpaEnte(organization.getIpaCode());
+              openPosition.setDeNomeEnte(organization.getOrgName());
 
-            Dovuti dovuti = buildDovuti(installment, debtPositionTypeOrg);
-            byte[] dovutiBytes = jaxbTransformService.marshallingAsBytes(dovuti, Dovuti.class);
+              try {
+                CartRequest cartRequest = cartRequestMapper.mapInstallmentToCartRequest(installment, organization, null, null);
+                openPosition.setUrlPagamento(composeCheckoutUrl(checkoutClient.checkoutCart(cartRequest))); // @TODO: da implementare con la P4ADEV-4043
+              } catch (Exception e) {
+                log.error("Error generating payment URL for installment[{}]", installment.getInstallmentId(), e);
+              }
 
-            openPosition.setDovuti(
-              new DataHandler(
-                new ByteArrayDataSource("application/octet-stream", dovutiBytes)
-              )
-            );
+              DebtPositionTypeOrg debtPositionTypeOrg = null;
 
-            return openPosition;
-          })
-        )
-      )
-      .toList();
+              try {
+                debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByInstallmentId(installment.getInstallmentId(), accessToken);
+              } catch (Exception e) {
+                log.error("Error fetching DebtPositionTypeOrg for installment[{}]", installment.getInstallmentId(), e);
+              }
+
+              Dovuti dovuti = buildDovuti(installment, debtPositionTypeOrg);
+              byte[] dovutiBytes = jaxbTransformService.marshallingAsBytes(dovuti, Dovuti.class);
+
+              openPosition.setDovuti(
+                new DataHandler(
+                  new ByteArrayDataSource("application/octet-stream", dovutiBytes)
+                )
+              );
+
+              return openPosition;
+            }));
+      })
+      .forEach(response.getPaaSILPosizioniApertes()::add);
+
+    return response;
   }
 
   private Dovuti buildDovuti(InstallmentDTO installment, DebtPositionTypeOrg debtPositionTypeOrg) {
@@ -161,5 +154,4 @@ public class PaaSILChiediPosizioniAperteService {
 
     return dovuti;
   }
-
 }

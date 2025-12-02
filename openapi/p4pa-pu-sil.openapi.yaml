@@ -375,6 +375,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PuSilErrorDTO'
+  /sil/debtor/{debtorFiscalCode}/payment/unpaid:
+    get:
+      tags:
+        - DebtorQueryPayment
+      summary: retrieve unpaid debt positions for a debtor
+      description: |
+        Service to retrieve unpaid debt positions for a specific debtor,
+        optionally filtered by organization IPA code.
+      operationId: getUnpaidDebtPositions
+      parameters:
+        - name: debtorFiscalCode
+          description: the fiscal code of the debtor
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: debtorEntityType
+          description: the entity type of the debtor
+          in: query
+          schema:
+            type: 'PersonEntityType'
+        - name: ipaCode
+          description: organization IPA code to filter results
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnpaidDebtPositionsResponseDTO'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
   /sil/organization/{orgFiscalCode}/import:
     post:
       tags:
@@ -830,6 +882,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetAssessmentResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
+  /sil/organization/{orgFiscalCode}/checkout:
+    post:
+      tags:
+        - Checkout
+      operationId:
+        checkout
+      parameters:
+        - name: orgFiscalCode
+          description: the fiscal code of the organization
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrgFiscalCode'
+      responses:
+        '301':
+          description: Moved Permanently
+          headers:
+            Location:
+              description: Checkout URL
+              schema:
+                type: string
+                format: url
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PuSilErrorDTO'
         '500':
           description: Server Error
           content:
@@ -1452,6 +1538,32 @@ components:
         receiptBytes:
           type: string
           format: byte
+    UnpaidDebtPositionsResponseDTO:
+      type: object
+      required:
+        - debtPositions
+      properties:
+        debtPositions:
+          type: array
+          items:
+            $ref: '#/components/schemas/UnpaidDebtPositionsDTO'
+    UnpaidDebtPositionsDTO:
+      type: object
+      required:
+        - ipaCode
+        - orgName
+        - paymentTriggerUrl
+        - unpaidDebtPosition
+      properties:
+        ipaCode:
+          type: string
+        orgName:
+          type: string
+        paymentTriggerUrl:
+          type: string
+          description: the url to trigger the payment operation
+        unpaidDebtPosition:
+          $ref: "#/components/schemas/PaymentDTO"
   securitySchemes:
     BearerAuth:
       type: http

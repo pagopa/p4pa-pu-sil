@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.auth.client;
 
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
@@ -24,5 +26,10 @@ public class AuthnClient {
     } catch (HttpClientErrorException.Unauthorized e) {
       throw new InvalidAccessTokenException(e.getResponseBodyAsString());
     }
+  }
+
+  public AccessToken postLimitedToken(LimitedTokenRequest limitedTokenRequest, String accessToken) {
+    return authApisHolder.getAuthnApi(accessToken)
+      .postLimitedToken(limitedTokenRequest);
   }
 }

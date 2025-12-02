@@ -49,13 +49,18 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static it.gov.pagopa.pu.sil.util.Constants.ZONEID;
 
 @Endpoint
 @RequiredArgsConstructor
@@ -501,6 +506,8 @@ public class PuForOrganizationPaymentsEndpoint {
       IntestazionePPT::getCodIpaEnte,
       "paaSILPrenotaExportFlusso");
 
+    PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
+
     Optional<PaaSILPrenotaExportFlusso> optRequest = Optional.ofNullable(request);
 
     String fileVersion = optRequest.map(PaaSILPrenotaExportFlusso::getVersioneTracciato).orElse(null);
@@ -511,11 +518,24 @@ public class PuForOrganizationPaymentsEndpoint {
       .map(DateUtils::toOffsetDateTimeStartOfTheDay)
       .orElse(null);
 
+    if (from == null) {
+      return FaultUtils.setFaultOnResponse(
+        response,
+        SilFaults.PAA_DATE_FROM_NON_VALIDO,
+        SilFaults.PAA_DATE_FROM_NON_VALIDO.description()
+      );
+    }
+
     OffsetDateTime to = optRequest.map(PaaSILPrenotaExportFlusso::getDateTo)
       .map(XMLGregorianCalendar::toGregorianCalendar)
       .map(GregorianCalendar::toZonedDateTime)
       .map(DateUtils::toOffsetDateTimeEndOfTheDay)
-      .orElse(null);
+      .orElseGet(() -> {
+        ZonedDateTime endOfTodayInZone = LocalDate.now(ZONEID)
+          .atTime(LocalTime.MAX)
+          .atZone(ZONEID);
+        return DateUtils.toOffsetDateTimeEndOfTheDay(endOfTodayInZone);
+      });
 
     String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlusso::getIdentificativoTipoDovuto)
       .orElse(null);
@@ -530,7 +550,6 @@ public class PuForOrganizationPaymentsEndpoint {
         to,
         debtPositionTypeOrgCode
       );
-      PaaSILPrenotaExportFlussoRisposta response = new PaaSILPrenotaExportFlussoRisposta();
       response.setRequestToken(String.valueOf(result));
       return response;
     } catch (Exception e) {

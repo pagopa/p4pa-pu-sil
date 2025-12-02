@@ -31,6 +31,9 @@
     "name" : "SendNotification",
     "description" : "the SendNotification API"
   }, {
+    "name" : "Checkout",
+    "description" : "the Checkout API"
+  }, {
     "name" : "Import",
     "description" : "the Import API"
   }, {
@@ -444,6 +447,50 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/DebtPositionDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/sil/organization/{orgFiscalCode}/checkout" : {
+      "post" : {
+        "tags" : [ "Checkout" ],
+        "operationId" : "checkout",
+        "parameters" : [ {
+          "name" : "orgFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the organization",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "pattern" : "^\\d{11}$"
+          }
+        } ],
+        "responses" : {
+          "301" : {
+            "description" : "Moved Permanently"
+          },
+          "404" : {
+            "description" : "Not found",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -1162,6 +1209,84 @@
         } ]
       }
     },
+    "/sil/debtor/{debtorFiscalCode}/payment/unpaid" : {
+      "get" : {
+        "tags" : [ "DebtorQueryPayment" ],
+        "summary" : "retrieve unpaid debt positions for a debtor",
+        "description" : "Service to retrieve unpaid debt positions for a specific debtor, optionally filtered by organization IPA code. ",
+        "operationId" : "getUnpaidDebtPositions",
+        "parameters" : [ {
+          "name" : "debtorFiscalCode",
+          "in" : "path",
+          "description" : "the fiscal code of the debtor",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "debtorEntityType",
+          "in" : "query",
+          "description" : "the entity type of the debtor",
+          "required" : false,
+          "schema" : {
+            "$ref" : "#/components/schemas/PersonEntityType"
+          }
+        }, {
+          "name" : "ipaCode",
+          "in" : "query",
+          "description" : "organization IPA code to filter results",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Ok",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UnpaidDebtPositionsResponseDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
     "/sil/debtor/{debtorFiscalCode}/payment/history" : {
       "get" : {
         "tags" : [ "DebtorQueryPayment" ],
@@ -1295,9 +1420,6 @@
           "validityDate" : {
             "type" : "string",
             "format" : "date"
-          },
-          "flagIuvVolatile" : {
-            "type" : "boolean"
           },
           "multiDebtor" : {
             "type" : "boolean"
@@ -1490,7 +1612,7 @@
             "type" : "string"
           },
           "paymentOptionType" : {
-            "$ref" : "#/components/schemas/PaymentOptionTypeEnum"
+            "$ref" : "#/components/schemas/PaymentOptionType"
           },
           "paymentOptionIndex" : {
             "type" : "integer",
@@ -1523,9 +1645,9 @@
         "type" : "string",
         "enum" : [ "TO_SYNC", "REPORTED", "PAID", "PARTIALLY_PAID", "CANCELLED", "INVALID", "EXPIRED", "UNPAID", "UNPAYABLE", "DRAFT" ]
       },
-      "PaymentOptionTypeEnum" : {
+      "PaymentOptionType" : {
         "type" : "string",
-        "enum" : [ "SINGLE_INSTALLMENT", "REDUCED_SINGLE_INSTALLMENT", "INSTALLMENTS", "DOWN_PAYMENT" ]
+        "enum" : [ "SINGLE_INSTALLMENT", "INSTALLMENTS", "DOWN_PAYMENT", "REDUCED_SINGLE_INSTALLMENT" ]
       },
       "PersonDTO" : {
         "type" : "object",
@@ -1570,14 +1692,6 @@
       "TransferDTO" : {
         "type" : "object",
         "properties" : {
-          "transferId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "installmentId" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
           "orgFiscalCode" : {
             "type" : "string"
           },
@@ -1612,23 +1726,6 @@
           "transferIndex" : {
             "type" : "integer",
             "format" : "int32"
-          },
-          "creationDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "updateDate" : {
-            "type" : "string",
-            "format" : "date-time"
-          },
-          "updateOperatorExternalId" : {
-            "type" : "string"
-          },
-          "updateTraceId" : {
-            "type" : "string"
-          },
-          "mbdAttachment" : {
-            "type" : "string"
           }
         },
         "required" : [ "amountCents", "category", "orgFiscalCode", "orgName", "remittanceInformation", "transferIndex" ]
@@ -2571,6 +2668,37 @@
           }
         },
         "required" : [ "assessments", "sectionCode" ]
+      },
+      "UnpaidDebtPositionsDTO" : {
+        "type" : "object",
+        "properties" : {
+          "ipaCode" : {
+            "type" : "string"
+          },
+          "orgName" : {
+            "type" : "string"
+          },
+          "paymentTriggerUrl" : {
+            "type" : "string",
+            "description" : "the url to trigger the payment operation"
+          },
+          "unpaidDebtPosition" : {
+            "$ref" : "#/components/schemas/PaymentDTO"
+          }
+        },
+        "required" : [ "ipaCode", "orgName", "paymentTriggerUrl", "unpaidDebtPosition" ]
+      },
+      "UnpaidDebtPositionsResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "debtPositions" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/UnpaidDebtPositionsDTO"
+            }
+          }
+        },
+        "required" : [ "debtPositions" ]
       },
       "PaymentHistoryDTO" : {
         "type" : "object",
