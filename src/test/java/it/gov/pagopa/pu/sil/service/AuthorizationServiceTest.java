@@ -1,12 +1,17 @@
 package it.gov.pagopa.pu.sil.service;
 
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedScopeResource;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,10 +21,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-
-import java.util.List;
-
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthorizationServiceTest {
@@ -45,6 +46,28 @@ public class AuthorizationServiceTest {
     userTestRole.setOrganizationId(2L);
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    return userInfo;
+  }
+
+  public static UserInfoLimitedScope buildUserLimitedScope(Long organizationId, String orgFiscalCode, String orgIpaCode, String resource, String resourceId) {
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(organizationId);
+    userAdminRole.setOrganizationFiscalCode(orgFiscalCode);
+    userAdminRole.setOrganizationIpaCode(orgIpaCode);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    LimitedScopeResource userLimitedScopeResource = LimitedScopeResource.builder()
+      .resource(resource)
+      .resourceId(resourceId)
+      .organization(userAdminRole)
+      .app("pu-sil")
+      .singleUsage(false)
+      .build();
+    UserInfoLimitedScope userInfo = new UserInfoLimitedScope();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setResource(userLimitedScopeResource);
     return userInfo;
   }
 
