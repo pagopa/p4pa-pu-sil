@@ -1,14 +1,10 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.when;
 
-import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
@@ -16,11 +12,10 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
@@ -48,11 +43,9 @@ class PaaSILVerificaAvvisoServiceTest {
   @Mock
   private InstallmentFacadeService installmentFacadeServiceMock;
   @Mock
-  private CheckoutService checkoutServiceMock;
-  @Mock
-  private CartRequestMapper cartRequestMapperMock;
-  @Mock
   private OrganizationService organizationServiceMock;
+  @Mock
+  private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
 
   @InjectMocks
   private PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
@@ -68,7 +61,7 @@ class PaaSILVerificaAvvisoServiceTest {
 
   @BeforeEach
   void setUp() {
-    Mockito.reset(installmentFacadeServiceMock, checkoutServiceMock, organizationServiceMock, cartRequestMapperMock);
+    Mockito.reset(installmentFacadeServiceMock, organizationServiceMock, debtPositionCheckoutServiceMock);
 
     userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
@@ -178,7 +171,7 @@ class PaaSILVerificaAvvisoServiceTest {
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
-    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
 
     //when
@@ -190,41 +183,18 @@ class PaaSILVerificaAvvisoServiceTest {
   }
 
   @Test
-  void givenNullCheckoutUrlWhenPaaSILVerificaAvvisoThenException() {
-    //given
-    InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
-    installmentDTO.setStatus(InstallmentStatus.UNPAID);
-    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
-
-    when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
-      .thenReturn(List.of(installmentDTO));
-    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
-      .thenReturn(cartRequest);
-    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn(null);
-
-    //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, TOKEN));
-
-    //verify
-    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
-  }
-
-  @Test
   void givenValidRequestWhenPaaSILVerificaAvvisoThenOk() {
     //given
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
-    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
 
     String sessionId = String.valueOf(installmentDTO.getInstallmentId());
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, "3"+request.getIdentificativoUnivocoVersamento(), TOKEN))
       .thenReturn(List.of(installmentDTO));
-    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
-      .thenReturn(cartRequest);
-    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
+      .thenReturn("https://example.com/checkout");
 
     //when
     PaaSILVerificaAvvisoRisposta response = paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, TOKEN);

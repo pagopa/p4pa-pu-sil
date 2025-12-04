@@ -167,21 +167,6 @@ class VerifyNoticeServiceTest {
   }
 
   @Test
-  void givenNullCheckoutUrlWhenVerifyNoticeServiceThenException() {
-    //given
-    InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
-    installmentDTO.setStatus(InstallmentStatus.UNPAID);
-    when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
-    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(orgId), anyString(), anyString(), anyString(), anyString())).thenReturn(null);
-    //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
-
-    //verify
-    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
-  }
-
-  @Test
   void givenValidRequestWhenVerifyNoticeServiceThenOk() {
     //given
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);

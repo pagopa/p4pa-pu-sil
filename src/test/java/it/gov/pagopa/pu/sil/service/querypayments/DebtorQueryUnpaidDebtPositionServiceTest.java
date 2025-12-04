@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
@@ -91,6 +92,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
     );
 
     UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(new UserOrganizationRoles().organizationId(orgId)));
     userInfo.setBrokerId(brokerId);
 
     Organization org = new Organization();
@@ -150,7 +152,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
       ).thenReturn(List.of(dp));
 
-      when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(org.getOrganizationId()), anyString(), eq(null), anyString(), anyString()))
+      when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(userInfo.getOrganizations().getFirst().getOrganizationId()), anyString(), eq(null), any(), eq(accessToken)))
         .thenReturn(TRIGGER_PAY_URL);
       when(paymentMapperMock.mapToPaymentDTO(installment, accessToken))
         .thenReturn(paymentDTO);
