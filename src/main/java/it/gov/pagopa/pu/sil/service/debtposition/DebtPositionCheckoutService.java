@@ -1,6 +1,10 @@
 package it.gov.pagopa.pu.sil.service.debtposition;
 
+import static it.gov.pagopa.pu.sil.util.Utilities.IUV_SEPARATOR;
+
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
+import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
+import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
@@ -12,9 +16,10 @@ import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
-import it.gov.pagopa.pu.sil.util.Utilities;
+import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -26,19 +31,23 @@ public class DebtPositionCheckoutService {
 
   public static final String PU_SIL_SCOPE = "pu-sil";
   public static final String CHECKOUT_RESOURCE = "CHECKOUT";
+  public static final String CALLBACK_URL_SESSION_DATA_KEY = "callbackUrl";
 
   private final OrganizationService organizationService;
   private final DebtPositionService debtPositionService;
   private final CheckoutService checkoutService;
+  private final AuthorizationService authorizationService;
   private final CartRequestMapper cartRequestMapper;
 
 
   public DebtPositionCheckoutService(OrganizationService organizationService,
     DebtPositionService debtPositionService, CheckoutService checkoutService,
+    AuthorizationService authorizationService,
     CartRequestMapper cartRequestMapper) {
     this.organizationService = organizationService;
     this.debtPositionService = debtPositionService;
     this.checkoutService = checkoutService;
+    this.authorizationService = authorizationService;
     this.cartRequestMapper = cartRequestMapper;
   }
 
@@ -58,7 +67,7 @@ public class DebtPositionCheckoutService {
 
     List<String> iuvs = Arrays.stream(
       loggedUserLimitedScope.getResource().getResourceId()
-        .split(Utilities.IUV_SEPARATOR)).toList();
+        .split(IUV_SEPARATOR)).toList();
 
     List<DebtPositionDTO> debtPositions = iuvs.stream().map(
         iuv -> debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
@@ -67,9 +76,13 @@ public class DebtPositionCheckoutService {
       .flatMap(List::stream).toList();
 
     String cartId = UUID.randomUUID().toString();
+    String requestCallbackUrl = loggedUserLimitedScope.getResource().getSessionData() != null ?
+        loggedUserLimitedScope.getResource().getSessionData().get(
+          CALLBACK_URL_SESSION_DATA_KEY).toString()
+        : null;
     CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(
       debtPositions, organization, cartId,
-      null); // @TODO: implementare callbackUrl con P4ADEV-4283
+      requestCallbackUrl);
 
     String checkoutUrl = checkoutService.checkoutCart(
       cartRequest);
@@ -79,6 +92,21 @@ public class DebtPositionCheckoutService {
     }
 
     return checkoutUrl;
+  }
+
+  public String composeDebtPositionsCheckoutUrl(Long organizationId, String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
+    LimitedTokenRequest limitedTokenRequest = LimitedTokenRequest.builder()
+      .app(PU_SIL_SCOPE)
+      .organizationId(organizationId)
+      .resource(CHECKOUT_RESOURCE)
+      .resourceId(iuvs)
+      .sessionData(Map.of(CALLBACK_URL_SESSION_DATA_KEY, callbackUrl))
+      .expireInSeconds(24L * 60 * 60)
+      .singleUsage(false)
+      .build();
+    AccessToken limitedToken = authorizationService.requestLimitedToken(limitedTokenRequest, accessToken);
+
+    return "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, limitedToken.getAccessToken());
   }
 
   private UserInfoLimitedScope checkUserInfoLimitedScope(UserInfo loggedUser) {

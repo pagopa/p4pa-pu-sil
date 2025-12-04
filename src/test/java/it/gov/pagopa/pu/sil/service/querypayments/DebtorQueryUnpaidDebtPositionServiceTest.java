@@ -1,22 +1,37 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
-import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.client.CheckoutClient;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentDTO;
 import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsDTO;
 import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsResponseDTO;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaymentMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,16 +43,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
-import java.util.List;
-import java.util.Optional;
-
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class DebtorQueryUnpaidDebtPositionServiceTest {
 
@@ -48,9 +53,8 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
   @Mock private DebtPositionService debtPositionServiceMock;
   @Mock private OrganizationService organizationServiceMock;
   @Mock private AuthorizationService authorizationServiceMock;
-  @Mock private CheckoutClient checkoutClientMock;
-  @Mock private CartRequestMapper cartRequestMapperMock;
   @Mock private PaymentMapper paymentMapperMock;
+  @Mock private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
 
   private DebtorQueryUnpaidDebtPositionService service;
 
@@ -61,8 +65,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
       debtPositionServiceMock,
       organizationServiceMock,
       authorizationServiceMock,
-      checkoutClientMock,
-      cartRequestMapperMock,
+      debtPositionCheckoutServiceMock,
       paymentMapperMock
     );
   }
@@ -147,10 +150,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
       ).thenReturn(List.of(dp));
 
-      CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
-      doReturn(cartRequest).when(cartRequestMapperMock)
-        .mapInstallmentToCartRequest(eq(installment), eq(org), anyString(), eq(null));
-      when(checkoutClientMock.checkoutCart(cartRequest))
+      when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(org.getOrganizationId()), anyString(), eq(null), anyString(), anyString()))
         .thenReturn(TRIGGER_PAY_URL);
       when(paymentMapperMock.mapToPaymentDTO(installment, accessToken))
         .thenReturn(paymentDTO);

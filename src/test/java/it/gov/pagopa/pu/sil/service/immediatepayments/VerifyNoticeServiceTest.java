@@ -1,21 +1,27 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse.OutcomeEnum;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import java.util.List;
+import java.util.Optional;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,13 +37,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class VerifyNoticeServiceTest {
   private VerifyNoticeService service;
@@ -45,11 +44,10 @@ class VerifyNoticeServiceTest {
   @Mock
   private InstallmentFacadeService installmentFacadeServiceMock;
   @Mock
-  private CheckoutService checkoutServiceMock;
-  @Mock
-  private CartRequestMapper cartRequestMapperMock;
-  @Mock
   private OrganizationService organizationServiceMock;
+  @Mock
+  private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
+
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
@@ -62,13 +60,12 @@ class VerifyNoticeServiceTest {
 
   @BeforeEach
   void setUp() {
-    Mockito.reset(installmentFacadeServiceMock, checkoutServiceMock, organizationServiceMock, cartRequestMapperMock);
+    Mockito.reset(installmentFacadeServiceMock, organizationServiceMock, debtPositionCheckoutServiceMock);
 
     this. service = new VerifyNoticeService(
-      cartRequestMapperMock,
       organizationServiceMock,
-      checkoutServiceMock,
       installmentFacadeServiceMock,
+      debtPositionCheckoutServiceMock,
       "https://example.com/pu-sil");
 
     userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", "OTHERIPACODE");
@@ -159,7 +156,7 @@ class VerifyNoticeServiceTest {
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
-    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getRight())))
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
     //when
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
@@ -174,12 +171,9 @@ class VerifyNoticeServiceTest {
     //given
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
-    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
-    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getRight())))
-      .thenReturn(cartRequest);
-    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn(null);
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(orgId), anyString(), anyString(), anyString(), anyString())).thenReturn(null);
     //when
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
@@ -192,14 +186,11 @@ class VerifyNoticeServiceTest {
     //given
     InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
     installmentDTO.setStatus(InstallmentStatus.UNPAID);
-    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
     String sessionId = String.valueOf(installmentDTO.getInstallmentId());
 
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
-    when(cartRequestMapperMock.mapInstallmentToCartRequest(same(installmentDTO), eq(org), any(), eq(request.getRight())))
-      .thenReturn(cartRequest);
-    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(orgId), anyString(), anyString(), anyString(), anyString())).thenReturn("https://example.com/checkout");
     //when
     PaymentResponse response = service.processRequest(request, orgIpaCode, userInfo, TOKEN);
 

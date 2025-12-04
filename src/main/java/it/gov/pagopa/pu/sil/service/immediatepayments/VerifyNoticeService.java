@@ -3,10 +3,9 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse.OutcomeEnum;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -19,12 +18,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class VerifyNoticeService extends BaseVerifyNoticeService<Pair<String, String>, PaymentResponse> {
   private final String puSilBaseUrl;
 
-  public VerifyNoticeService(CartRequestMapper cartRequestMapper,
-                             OrganizationService organizationService,
-                             CheckoutService checkoutService,
+  public VerifyNoticeService(OrganizationService organizationService,
                              InstallmentFacadeService installmentFacadeService,
+                             DebtPositionCheckoutService debtPositionCheckoutService,
                              @Value("${public-base-url.pu-sil}") String puSilBaseUrl) {
-    super(cartRequestMapper, organizationService, checkoutService, installmentFacadeService);
+    super(organizationService, installmentFacadeService, debtPositionCheckoutService);
     this.puSilBaseUrl = puSilBaseUrl;
   }
 
@@ -48,10 +46,10 @@ public class VerifyNoticeService extends BaseVerifyNoticeService<Pair<String, St
   }
 
   @Override
-  protected PaymentResponse handleInstallmentsStatus(InstallmentDTO installment, Organization organization, String callbackUrl) {
+  protected PaymentResponse handleInstallmentsStatus(InstallmentDTO installment, Organization organization, String callbackUrl, String accessToken) {
     PaymentResponse response = new PaymentResponse();
     return switch (installment.getStatus()) {
-      case UNPAID -> doCheckOut(installment, organization, callbackUrl)
+      case UNPAID -> doCheckOut(installment, organization, callbackUrl, accessToken)
         .downloadNoticeUrl(composeDownloadNoticeUrl(organization.getOrgFiscalCode(), installment.getIuv()));
       case PAID -> response.outcome(OutcomeEnum.ALREADY_PAID);
       case UNPAYABLE -> response.outcome(OutcomeEnum.NOT_PAYABLE);

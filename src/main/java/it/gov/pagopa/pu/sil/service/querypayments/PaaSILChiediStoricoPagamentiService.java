@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
@@ -34,9 +35,10 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
                                              DebtPositionService debtPositionService,
                                              OrganizationService organizationService,
                                              AuthorizationService authorizationService,
+                                             DebtPositionCheckoutService debtPositionCheckoutService,
                                              ReceiptService receiptService,
                                              PagatiMapper pagatiMapper) {
-    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService);
     this.receiptService = receiptService;
     this.pagatiMapper = pagatiMapper;
   }
