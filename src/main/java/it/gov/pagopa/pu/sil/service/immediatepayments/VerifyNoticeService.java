@@ -59,7 +59,7 @@ public class VerifyNoticeService extends BaseVerifyNoticeService<Pair<String, St
 
   private String composeDownloadNoticeUrl(String orgFiscalCode, String iuv) {
     return UriComponentsBuilder.fromUriString(puSilBaseUrl)
-      .path("/sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
+      .path("/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
       .buildAndExpand(orgFiscalCode, iuv)
       .toUriString();
   }
