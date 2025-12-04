@@ -18,6 +18,7 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,12 +96,15 @@ public class DebtPositionCheckoutService {
   }
 
   public String composeDebtPositionsCheckoutUrl(Long organizationId, String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
+    Map<String, Object> sessionData = new HashMap<>();
+    sessionData.put(CALLBACK_URL_SESSION_DATA_KEY, callbackUrl);
+
     LimitedTokenRequest limitedTokenRequest = LimitedTokenRequest.builder()
       .app(PU_SIL_SCOPE)
       .organizationId(organizationId)
       .resource(CHECKOUT_RESOURCE)
       .resourceId(iuvs)
-      .sessionData(Map.of(CALLBACK_URL_SESSION_DATA_KEY, callbackUrl))
+      .sessionData(sessionData)
       .expireInSeconds(24L * 60 * 60)
       .singleUsage(false)
       .build();
