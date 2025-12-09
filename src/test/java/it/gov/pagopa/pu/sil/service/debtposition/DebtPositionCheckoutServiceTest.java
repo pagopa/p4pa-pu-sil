@@ -265,4 +265,27 @@ class DebtPositionCheckoutServiceTest {
     assertEquals(expectedResult, result);
   }
 
+
+  @Test
+  void givenNullCallbackUrlWhenComposeDebtPositionsCheckoutUrlThenOk() {
+    LimitedTokenRequest expectedTokenRequest = LimitedTokenRequest.builder()
+      .app(PU_SIL_SCOPE)
+      .organizationId(1L)
+      .resource(CHECKOUT_RESOURCE)
+      .resourceId(iuvs)
+      .sessionData(null)
+      .expireInSeconds(86400L)
+      .singleUsage(false)
+      .build();
+    String expectedResult = applicationBaseUrl+"/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, accessToken);
+
+    when(authorizationServiceMock.requestLimitedToken(expectedTokenRequest, accessToken))
+      .thenReturn(new AccessToken().accessToken(accessToken));
+
+    String result = debtPositionCheckoutService.composeDebtPositionsCheckoutUrl(1L, iuvs, null, orgFiscalCode, accessToken);
+
+    assertNotNull(result);
+    assertEquals(expectedResult, result);
+  }
+
 }
