@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;

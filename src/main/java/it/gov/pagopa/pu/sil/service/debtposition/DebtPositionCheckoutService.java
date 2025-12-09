@@ -110,7 +110,7 @@ public class DebtPositionCheckoutService {
       .build();
     AccessToken limitedToken = authorizationService.requestLimitedToken(limitedTokenRequest, accessToken);
 
-    return "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, limitedToken.getAccessToken());
+    return "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, limitedToken.getAccessToken()); // TODO: fix url
   }
 
   private UserInfoLimitedScope checkUserInfoLimitedScope(UserInfo loggedUser) {
