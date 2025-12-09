@@ -104,18 +104,22 @@ public class DebtPositionCheckoutService {
 
   public String composeDebtPositionsCheckoutUrl(Long organizationId,
     String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
-    Map<String, Object> sessionData = new HashMap<>();
-    sessionData.put(CALLBACK_URL_SESSION_DATA_KEY, callbackUrl);
 
     LimitedTokenRequest limitedTokenRequest = LimitedTokenRequest.builder()
       .app(PU_SIL_SCOPE)
       .organizationId(organizationId)
       .resource(CHECKOUT_RESOURCE)
       .resourceId(iuvs)
-      .sessionData(sessionData)
       .expireInSeconds(24L * 60 * 60)
       .singleUsage(false)
       .build();
+
+    if (callbackUrl != null) {
+      Map<String, Object> sessionData = new HashMap<>();
+      sessionData.put(CALLBACK_URL_SESSION_DATA_KEY, callbackUrl);
+      limitedTokenRequest.setSessionData(sessionData);
+    }
+
     AccessToken limitedToken = authorizationService.requestLimitedToken(
       limitedTokenRequest, accessToken);
 
