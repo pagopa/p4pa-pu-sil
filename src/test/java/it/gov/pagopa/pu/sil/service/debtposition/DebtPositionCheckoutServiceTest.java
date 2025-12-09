@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,11 +46,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.co.jemos.podam.api.PodamFactory;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionCheckoutServiceTest {
 
+  private final String applicationBaseUrl = "baseUrl";
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
@@ -72,6 +75,11 @@ class DebtPositionCheckoutServiceTest {
   private final String callbackUrl = "https://www.google.com";
   private final UserInfoLimitedScope loggedUser = AuthorizationServiceTest.buildUserLimitedScope(
     1L, orgFiscalCode, orgIpaCode, CHECKOUT_RESOURCE, iuvs);
+
+  @BeforeEach
+  void setup() {
+    ReflectionTestUtils.setField(debtPositionCheckoutService, "applicationBaseUrl", applicationBaseUrl);
+  }
 
   @AfterEach
   void verifyNoMoreInteractions() {
@@ -246,7 +254,7 @@ class DebtPositionCheckoutServiceTest {
       .expireInSeconds(86400L)
       .singleUsage(false)
       .build();
-    String expectedResult = "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, accessToken);  // TODO: fix url
+    String expectedResult = applicationBaseUrl+"/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, accessToken);
 
     when(authorizationServiceMock.requestLimitedToken(expectedTokenRequest, accessToken))
       .thenReturn(new AccessToken().accessToken(accessToken));

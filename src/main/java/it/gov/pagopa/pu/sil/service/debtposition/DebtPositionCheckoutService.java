@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,8 @@ public class DebtPositionCheckoutService {
   public static final String CHECKOUT_RESOURCE = "CHECKOUT";
   public static final String CALLBACK_URL_SESSION_DATA_KEY = "callbackUrl";
 
+  private final String applicationBaseUrl;
+
   private final OrganizationService organizationService;
   private final DebtPositionService debtPositionService;
   private final CheckoutService checkoutService;
@@ -41,10 +44,13 @@ public class DebtPositionCheckoutService {
   private final CartRequestMapper cartRequestMapper;
 
 
-  public DebtPositionCheckoutService(OrganizationService organizationService,
+  public DebtPositionCheckoutService(
+    @Value("${public-base-url.pu-sil}") String applicationBaseUrl,
+    OrganizationService organizationService,
     DebtPositionService debtPositionService, CheckoutService checkoutService,
     AuthorizationService authorizationService,
     CartRequestMapper cartRequestMapper) {
+    this.applicationBaseUrl = applicationBaseUrl;
     this.organizationService = organizationService;
     this.debtPositionService = debtPositionService;
     this.checkoutService = checkoutService;
@@ -77,7 +83,8 @@ public class DebtPositionCheckoutService {
       .flatMap(List::stream).toList();
 
     String cartId = UUID.randomUUID().toString();
-    String requestCallbackUrl = loggedUserLimitedScope.getResource().getSessionData() != null ?
+    String requestCallbackUrl =
+      loggedUserLimitedScope.getResource().getSessionData() != null ?
         loggedUserLimitedScope.getResource().getSessionData().get(
           CALLBACK_URL_SESSION_DATA_KEY).toString()
         : null;
@@ -95,7 +102,8 @@ public class DebtPositionCheckoutService {
     return checkoutUrl;
   }
 
-  public String composeDebtPositionsCheckoutUrl(Long organizationId, String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
+  public String composeDebtPositionsCheckoutUrl(Long organizationId,
+    String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
     Map<String, Object> sessionData = new HashMap<>();
     sessionData.put(CALLBACK_URL_SESSION_DATA_KEY, callbackUrl);
 
@@ -108,9 +116,12 @@ public class DebtPositionCheckoutService {
       .expireInSeconds(24L * 60 * 60)
       .singleUsage(false)
       .build();
-    AccessToken limitedToken = authorizationService.requestLimitedToken(limitedTokenRequest, accessToken);
+    AccessToken limitedToken = authorizationService.requestLimitedToken(
+      limitedTokenRequest, accessToken);
 
-    return "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode, limitedToken.getAccessToken()); // TODO: fix url
+    return applicationBaseUrl
+      + "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode,
+      limitedToken.getAccessToken());
   }
 
   private UserInfoLimitedScope checkUserInfoLimitedScope(UserInfo loggedUser) {
