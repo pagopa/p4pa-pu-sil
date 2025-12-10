@@ -3,29 +3,26 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.dto.generated.InstantPaymentRequest;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.InstantPaymentMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Slf4j
 @Service
 public class InstantPaymentService extends AbstractImmediatePaymentsService<InstantPaymentRequest, PaymentResponse> {
   private final InstantPaymentMapper instantPaymentMapper;
 
-  protected InstantPaymentService(CheckoutService checkoutService,
-                                  InstantPaymentsFacade instantPaymentsFacade,
+  protected InstantPaymentService(InstantPaymentsFacade instantPaymentsFacade,
                                   OrganizationService organizationService,
-                                  CartRequestMapper cartRequestMapper,
                                   SessionIdMapper sessionIdMapper,
+                                  DebtPositionCheckoutService debtPositionCheckoutService,
                                   InstantPaymentMapper instantPaymentMapper) {
-    super(checkoutService, instantPaymentsFacade, organizationService, cartRequestMapper, sessionIdMapper);
+    super(instantPaymentsFacade, organizationService, sessionIdMapper, debtPositionCheckoutService);
     this.instantPaymentMapper = instantPaymentMapper;
   }
 

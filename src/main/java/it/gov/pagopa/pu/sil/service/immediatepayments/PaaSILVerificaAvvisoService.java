@@ -4,10 +4,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
@@ -19,11 +18,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class PaaSILVerificaAvvisoService extends BaseVerifyNoticeService<PaaSILVerificaAvviso, PaaSILVerificaAvvisoRisposta> {
 
-  public PaaSILVerificaAvvisoService(CartRequestMapper cartRequestMapper,
-                                     OrganizationService organizationService,
-                                     CheckoutService checkoutService,
-                                     InstallmentFacadeService installmentFacadeService) {
-    super(cartRequestMapper, organizationService, checkoutService, installmentFacadeService);
+  public PaaSILVerificaAvvisoService(OrganizationService organizationService,
+                                     InstallmentFacadeService installmentFacadeService,
+                                     DebtPositionCheckoutService debtPositionCheckoutService) {
+    super(organizationService, installmentFacadeService, debtPositionCheckoutService);
   }
 
   @Override
@@ -47,9 +45,9 @@ public class PaaSILVerificaAvvisoService extends BaseVerifyNoticeService<PaaSILV
   }
 
   @Override
-  protected PaaSILVerificaAvvisoRisposta handleInstallmentsStatus(InstallmentDTO installment, Organization organization, String callbackUrl) {
+  protected PaaSILVerificaAvvisoRisposta handleInstallmentsStatus(InstallmentDTO installment, Organization organization, String callbackUrl, String accessToken) {
     if(InstallmentStatus.UNPAID.equals(installment.getStatus())) {
-      return doCheckOut(installment, organization, callbackUrl);
+      return doCheckOut(installment, organization, callbackUrl, accessToken);
     } else {
       throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO,"Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato");
     }

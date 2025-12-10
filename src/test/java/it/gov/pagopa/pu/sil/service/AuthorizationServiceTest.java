@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.service;
 
+import static it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService.CALLBACK_URL_SESSION_DATA_KEY;
 import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
@@ -12,6 +13,7 @@ import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,6 +66,7 @@ public class AuthorizationServiceTest {
       .organization(userAdminRole)
       .app("pu-sil")
       .singleUsage(false)
+      .sessionData(Map.of(CALLBACK_URL_SESSION_DATA_KEY, "https://www.google.com"))
       .build();
     UserInfoLimitedScope userInfo = new UserInfoLimitedScope();
     userInfo.setOrganizations(List.of(userAdminRole,userTestRole));

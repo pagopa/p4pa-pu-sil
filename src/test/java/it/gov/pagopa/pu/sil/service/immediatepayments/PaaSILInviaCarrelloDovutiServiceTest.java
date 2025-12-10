@@ -1,7 +1,15 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 
-import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
+import static it.gov.pagopa.pu.debtpositions.dto.generated.CodeEnum.DEBT_POSITION_BAD_REQUEST;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
@@ -10,16 +18,20 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.PaaSILInviaCarrelloDovutiMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,32 +49,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.HttpServerErrorException;
 import uk.co.jemos.podam.api.PodamFactory;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static it.gov.pagopa.pu.debtpositions.dto.generated.CodeEnum.DEBT_POSITION_BAD_REQUEST;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class PaaSILInviaCarrelloDovutiServiceTest {
 
   @Mock
   private PaaSILInviaCarrelloDovutiMapper paaSILInviaCarrelloDovutiMapperMock;
   @Mock
-  private CheckoutService checkoutServiceMock;
-  @Mock
   private InstantPaymentsFacade instantPaymentsFacadeMock;
-  @Mock
-  private CartRequestMapper cartRequestMapperMock;
   @Mock
   private OrganizationService organizationServiceMock;
   @Mock
   private SessionIdMapper sessionIdMapperMock;
+  @Mock
+  private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
 
   @InjectMocks
   private PaaSILInviaCarrelloDovutiService paaSILInviaCarrelloDovutiService;
@@ -78,7 +77,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
 
   @BeforeEach
   void setUp() {
-    Mockito.reset(paaSILInviaCarrelloDovutiMapperMock, checkoutServiceMock, instantPaymentsFacadeMock, cartRequestMapperMock);
+    Mockito.reset(paaSILInviaCarrelloDovutiMapperMock, instantPaymentsFacadeMock, debtPositionCheckoutServiceMock);
 
     userInfo = podamFactory.manufacturePojo(UserInfo.class);
     orgIpaCode = userInfo.getOrganizations().getFirst().getOrganizationIpaCode();
@@ -185,7 +184,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
       .thenReturn(paymentRequestMappingResult);
     when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
       .thenReturn(debtPositionDTOList);
-    when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
       .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
 
     //when
@@ -202,7 +201,6 @@ class PaaSILInviaCarrelloDovutiServiceTest {
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPositionDTO);
     AtomicReference<String> cartId = new AtomicReference<>();
-    CartRequest cartRequest = podamFactory.manufacturePojo(CartRequest.class);
     PaymentRequestMappingResult paymentRequestMappingResult = PaymentRequestMappingResult.ofDebtPositions(debtPositionDTOList);
 
     String iuvs = debtPositionDTOList.stream()
@@ -219,9 +217,8 @@ class PaaSILInviaCarrelloDovutiServiceTest {
     when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
       .thenReturn(debtPositionDTOList);
     when(sessionIdMapperMock.mapDebtPositionsToSessionId(debtPositionDTOList)).thenReturn(sessionId);
-    when(cartRequestMapperMock.mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(org), argThat(c -> c.equals(cartId.get())), eq(request.getEnteSILInviaRispostaPagamentoUrl())))
-      .thenReturn(cartRequest);
-    when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("https://example.com/checkout");
+    when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
+      .thenReturn("https://example.com/checkout");
 
     //when
     Triple<PaaSILInviaCarrelloDovutiRisposta, String, RegistryOutcome> response = paaSILInviaCarrelloDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN);
