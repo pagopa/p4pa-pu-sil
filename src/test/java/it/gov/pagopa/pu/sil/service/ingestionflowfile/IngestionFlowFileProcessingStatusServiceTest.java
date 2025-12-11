@@ -126,7 +126,8 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .organizationId(1L)
       .ingestionFlowFileId(1L)
       .numCorrectlyImportedRows(12L)
-      .discardFileName("discarded");
+      .discardFileName("discarded")
+      .pdfGeneratedId(null);
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(file);
 
@@ -153,7 +154,8 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .organizationId(1L)
       .ingestionFlowFileId(1L)
       .numCorrectlyImportedRows(null)
-      .discardFileName("discarded");
+      .discardFileName("discarded")
+      .pdfGeneratedId(null);
 
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(file);
@@ -226,7 +228,8 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .ingestionFlowFileId(ingestionFlowFileId)
       .numCorrectlyImportedRows(10L)
       .errorDescription("Partial warning")
-      .discardFileName("discarded.csv");
+      .discardFileName("discarded.csv")
+      .pdfGeneratedId(null);
 
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(file);

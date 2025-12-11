@@ -71,7 +71,7 @@ public class IngestionFlowFileProcessingStatusService {
     if (!success && ingestionFlowFile.getDiscardFileName() != null) {
       responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.DISCARDED_FILE, composeUrl(ingestionFlowFile, "/errors")));
     }
-    if (success && ingestionFlowFile.getPdfGeneratedId() != null) {
+    if (ingestionFlowFile.getPdfGeneratedId() != null) {
       responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.PAYMENT_NOTICE_FILE, composeUrl(ingestionFlowFile, "/notice")));
     }
   }
