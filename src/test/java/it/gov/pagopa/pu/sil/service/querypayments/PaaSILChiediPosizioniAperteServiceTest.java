@@ -1,16 +1,31 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.client.CheckoutClient;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperte;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperteRisposta;
@@ -19,6 +34,8 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPer
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import jakarta.activation.DataHandler;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,13 +46,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class PaaSILChiediPosizioniAperteServiceTest {
 
@@ -43,9 +53,8 @@ class PaaSILChiediPosizioniAperteServiceTest {
   @Mock private OrganizationService organizationServiceMock;
   @Mock private AuthorizationService authorizationServiceMock;
   @Mock private JAXBTransformService jaxbTransformServiceMock;
-  @Mock private CheckoutClient checkoutClientMock;
-  @Mock private CartRequestMapper cartRequestMapperMock;
   @Mock private DebtPositionTypeService debtPositionTypeServiceMock;
+  @Mock private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
 
   private PaaSILChiediPosizioniAperteService service;
 
@@ -57,8 +66,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
       organizationServiceMock,
       authorizationServiceMock,
       jaxbTransformServiceMock,
-      checkoutClientMock,
-      cartRequestMapperMock,
+      debtPositionCheckoutServiceMock,
       debtPositionTypeServiceMock
     );
   }

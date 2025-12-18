@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
@@ -9,46 +8,41 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.web.client.HttpServerErrorException;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.web.client.HttpServerErrorException;
 
 @Slf4j
 public abstract class AbstractImmediatePaymentsService<I, O> {
   private static final Pattern VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN = Pattern.compile("^\\[([^\\]]*)\\]\\s*(.*)$");
 
-  protected final CheckoutService checkoutService;
   protected final InstantPaymentsFacade instantPaymentsFacade;
-  protected final CartRequestMapper cartRequestMapper;
   protected final OrganizationService organizationService;
   protected final SessionIdMapper sessionIdMapper;
+  protected final DebtPositionCheckoutService debtPositionCheckoutService;
 
-  protected AbstractImmediatePaymentsService(CheckoutService checkoutService,
-                                             InstantPaymentsFacade instantPaymentsFacade,
+  protected AbstractImmediatePaymentsService(InstantPaymentsFacade instantPaymentsFacade,
                                              OrganizationService organizationService,
-                                             CartRequestMapper cartRequestMapper,
-                                             SessionIdMapper sessionIdMapper) {
-    this.checkoutService = checkoutService;
+                                             SessionIdMapper sessionIdMapper,
+                                             DebtPositionCheckoutService debtPositionCheckoutService) {
     this.instantPaymentsFacade = instantPaymentsFacade;
-    this.cartRequestMapper = cartRequestMapper;
     this.organizationService = organizationService;
     this.sessionIdMapper = sessionIdMapper;
+    this.debtPositionCheckoutService = debtPositionCheckoutService;
   }
 
   protected abstract List<DebtPositionDTO> createDebtPositionsFromMapping(PaymentRequestMappingResult paymentRequestMappingResult, String accessToken);
@@ -95,14 +89,8 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     //sessionId is a concatenation of all installment IDs, used to track the session
     String sessionId = sessionIdMapper.mapDebtPositionsToSessionId(debtPositions);
 
-    //map debt positions to cart request
-    CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(debtPositions, organization, cartId, getCallbackUrl(request));
-
-    //invoke carts API to trigger the payment on Checkout
-    String checkoutUrl = checkoutService.checkoutCart(cartRequest); // @TODO: da implementare con la P4ADEV-4043
-    if(StringUtils.isBlank(checkoutUrl)){
-      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore durante la creazione del carrello di pagamento");
-    }
+    String checkoutUrl = debtPositionCheckoutService.composeDebtPositionsCheckoutUrl(
+      organization.getOrganizationId(), iuvs, getCallbackUrl(request), organization.getOrgFiscalCode(), accessToken);
 
     O response = mapToResponse(RegistryOutcome.OK.getValue(), checkoutUrl, sessionId);
     return Triple.of(response, iuvs, RegistryOutcome.OK);

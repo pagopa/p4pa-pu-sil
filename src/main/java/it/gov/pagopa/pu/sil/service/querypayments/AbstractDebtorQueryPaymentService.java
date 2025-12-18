@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
+
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
@@ -9,22 +11,19 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
-import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
+import java.time.OffsetDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.time.OffsetDateTime;
-import java.util.List;
-
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
 /**
  * Abstract base class for PaaSIL query payment services.
@@ -40,15 +39,18 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
   protected final DebtPositionService debtPositionService;
   protected final OrganizationService organizationService;
   protected final AuthorizationService authorizationService;
+  protected final DebtPositionCheckoutService debtPositionCheckoutService;
 
   protected AbstractDebtorQueryPaymentService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                               DebtPositionService debtPositionService,
                                               OrganizationService organizationService,
-                                              AuthorizationService authorizationService) {
+                                              AuthorizationService authorizationService,
+                                              DebtPositionCheckoutService debtPositionCheckoutService) {
     this.bffBaseUrl = bffBaseUrl;
     this.debtPositionService = debtPositionService;
     this.organizationService = organizationService;
     this.authorizationService = authorizationService;
+    this.debtPositionCheckoutService = debtPositionCheckoutService;
   }
 
   /**
@@ -151,16 +153,8 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       .toUriString();
   }
 
-  /**
-   * Composes the checkout URL from the checkout cart response.
-   * This is a placeholder implementation pending P4ADEV-4043.
-   *
-   * @param checkoutCart the checkout cart identifier
-   * @return the composed checkout URL
-   */
-  protected String composeCheckoutUrl(String checkoutCart) {
-    // @TODO: da implementare con la P4ADEV-4043
-    return checkoutCart;
+  protected String getCheckoutUrl(Long organizationId, String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
+    return debtPositionCheckoutService.composeDebtPositionsCheckoutUrl(organizationId, iuvs, callbackUrl, orgFiscalCode, accessToken);
   }
 
   protected abstract DebtorQueryPaymentRequest transformRequest(I request);

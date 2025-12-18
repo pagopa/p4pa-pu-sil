@@ -8,17 +8,17 @@ import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryDTO;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryResponseDTO;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -31,8 +31,9 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
                                       OrganizationService organizationService,
                                       AuthorizationService authorizationService,
                                       ReceiptService receiptService,
+                                      DebtPositionCheckoutService debtPositionCheckoutService,
                                       ReceiptMapper receiptMapper) {
-    super(bffBaseUrl, debtPositionService, organizationService, authorizationService);
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService);
     this.receiptService = receiptService;
     this.receiptMapper = receiptMapper;
   }

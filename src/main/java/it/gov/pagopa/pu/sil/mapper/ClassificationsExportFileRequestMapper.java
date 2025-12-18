@@ -11,6 +11,7 @@ import it.veneto.regione.pagamenti.pivot.ente.TipoDovutoType;
 import org.springframework.stereotype.Service;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +28,11 @@ public class ClassificationsExportFileRequestMapper {
       .filterFields(new ClassificationsExportFileFilter()
         .debtPositionTypeOrgCodes(Optional.ofNullable(request.getTipoDovuto())
           .map(TipoDovutoType::getTipos).map(HashSet::new).orElse(null))
-        .label(request.getCodiceClassificazione().getClassificaziones().stream()
-          .map(ClassificationsExportFileFilter.LabelEnum::fromValue)
-          .collect(Collectors.toSet()))
+        .label(request.getCodiceClassificazione().getClassificaziones().isEmpty()
+            ? EnumSet.allOf(ClassificationsExportFileFilter.LabelEnum.class)
+            : request.getCodiceClassificazione().getClassificaziones().stream()
+              .map(ClassificationsExportFileFilter.LabelEnum::fromValue)
+              .collect(Collectors.toSet()))
         .iuvs(Optional.ofNullable(request.getIdUnivocoVersamento())
           .map(IdUnivocoVersamentoType::getIuvs).orElse(null))
         .iurs(Optional.ofNullable(request.getIdUnivocoRiscossione())
