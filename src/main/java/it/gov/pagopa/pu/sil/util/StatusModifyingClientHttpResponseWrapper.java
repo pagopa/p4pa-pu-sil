@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.util;
 
-import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,7 +15,6 @@ public class StatusModifyingClientHttpResponseWrapper implements ClientHttpRespo
   private ByteArrayInputStream body;
 
   @Setter
-  @Getter
   private HttpStatusCode statusCode;
 
   public StatusModifyingClientHttpResponseWrapper(ClientHttpResponse response) throws IOException {
@@ -46,8 +44,8 @@ public class StatusModifyingClientHttpResponseWrapper implements ClientHttpRespo
   }
 
   @Override
-  public int getRawStatusCode() {
-    return this.statusCode.value();
+  public HttpStatusCode getStatusCode() throws IOException {
+    return statusCode;
   }
 
   @Override

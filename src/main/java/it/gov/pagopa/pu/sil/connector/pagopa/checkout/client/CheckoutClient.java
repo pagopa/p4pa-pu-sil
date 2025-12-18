@@ -7,7 +7,7 @@ import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.config.CheckoutApiClientConfig;
 import it.gov.pagopa.pu.sil.util.StatusModifyingClientHttpResponseWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

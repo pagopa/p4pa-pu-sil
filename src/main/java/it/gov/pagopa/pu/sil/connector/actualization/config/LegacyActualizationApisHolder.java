@@ -4,7 +4,7 @@ import it.gov.pagopa.actualization.legacy.controller.ApiClient;
 import it.gov.pagopa.actualization.legacy.controller.generated.DefaultApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 

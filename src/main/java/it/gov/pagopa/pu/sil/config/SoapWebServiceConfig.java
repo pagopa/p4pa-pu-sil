@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.ws.config.annotation.EnableWs;
-import org.springframework.ws.config.annotation.WsConfigurerAdapter;
+import org.springframework.ws.config.annotation.WsConfigurer;
 import org.springframework.ws.support.WebUtils;
 import org.springframework.ws.transport.http.MessageDispatcherServlet;
 import org.springframework.ws.transport.http.WsdlDefinitionHandlerAdapter;
@@ -22,7 +22,6 @@ import org.springframework.ws.wsdl.wsdl11.SimpleWsdl11Definition;
 import org.springframework.ws.wsdl.wsdl11.Wsdl11Definition;
 import org.springframework.xml.xsd.SimpleXsdSchema;
 import org.springframework.xml.xsd.XsdSchema;
-import org.springframework.xml.xsd.XsdSchemaCollection;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -31,7 +30,7 @@ import java.util.Set;
 @EnableWs
 @Slf4j
 @Configuration(proxyBeanMethods = false)
-public class SoapWebServiceConfig extends WsConfigurerAdapter {
+public class SoapWebServiceConfig implements WsConfigurer {
 
   public static final String WS_PATH_PAYMENTS = WebSecurityConfig.SOAP_WS_BASE_PATH+"/payments/";
   public static final String WS_PATH_RECONCILIATION = WebSecurityConfig.SOAP_WS_BASE_PATH+"/reconciliation/";
@@ -131,21 +130,16 @@ public class SoapWebServiceConfig extends WsConfigurerAdapter {
     return urlPath.substring(0, begin);
   }
 
-  @Bean
-  public XsdSchemaCollection getXsdSchemaCollection() {
-    return null;
-  }
-
   @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
   @Bean(name = PuForOrganizationPaymentsEndpoint.NAME)
-  public Wsdl11Definition puForOrganizationPaymentsEndpoint(XsdSchemaCollection xsdSchemaCollection) {
+  public Wsdl11Definition puForOrganizationPaymentsEndpoint() {
     registerWsdlDefinition(WS_PATH_PAYMENTS + PuForOrganizationPaymentsEndpoint.NAME);
     return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"payments/puForOrganization-payments.wsdl"));
   }
 
   @SuppressWarnings("squid:S6830") // Suppressing bean camelCase naming: this is required to match with the service name
   @Bean(name = PuForOrganizationReconciliationEndpoint.NAME)
-  public Wsdl11Definition puForOrganizationReconciliationEndpoint(XsdSchemaCollection xsdSchemaCollection) {
+  public Wsdl11Definition puForOrganizationReconciliationEndpoint() {
     registerWsdlDefinition(WS_PATH_RECONCILIATION + PuForOrganizationReconciliationEndpoint.NAME);
     return new SimpleWsdl11Definition(resourceLoader.getResource("classpath:"+SOAP_RESOURCES_FOLDER+"reconciliation/puForOrganization-reconciliation.wsdl"));
   }
