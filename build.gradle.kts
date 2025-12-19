@@ -1,6 +1,6 @@
-import java.util.*
-import com.github.jk1.license.render.*
 import com.github.jk1.license.filter.*
+import com.github.jk1.license.render.*
+import java.util.*
 
 plugins {
   java
@@ -535,7 +535,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     mapOf(
       "DebtPositionDTO" to "it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO",
       "IngestionFlowFileType" to "String",
-      "WfExecutionConfig" to "com.fasterxml.jackson.databind.JsonNode",
+      "WfExecutionConfig" to "tools.jackson.databind.JsonNode",
       "ExportFileType" to "String",
       "WorkflowTypeOrg" to "String",
       "ScheduleEnum" to "String",
