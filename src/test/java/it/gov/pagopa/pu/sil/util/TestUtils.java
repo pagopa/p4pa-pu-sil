@@ -21,11 +21,19 @@ import java.util.*;
 
 public class TestUtils {
 
+  static {
+    clearDefaultTimezone();
+  }
+
+  public static void clearDefaultTimezone() {
+    TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
+
   public static PodamFactory getPodamFactory() {
     PodamFactory externalFactory = new AbstractExternalFactory() {
       @Override
       public <T> T manufacturePojo(Class<T> pojoClass, Type... genericTypeArgs) {
-        if(pojoClass.isAssignableFrom(XMLGregorianCalendar.class)) {
+        if (pojoClass.isAssignableFrom(XMLGregorianCalendar.class)) {
           return (T) ConversionUtils.toXMLGregorianCalendar(OffsetDateTime.now());
         }
         return null;
@@ -37,7 +45,7 @@ public class TestUtils {
       }
     };
     PodamFactoryImpl podamFactory = new PodamFactoryImpl(externalFactory);
-    podamFactory.getStrategy().addOrReplaceTypeManufacturer(SortedSet.class, new AbstractTypeManufacturer<>(){
+    podamFactory.getStrategy().addOrReplaceTypeManufacturer(SortedSet.class, new AbstractTypeManufacturer<>() {
       @Override
       public SortedSet<?> getType(DataProviderStrategy strategy, AttributeMetadata attributeMetadata, ManufacturingContext manufacturingCtx) {
         return new TreeSet<>();
@@ -54,7 +62,7 @@ public class TestUtils {
     ReflectionUtils.doWithFields(o.getClass(),
       f -> {
         f.setAccessible(true);
-        Assertions.assertNotNull(f.get(o), "The field "+f.getName()+" of the input object of type "+o.getClass()+" is null!");
+        Assertions.assertNotNull(f.get(o), "The field " + f.getName() + " of the input object of type " + o.getClass() + " is null!");
       },
       f -> !excludedFieldsSet.contains(f.getName()));
   }
@@ -65,13 +73,13 @@ public class TestUtils {
     ReflectionUtils.doWithFields(o.getClass(),
       f -> {
         f.setAccessible(true);
-        if(f.get(o) == null) {
+        if (f.get(o) == null) {
           nullFields.add(f.getName());
         }
       },
       f -> !excludedFieldsSet.contains(f.getName()));
     Assertions.assertTrue(nullFields.isEmpty(),
-      "The following fields of the input object of type "+o.getClass()+" are null: " + String.join(", ", nullFields));
+      "The following fields of the input object of type " + o.getClass() + " are null: " + String.join(", ", nullFields));
   }
 
   public static void checkNotNullFieldsUsingNullableAnnotation(Object o, String... excludedFields) {
@@ -79,9 +87,9 @@ public class TestUtils {
     ReflectionUtils.doWithFields(o.getClass(),
       f -> {
         f.setAccessible(true);
-        Assertions.assertNotNull(f.get(o), "The field "+f.getName()+" of the input object of type "+o.getClass()+" is null!");
+        Assertions.assertNotNull(f.get(o), "The field " + f.getName() + " of the input object of type " + o.getClass() + " is null!");
       },
-      f -> !excludedFieldsSet.contains(f.getName()) && f.getAnnotation(Nullable.class)==null);
+      f -> !excludedFieldsSet.contains(f.getName()) && f.getAnnotation(Nullable.class) == null);
   }
 
   public static <T> SoapHeaderElement createSoapHeaderElement(Object headerContent, Class<T> headerType) throws Exception {
