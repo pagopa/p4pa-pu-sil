@@ -22,7 +22,6 @@ public class SilLegacyBasicAuthService {
   }
 
   public AccessToken authenticate(String orgFiscalCode, String orgSilServiceName, String nav, UserInfo loggedUser, SilServiceLegacyBasicAuthConfigDTO config) {
-    // TODO: transform the Credentials fields properly https://pagopa.atlassian.net/browse/P4ADEV-3126
     Token token = legacyBasicAuthService.login(orgFiscalCode, orgSilServiceName, nav, loggedUser,
       Credentials.builder()
         .username(config.getUser())

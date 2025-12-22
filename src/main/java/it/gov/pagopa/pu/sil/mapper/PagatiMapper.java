@@ -144,7 +144,6 @@ public class PagatiMapper {
       if (withReceiptFields && transfer.getStampHashDocument() != null) {
         CtAllegatoRicevuta ctAllegatoRicevuta = new CtAllegatoRicevuta();
         ctAllegatoRicevuta.setTipoAllegatoRicevuta(StTipoAllegatoRicevuta.BD);
-        ctDatiSingoloPagamentoPagatiConRicevuta.setAllegatoRicevuta(null); //TODO task P4ADEV-3328 extract data from transfer.getMdbAttachment()
         ctDatiSingoloPagamentoPagatiConRicevuta.setAllegatoRicevuta(ctAllegatoRicevuta);
       }
       datiPagamento.getDatiSingoloPagamentos().add(ctDatiSingoloPagamentoPagatiConRicevuta);

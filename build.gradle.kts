@@ -404,7 +404,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   description = "openapi"
 
   generatorName.set("java")
-  inputSpec.set("$rootDir/openapi/node_checkout.yaml")
+  inputSpec.set("$rootDir/openapi/external/node_checkout.yaml")
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.nodo.checkout.controller.generated")
   modelPackage.set("it.gov.pagopa.nodo.checkout.dto.generated")
@@ -465,7 +465,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   description = "openapi"
 
   generatorName.set("java")
-  inputSpec.set("$rootDir/openapi/amount-updates-legacy.yaml")
+  inputSpec.set("$rootDir/openapi/external/amount-updates-legacy.yaml")
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
   modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
@@ -496,7 +496,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   description = "openapi"
 
   generatorName.set("java")
-  inputSpec.set("$rootDir/openapi/amount-updates.yaml")
+  inputSpec.set("$rootDir/openapi/external/amount-updates.yaml")
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.actualization.controller.generated")
   modelPackage.set("it.gov.pagopa.actualization.dto.generated")
@@ -656,7 +656,7 @@ jaxb {
     description = "openapi"
 
     generatorName.set("java")
-    inputSpec.set("$rootDir/openapi/payment-notification.yaml")
+    inputSpec.set("$rootDir/openapi/external/payment-notification.yaml")
     outputDir.set("$projectDir/build/generated")
     apiPackage.set("it.gov.pagopa.paymentnotification.controller.generated")
     modelPackage.set("it.gov.pagopa.paymentnotification.dto.generated")
@@ -686,7 +686,7 @@ jaxb {
     description = "openapi"
 
     generatorName.set("java")
-    inputSpec.set("$rootDir/openapi/payment-notification-legacy.yaml")
+    inputSpec.set("$rootDir/openapi/external/payment-notification-legacy.yaml")
     outputDir.set("$projectDir/build/generated")
     apiPackage.set("it.gov.pagopa.paymentnotification.legacy.controller.generated")
     modelPackage.set("it.gov.pagopa.paymentnotification.legacy.dto.generated")
