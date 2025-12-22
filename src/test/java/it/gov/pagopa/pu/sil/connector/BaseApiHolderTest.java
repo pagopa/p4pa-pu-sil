@@ -79,7 +79,7 @@ public abstract class BaseApiHolderTest {
           .when(restTemplateMock)
           .exchange(
             Mockito.argThat(req ->
-              !req.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)),
+              !req.getHeaders().containsHeader(HttpHeaders.AUTHORIZATION)),
             Mockito.eq(apiReturnedType));
         useCases = List.of(Pair.of(null, expectedResult));
       } catch (Exception e) {

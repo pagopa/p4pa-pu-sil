@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.sil.config.rest.agid.AgidDataIntegrityInterceptor;
 import it.gov.pagopa.pu.sil.config.rest.agid.PuIntegrityDataConfig;
 import jakarta.annotation.PreDestroy;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
