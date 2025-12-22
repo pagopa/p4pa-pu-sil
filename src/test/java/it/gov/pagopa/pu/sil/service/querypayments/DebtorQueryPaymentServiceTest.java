@@ -158,7 +158,7 @@ class DebtorQueryPaymentServiceTest {
         // Single organization path
         mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode))
           .thenReturn(orgId);
-        mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(brokerId, userInfo))
+        mockedAuth.when(() -> AuthorizationService.validateOrganizationBrokered(brokerId, userInfo))
           .thenAnswer(inv -> null);
 
         when(organizationServiceMock.getOrganizationById(orgId, accessToken))

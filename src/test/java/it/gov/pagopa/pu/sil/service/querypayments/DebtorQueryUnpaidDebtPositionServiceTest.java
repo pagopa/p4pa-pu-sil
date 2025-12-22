@@ -136,7 +136,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
         // Single organization path
         mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
           .thenReturn(orgId);
-        mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
+        mockedAuth.when(() -> AuthorizationService.validateOrganizationBrokered(eq(brokerId), eq(userInfo)))
           .thenAnswer(inv -> null);
 
         when(organizationServiceMock.getOrganizationById(orgId, accessToken))
