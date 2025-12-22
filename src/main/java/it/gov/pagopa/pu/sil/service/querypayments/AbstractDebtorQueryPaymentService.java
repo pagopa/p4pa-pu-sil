@@ -97,7 +97,7 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
         .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
         .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
-      AuthorizationService.isOrganizationHandledByBroker(organization.getBrokerId(), userInfo);
+      AuthorizationService.validateOrganizationBrokered(organization.getBrokerId(), userInfo);
       return List.of(organization);
     } else {
       return organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken);
