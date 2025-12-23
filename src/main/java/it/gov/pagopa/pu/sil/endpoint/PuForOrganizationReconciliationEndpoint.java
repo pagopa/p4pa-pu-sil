@@ -253,6 +253,8 @@ public class PuForOrganizationReconciliationEndpoint {
         PivotSILAutorizzaImportFlussoRisposta response = new PivotSILAutorizzaImportFlussoRisposta();
         response.setRequestToken(result.getImportId());
         response.setUploadUrl(result.getUploadUrl());
+        response.setAuthorizationToken(result.getAuthorizationToken());
+        response.setImportPath(result.getImportPath());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
       FaultUtils.unauthorizedOrSystemExceptionHandler(
