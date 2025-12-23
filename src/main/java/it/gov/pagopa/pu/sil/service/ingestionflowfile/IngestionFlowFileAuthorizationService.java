@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 public class IngestionFlowFileAuthorizationService {
   private static final String FILE_ORIGIN = "SIL";
   private static final String UNKNOWN = "UNKNOWN";
+  private static final String HARDCODED_AUTHORIZATION_TOKEN = "AUTHORIZATIONTOKEN";
+  private static final String HARDCODED_IMPORT_PATH = "/IMPORTPATH";
 
   private final IngestionFlowFileService ingestionFlowFileService;
   private final IngestionFlowFileReservationService ingestionFlowFileReservationService;
@@ -45,6 +47,8 @@ public class IngestionFlowFileAuthorizationService {
     return ImportFileResponseDTO.builder()
       .importId(String.valueOf(ingestionFlowFileId))
       .uploadUrl(uploadUrl)
+      .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
+      .importPath(HARDCODED_IMPORT_PATH)
       .build();
   }
 
