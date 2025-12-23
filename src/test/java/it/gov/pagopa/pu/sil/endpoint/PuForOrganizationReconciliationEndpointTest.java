@@ -57,6 +57,9 @@ class PuForOrganizationReconciliationEndpointTest {
   private static final String INVALID_ORG_IPA_CODE = "IPA_1";
   public static final String INVALID_ORGANIZATION_FISCAL_CODE = "CF_1";
 
+  private static final String HARDCODED_AUTHORIZATION_TOKEN = "AUTHORIZATIONTOKEN";
+  private static final String HARDCODED_IMPORT_PATH = "/IMPORTPATH";
+
   @Mock
   private RegistryLogger registryLoggerMock;
   @Mock
@@ -280,13 +283,12 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
-    String authorizationToken = "authToken";
-    String importPath = "/importPath";
+
     ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
       .importId(String.valueOf(expectedToken))
       .uploadUrl(expectedUrl)
-      .authorizationToken(authorizationToken)
-      .importPath(importPath)
+      .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
+      .importPath(HARDCODED_IMPORT_PATH)
       .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
@@ -307,8 +309,8 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
-    Assertions.assertEquals(authorizationToken, response.getAuthorizationToken());
-    Assertions.assertEquals(importPath, response.getImportPath());
+    Assertions.assertEquals(HARDCODED_AUTHORIZATION_TOKEN, response.getAuthorizationToken());
+    Assertions.assertEquals(HARDCODED_IMPORT_PATH, response.getImportPath());
   }
 
   //endregion
@@ -325,13 +327,12 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
-    String authorizationToken = "authToken";
-    String importPath = "/importPath";
+
     ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
       .importId(String.valueOf(expectedToken))
       .uploadUrl(expectedUrl)
-      .authorizationToken(authorizationToken)
-      .importPath(importPath)
+      .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
+      .importPath(HARDCODED_IMPORT_PATH)
       .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
@@ -352,8 +353,8 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
-    Assertions.assertEquals(authorizationToken, response.getAuthorizationToken());
-    Assertions.assertEquals(importPath, response.getImportPath());
+    Assertions.assertEquals(HARDCODED_AUTHORIZATION_TOKEN, response.getAuthorizationToken());
+    Assertions.assertEquals(HARDCODED_IMPORT_PATH, response.getImportPath());
   }
 
   @Test
