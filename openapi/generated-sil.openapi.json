@@ -2094,9 +2094,17 @@
           "uploadUrl" : {
             "type" : "string",
             "description" : "The url to upload the file to, using a POST request with the file as body."
+          },
+          "authorizationToken" : {
+            "type" : "string",
+            "description" : "The authorization token to be used in the upload request."
+          },
+          "importPath" : {
+            "type" : "string",
+            "description" : "The path identifying the import operation."
           }
         },
-        "required" : [ "importId", "uploadUrl" ]
+        "required" : [ "authorizationToken", "importId", "importPath", "uploadUrl" ]
       },
       "ImportFileRequestDTO" : {
         "type" : "object",

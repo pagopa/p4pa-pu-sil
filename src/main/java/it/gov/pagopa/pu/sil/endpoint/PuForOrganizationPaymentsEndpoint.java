@@ -195,6 +195,8 @@ public class PuForOrganizationPaymentsEndpoint {
         PaaSILAutorizzaImportFlussoRisposta response = new PaaSILAutorizzaImportFlussoRisposta();
         response.setRequestToken(result.getImportId());
         response.setUploadUrl(result.getUploadUrl());
+        response.setAuthorizationToken(result.getAuthorizationToken());
+        response.setImportPath(result.getImportPath());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
       FaultUtils.unauthorizedOrSystemExceptionHandler(
