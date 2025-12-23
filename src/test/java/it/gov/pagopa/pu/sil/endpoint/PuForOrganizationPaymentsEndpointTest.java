@@ -286,9 +286,13 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 12345L;
     String expectedUrl = "https://upload.url";
+    String authorizationToken = "authToken";
+    String importPath = "/importPath";
     ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
       .importId(String.valueOf(expectedToken))
       .uploadUrl(expectedUrl)
+      .authorizationToken(authorizationToken)
+      .importPath(importPath)
       .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
@@ -308,6 +312,8 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
+    Assertions.assertEquals(authorizationToken, response.getAuthorizationToken());
+    Assertions.assertEquals(importPath, response.getImportPath());
   }
 
   // endregion

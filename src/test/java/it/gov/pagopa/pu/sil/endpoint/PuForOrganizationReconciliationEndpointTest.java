@@ -280,9 +280,13 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
+    String authorizationToken = "authToken";
+    String importPath = "/importPath";
     ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
       .importId(String.valueOf(expectedToken))
       .uploadUrl(expectedUrl)
+      .authorizationToken(authorizationToken)
+      .importPath(importPath)
       .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
@@ -303,6 +307,8 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
+    Assertions.assertEquals(authorizationToken, response.getAuthorizationToken());
+    Assertions.assertEquals(importPath, response.getImportPath());
   }
 
   //endregion
@@ -319,9 +325,13 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 98765L;
     String expectedUrl = "https://upload.pivot.url";
+    String authorizationToken = "authToken";
+    String importPath = "/importPath";
     ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
       .importId(String.valueOf(expectedToken))
       .uploadUrl(expectedUrl)
+      .authorizationToken(authorizationToken)
+      .importPath(importPath)
       .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
@@ -342,6 +352,8 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
+    Assertions.assertEquals(authorizationToken, response.getAuthorizationToken());
+    Assertions.assertEquals(importPath, response.getImportPath());
   }
 
   @Test
