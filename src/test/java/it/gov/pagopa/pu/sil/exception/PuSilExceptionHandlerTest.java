@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.config.json.JsonConfig;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.UtilitiesTest;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
@@ -78,6 +79,11 @@ class PuSilExceptionHandlerTest {
     String testEndpoint(@RequestParam(DATA) String data, @Valid @RequestBody TestRequestBody body) {
       return "OK";
     }
+  }
+
+  @BeforeEach
+  void init() {
+    TestUtils.clearDefaultTimezone();
   }
 
   private final String traceId = "TRACEID";
