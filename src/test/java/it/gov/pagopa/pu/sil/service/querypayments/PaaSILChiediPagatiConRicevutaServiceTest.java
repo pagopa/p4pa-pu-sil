@@ -116,7 +116,6 @@ class PaaSILChiediPagatiConRicevutaServiceTest {
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
     when(debtPositionInstallmentFacadeServiceMock.fetch(transformedRequest, org, accessToken))
       .thenReturn(pairList);
-    //TODO currently support only one debt position and installment, but could be extended to support multiple
     Pair<DebtPositionDTO, InstallmentDTO> firstPair = pairList.getFirst();
     when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(firstPair.getRight(), org, accessToken)).thenReturn(encodedPagati);
     when(receiptServiceMock.getReceiptById(firstPair.getRight().getReceiptId(), org.getOrganizationId(), accessToken)).thenReturn(encodedRt);

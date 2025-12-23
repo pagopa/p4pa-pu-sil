@@ -75,6 +75,9 @@ class PuForOrganizationPaymentsEndpointTest {
   public static final String VALID_ORGANIZATION_FISCAL_CODE = "CF_2";
   private static final String INVALID_ORG_IPA_CODE = "IPA_1";
 
+  private static final String HARDCODED_AUTHORIZATION_TOKEN = "AUTHORIZATIONTOKEN";
+  private static final String HARDCODED_IMPORT_PATH = "/IMPORTPATH";
+
   @Mock
   private RegistryLogger registryLoggerMock;
   @Mock
@@ -286,9 +289,12 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 12345L;
     String expectedUrl = "https://upload.url";
+
     ImportFileResponseDTO importFileResponseDTO = ImportFileResponseDTO.builder()
       .importId(String.valueOf(expectedToken))
       .uploadUrl(expectedUrl)
+      .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
+      .importPath(HARDCODED_IMPORT_PATH)
       .build();
     Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
@@ -308,6 +314,8 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
     Assertions.assertEquals(expectedUrl, response.getUploadUrl());
+    Assertions.assertEquals(HARDCODED_AUTHORIZATION_TOKEN, response.getAuthorizationToken());
+    Assertions.assertEquals(HARDCODED_IMPORT_PATH, response.getImportPath());
   }
 
   // endregion

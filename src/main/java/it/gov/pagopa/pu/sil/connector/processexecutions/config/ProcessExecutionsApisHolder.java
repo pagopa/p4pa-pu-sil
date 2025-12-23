@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFile
 import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import jakarta.annotation.PreDestroy;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 

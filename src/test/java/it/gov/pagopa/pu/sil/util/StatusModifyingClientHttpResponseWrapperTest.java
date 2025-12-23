@@ -57,11 +57,6 @@ class StatusModifyingClientHttpResponseWrapperTest {
   }
 
   @Test
-  void getRawStatusCodeReturnsCorrectValue() {
-    assertEquals(HttpStatus.OK.value(), wrapper.getRawStatusCode());
-  }
-
-  @Test
   void getStatusTextReturnsReasonPhraseForHttpStatus() throws IOException {
     assertEquals(HttpStatus.OK.getReasonPhrase(), wrapper.getStatusText());
   }
