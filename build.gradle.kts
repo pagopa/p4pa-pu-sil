@@ -1,6 +1,8 @@
 import com.github.jk1.license.filter.*
 import com.github.jk1.license.render.*
 import java.util.*
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
   java
