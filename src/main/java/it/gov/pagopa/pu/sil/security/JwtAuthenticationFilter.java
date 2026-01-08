@@ -36,12 +36,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,
-    @NonNull FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+                                  @NonNull FilterChain filterChain) throws ServletException, IOException {
     try {
+      String limitedToken = request.getParameter("limitedToken");
       String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-      if (StringUtils.hasText(authorization)) {
-        String token = authorization.replace("Bearer ", "");
+      if (StringUtils.hasText(limitedToken) || StringUtils.hasText(authorization)) {
+        String token = StringUtils.hasText(limitedToken) ? limitedToken : authorization.replace("Bearer ", "");
         UserInfo userInfo = authorizationService.validateToken(token);
         Collection<? extends GrantedAuthority> authorities = null;
         if (userInfo.getOrganizationAccess() != null) {
@@ -56,13 +57,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
         String userExternalId = userInfo.getMappedExternalUserId();
         String mdcUserId = SecurityUtils.resolvePuSystemUser(userExternalId);
-        if(!Objects.equals(userExternalId, SecurityUtils.resolvePuSystemUser(mdcUserId))){
-          mdcUserId = userExternalId+"]["+mdcUserId;
+        if (!Objects.equals(userExternalId, SecurityUtils.resolvePuSystemUser(mdcUserId))) {
+          mdcUserId = userExternalId + "][" + mdcUserId;
         }
         MDC.put("externalUserId", mdcUserId);
       }
-    }  catch (Exception e){
-      if(e instanceof InvalidAccessTokenException){
+    } catch (Exception e) {
+      if (e instanceof InvalidAccessTokenException) {
         log.info("An invalid accessToken has been provided: " + e.getMessage());
         response.getWriter().write(e.getMessage());
       } else {
