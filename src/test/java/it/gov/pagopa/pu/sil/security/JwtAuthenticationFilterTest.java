@@ -44,7 +44,7 @@ class JwtAuthenticationFilterTest {
   private JwtAuthenticationFilter jwtAuthenticationFilterMock;
 
   @BeforeEach
-  void clear(){
+  void clear() {
     SecurityContextHolder.clearContext();
     RequestContextHolder.resetRequestAttributes();
     MDC.clear();
@@ -60,38 +60,38 @@ class JwtAuthenticationFilterTest {
     MockHttpServletResponse response = new MockHttpServletResponse();
 
     List<UserOrganizationRoles> organizations = List.of(
-      new UserOrganizationRoles()
-        .operatorId("operator1")
-        .organizationIpaCode("ORG")
-        .email("email1@example.com")
-        .roles(List.of("ROLE")),
-      new UserOrganizationRoles()
-        .operatorId("operator2")
-        .organizationIpaCode("ORG2")
-        .email("email2@example.com")
-        .roles(List.of("ROLE2"))
-    );
+        new UserOrganizationRoles()
+            .operatorId("operator1")
+            .organizationIpaCode("ORG")
+            .email("email1@example.com")
+            .roles(List.of("ROLE")),
+        new UserOrganizationRoles()
+            .operatorId("operator2")
+            .organizationIpaCode("ORG2")
+            .email("email2@example.com")
+            .roles(List.of("ROLE2")));
 
     UserInfo userInfo = new UserInfo().mappedExternalUserId("MAPPEDEXTERNALUSERID")
-      .fiscalCode("FISCALCODE")
-      .familyName("FAMILYNAME")
-      .name("NAME")
-      .issuer("ISSUER")
-      .organizationAccess("ORG")
-      .organizations(organizations);
+        .fiscalCode("FISCALCODE")
+        .familyName("FAMILYNAME")
+        .name("NAME")
+        .issuer("ISSUER")
+        .organizationAccess("ORG")
+        .organizations(organizations);
 
     Collection<? extends GrantedAuthority> authorities = null;
     if (userInfo.getOrganizationAccess() != null) {
       authorities = userInfo.getOrganizations().stream()
-        .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
-        .flatMap(r -> r.getRoles().stream())
-        .map(SimpleGrantedAuthority::new)
-        .toList();
+          .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
+          .flatMap(r -> r.getRoles().stream())
+          .map(SimpleGrantedAuthority::new)
+          .toList();
     }
 
     Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
-    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken, authorities);
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken,
+        authorities);
     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
     // When
@@ -101,9 +101,58 @@ class JwtAuthenticationFilterTest {
     Assertions.assertEquals(userInfo.getMappedExternalUserId(), MDC.get("externalUserId"));
     Mockito.verify(filterChainMock).doFilter(request, response);
     Assertions.assertEquals(
-      authToken,
-      SecurityContextHolder.getContext().getAuthentication()
-    );
+        authToken,
+        SecurityContextHolder.getContext().getAuthentication());
+  }
+
+  @Test
+  void givenTokenInQueryParamWhenDoFilterInternalThenOk() throws ServletException, IOException {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    MockHttpServletRequest request = new MockHttpServletRequest(HttpMethod.GET.name(), "/path");
+    request.setParameter("token", accessToken);
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    List<UserOrganizationRoles> organizations = List.of(
+        new UserOrganizationRoles()
+            .operatorId("operator1")
+            .organizationIpaCode("ORG")
+            .email("email1@example.com")
+            .roles(List.of("ROLE")));
+
+    UserInfo userInfo = new UserInfo().mappedExternalUserId("MAPPEDEXTERNALUSERID")
+        .fiscalCode("FISCALCODE")
+        .familyName("FAMILYNAME")
+        .name("NAME")
+        .issuer("ISSUER")
+        .organizationAccess("ORG")
+        .organizations(organizations);
+
+    Collection<? extends GrantedAuthority> authorities = null;
+    if (userInfo.getOrganizationAccess() != null) {
+      authorities = userInfo.getOrganizations().stream()
+          .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
+          .flatMap(r -> r.getRoles().stream())
+          .map(SimpleGrantedAuthority::new)
+          .toList();
+    }
+
+    Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
+
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken,
+        authorities);
+    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+    // When
+    jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);
+
+    // Then
+    Assertions.assertEquals(userInfo.getMappedExternalUserId(), MDC.get("externalUserId"));
+    Mockito.verify(filterChainMock).doFilter(request, response);
+    Assertions.assertEquals(
+        authToken,
+        SecurityContextHolder.getContext().getAuthentication());
   }
 
   @Test
@@ -120,7 +169,8 @@ class JwtAuthenticationFilterTest {
     SecurityUtilsTest.configureXUserIdHeader("USERID");
     Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
-    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken, List.of());
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken,
+        List.of());
     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
     // When
@@ -144,7 +194,8 @@ class JwtAuthenticationFilterTest {
 
     Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
-    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken, List.of());
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken,
+        List.of());
     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
     // When
@@ -186,7 +237,8 @@ class JwtAuthenticationFilterTest {
 
     MockHttpServletResponse response = new MockHttpServletResponse();
 
-    Mockito.doThrow(new RuntimeException("Something gone wrong while validate accessToken")).when(authorizationServiceMock).validateToken(accessToken);
+    Mockito.doThrow(new RuntimeException("Something gone wrong while validate accessToken"))
+        .when(authorizationServiceMock).validateToken(accessToken);
 
     // When
     jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);

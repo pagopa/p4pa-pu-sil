@@ -36,33 +36,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,
-    @NonNull FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain) throws ServletException, IOException {
     try {
-      String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-      if (StringUtils.hasText(authorization)) {
-        String token = authorization.replace("Bearer ", "");
+      String token = extractToken(request);
+      if (StringUtils.hasText(token)) {
         UserInfo userInfo = authorizationService.validateToken(token);
         Collection<? extends GrantedAuthority> authorities = null;
         if (userInfo.getOrganizationAccess() != null) {
           authorities = userInfo.getOrganizations().stream()
-            .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
-            .flatMap(r -> r.getRoles().stream())
-            .map(SimpleGrantedAuthority::new)
-            .toList();
+              .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
+              .flatMap(r -> r.getRoles().stream())
+              .map(SimpleGrantedAuthority::new)
+              .toList();
         }
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, token, authorities);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, token,
+            authorities);
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
         String userExternalId = userInfo.getMappedExternalUserId();
         String mdcUserId = SecurityUtils.resolvePuSystemUser(userExternalId);
-        if(!Objects.equals(userExternalId, SecurityUtils.resolvePuSystemUser(mdcUserId))){
-          mdcUserId = userExternalId+"]["+mdcUserId;
+        if (!Objects.equals(userExternalId, SecurityUtils.resolvePuSystemUser(mdcUserId))) {
+          mdcUserId = userExternalId + "][" + mdcUserId;
         }
         MDC.put("externalUserId", mdcUserId);
       }
-    }  catch (Exception e){
-      if(e instanceof InvalidAccessTokenException){
+    } catch (Exception e) {
+      if (e instanceof InvalidAccessTokenException) {
         log.info("An invalid accessToken has been provided: " + e.getMessage());
         response.getWriter().write(e.getMessage());
       } else {
@@ -72,5 +72,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
     filterChain.doFilter(request, response);
+  }
+
+  private String extractToken(HttpServletRequest request) {
+    String token = request.getParameter("token");
+    String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+    if (StringUtils.hasText(token)) {
+      return token;
+    }
+    if (StringUtils.hasText(authorization)) {
+      return authorization.replace("Bearer ", "");
+    }
+    return null;
   }
 }

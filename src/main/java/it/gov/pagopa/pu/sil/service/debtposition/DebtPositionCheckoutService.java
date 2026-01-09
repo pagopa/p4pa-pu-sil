@@ -1,7 +1,5 @@
 package it.gov.pagopa.pu.sil.service.debtposition;
 
-import static it.gov.pagopa.pu.sil.util.Utilities.IUV_SEPARATOR;
-
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
@@ -17,16 +15,14 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+
+import static it.gov.pagopa.pu.sil.util.Utilities.IUV_SEPARATOR;
 
 @Service
 public class DebtPositionCheckoutService {
@@ -43,13 +39,12 @@ public class DebtPositionCheckoutService {
   private final AuthorizationService authorizationService;
   private final CartRequestMapper cartRequestMapper;
 
-
   public DebtPositionCheckoutService(
-    @Value("${public-base-url.pu-sil}") String applicationBaseUrl,
-    OrganizationService organizationService,
-    DebtPositionService debtPositionService, CheckoutService checkoutService,
-    AuthorizationService authorizationService,
-    CartRequestMapper cartRequestMapper) {
+      @Value("${public-base-url.pu-sil}") String applicationBaseUrl,
+      OrganizationService organizationService,
+      DebtPositionService debtPositionService, CheckoutService checkoutService,
+      AuthorizationService authorizationService,
+      CartRequestMapper cartRequestMapper) {
     this.applicationBaseUrl = applicationBaseUrl;
     this.organizationService = organizationService;
     this.debtPositionService = debtPositionService;
@@ -60,11 +55,12 @@ public class DebtPositionCheckoutService {
 
   public String redirectToCheckout(UserInfo loggedUser, String accessToken) {
     UserInfoLimitedScope loggedUserLimitedScope = checkUserInfoLimitedScope(
-      loggedUser);
+        loggedUser);
 
     Optional<Organization> optionalOrganization = organizationService.getOrganizationById(
-      loggedUserLimitedScope.getResource().getOrganization()
-        .getOrganizationId(), accessToken);
+        loggedUserLimitedScope.getResource().getOrganization()
+            .getOrganizationId(),
+        accessToken);
 
     if (optionalOrganization.isEmpty()) {
       throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO);
@@ -73,46 +69,46 @@ public class DebtPositionCheckoutService {
     Organization organization = optionalOrganization.get();
 
     List<String> iuvs = Arrays.stream(
-      loggedUserLimitedScope.getResource().getResourceId()
-        .split(IUV_SEPARATOR)).toList();
+        loggedUserLimitedScope.getResource().getResourceId()
+            .split(IUV_SEPARATOR))
+        .toList();
 
     List<DebtPositionDTO> debtPositions = iuvs.stream().map(
         iuv -> debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-          organization.getOrganizationId(), iuv,
-          List.of(DebtPositionOrigin.SPONTANEOUS_SIL), accessToken))
-      .flatMap(List::stream).toList();
+            organization.getOrganizationId(), iuv,
+            List.of(DebtPositionOrigin.SPONTANEOUS_SIL), accessToken))
+        .flatMap(List::stream).toList();
 
     String cartId = UUID.randomUUID().toString();
-    String requestCallbackUrl =
-      loggedUserLimitedScope.getResource().getSessionData() != null ?
-        loggedUserLimitedScope.getResource().getSessionData().get(
-          CALLBACK_URL_SESSION_DATA_KEY).toString()
+    String requestCallbackUrl = loggedUserLimitedScope.getResource().getSessionData() != null
+        ? loggedUserLimitedScope.getResource().getSessionData().get(
+            CALLBACK_URL_SESSION_DATA_KEY).toString()
         : null;
     CartRequest cartRequest = cartRequestMapper.mapDebtPositionsToCartRequest(
-      debtPositions, organization, cartId,
-      requestCallbackUrl);
+        debtPositions, organization, cartId,
+        requestCallbackUrl);
 
     String checkoutUrl = checkoutService.checkoutCart(
-      cartRequest);
+        cartRequest);
     if (StringUtils.isBlank(checkoutUrl)) {
       throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR,
-        "Errore durante la creazione del carrello di pagamento");
+          "Errore durante la creazione del carrello di pagamento");
     }
 
     return checkoutUrl;
   }
 
   public String composeDebtPositionsCheckoutUrl(Long organizationId,
-    String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
+      String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
 
     LimitedTokenRequest limitedTokenRequest = LimitedTokenRequest.builder()
-      .app(PU_SIL_SCOPE)
-      .organizationId(organizationId)
-      .resource(CHECKOUT_RESOURCE)
-      .resourceId(iuvs)
-      .expireInSeconds(24L * 60 * 60)
-      .singleUsage(false)
-      .build();
+        .app(PU_SIL_SCOPE)
+        .organizationId(organizationId)
+        .resource(CHECKOUT_RESOURCE)
+        .resourceId(iuvs)
+        .expireInSeconds(24L * 60 * 60)
+        .singleUsage(false)
+        .build();
 
     if (callbackUrl != null) {
       Map<String, Object> sessionData = new HashMap<>();
@@ -121,11 +117,11 @@ public class DebtPositionCheckoutService {
     }
 
     AccessToken limitedToken = authorizationService.requestLimitedToken(
-      limitedTokenRequest, accessToken);
+        limitedTokenRequest, accessToken);
 
     return applicationBaseUrl
-      + "/organization/%s/checkout?limitedToken=%s".formatted(orgFiscalCode,
-      limitedToken.getAccessToken());
+        + "/organization/%s/checkout?token=%s".formatted(orgFiscalCode,
+            limitedToken.getAccessToken());
   }
 
   private UserInfoLimitedScope checkUserInfoLimitedScope(UserInfo loggedUser) {
@@ -134,14 +130,14 @@ public class DebtPositionCheckoutService {
     }
 
     if (!CHECKOUT_RESOURCE.equals(
-      loggedUserLimitedScope.getResource().getResource())) {
+        loggedUserLimitedScope.getResource().getResource())) {
       throw new AuthorizationDeniedException(
-        "Utente ad uso limitato non autorizzato per questa risorsa.");
+          "Utente ad uso limitato non autorizzato per questa risorsa.");
     }
 
     if (!PU_SIL_SCOPE.equals(loggedUserLimitedScope.getResource().getApp())) {
       throw new AuthorizationDeniedException(
-        "Utente ad uso limitato non autorizzato per questo applicativo.");
+          "Utente ad uso limitato non autorizzato per questo applicativo.");
     }
 
     return loggedUserLimitedScope;
