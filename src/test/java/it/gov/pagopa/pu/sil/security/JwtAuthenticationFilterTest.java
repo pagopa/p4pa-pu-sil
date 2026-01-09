@@ -106,11 +106,11 @@ class JwtAuthenticationFilterTest {
   }
 
   @Test
-  void givenLimitedTokenInQueryParamWhenDoFilterInternalThenOk() throws ServletException, IOException {
+  void givenTokenInQueryParamWhenDoFilterInternalThenOk() throws ServletException, IOException {
     // Given
     String accessToken = "ACCESSTOKEN";
     MockHttpServletRequest request = new MockHttpServletRequest(HttpMethod.GET.name(), "/path");
-    request.setParameter("limitedToken", accessToken);
+    request.setParameter("token", accessToken);
 
     MockHttpServletResponse response = new MockHttpServletResponse();
 
