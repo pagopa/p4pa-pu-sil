@@ -60,7 +60,7 @@ class DebtPositionsResponseErrorHandlerTest {
     setUp(isPrintBodyWhenError);
 
     String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
-      .message("[P4PA_INVALID_IUV] The iuv must be 17 characters long"));
+      .message("[INVALID_IUV] The iuv must be 17 characters long"));
 
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
 
