@@ -5,10 +5,10 @@ import java.util.Arrays;
 public enum SilFaults {
 
   PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR"),
-  PAA_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
-  PAA_IUV_NON_VALIDO("IUV non valido", "INVALID_IUV"),
+  PAA_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato", "INVALID_ORGANIZATION", "INVALID_ORGANIZATION_STATUS","ORGANIZATION_NOT_FOUND"),
+  PAA_IUV_NON_VALIDO("IUV non valido", "INVALID_IUV", "MISSING_IUV"),
   PAA_IUD_NON_VALIDO("IUD non valido"),
-  PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO("Identificativo tipo dovuto non valido", "MISSING_DEBT_POSITION_TYPE_ORG"),
+  PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO("Identificativo tipo dovuto non valido", "MISSING_DEBT_POSITION_TYPE_ORG", "DEBT_POSITION_TYPE_ORG_NOT_FOUND"),
   PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO("Identificativo tipo dovuto non abilitato", "DEBT_POSITION_TYPE_ORG_UNAUTHORIZED"),
   PAA_IUD_DUPLICATO("IUD duplicato"),
   PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA("Marca da bollo digitale non valida"),
@@ -37,6 +37,7 @@ public enum SilFaults {
   PAA_IMPORT_DOVUTO_NON_PRESENTE("Dovuto non presente"),
   PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile", "IMMUTABLE_FIELD"),
 
+  PAA_EXPORT_FILE_NON_TROVATO("Export file non trovato"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
