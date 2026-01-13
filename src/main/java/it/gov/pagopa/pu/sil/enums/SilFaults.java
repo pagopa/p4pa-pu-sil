@@ -35,7 +35,7 @@ public enum SilFaults {
   PAA_AZIONE_NON_VALIDA("Azione non valida"),
   PAA_LIMITAZIONE_ENTI_SECONDARI_ERROR("Limite massimo dovuti enti secondari superato"),
   PAA_IMPORT_DOVUTO_NON_PRESENTE("Dovuto non presente"),
-  PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile", "UNMODIFIABLE_FIELD"),
+  PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile", "IMMUTABLE_FIELD"),
 
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
