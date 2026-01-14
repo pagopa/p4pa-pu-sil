@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.connector.classification.config;
 
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.sil.exception.responseerrorhandler.ClassificationResponseErrorHandler;
-import it.gov.pagopa.pu.sil.exception.responseerrorhandler.DebtPositionsResponseErrorHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
