@@ -65,14 +65,16 @@ public class IngestionFlowFileProcessingStatusService {
 
   private void addDownloadUrlsToResponse(ImportStatusResponseDTO responseDTO, IngestionFlowFile ingestionFlowFile) {
     boolean success = ingestionFlowFile.getErrorDescription() == null;
-    if (ingestionFlowFile.getNumCorrectlyImportedRows()!= null && ingestionFlowFile.getNumCorrectlyImportedRows() > 0) {
+    boolean isAllowedType = IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType());
+
+    if (isAllowedType && ingestionFlowFile.getNumCorrectlyImportedRows()!= null && ingestionFlowFile.getNumCorrectlyImportedRows() > 0) {
       responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.OUTPUT_FILE, composeUrl(ingestionFlowFile, "/iuv")));
+    }
+    if (isAllowedType && ingestionFlowFile.getPdfGeneratedId() != null) {
+      responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.PAYMENT_NOTICE_FILE, composeUrl(ingestionFlowFile, "/notice")));
     }
     if (!success && ingestionFlowFile.getDiscardFileName() != null) {
       responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.DISCARDED_FILE, composeUrl(ingestionFlowFile, "/errors")));
-    }
-    if (ingestionFlowFile.getPdfGeneratedId() != null) {
-      responseDTO.addDownloadUrlsItem(new DownloadUrl(CodeEnum.PAYMENT_NOTICE_FILE, composeUrl(ingestionFlowFile, "/notice")));
     }
   }
 
