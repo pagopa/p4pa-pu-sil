@@ -5,7 +5,7 @@ import java.util.Arrays;
 public enum SilFaults {
 
   PAA_SYSTEM_ERROR("PAA_SYSTEM_ERROR"),
-  PAA_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato", "INVALID_ORGANIZATION", "INVALID_ORGANIZATION_STATUS","ORGANIZATION_NOT_FOUND"),
+  PAA_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato", "INVALID_ORGANIZATION", "INVALID_ORGANIZATION_STATUS", "ORGANIZATION_NOT_FOUND"),
   PAA_IUV_NON_VALIDO("IUV non valido", "INVALID_IUV", "MISSING_IUV"),
   PAA_IUD_NON_VALIDO("IUD non valido"),
   PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO("Identificativo tipo dovuto non valido", "MISSING_DEBT_POSITION_TYPE_ORG", "DEBT_POSITION_TYPE_ORG_NOT_FOUND"),
@@ -16,8 +16,8 @@ public enum SilFaults {
   PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO("Dati specifici riscossione non validi", "INVALID_TAXONOMY_CATEGORY", "MISSING_TAXONOMY_CATEGORY", "INVALID_LEGACY_PAYMENT_METADATA"),
   PAA_IMPORTO_BILANCIO_NON_VALIDO("Importo bilancio non valido", "INVALID_BALANCE"),
   PAA_CAUSALE_NON_PRESENTE("Causale non presente o non valida", "MISSING_REMITTANCE_INFORMATION"),
-  PAA_ANAGRAFICA_NON_VALIDA("Anagrafica debitore non valida", "INVALID_PERSONAL_DATA"),
-  PAA_XML_NON_VALIDO("XML non valido", "INVALID_BALANCE"),
+  PAA_ANAGRAFICA_NON_VALIDA("Anagrafica debitore non valida", "INVALID_PERSONAL_DATA", "MISSING_DEBTOR"),
+  PAA_XML_NON_VALIDO("XML non valido"),
   PAA_CODICE_FISCALE_NON_VALIDO("Codice fiscale non valido", "INVALID_VAT_CODE"),
   PAA_VERSIONE_TRACCIATO_NON_VALIDA("Versione tracciato non valida"),
   PAA_DATE_FROM_NON_VALIDO("Data inizio non valida"),
@@ -36,8 +36,9 @@ public enum SilFaults {
   PAA_LIMITAZIONE_ENTI_SECONDARI_ERROR("Limite massimo dovuti enti secondari superato"),
   PAA_IMPORT_DOVUTO_NON_PRESENTE("Dovuto non presente"),
   PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile", "IMMUTABLE_FIELD"),
-
-  PAA_EXPORT_FILE_NON_TROVATO("Export file non trovato"),
+  PAA_REQUEST_TOKEN_NON_VALIDO ("requestToken non valido"),
+  PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA("dataEsecuzionePagamento non presente o non valida", "MISSING_DUE_DATE", "INVALID_DUE_DATE"),
+  PAA_DOVUTO_DUPLICATO("Dovuto già presente", "INSTALLMENT_ALREADY_EXISTS"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),

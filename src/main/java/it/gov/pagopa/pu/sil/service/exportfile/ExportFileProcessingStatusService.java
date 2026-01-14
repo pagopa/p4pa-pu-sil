@@ -37,8 +37,9 @@ public class ExportFileProcessingStatusService  {
     log.debug("Retrieved ExportFile: {}", exportFile);
 
     if(exportFile == null){
-      throw new SilFaultException(SilFaults.PAA_EXPORT_FILE_NON_TROVATO, "Non è stato trovaato l'export file con id " + exportFileId);
+      throw new SilFaultException(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, "requestToken non valido");
     }
+
     if (expectedType != null && !expectedType.equals(exportFile.getExportFileType())) {
       throw new IllegalArgumentException("Type mismatch: expected %s but found %s"
         .formatted(expectedType, exportFile.getExportFileType()));

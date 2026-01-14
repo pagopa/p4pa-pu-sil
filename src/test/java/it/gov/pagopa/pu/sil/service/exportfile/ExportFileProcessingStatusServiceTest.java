@@ -6,9 +6,13 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTyp
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.veneto.regione.pagamenti.pivot.ente.PivotSILChiediAccertamentoRisposta;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,10 +88,11 @@ class ExportFileProcessingStatusServiceTest {
 
     when(exportFileServiceMock.getExportFile(1L, accessToken)).thenReturn(null);
 
-    // When, Then
-    assertThrows(IllegalArgumentException.class, () ->
+    SilFaultException exception = assertThrows(SilFaultException.class, () ->
       service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, ExportFileTypeEnum.PAID)
     );
+
+    assertEquals(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, exception.getFault());
   }
 
   @Test
