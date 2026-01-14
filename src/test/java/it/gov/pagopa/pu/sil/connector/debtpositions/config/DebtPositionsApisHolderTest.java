@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.sil.exception.responseerrorhandler.DebtPositionsResponseErrorHandler;
 import org.junit.jupiter.api.AfterEach;
@@ -13,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionsApisHolderTest extends BaseApiHolderTest {
@@ -30,7 +30,7 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
         DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
           .baseUrl("http://example.com")
           .build();
-        apisHolder = new DebtPositionsApisHolder(clientConfig, restTemplateBuilderMock, new ObjectMapper());
+        apisHolder = new DebtPositionsApisHolder(clientConfig, restTemplateBuilderMock, new JsonMapper());
     }
 
     @AfterEach

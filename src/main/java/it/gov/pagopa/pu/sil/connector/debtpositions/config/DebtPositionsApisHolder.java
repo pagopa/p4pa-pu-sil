@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.debtpositions.controller.ApiClient;
 import it.gov.pagopa.pu.debtpositions.controller.BaseApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionApi;
@@ -15,6 +14,7 @@ import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 public class DebtPositionsApisHolder {
@@ -35,7 +35,7 @@ public class DebtPositionsApisHolder {
   public DebtPositionsApisHolder(
     DebtPositionsApiClientConfig clientConfig,
     RestTemplateBuilder restTemplateBuilder,
-    ObjectMapper objectMapper
+    JsonMapper jsonMapper
   ) {
 
     RestTemplate restTemplate = restTemplateBuilder.build();
@@ -45,7 +45,7 @@ public class DebtPositionsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
 
-    restTemplate.setErrorHandler(new DebtPositionsResponseErrorHandler(clientConfig, objectMapper));
+    restTemplate.setErrorHandler(new DebtPositionsResponseErrorHandler(clientConfig, jsonMapper));
 
     this.debtPositionTypeOrgSearchControllerApi = new DebtPositionTypeOrgSearchControllerApi(apiClient);
     this.debtPositionTypeEntityControllerApi = new DebtPositionTypeEntityControllerApi(apiClient);

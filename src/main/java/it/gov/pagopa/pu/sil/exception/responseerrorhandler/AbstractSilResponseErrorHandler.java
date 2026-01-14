@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.exception.responseerrorhandler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -11,6 +10,8 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResponseErrorHandler;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,11 +19,11 @@ import java.util.Optional;
 
 @Slf4j
 public abstract class AbstractSilResponseErrorHandler<E> extends DefaultResponseErrorHandler {
-  private final ObjectMapper objectMapper;
+  private final JsonMapper jsonMapper;
   private final ResponseErrorHandler errorLoggerHandler;
 
-  protected AbstractSilResponseErrorHandler(ObjectMapper objectMapper, boolean printBodyWhenError, String name) {
-    this.objectMapper = objectMapper;
+  protected AbstractSilResponseErrorHandler(JsonMapper jsonMapper, boolean printBodyWhenError, String name) {
+    this.jsonMapper = jsonMapper;
     this.errorLoggerHandler = printBodyWhenError ?
       RestTemplateConfig.bodyPrinterWhenError(name) : null;
   }
@@ -52,10 +53,10 @@ public abstract class AbstractSilResponseErrorHandler<E> extends DefaultResponse
     E errorDto;
 
     try {
-      errorDto = objectMapper.readValue(responseBody, getErrorDtoClass());
-    } catch (IOException ex) {
+      errorDto = jsonMapper.readValue(responseBody, getErrorDtoClass());
+    } catch (JacksonException ex) {
       log.error("Cannot deserialize error message from body: {}", responseBody, ex);
-      throw ex;
+      throw new IOException("Error deserializing response body", ex);
     }
 
     String rawMessage = extractMessageFromDto(errorDto);

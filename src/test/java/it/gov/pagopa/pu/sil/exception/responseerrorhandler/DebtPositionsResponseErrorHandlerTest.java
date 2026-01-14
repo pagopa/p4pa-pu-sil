@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApiClientConfig;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
@@ -26,6 +25,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.HttpServerErrorException;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 class DebtPositionsResponseErrorHandlerTest {
@@ -38,14 +38,14 @@ class DebtPositionsResponseErrorHandlerTest {
   @Mock
   private ClientHttpResponse responseMock;
 
-  private final ObjectMapper objectMapper = new ObjectMapper();
+  private final JsonMapper jsonMapper = new JsonMapper();
 
   void setUp(boolean isPrintBodyWhenError) throws IOException {
     DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
       .baseUrl(BASE_URL)
       .printBodyWhenError(isPrintBodyWhenError)
       .build();
-    errorHandler = new DebtPositionsResponseErrorHandler(clientConfig, objectMapper);
+    errorHandler = new DebtPositionsResponseErrorHandler(clientConfig, jsonMapper);
 
     if (isPrintBodyWhenError) {
       when(responseMock.getStatusCode()).thenReturn(STATUS_400);
@@ -60,7 +60,7 @@ class DebtPositionsResponseErrorHandlerTest {
     throws IOException {
     setUp(isPrintBodyWhenError);
 
-    String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
+    String jsonBody = jsonMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message("[INVALID_IUV] The iuv must be 17 characters long"));
 
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
@@ -75,7 +75,7 @@ class DebtPositionsResponseErrorHandlerTest {
     throws IOException {
     setUp(false);
 
-    String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
+    String jsonBody = jsonMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message("[NOT_MAPPED] Not mapped error message."));
 
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
@@ -111,7 +111,7 @@ class DebtPositionsResponseErrorHandlerTest {
     throws IOException {
     setUp(false);
 
-    String jsonBody = objectMapper.writeValueAsString(new DebtPositionErrorDTO()
+    String jsonBody = jsonMapper.writeValueAsString(new DebtPositionErrorDTO()
       .message(debtPositionsErrorMessage));
 
     when(responseMock.getBody()).thenReturn(new ByteArrayInputStream(jsonBody.getBytes(StandardCharsets.UTF_8)));
