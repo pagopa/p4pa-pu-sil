@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
-import it.gov.pagopa.pu.sil.exception.DebtPositionsResponseErrorHandler;
+import it.gov.pagopa.pu.sil.exception.responseerrorhandler.DebtPositionsResponseErrorHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

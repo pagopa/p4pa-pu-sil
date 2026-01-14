@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.exception;
+package it.gov.pagopa.pu.sil.exception.responseerrorhandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;

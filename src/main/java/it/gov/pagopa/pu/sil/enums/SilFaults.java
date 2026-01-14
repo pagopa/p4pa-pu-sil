@@ -38,7 +38,8 @@ public enum SilFaults {
   PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile", "IMMUTABLE_FIELD"),
   PAA_REQUEST_TOKEN_NON_VALIDO ("requestToken non valido"),
   PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA("dataEsecuzionePagamento non presente o non valida", "MISSING_DUE_DATE", "INVALID_DUE_DATE"),
-  PAA_DOVUTO_DUPLICATO("Dovuto già presente", "INSTALLMENT_ALREADY_EXISTS"),
+  PAA_DOVUTO_DUPLICATO("Dovuto già esistente", "INSTALLMENT_ALREADY_EXISTS", "DEBT_POSITION_ALREADY_EXISTS"),
+  PAA_DOVUTO_NON_TROVATO("Dovuto non trovato", "DEBT_POSITION_NOT_FOUND"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),

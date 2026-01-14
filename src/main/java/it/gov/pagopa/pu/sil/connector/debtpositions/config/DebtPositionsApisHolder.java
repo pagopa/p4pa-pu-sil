@@ -10,7 +10,7 @@ import it.gov.pagopa.pu.debtpositions.controller.generated.DebtPositionTypeOrgSe
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.controller.generated.ReceiptApi;
-import it.gov.pagopa.pu.sil.exception.DebtPositionsResponseErrorHandler;
+import it.gov.pagopa.pu.sil.exception.responseerrorhandler.DebtPositionsResponseErrorHandler;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
