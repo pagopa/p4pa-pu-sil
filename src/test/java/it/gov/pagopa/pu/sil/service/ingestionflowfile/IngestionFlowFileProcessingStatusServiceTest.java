@@ -121,7 +121,7 @@ class IngestionFlowFileProcessingStatusServiceTest {
     String accessToken = "accessToken";
     UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
     IngestionFlowFile file = podamFactory.manufacturePojo(IngestionFlowFile.class)
-      .ingestionFlowFileType(IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+      .ingestionFlowFileType(IngestionFlowFileTypeEnum.ASSESSMENTS)
       .status(IngestionFlowFileStatus.ERROR)
       .organizationId(1L)
       .ingestionFlowFileId(1L)
@@ -132,12 +132,11 @@ class IngestionFlowFileProcessingStatusServiceTest {
       .thenReturn(file);
 
     // When
-    ImportStatusResponseDTO response = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+    ImportStatusResponseDTO response = service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, IngestionFlowFileTypeEnum.ASSESSMENTS);
 
     //Then
     List<DownloadUrl> urls = response.getDownloadUrls();
-    assertEquals(2, urls.size());
-    assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.OUTPUT_FILE));
+    assertEquals(1, urls.size());
     assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.DISCARDED_FILE));
   }
 
