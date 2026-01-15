@@ -8,6 +8,8 @@ import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -249,5 +251,24 @@ class IngestionFlowFileProcessingStatusServiceTest {
     assertEquals(2, urls.size());
     assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.OUTPUT_FILE));
     assertTrue(urls.stream().anyMatch(u -> u.getCode() == CodeEnum.DISCARDED_FILE));
+  }
+
+  @Test
+  void givenNullIngestionFLowFileIdWhenGetProcessingStatusThenThrowSilFaultException() {
+    Long ingestionFlowFileId = 1L;
+    String orgIpaCode = "ORG1";
+    String accessToken = "accessToken";
+
+    UserInfo userInfo = AuthorizationServiceTest.buildAdminUser(1L, "ORGFC", orgIpaCode);
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(null);
+
+    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+      service.getProcessingStatus(userInfo, accessToken, orgIpaCode, ingestionFlowFileId, IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
+    );
+
+    assertEquals(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, exception.getFault());
+    assertEquals("requestToken non valido", exception.getDescription());
   }
 }

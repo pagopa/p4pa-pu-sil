@@ -146,6 +146,26 @@ class PaaSILImportaDovutoMapperTest {
     });
 
   }
+
+  @Test
+  void givenDovutoWithNullDptoWhenMapRequestToDebtPositionThenThrowSilFaultException() {
+    PaaSILImportaDovuto request = new PaaSILImportaDovuto();
+    Versamento versamento = podamFactory.manufacturePojo(Versamento.class);
+
+    when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenReturn(versamento);
+
+    when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(
+      org.getOrganizationId(),
+      versamento.getDatiVersamento().getIdentificativoTipoDovuto(),
+      ACCESS_TOKEN))
+      .thenReturn(null);
+
+    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,
+      () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
+
+    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
+    assertTrue(exception.getMessage().contains("Identificativo tipo dovuto non valido"));
+  }
   //endregion
 
 }
