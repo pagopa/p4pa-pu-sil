@@ -36,7 +36,7 @@ public enum SilFaults {
   PAA_LIMITAZIONE_ENTI_SECONDARI_ERROR("Limite massimo dovuti enti secondari superato"),
   PAA_IMPORT_DOVUTO_NON_PRESENTE("Dovuto non presente"),
   PAA_CAMPO_NON_MODIFICABILE("Campo non modificabile", "IMMUTABLE_FIELD"),
-  PAA_REQUEST_TOKEN_NON_VALIDO ("requestToken non valido"),
+  PAA_REQUEST_TOKEN_NON_VALIDO("requestToken non valido"),
   PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA("dataEsecuzionePagamento non presente o non valida", "MISSING_DUE_DATE", "INVALID_DUE_DATE"),
   PAA_DOVUTO_DUPLICATO("Dovuto già esistente", "INSTALLMENT_ALREADY_EXISTS", "DEBT_POSITION_ALREADY_EXISTS"),
   PAA_DOVUTO_NON_TROVATO("Dovuto non trovato", "DEBT_POSITION_NOT_FOUND"),
@@ -49,7 +49,8 @@ public enum SilFaults {
   PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO("Identificativo tipo dovuto non abilitato"),
   PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido"),
   PIVOT_BOLLETTA_NON_TROVATA("Bolletta non trovata"),
-  PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA("Nessuna rendicontazione associata allo IUF della bolletta")
+  PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA("Nessuna rendicontazione associata allo IUF della bolletta"),
+  PIVOT_REQUEST_TOKEN_NON_VALIDO("requestToken non valido"),
   ;
 
   private final String description;

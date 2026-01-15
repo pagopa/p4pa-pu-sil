@@ -37,7 +37,9 @@ public class ExportFileProcessingStatusService  {
     log.debug("Retrieved ExportFile: {}", exportFile);
 
     if(exportFile == null){
-      throw new SilFaultException(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, "requestToken non valido");
+      throw new SilFaultException(
+        !expectedType.equals(ExportFileTypeEnum.CLASSIFICATIONS) ? SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO : SilFaults.PIVOT_REQUEST_TOKEN_NON_VALIDO,
+        "requestToken non valido");
     }
 
     if (expectedType != null && !expectedType.equals(exportFile.getExportFileType())) {
