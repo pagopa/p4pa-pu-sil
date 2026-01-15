@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHold
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
