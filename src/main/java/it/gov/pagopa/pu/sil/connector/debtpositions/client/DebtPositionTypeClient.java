@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @Slf4j
@@ -17,21 +18,36 @@ public class DebtPositionTypeClient {
   }
 
   public DebtPositionTypeOrg getDebtPositionTypeOrgByOrganizationIdAndCode(Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
-    return debtPositionsApisHolder
-      .getDebtPositionTypeOrgSearchControllerApi(accessToken)
-      .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionTypeOrgSearchControllerApi(accessToken)
+        .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
+      return null;
+    }
   }
 
   public DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken) {
-    return debtPositionsApisHolder
-      .getDebtPositionTypeEntityControllerApi(accessToken)
-      .crudGetDebtpositiontype(String.valueOf(debtPositionType));
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionTypeEntityControllerApi(accessToken)
+        .crudGetDebtpositiontype(String.valueOf(debtPositionType));
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DeptPositionType having id[{}]", debtPositionType, e);
+      return null;
+    }
   }
 
   public DebtPositionTypeOrg getDebtPositionTypeOrgByInstallmentId(Long installmentId, String accessToken) {
-    return debtPositionsApisHolder
-      .getDebtPositionTypeOrgSearchControllerApi(accessToken)
-      .crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId);
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionTypeOrgSearchControllerApi(accessToken)
+        .crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DeptPositionTypeOrg for installmentId[{}]", installmentId, e);
+      return null;
+    }
   }
 
 }

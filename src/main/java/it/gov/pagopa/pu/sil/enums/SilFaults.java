@@ -39,7 +39,6 @@ public enum SilFaults {
   PAA_REQUEST_TOKEN_NON_VALIDO("requestToken non valido"),
   PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA("dataEsecuzionePagamento non presente o non valida", "MISSING_DUE_DATE", "INVALID_DUE_DATE"),
   PAA_DOVUTO_DUPLICATO("Dovuto già esistente", "INSTALLMENT_ALREADY_EXISTS", "DEBT_POSITION_ALREADY_EXISTS"),
-  PAA_DOVUTO_NON_TROVATO("Dovuto non trovato", "DEBT_POSITION_NOT_FOUND"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
@@ -50,7 +49,7 @@ public enum SilFaults {
   PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido"),
   PIVOT_BOLLETTA_NON_TROVATA("Bolletta non trovata"),
   PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA("Nessuna rendicontazione associata allo IUF della bolletta"),
-  PIVOT_REQUEST_TOKEN_NON_VALIDO("requestToken non valido"),
+  PIVOT_RICHIESTA_CON_PARAMETRI_MULTIPLI("Richiesta con parametri multipli")
   ;
 
   private final String description;

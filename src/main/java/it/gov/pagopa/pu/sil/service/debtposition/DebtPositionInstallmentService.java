@@ -56,11 +56,9 @@ public class DebtPositionInstallmentService {
   }
 
   private Pair<DebtPositionDTO, InstallmentDTO> createPairFromInstallmentId(Long installmentId, String accessToken) {
-    DebtPositionDTO debtPosition;
+    DebtPositionDTO debtPosition = debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
 
-    try {
-      debtPosition = debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken); //
-    } catch (Exception e) {
+    if (debtPosition == null) {
       throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "id session non valido");
     }
 

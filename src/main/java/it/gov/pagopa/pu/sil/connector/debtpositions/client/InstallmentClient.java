@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -39,8 +40,13 @@ public class InstallmentClient {
       String operatorExternalUserId,
       List<DebtPositionOrigin> debtPositionOrigins,
       String accessToken) {
-    return debtPositionsApisHolder
-      .getInstallmentNoPiiSearchControllerApi(accessToken)
-      .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, debtPositionOrigins);
+    try {
+      return debtPositionsApisHolder
+        .getInstallmentNoPiiSearchControllerApi(accessToken)
+        .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, debtPositionOrigins);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find InstallmentNoPII by semantic key: organizationId {} - iuv {} - iur {} - transferIndex {}", organizationId, iuv, iur, transferIndex, e);
+      return null;
+    }
   }
 }

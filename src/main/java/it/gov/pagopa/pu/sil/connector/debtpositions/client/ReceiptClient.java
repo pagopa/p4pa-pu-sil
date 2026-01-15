@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @Slf4j
@@ -16,9 +17,14 @@ public class ReceiptClient {
   }
 
   public ReceiptDTO getReceiptById(Long receiptId, String accessToken) {
-    return debtPositionsApisHolder
-      .getReceiptApi(accessToken)
-      .getReceipt(receiptId);
+    try {
+      return debtPositionsApisHolder
+        .getReceiptApi(accessToken)
+        .getReceipt(receiptId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find ReceiptDTO having receiptId[{}]", receiptId, e);
+      return null;
+    }
   }
 
 }

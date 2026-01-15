@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptClientTest {
@@ -38,7 +39,7 @@ class ReceiptClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L})
+  @ValueSource(longs = {1L, 2L})
   void whenGetReceiptByIdThenInvokeApi(Long receiptId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -46,10 +47,14 @@ class ReceiptClientTest {
 
     Mockito.when(apisHolderMock.getReceiptApi(accessToken))
       .thenReturn(receiptApiMock);
-
-    expectedResult = new ReceiptDTO();
+    if(receiptId == 2L) {
+      Mockito.when(receiptApiMock.getReceipt(receiptId))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new ReceiptDTO();
       Mockito.when(receiptApiMock.getReceipt(receiptId)).thenReturn(expectedResult);
-
+    }
 
     // When
     ReceiptDTO result = client.getReceiptById(receiptId, accessToken);

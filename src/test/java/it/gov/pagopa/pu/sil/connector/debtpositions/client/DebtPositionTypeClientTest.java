@@ -75,13 +75,15 @@ class DebtPositionTypeClientTest {
     Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode))
       .thenThrow(HttpClientErrorException.NotFound.class);
 
-    Assertions.assertThrows(HttpClientErrorException.NotFound.class, () -> {
-      client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
-    });
+    // When
+    DebtPositionTypeOrg response = client.getDebtPositionTypeOrgByOrganizationIdAndCode(debtPositionTypeOrgId, debtPositionTypeOrgCode, accessToken);
+
+    // Then
+    Assertions.assertNull(response);
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L})
+  @ValueSource(longs = {1L, 2L})
   void whenGetDebtPositionTypeByIdThenInvokeApi(Long debtPositionTypeId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -89,9 +91,14 @@ class DebtPositionTypeClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionTypeEntityControllerApi(accessToken))
       .thenReturn(debtPositionTypeEntityControllerApiMock);
-
-    expectedResult = new DebtPositionType();
+    if(debtPositionTypeId == 2L) {
+      Mockito.when(debtPositionTypeEntityControllerApiMock.crudGetDebtpositiontype(String.valueOf(debtPositionTypeId)))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new DebtPositionType();
       Mockito.when(debtPositionTypeEntityControllerApiMock.crudGetDebtpositiontype(String.valueOf(debtPositionTypeId))).thenReturn(expectedResult);
+    }
 
     //when
     DebtPositionType result = client.getDebtPositionTypeById(debtPositionTypeId, accessToken);
@@ -101,7 +108,7 @@ class DebtPositionTypeClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L})
+  @ValueSource(longs = {1L, 2L})
   void whenGetDebtPositionTypeOrgByIdThenInvokeApi(Long installmentId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -109,9 +116,14 @@ class DebtPositionTypeClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionTypeOrgSearchControllerApi(accessToken))
       .thenReturn(debtPositionTypeOrgSearchControllerApiMock);
-
-    expectedResult = new DebtPositionTypeOrg();
+    if(installmentId == 2L) {
+      Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new DebtPositionTypeOrg();
       Mockito.when(debtPositionTypeOrgSearchControllerApiMock.crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId)).thenReturn(expectedResult);
+    }
 
     //when
     DebtPositionTypeOrg result = client.getDebtPositionTypeOrgByInstallmentId(installmentId, accessToken);

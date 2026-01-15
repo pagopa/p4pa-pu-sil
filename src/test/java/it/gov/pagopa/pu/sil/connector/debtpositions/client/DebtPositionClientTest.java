@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +67,7 @@ class DebtPositionClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L})
+  @ValueSource(longs = {1L, 2L})
   void whenGetDebtPositionDTOByInstallmentIdThenInvokeApi(Long installmentId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -74,9 +75,14 @@ class DebtPositionClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
       .thenReturn(debtPositionApiMock);
-
-    expectedResult = new DebtPositionDTO();
+    if(installmentId == 2L) {
+      Mockito.when(debtPositionApiMock.getDebtPositionByInstallmentId(installmentId))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new DebtPositionDTO();
       Mockito.when(debtPositionApiMock.getDebtPositionByInstallmentId(installmentId)).thenReturn(expectedResult);
+    }
 
     // When
     DebtPositionDTO result = client.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
@@ -149,7 +155,7 @@ class DebtPositionClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L})
+  @ValueSource(longs = {1L, 2L})
   void whenGetDebtPositionByInstallmentIdThenInvokeApi(Long installmentId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -157,10 +163,14 @@ class DebtPositionClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionSearchControllerApi(accessToken))
       .thenReturn(debtPositionSearchControllerApiMock);
-
-    expectedResult = new DebtPosition();
+    if(installmentId == 2L) {
+      Mockito.when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId))
+        .thenThrow(HttpClientErrorException.NotFound.class);
+      expectedResult = null;
+    } else {
+      expectedResult = new DebtPosition();
       Mockito.when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId)).thenReturn(expectedResult);
-
+    }
 
     // When
     DebtPosition result = client.getDebtPositionByInstallmentId(installmentId, accessToken);

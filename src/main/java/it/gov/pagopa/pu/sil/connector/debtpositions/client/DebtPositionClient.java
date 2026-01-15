@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHold
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -38,9 +39,14 @@ public class DebtPositionClient {
   }
 
   public DebtPositionDTO getDebtPositionDTOByInstallmentId(Long installmentId, String accessToken) {
-    return debtPositionsApisHolder
-      .getDebtPositionApi(accessToken)
-      .getDebtPositionByInstallmentId(installmentId);
+    try {
+      return debtPositionsApisHolder
+        .getDebtPositionApi(accessToken)
+        .getDebtPositionByInstallmentId(installmentId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DebtPositionDTO having installmentId[{}]", installmentId, e);
+      return null;
+    }
   }
 
   public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIuv(Long organizationId, String iuv, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
@@ -56,8 +62,13 @@ public class DebtPositionClient {
   }
 
   public DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken){
-    return debtPositionsApisHolder.getDebtPositionSearchControllerApi(accessToken)
-      .crudDebtPositionsFindByInstallmentId(installmentId);
+    try{
+      return debtPositionsApisHolder.getDebtPositionSearchControllerApi(accessToken)
+        .crudDebtPositionsFindByInstallmentId(installmentId);
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find DebtPosition having installmentId[{}]", installmentId, e);
+      return null;
+    }
   }
 
   public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(

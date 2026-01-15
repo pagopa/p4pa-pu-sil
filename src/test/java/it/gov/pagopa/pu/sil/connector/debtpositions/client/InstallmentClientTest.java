@@ -125,10 +125,12 @@ class InstallmentClientTest {
       organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
       .thenThrow(HttpClientErrorException.NotFound.class);
 
-    Assertions.assertThrows(HttpClientErrorException.NotFound.class, () ->
-      client.findAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS, accessToken)
-    );
+    // When
+    InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
+
+    // Then
+    Assertions.assertNull(result);
   }
 
 }
