@@ -25,8 +25,13 @@ public class ExportFileClient {
   }
 
   public Long createClassificationsExportFile(ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO, String accessToken) {
-    ResponseEntity<Void> response = processExecutionsApisHolder.getExportFileControllerApi(accessToken)
-      .createClassificationsExportFileWithHttpInfo(classificationsExportFileRequestDTO);
+    ResponseEntity<Void> response;
+    try {
+      response = processExecutionsApisHolder.getExportFileControllerApi(accessToken)
+        .createClassificationsExportFileWithHttpInfo(classificationsExportFileRequestDTO);
+    } catch (HttpClientErrorException.BadRequest br) {
+      throw resolveException(br);
+    }
     return locationHeader(response);
   }
 
