@@ -40,10 +40,6 @@ public abstract class AbstractSilResponseErrorHandler<E> extends DefaultResponse
         super.handleError(response, statusCode, url, method);
       }
     } catch (HttpStatusCodeException exception) {
-      if (statusCode.value() == 404) {
-        throw exception;
-      }
-
       if (statusCode.is4xxClientError()) {
         handleClientError(exception);
       } else {

@@ -18,36 +18,21 @@ public class DebtPositionTypeClient {
   }
 
   public DebtPositionTypeOrg getDebtPositionTypeOrgByOrganizationIdAndCode(Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getDebtPositionTypeOrgSearchControllerApi(accessToken)
-        .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
-      return null;
-    }
+    return debtPositionsApisHolder
+      .getDebtPositionTypeOrgSearchControllerApi(accessToken)
+      .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
   }
 
   public DebtPositionType getDebtPositionTypeById(Long debtPositionType, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getDebtPositionTypeEntityControllerApi(accessToken)
-        .crudGetDebtpositiontype(String.valueOf(debtPositionType));
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DeptPositionType having id[{}]", debtPositionType, e);
-      return null;
-    }
+    return debtPositionsApisHolder
+      .getDebtPositionTypeEntityControllerApi(accessToken)
+      .crudGetDebtpositiontype(String.valueOf(debtPositionType));
   }
 
   public DebtPositionTypeOrg getDebtPositionTypeOrgByInstallmentId(Long installmentId, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getDebtPositionTypeOrgSearchControllerApi(accessToken)
-        .crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DeptPositionTypeOrg for installmentId[{}]", installmentId, e);
-      return null;
-    }
+    return debtPositionsApisHolder
+      .getDebtPositionTypeOrgSearchControllerApi(accessToken)
+      .crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId);
   }
 
 }

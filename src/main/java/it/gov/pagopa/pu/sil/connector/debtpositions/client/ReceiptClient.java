@@ -17,14 +17,9 @@ public class ReceiptClient {
   }
 
   public ReceiptDTO getReceiptById(Long receiptId, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getReceiptApi(accessToken)
-        .getReceipt(receiptId);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find ReceiptDTO having receiptId[{}]", receiptId, e);
-      return null;
-    }
+    return debtPositionsApisHolder
+      .getReceiptApi(accessToken)
+      .getReceipt(receiptId);
   }
 
 }

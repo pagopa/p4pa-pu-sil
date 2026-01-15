@@ -39,14 +39,9 @@ public class DebtPositionClient {
   }
 
   public DebtPositionDTO getDebtPositionDTOByInstallmentId(Long installmentId, String accessToken) {
-    try {
-      return debtPositionsApisHolder
-        .getDebtPositionApi(accessToken)
-        .getDebtPositionByInstallmentId(installmentId);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DebtPositionDTO having installmentId[{}]", installmentId, e);
-      return null;
-    }
+    return debtPositionsApisHolder
+      .getDebtPositionApi(accessToken)
+      .getDebtPositionByInstallmentId(installmentId);
   }
 
   public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIuv(Long organizationId, String iuv, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
@@ -62,13 +57,8 @@ public class DebtPositionClient {
   }
 
   public DebtPosition getDebtPositionByInstallmentId(Long installmentId, String accessToken){
-    try{
-      return debtPositionsApisHolder.getDebtPositionSearchControllerApi(accessToken)
-        .crudDebtPositionsFindByInstallmentId(installmentId);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find DebtPosition having installmentId[{}]", installmentId, e);
-      return null;
-    }
+    return debtPositionsApisHolder.getDebtPositionSearchControllerApi(accessToken)
+      .crudDebtPositionsFindByInstallmentId(installmentId);
   }
 
   public List<DebtPositionDTO> getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(

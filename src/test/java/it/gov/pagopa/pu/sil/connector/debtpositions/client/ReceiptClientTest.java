@@ -39,7 +39,7 @@ class ReceiptClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L, 2L})
+  @ValueSource(longs = {1L})
   void whenGetReceiptByIdThenInvokeApi(Long receiptId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -47,14 +47,10 @@ class ReceiptClientTest {
 
     Mockito.when(apisHolderMock.getReceiptApi(accessToken))
       .thenReturn(receiptApiMock);
-    if(receiptId == 2L) {
-      Mockito.when(receiptApiMock.getReceipt(receiptId))
-        .thenThrow(HttpClientErrorException.NotFound.class);
-      expectedResult = null;
-    } else {
-      expectedResult = new ReceiptDTO();
+
+    expectedResult = new ReceiptDTO();
       Mockito.when(receiptApiMock.getReceipt(receiptId)).thenReturn(expectedResult);
-    }
+
 
     // When
     ReceiptDTO result = client.getReceiptById(receiptId, accessToken);

@@ -67,7 +67,7 @@ class DebtPositionClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L, 2L})
+  @ValueSource(longs = {1L})
   void whenGetDebtPositionDTOByInstallmentIdThenInvokeApi(Long installmentId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -75,14 +75,9 @@ class DebtPositionClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
       .thenReturn(debtPositionApiMock);
-    if(installmentId == 2L) {
-      Mockito.when(debtPositionApiMock.getDebtPositionByInstallmentId(installmentId))
-        .thenThrow(HttpClientErrorException.NotFound.class);
-      expectedResult = null;
-    } else {
-      expectedResult = new DebtPositionDTO();
+
+    expectedResult = new DebtPositionDTO();
       Mockito.when(debtPositionApiMock.getDebtPositionByInstallmentId(installmentId)).thenReturn(expectedResult);
-    }
 
     // When
     DebtPositionDTO result = client.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
@@ -155,7 +150,7 @@ class DebtPositionClientTest {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = {1L, 2L})
+  @ValueSource(longs = {1L})
   void whenGetDebtPositionByInstallmentIdThenInvokeApi(Long installmentId) {
     // Given
     String accessToken = "ACCESSTOKEN";
@@ -163,14 +158,10 @@ class DebtPositionClientTest {
 
     Mockito.when(apisHolderMock.getDebtPositionSearchControllerApi(accessToken))
       .thenReturn(debtPositionSearchControllerApiMock);
-    if(installmentId == 2L) {
-      Mockito.when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId))
-        .thenThrow(HttpClientErrorException.NotFound.class);
-      expectedResult = null;
-    } else {
-      expectedResult = new DebtPosition();
+
+    expectedResult = new DebtPosition();
       Mockito.when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId)).thenReturn(expectedResult);
-    }
+
 
     // When
     DebtPosition result = client.getDebtPositionByInstallmentId(installmentId, accessToken);
