@@ -120,6 +120,7 @@ class PaidExportFileReservationServiceTest {
             DebtPositionOriginsEnum.SPONTANEOUS,
             DebtPositionOriginsEnum.SPONTANEOUS_SIL,
             DebtPositionOriginsEnum.SPONTANEOUS_MIXED,
+            DebtPositionOriginsEnum.SPONTANEOUS_PSP,
             DebtPositionOriginsEnum.RECEIPT_FILE,
             DebtPositionOriginsEnum.RECEIPT_PAGOPA,
             DebtPositionOriginsEnum.REPORTING_PAGOPA)));

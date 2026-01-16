@@ -36,7 +36,7 @@ public class LegacyQueryAssessmentsService extends BaseQueryAssessmentsService<P
     RichiestaPerIUF iufRequest = request.getRichiestaPerIUF();
 
     if (!ValidationUtils.verifyExclusivePresence(billRequest, iufRequest)) {
-      throw new IllegalArgumentException("Solo uno tra RichiestaPerBolletta o RichiestaPerIUF deve essere presente");
+      throw new SilFaultException(SilFaults.PIVOT_RICHIESTA_CON_PARAMETRI_MULTIPLI, "Solo uno tra RichiestaPerBolletta o RichiestaPerIUF deve essere presente");
     }
 
     String iuf = Optional.ofNullable(iufRequest)

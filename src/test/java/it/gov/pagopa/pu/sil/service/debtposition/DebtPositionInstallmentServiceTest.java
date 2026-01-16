@@ -285,4 +285,19 @@ class DebtPositionInstallmentServiceTest {
     assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
     assertTrue(exception.getDescription().contains("Tipo dovuto non valido: " + debtPositionTypeOrgCode));
   }
+
+  @Test
+  void givenNullDpWhenGetDebtPositionsAndInstallmentsByInstallmentIdThenThrowSilFaultException() {
+    PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, inst.getIuv(), false);
+
+    when(sessionIdMapper.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
+    when(debtPositionService.getDebtPositionDTOByInstallmentId(inst.getInstallmentId(), accessToken)).thenReturn(null);
+
+    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+      installmentService.getDebtPositionsAndInstallmentsByInstallmentId(request, accessToken)
+    );
+
+    assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO, exception.getFault());
+    assertEquals("id session non valido", exception.getDescription());
+  }
 }

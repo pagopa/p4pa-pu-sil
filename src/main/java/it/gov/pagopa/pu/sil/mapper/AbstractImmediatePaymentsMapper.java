@@ -44,6 +44,11 @@ abstract class AbstractImmediatePaymentsMapper {
     // get debt position type org and validate
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
+
+    if (debtPositionTypeOrg == null) {
+      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+    }
+
     validationService.validateStamp(versamento);
     validationService.validateIud(org.getOrganizationId(), versamento.getIdentificativoUnivocoDovuto(), accessToken);
 
