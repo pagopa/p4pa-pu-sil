@@ -106,7 +106,7 @@ public class AuthorizationServiceTest {
       AuthorizationDeniedException.class,
       () -> AuthorizationService.validateAdminRole(2L,userInfo));
 
-    Assertions.assertEquals("Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
+    Assertions.assertEquals("[ORGANIZATION_UNAUTHORIZED] Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
   }
 
   @Test

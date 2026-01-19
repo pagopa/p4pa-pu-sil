@@ -21,7 +21,7 @@ public class SilLegacyAuthFacadeService {
     return switch (orgSilService.getAuthConfig()) {
       case SilServiceLegacyBasicAuthConfigDTO legacyBasicAuth -> basicAuthService.authenticate(orgFiscalCode, orgSilService.getApplicationName(), nav, loggedUser, legacyBasicAuth);
       case SilServiceLegacyJwtAuthConfigDTO legacyJwtAuth -> jwtAuthService.authenticate(legacyJwtAuth);
-      default -> throw new IllegalArgumentException("Unsupported auth config type: " + orgSilService.getClass().getSimpleName());
+      default -> throw new IllegalArgumentException("[INVALID_AUTH_CONFIG] Unsupported auth config type: " + orgSilService.getClass().getSimpleName());
     };
   }
 }

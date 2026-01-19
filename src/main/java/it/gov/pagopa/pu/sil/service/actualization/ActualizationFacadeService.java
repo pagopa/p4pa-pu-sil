@@ -47,7 +47,7 @@ public class ActualizationFacadeService {
   public ActualizationResultDTO actualize(Long orgSilServiceId, String nav,
                                           UserInfo loggedUser, String accessToken) {
     OrgSilServiceDTO orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
-      .orElseThrow(() -> new IllegalArgumentException("Organization service not found"));
+      .orElseThrow(() -> new IllegalArgumentException("[ORG_SIL_SERVICE_NOT_FOUND] OrgSilService with id %s not found".formatted(orgSilServiceId)));
     AuthorizationService.validateUserForOrganizationId(orgSilService.getOrganizationId(), loggedUser);
     String orgFiscalCode = AuthorizationService.getOrgFiscalCodeFromUserInfo(loggedUser, orgSilService.getOrganizationId());
 
@@ -88,7 +88,7 @@ public class ActualizationFacadeService {
         if (errorResponse != null) {
           throw buildException(errorResponse.getCode(), errorResponse.getMessage());
         } else {
-          throw new ApplicationException("Unexpected error: " + e.getMessage(), e);
+          throw new ApplicationException("[GENERIC_ERROR] Unexpected error: " + e.getMessage(), e);
         }
       }
     }
@@ -100,7 +100,7 @@ public class ActualizationFacadeService {
       case "003" -> new PaymentNotNotifiedException(message);
       case "004" -> new PaymentInvalidStatusException(message);
       default ->
-        new ApplicationException("Unexpected error code: " + code + " - " + message);
+        new ApplicationException("[GENERIC_ERROR] Unexpected error code: " + code + " - " + message);
     };
   }
 }
