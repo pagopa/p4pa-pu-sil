@@ -25,7 +25,7 @@ public class ReceiptService {
           throw new ApplicationException(ioe);
         }
       })
-      .orElseThrow(() -> new ApplicationException("receipt not found for id: " + receiptId));
+      .orElseThrow(() -> new ApplicationException("[RECEIPT_NOT_FOUND] Receipt with id %s not found ".formatted(receiptId)));
   }
 
 }

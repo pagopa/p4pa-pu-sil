@@ -142,7 +142,7 @@ class PaaSILVerificaAvvisoServiceTest {
 
     //verify
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Nessun avviso pagabile trovato per l'dentificativo univoco del versamento indicato", exception.getDescription());
+    Assertions.assertEquals("Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato", exception.getDescription());
   }
 
   @Test

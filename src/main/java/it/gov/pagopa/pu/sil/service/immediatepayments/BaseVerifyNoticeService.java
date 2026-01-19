@@ -56,7 +56,7 @@ public abstract class BaseVerifyNoticeService<I, O> {
     List<InstallmentDTO> installments = installmentFacadeService.getInstallmentsByOrganizationIdAndNav(organizationId, iuv, accessToken);
 
     InstallmentDTO installmentDTO = installments.stream()
-      .findFirst().orElseThrow(() -> new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO,"Nessun avviso pagabile trovato per l'dentificativo univoco del versamento indicato"));
+      .findFirst().orElseThrow(() -> new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato"));
 
     return handleInstallmentsStatus(installmentDTO, organization, callbackUrl, accessToken);
   }

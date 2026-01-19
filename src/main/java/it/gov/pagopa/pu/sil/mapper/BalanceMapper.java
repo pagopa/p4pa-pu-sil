@@ -57,7 +57,7 @@ public class BalanceMapper {
         }
       }
     } catch (JsonProcessingException e) {
-      throw new BalanceParseException("Error while parse balance from PuSil.");
+      throw new BalanceParseException("[BALANCE_MAPPING_ERROR] Error while parse balance from PuSil.");
     }
     return null;
   }

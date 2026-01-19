@@ -4,9 +4,7 @@ import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
-import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -166,7 +164,7 @@ public class AuthorizationService {
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
     String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
-    throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + userId);
+    throw new AuthorizationDeniedException("[ORGANIZATION_UNAUTHORIZED] Access denied on organizationId " + organizationId + " to user " + userId);
   }
 
   private static void handleUnauthorizedUser(String orgIpaCode, UserInfo loggedUser) {
