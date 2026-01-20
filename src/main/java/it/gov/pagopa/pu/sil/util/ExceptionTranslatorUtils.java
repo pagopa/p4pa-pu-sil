@@ -8,6 +8,8 @@ import java.util.regex.Pattern;
 public class ExceptionTranslatorUtils {
   private static final Pattern ERROR_CODE_PATTERN = Pattern.compile("\\[([A-Z_]+)\\]");
 
+  private ExceptionTranslatorUtils() {}
+
   public static String translateExceptionMessage(String exceptionMessage) {
     Matcher matcher = ERROR_CODE_PATTERN.matcher(exceptionMessage);
 
