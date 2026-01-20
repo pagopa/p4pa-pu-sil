@@ -77,7 +77,7 @@ public class FaultUtils {
       SilFaults unauthorizedFault,
       SilFaults systemErrorFault) {
     return (Exception e) -> {
-      if (e instanceof AuthorizationDeniedException ue) {
+      if (e instanceof AuthorizationDeniedException) {
         return setFaultOnResponse(
           responseObj,
           unauthorizedFault,
