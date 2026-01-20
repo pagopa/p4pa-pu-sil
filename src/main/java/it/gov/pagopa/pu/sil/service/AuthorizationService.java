@@ -164,13 +164,13 @@ public class AuthorizationService {
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
     String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
-    throw new AuthorizationDeniedException("[ORGANIZATION_UNAUTHORIZED] Access denied on organizationId " + organizationId + " to user " + userId);
+    throw new AuthorizationDeniedException("[USER_UNAUTHORIZED] Access denied on organizationId " + organizationId + " to user " + userId);
   }
 
   private static void handleUnauthorizedUser(String orgIpaCode, UserInfo loggedUser) {
     log.debug("Unauthorized user. [orgIpaCode:{}]", orgIpaCode);
     String userId = loggedUser != null ? loggedUser.getMappedExternalUserId() : UNKNOWN;
-    throw new AuthorizationDeniedException("Access denied on orgIpaCode " + orgIpaCode + " to user " + userId);
+    throw new AuthorizationDeniedException("[USER_UNAUTHORIZED] Access denied on orgIpaCode " + orgIpaCode + " to user " + userId);
   }
 
   private static void handleUnauthorizedUserFiscalCode(String orgFiscalCode, UserInfo loggedUser) {
