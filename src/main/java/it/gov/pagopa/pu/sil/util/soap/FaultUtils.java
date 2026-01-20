@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.util.soap;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
-import it.gov.pagopa.pu.sil.util.ExceptionTranslatorUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.FaultBean;
 import it.veneto.regione.pagamenti.ente.Risposta;
@@ -82,7 +81,7 @@ public class FaultUtils {
         return setFaultOnResponse(
           responseObj,
           unauthorizedFault,
-          ExceptionTranslatorUtils.translateExceptionMessage(ue.getMessage()),
+          "Utente non autorizzato",
           faultBeanSupplier,
           faultSetter
         );
