@@ -56,7 +56,7 @@ public class PaymentNotificationService {
       throw new IllegalArgumentException("[DEBT_POSITION_NOT_FOUND] DebtPosition related to installmentId " + installmentDTO.getInstallmentId() + " not found");
     }
     if (!debtPosition.getOrganizationId().equals(organization.getOrganizationId())) {
-      throw new IllegalArgumentException("[INSTALLMENT_ORGANIZATION_MISMATCH] The installment provided is not related to the organization requested. requested " + organization.getOrganizationId() + " provided " + debtPosition.getOrganizationId());
+      throw new IllegalArgumentException("[INVALID_INSTALLMENT] The installment provided is not related to the organization requested. requested " + organization.getOrganizationId() + " provided " + debtPosition.getOrganizationId());
     }
 
     if (BooleanUtils.isTrue(orgSilService.getFlagLegacy())) {
