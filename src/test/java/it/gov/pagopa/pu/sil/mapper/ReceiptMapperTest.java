@@ -11,6 +11,9 @@ import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -18,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptMapperTest {
@@ -29,10 +33,12 @@ class ReceiptMapperTest {
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
-  @Test
-  void testMap2ReceiptWithAdditionalNodeDataDTO() {
+  @ParameterizedTest
+  @MethodSource("provideRemittanceInformation")
+  void testMap2ReceiptWithAdditionalNodeDataDTO(String remittanceInformation, String originalRemittanceInformation, String expectedRemittanceInformation) {
     // Arrange
     InstallmentDTO installment = podamFactory.manufacturePojo(InstallmentDTO.class);
+    installment.setOriginalRemittanceInformation(originalRemittanceInformation);
     TransferDTO transfer = TransferDTO.builder()
       .transferIndex(1)
       .amountCents(1000L)
@@ -40,7 +46,7 @@ class ReceiptMapperTest {
       .orgName("Test Organization")
       .mbdAttachment("Test Attachment")
       .iban("IT60X0542811101000000123456")
-      .remittanceInformation("Payment for services")
+      .remittanceInformation(remittanceInformation)
       .category("Utilities")
       .build();
     installment.transfers(List.of(transfer));
@@ -57,7 +63,7 @@ class ReceiptMapperTest {
 
     // Assert
     receiptWithAdditionalNodeDataDTOAssertions(receipt, result);
-    transferDTOAssertions(transfer, result.getTransfers().getFirst());
+    transferDTOAssertions(transfer, result.getTransfers().getFirst(), expectedRemittanceInformation);
   }
 
   private void receiptWithAdditionalNodeDataDTOAssertions(ReceiptDTO expected, ReceiptWithAdditionalNodeDataDTO actual) {
@@ -92,16 +98,24 @@ class ReceiptMapperTest {
     TestUtils.checkNotNullFields(actual, "metadata");
   }
 
-  private void transferDTOAssertions(TransferDTO expected, ReceiptTransferDTO actual) {
+  private void transferDTOAssertions(TransferDTO expected, ReceiptTransferDTO actual, String expectedRemittanceInformation) {
     Assertions.assertEquals(expected.getTransferIndex(), actual.getTransferIndex());
     Assertions.assertEquals(expected.getAmountCents(), actual.getAmountCents());
     Assertions.assertEquals(expected.getOrgFiscalCode(), actual.getOrgFiscalCode());
     Assertions.assertEquals(expected.getOrgName(), actual.getOrgName());
     Assertions.assertArrayEquals(expected.getMbdAttachment().getBytes(), actual.getMbdAttachment());
     Assertions.assertEquals(expected.getIban(), actual.getIban());
-    Assertions.assertEquals(expected.getRemittanceInformation(), actual.getRemittanceInformation());
+    Assertions.assertEquals(expectedRemittanceInformation, actual.getRemittanceInformation());
     Assertions.assertEquals(expected.getCategory(), actual.getCategory());
 
     TestUtils.checkNotNullFields(actual, "metadata");
+  }
+
+  private static Stream<Arguments> provideRemittanceInformation() {
+    return Stream.of(
+      Arguments.of("remittanceInformation", null, "remittanceInformation"),
+      Arguments.of("remittanceInformation", "originalRemittanceInformation", "remittanceInformation"),
+      Arguments.of("REMITTANCE_INFORMATION_PLACEHOLDER with remittanceInformation", "originalRemittanceInformation", "REMITTANCE_INFORMATION_PLACEHOLDER with remittanceInformation")
+    );
   }
 }
