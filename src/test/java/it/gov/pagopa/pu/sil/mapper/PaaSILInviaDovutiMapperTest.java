@@ -207,7 +207,7 @@ class PaaSILInviaDovutiMapperTest {
           TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
             "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "notificationDate", "ingestionFlowFileId",
             "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
-            "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "balance");
+            "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "balance", "originalRemittanceInformation");
             assertNotNull(i.getTransfers());
             assertEquals(1, i.getTransfers().size());
             TransferDTO transfer = i.getTransfers().getFirst();
