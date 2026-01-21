@@ -63,7 +63,7 @@ class DebtPositionMapperTest {
         TestUtils.checkAllNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa",
           "iur", "iuf", "iun", "notificationFeeCents", "notificationDate", "ingestionFlowFileId",
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
-          "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+          "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "originalRemittanceInformation");
         i.getTransfers().forEach(t -> {
           TestUtils.checkAllNotNullFields(t, "transferId", "installmentId",
             "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
