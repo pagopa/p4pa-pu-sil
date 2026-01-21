@@ -9,7 +9,6 @@ import it.gov.pagopa.pu.sil.dto.generated.ReceiptTransferDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -22,6 +21,8 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
 import java.util.stream.Stream;
+
+import static it.gov.pagopa.pu.sil.util.Constants.REMITTANCE_INFORMATION_PLACEHOLDER;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptMapperTest {
@@ -115,7 +116,7 @@ class ReceiptMapperTest {
     return Stream.of(
       Arguments.of("remittanceInformation", null, "remittanceInformation"),
       Arguments.of("remittanceInformation", "originalRemittanceInformation", "remittanceInformation"),
-      Arguments.of("REMITTANCE_INFORMATION_PLACEHOLDER with remittanceInformation", "originalRemittanceInformation", "REMITTANCE_INFORMATION_PLACEHOLDER with remittanceInformation")
+      Arguments.of(REMITTANCE_INFORMATION_PLACEHOLDER +" with remittanceInformation", "originalRemittanceInformation", "originalRemittanceInformation")
     );
   }
 }
