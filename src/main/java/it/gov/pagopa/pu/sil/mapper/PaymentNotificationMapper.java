@@ -9,6 +9,8 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class PaymentNotificationMapper {
@@ -25,7 +27,8 @@ public class PaymentNotificationMapper {
       .nav(installmentDTO.getNav())
       .amountCents(installmentDTO.getAmountCents())
       .notificationFeeCents(installmentDTO.getNotificationFeeCents())
-      .remittanceInformation(installmentDTO.getRemittanceInformation())
+      .remittanceInformation(Optional.ofNullable(installmentDTO.getOriginalRemittanceInformation())
+        .orElse(installmentDTO.getRemittanceInformation()))
       .debtor(mapPerson(installmentDTO.getDebtor()))
       .paymentDate(receipt.getPaymentDateTime())
       .build();
