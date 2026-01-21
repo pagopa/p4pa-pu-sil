@@ -22,7 +22,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static it.gov.pagopa.pu.sil.util.Constants.REMITTANCE_INFORMATION_PLACEHOLDER;
+import static it.gov.pagopa.pu.sil.util.Constants.INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptMapperTest {
@@ -116,7 +116,7 @@ class ReceiptMapperTest {
     return Stream.of(
       Arguments.of("remittanceInformation", null, "remittanceInformation"),
       Arguments.of("remittanceInformation", "originalRemittanceInformation", "remittanceInformation"),
-      Arguments.of(REMITTANCE_INFORMATION_PLACEHOLDER +" with remittanceInformation", "originalRemittanceInformation", "originalRemittanceInformation")
+      Arguments.of(INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER +" with remittanceInformation", "originalRemittanceInformation", "originalRemittanceInformation")
     );
   }
 }

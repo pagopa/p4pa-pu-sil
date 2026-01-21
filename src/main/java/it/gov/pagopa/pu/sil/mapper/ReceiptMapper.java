@@ -60,7 +60,7 @@ public class ReceiptMapper {
   private ReceiptTransferDTO map(TransferDTO transfer, String originalRemittanceInformation) {
     String remittanceInformation = transfer.getRemittanceInformation();
     if (originalRemittanceInformation != null &&
-        remittanceInformation.startsWith(Constants.REMITTANCE_INFORMATION_PLACEHOLDER)) {
+        remittanceInformation.startsWith(Constants.INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER)) {
         remittanceInformation = originalRemittanceInformation;
     }
     return ReceiptTransferDTO.builder()

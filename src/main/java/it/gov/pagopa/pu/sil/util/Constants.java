@@ -41,7 +41,7 @@ public class Constants {
   public static final String LEGACY_IMPORT_ACTION_CANCEL = "A";
   public static final String LEGACY_IMPORT_ACTION_PRINT = "S";
 
-  public static final String REMITTANCE_INFORMATION_PLACEHOLDER = "Pagamento on-the-fly";
+  public static final String INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER = "Pagamento on-the-fly";
 
   public static final List<DebtPositionOrigin> PRINT_NOTICE_ALLOWED_ORIGINS = List.of(
     DebtPositionOrigin.ORDINARY,
