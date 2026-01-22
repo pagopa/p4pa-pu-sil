@@ -119,7 +119,7 @@ class FaultUtilsTest {
         SilFaults.PAA_SYSTEM_ERROR,
         new AuthorizationDeniedException("Not authorized"),
         SilFaults.PAA_ENTE_NON_VALIDO.code(),
-        "Not authorized"
+        "Utente non autorizzato"
       },
       new Object[] {
         new PaaSILImportaDovutoRisposta(),
@@ -139,7 +139,7 @@ class FaultUtilsTest {
         SilFaults.PIVOT_SYSTEM_ERROR,
         new AuthorizationDeniedException("Pivot unauthorized"),
         SilFaults.PIVOT_ENTE_NON_VALIDO.code(),
-        "Pivot unauthorized"
+        "Utente non autorizzato"
       },
       new Object[] {
         new PivotSILAutorizzaImportFlussoRisposta(),

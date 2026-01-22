@@ -6,10 +6,10 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptTransferDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Slf4j
@@ -51,11 +51,13 @@ public class ReceiptMapper {
       .standin(receipt.getStandin())
       .debtor(receipt.getDebtor())
       .payer(receipt.getPayer())
-      .transfers(installment.getTransfers().stream().map(this::map).toList())
+      .transfers(installment.getTransfers().stream()
+        .map(t -> map(t, installment.getOriginalRemittanceInformation()))
+        .toList())
       .build();
   }
 
-  private ReceiptTransferDTO map(TransferDTO transfer) {
+  private ReceiptTransferDTO map(TransferDTO transfer, String originalRemittanceInformation) {
     return ReceiptTransferDTO.builder()
       .transferIndex(transfer.getTransferIndex())
       .amountCents(transfer.getAmountCents())
@@ -63,7 +65,7 @@ public class ReceiptMapper {
       .orgName(transfer.getOrgName())
       .mbdAttachment(Optional.ofNullable(transfer.getMbdAttachment()).map(String::getBytes).orElse(null))
       .iban(transfer.getIban())
-      .remittanceInformation(transfer.getRemittanceInformation())
+      .remittanceInformation(Utilities.resolveRemittanceInformation(transfer.getRemittanceInformation(), originalRemittanceInformation))
       .category(transfer.getCategory())
       .build();
   }

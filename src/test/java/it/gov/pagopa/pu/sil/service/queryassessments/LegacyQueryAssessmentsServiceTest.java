@@ -74,7 +74,7 @@ class LegacyQueryAssessmentsServiceTest {
         .thenReturn(false);
 
       // When, Then
-      assertThrows(IllegalArgumentException.class, () ->
+      assertThrows(SilFaultException.class, () ->
         service.handlePivotSILChiediAccertamento(userInfo, "token", orgIpaCode, request)
       );
     }

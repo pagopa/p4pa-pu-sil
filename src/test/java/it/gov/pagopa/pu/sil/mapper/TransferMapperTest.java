@@ -63,7 +63,7 @@ class TransferMapperTest {
       .build();
 
     // When
-    it.gov.pagopa.pu.sil.dto.generated.TransferDTO result = transferMapper.mapToSilTransferDTO(debtPositionTransferDTO);
+    it.gov.pagopa.pu.sil.dto.generated.TransferDTO result = transferMapper.mapToSilTransferDTO(debtPositionTransferDTO, null);
 
     // Then
     assertNotNull(result);

@@ -6,6 +6,8 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentDTO;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 public class PaymentMapper {
   private final DebtPositionTypeService debtPositionTypeService;
@@ -24,11 +26,11 @@ public class PaymentMapper {
       .notificationFeeCents(installment.getNotificationFeeCents())
       .iud(installment.getIud())
       .totalAmountCents(installment.getAmountCents())
-      .description(installment.getRemittanceInformation())
+      .description(Optional.ofNullable(installment.getOriginalRemittanceInformation()).orElse(installment.getRemittanceInformation()))
       .balance(installment.getBalance())
       .debtor(installment.getDebtor())
       .transfers(installment.getTransfers().stream()
-        .map(transferMapper::mapToSilTransferDTO)
+        .map(t -> transferMapper.mapToSilTransferDTO(t, installment.getOriginalRemittanceInformation()))
         .toList())
       .build();
   }

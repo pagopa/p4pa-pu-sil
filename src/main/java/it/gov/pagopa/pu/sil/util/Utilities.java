@@ -72,5 +72,11 @@ public class Utilities {
     return fiscalCode != null && (fiscalCode.length() == 16 || fiscalCode.equals(Constants.ANONYMOUS_FISCAL_CODE));
   }
 
-
+  public static String resolveRemittanceInformation(String remittanceInformation, String originalRemittanceInformation) {
+    if (originalRemittanceInformation != null &&
+      remittanceInformation.startsWith(Constants.INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER)) {
+      remittanceInformation = originalRemittanceInformation;
+    }
+    return remittanceInformation;
+  }
 }

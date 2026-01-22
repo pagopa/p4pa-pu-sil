@@ -90,7 +90,7 @@ class InstantPaymentMapperTest {
         TestUtils.checkNotNullFields(i, "installmentId", "paymentOptionId", "syncStatus", "iupdPagopa", "generateNotice",
           "iuv", "iur", "iuf", "nav", "iun", "notificationFeeCents", "notificationDate", "ingestionFlowFileId",
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
-          "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "legacyPaymentMetadata");
+          "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "legacyPaymentMetadata", "originalRemittanceInformation");
         if (i.getTransfers() != null) {
           i.getTransfers().forEach(t ->
             TestUtils.checkNotNullFields(t, "transferId", "installmentId",

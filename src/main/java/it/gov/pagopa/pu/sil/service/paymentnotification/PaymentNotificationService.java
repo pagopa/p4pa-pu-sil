@@ -45,18 +45,18 @@ public class PaymentNotificationService {
 
   public void notifyPayment(Long orgSilServiceId, InstallmentDTO installmentDTO, UserInfo loggedUser, String accessToken) {
     OrgSilServiceDTO orgSilService = orgSilServiceComponent.getOrgSilServiceById(orgSilServiceId, accessToken)
-      .orElseThrow(() -> new IllegalArgumentException("Organization service having id " + orgSilServiceId + " not found"));
+      .orElseThrow(() -> new IllegalArgumentException("[ORG_SIL_SERVICE_NOT_FOUND] OrgSilService with id %s not found".formatted(orgSilServiceId)));
     AuthorizationService.validateAdminRole(orgSilService.getOrganizationId(), loggedUser);
 
     Organization organization = organizationService.getOrganizationById(orgSilService.getOrganizationId(), accessToken)
-      .orElseThrow(() -> new IllegalArgumentException("Organization having id " + orgSilService.getOrganizationId() + " not found"));
+      .orElseThrow(() -> new IllegalArgumentException("[ORGANIZATION_NOT_FOUND] Organization with id " + orgSilService.getOrganizationId() + " not found"));
 
     DebtPosition debtPosition = debtPositionService.getDebtPositionByInstallmentId(installmentDTO.getInstallmentId(), accessToken);
     if (debtPosition == null) {
-      throw new IllegalArgumentException("DebtPosition related to installmentId " + installmentDTO.getInstallmentId() + " not found");
+      throw new IllegalArgumentException("[DEBT_POSITION_NOT_FOUND] DebtPosition related to installmentId " + installmentDTO.getInstallmentId() + " not found");
     }
     if (!debtPosition.getOrganizationId().equals(organization.getOrganizationId())) {
-      throw new IllegalArgumentException("The installment provided is not related to the organization requested. requested " + organization.getOrganizationId() + " provided " + debtPosition.getOrganizationId());
+      throw new IllegalArgumentException("[INVALID_INSTALLMENT] The installment provided is not related to the organization requested. requested " + organization.getOrganizationId() + " provided " + debtPosition.getOrganizationId());
     }
 
     if (BooleanUtils.isTrue(orgSilService.getFlagLegacy())) {

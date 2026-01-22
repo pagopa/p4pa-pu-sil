@@ -57,6 +57,10 @@ public class PaaSILImportaDovutoMapper {
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       organization.getOrganizationId(), datiVersamento.getIdentificativoTipoDovuto(), accessToken);
 
+    if (debtPositionTypeOrg == null) {
+      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+    }
+
     long amountCents = ConversionUtils.bigDecimalEuroAmountToCentsAmount(datiVersamento.getImportoSingoloVersamento());
 
     DebtPositionDTO debtPositionDTO = DebtPositionDTO.builder()

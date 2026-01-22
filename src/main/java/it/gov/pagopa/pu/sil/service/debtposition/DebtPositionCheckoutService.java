@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.*;
 
@@ -80,7 +81,8 @@ public class DebtPositionCheckoutService {
         .flatMap(List::stream).toList();
 
     String cartId = UUID.randomUUID().toString();
-    String requestCallbackUrl = loggedUserLimitedScope.getResource().getSessionData() != null
+    String requestCallbackUrl = !CollectionUtils.isEmpty(loggedUserLimitedScope.getResource().getSessionData())
+      && loggedUserLimitedScope.getResource().getSessionData().get(CALLBACK_URL_SESSION_DATA_KEY) != null
         ? loggedUserLimitedScope.getResource().getSessionData().get(
             CALLBACK_URL_SESSION_DATA_KEY).toString()
         : null;

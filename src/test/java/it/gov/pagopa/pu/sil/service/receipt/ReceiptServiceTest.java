@@ -50,7 +50,7 @@ class ReceiptServiceTest {
       receiptService.getReceiptById(receiptId, organizationId, accessToken)
     );
 
-    assertEquals("receipt not found for id: " + receiptId, exception.getMessage());
+    assertEquals("[RECEIPT_NOT_FOUND] Receipt with id %s not found ".formatted(receiptId), exception.getMessage());
   }
 
   @Test

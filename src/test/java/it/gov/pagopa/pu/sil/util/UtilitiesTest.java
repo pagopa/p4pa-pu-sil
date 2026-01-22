@@ -4,10 +4,12 @@ import io.micrometer.common.util.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 import org.slf4j.MDC;
+
+import java.util.stream.Stream;
+
+import static it.gov.pagopa.pu.sil.util.Constants.INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER;
 
 public class UtilitiesTest {
 
@@ -83,5 +85,20 @@ public class UtilitiesTest {
   }
   public static void clearTraceIdContext(){
     MDC.clear();
+  }
+
+  @ParameterizedTest
+  @MethodSource("provideRemittanceInformation")
+  void testResolveRemittanceInformation(String remittanceInformation, String originalRemittanceInformation, String expectedResult) {
+    String result = Utilities.resolveRemittanceInformation(remittanceInformation, originalRemittanceInformation);
+    Assertions.assertEquals(expectedResult, result);
+  }
+
+  private static Stream<Arguments> provideRemittanceInformation() {
+    return Stream.of(
+      Arguments.of("remittanceInformation", null, "remittanceInformation"),
+      Arguments.of("remittanceInformation", "originalRemittanceInformation", "remittanceInformation"),
+      Arguments.of(INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER +" with remittanceInformation", "originalRemittanceInformation", "originalRemittanceInformation")
+    );
   }
 }
