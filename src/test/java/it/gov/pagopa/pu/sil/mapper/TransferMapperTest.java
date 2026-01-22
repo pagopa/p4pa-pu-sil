@@ -1,13 +1,19 @@
 package it.gov.pagopa.pu.sil.mapper;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Test;
+import uk.co.jemos.podam.api.PodamFactory;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class TransferMapperTest {
   private final TransferMapper transferMapper = new TransferMapper();
+
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @Test
   void mapToDebtPositionTransferDTO() {
@@ -61,24 +67,27 @@ class TransferMapperTest {
       .iban("IT60X0542811101000000123456")
       .postalIban("IT60X0542811101000000654321")
       .build();
+    InstallmentDTO installmentDTO = podamFactory.manufacturePojo(InstallmentDTO.class);
+    installmentDTO.transfers(List.of(debtPositionTransferDTO));
 
     // When
-    it.gov.pagopa.pu.sil.dto.generated.TransferDTO result = transferMapper.mapToSilTransferDTO(debtPositionTransferDTO);
+    List<it.gov.pagopa.pu.sil.dto.generated.TransferDTO> result = transferMapper.mapToSilTransferDTO(installmentDTO);
 
     // Then
     assertNotNull(result);
-    assertEquals(debtPositionTransferDTO.getAmountCents(), result.getAmountCents());
-    assertEquals(debtPositionTransferDTO.getCategory(), result.getCategory());
-    assertEquals(debtPositionTransferDTO.getOrgFiscalCode(), result.getOrgFiscalCode());
-    assertEquals(debtPositionTransferDTO.getOrgName(), result.getOrgName());
-    assertEquals(debtPositionTransferDTO.getRemittanceInformation(), result.getRemittanceInformation());
-    assertEquals(debtPositionTransferDTO.getTransferIndex(), result.getTransferIndex());
-    assertEquals(debtPositionTransferDTO.getStampHashDocument(), result.getStampHashDocument());
-    assertEquals(debtPositionTransferDTO.getStampType(), result.getStampType());
-    assertEquals(debtPositionTransferDTO.getStampProvincialResidence(), result.getStampProvincialResidence());
-    assertEquals(debtPositionTransferDTO.getIban(), result.getIban());
-    assertEquals(debtPositionTransferDTO.getPostalIban(), result.getPostalIban());
+    it.gov.pagopa.pu.sil.dto.generated.TransferDTO first = result.getFirst();
+    assertEquals(debtPositionTransferDTO.getAmountCents(), first.getAmountCents());
+    assertEquals(debtPositionTransferDTO.getCategory(), first.getCategory());
+    assertEquals(debtPositionTransferDTO.getOrgFiscalCode(), first.getOrgFiscalCode());
+    assertEquals(debtPositionTransferDTO.getOrgName(), first.getOrgName());
+    assertEquals(debtPositionTransferDTO.getRemittanceInformation(), first.getRemittanceInformation());
+    assertEquals(debtPositionTransferDTO.getTransferIndex(), first.getTransferIndex());
+    assertEquals(debtPositionTransferDTO.getStampHashDocument(), first.getStampHashDocument());
+    assertEquals(debtPositionTransferDTO.getStampType(), first.getStampType());
+    assertEquals(debtPositionTransferDTO.getStampProvincialResidence(), first.getStampProvincialResidence());
+    assertEquals(debtPositionTransferDTO.getIban(), first.getIban());
+    assertEquals(debtPositionTransferDTO.getPostalIban(), first.getPostalIban());
 
-    TestUtils.checkNotNullFields(result);
+    TestUtils.checkNotNullFields(first);
   }
 }

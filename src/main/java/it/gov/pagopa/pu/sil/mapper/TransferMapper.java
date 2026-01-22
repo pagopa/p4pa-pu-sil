@@ -1,7 +1,12 @@
 package it.gov.pagopa.pu.sil.mapper;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransferMapper {
@@ -22,20 +27,23 @@ public class TransferMapper {
       .build();
   }
 
-  public it.gov.pagopa.pu.sil.dto.generated.TransferDTO mapToSilTransferDTO(
-      TransferDTO debtPositionTransferDTO) {
-    return it.gov.pagopa.pu.sil.dto.generated.TransferDTO.builder()
-      .amountCents(debtPositionTransferDTO.getAmountCents())
-      .category(debtPositionTransferDTO.getCategory())
-      .orgFiscalCode(debtPositionTransferDTO.getOrgFiscalCode())
-      .orgName(debtPositionTransferDTO.getOrgName())
-      .remittanceInformation(debtPositionTransferDTO.getRemittanceInformation())
-      .transferIndex(debtPositionTransferDTO.getTransferIndex())
-      .stampHashDocument(debtPositionTransferDTO.getStampHashDocument())
-      .stampType(debtPositionTransferDTO.getStampType())
-      .stampProvincialResidence(debtPositionTransferDTO.getStampProvincialResidence())
-      .iban(debtPositionTransferDTO.getIban())
-      .postalIban(debtPositionTransferDTO.getPostalIban())
-      .build();
+  public List<it.gov.pagopa.pu.sil.dto.generated.TransferDTO> mapToSilTransferDTO(InstallmentDTO installmentDTO) {
+    return installmentDTO.getTransfers().stream()
+      .map(transferDTO -> it.gov.pagopa.pu.sil.dto.generated.TransferDTO.builder()
+          .amountCents(transferDTO.getAmountCents())
+          .category(transferDTO.getCategory())
+          .orgFiscalCode(transferDTO.getOrgFiscalCode())
+          .orgName(transferDTO.getOrgName())
+          .remittanceInformation(Utilities.resolveRemittanceInformation(
+            transferDTO.getRemittanceInformation(),
+            installmentDTO.getOriginalRemittanceInformation()))
+          .transferIndex(transferDTO.getTransferIndex())
+          .stampHashDocument(transferDTO.getStampHashDocument())
+          .stampType(transferDTO.getStampType())
+          .stampProvincialResidence(transferDTO.getStampProvincialResidence())
+          .iban(transferDTO.getIban())
+          .postalIban(transferDTO.getPostalIban())
+          .build()
+      ).collect(Collectors.toList());
   }
 }
