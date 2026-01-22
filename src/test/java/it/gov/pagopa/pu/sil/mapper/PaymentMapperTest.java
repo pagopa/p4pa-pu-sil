@@ -88,8 +88,8 @@ class PaymentMapperTest {
 
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByInstallmentId(installmentId, accessToken))
       .thenReturn(debtPositionTypeOrg);
-    when(transferMapperMock.mapToSilTransferDTO(installment))
-      .thenReturn(List.of(silTransfer));
+    when(transferMapperMock.mapToSilTransferDTO(debtPositionTransfer, installment.getOriginalRemittanceInformation()))
+      .thenReturn(silTransfer);
 
     // When
     PaymentDTO result = mapper.mapToPaymentDTO(installment, accessToken);

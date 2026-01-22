@@ -29,7 +29,9 @@ public class PaymentMapper {
       .description(Optional.ofNullable(installment.getOriginalRemittanceInformation()).orElse(installment.getRemittanceInformation()))
       .balance(installment.getBalance())
       .debtor(installment.getDebtor())
-      .transfers(transferMapper.mapToSilTransferDTO(installment))
+      .transfers(installment.getTransfers().stream()
+        .map(t -> transferMapper.mapToSilTransferDTO(t, installment.getOriginalRemittanceInformation()))
+        .toList())
       .build();
   }
 }
