@@ -26,6 +26,8 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.ObjectFactory;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import jakarta.activation.DataHandler;
 import java.util.List;
+import java.util.Optional;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -149,7 +151,7 @@ public class PaaSILChiediPosizioniAperteService extends AbstractDebtorQueryPayme
       datiSingoloVersamento.setIdentificativoTipoDovuto(debtPositionTypeOrg.getCode());
     }
 
-    datiSingoloVersamento.setCausaleVersamento(installment.getRemittanceInformation());
+    datiSingoloVersamento.setCausaleVersamento(Optional.ofNullable(installment.getOriginalRemittanceInformation()).orElse(installment.getRemittanceInformation()));
     datiSingoloVersamento.setDatiSpecificiRiscossione(installment.getLegacyPaymentMetadata());
 
     datiVersamentoDovuti.getDatiSingoloVersamentos().add(datiSingoloVersamento);
