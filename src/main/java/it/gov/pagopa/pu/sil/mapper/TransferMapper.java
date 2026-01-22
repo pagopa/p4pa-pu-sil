@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,13 +24,15 @@ public class TransferMapper {
   }
 
   public it.gov.pagopa.pu.sil.dto.generated.TransferDTO mapToSilTransferDTO(
-      TransferDTO debtPositionTransferDTO) {
+      TransferDTO debtPositionTransferDTO, String originalRemittanceInformation) {
     return it.gov.pagopa.pu.sil.dto.generated.TransferDTO.builder()
       .amountCents(debtPositionTransferDTO.getAmountCents())
       .category(debtPositionTransferDTO.getCategory())
       .orgFiscalCode(debtPositionTransferDTO.getOrgFiscalCode())
       .orgName(debtPositionTransferDTO.getOrgName())
-      .remittanceInformation(debtPositionTransferDTO.getRemittanceInformation())
+      .remittanceInformation(Utilities.resolveRemittanceInformation(
+        debtPositionTransferDTO.getRemittanceInformation(),
+        originalRemittanceInformation))
       .transferIndex(debtPositionTransferDTO.getTransferIndex())
       .stampHashDocument(debtPositionTransferDTO.getStampHashDocument())
       .stampType(debtPositionTransferDTO.getStampType())
