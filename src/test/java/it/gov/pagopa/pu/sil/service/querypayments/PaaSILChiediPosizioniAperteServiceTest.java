@@ -11,22 +11,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.mapper.DovutiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperte;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperteRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILPosizioniAperte;
@@ -45,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.co.jemos.podam.api.PodamFactory;
 
 @ExtendWith(MockitoExtension.class)
 class PaaSILChiediPosizioniAperteServiceTest {
@@ -55,8 +52,11 @@ class PaaSILChiediPosizioniAperteServiceTest {
   @Mock private JAXBTransformService jaxbTransformServiceMock;
   @Mock private DebtPositionTypeService debtPositionTypeServiceMock;
   @Mock private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
+  @Mock private DovutiMapper dovutiMapperMock;
 
   private PaaSILChiediPosizioniAperteService service;
+
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
@@ -67,7 +67,8 @@ class PaaSILChiediPosizioniAperteServiceTest {
       authorizationServiceMock,
       jaxbTransformServiceMock,
       debtPositionCheckoutServiceMock,
-      debtPositionTypeServiceMock
+      debtPositionTypeServiceMock,
+      dovutiMapperMock
     );
   }
 
@@ -123,6 +124,8 @@ class PaaSILChiediPosizioniAperteServiceTest {
     dp.setOrganizationId(orgId);
     dp.setPaymentOptions(List.of(paymentOption));
 
+    DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
+
     byte[] marshalledBytes = "dovuti-xml".getBytes();
     when(jaxbTransformServiceMock.marshallingAsBytes(any(Dovuti.class), eq(Dovuti.class)))
       .thenReturn(marshalledBytes);
@@ -152,6 +155,11 @@ class PaaSILChiediPosizioniAperteServiceTest {
       when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
       ).thenReturn(List.of(dp));
+
+      when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByInstallmentId(installment.getInstallmentId(), accessToken))
+        .thenReturn(debtPositionTypeOrg);
+      when(dovutiMapperMock.map(installment,debtPositionTypeOrg))
+        .thenReturn(podamFactory.manufacturePojo(Dovuti.class));
 
       response = service.processRequest(request, userInfo, accessToken);
     }
