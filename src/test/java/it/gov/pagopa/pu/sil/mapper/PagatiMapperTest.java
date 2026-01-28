@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -11,9 +8,10 @@ import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Pagati;
 import it.veneto.regione.schemas._2012.pagamenti.ente.PagatiConRicevuta;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -22,6 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+import java.util.stream.Stream;
+
+import static it.gov.pagopa.pu.sil.util.Constants.INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER;
 
 @ExtendWith(MockitoExtension.class)
 class PagatiMapperTest {
@@ -101,8 +102,9 @@ class PagatiMapperTest {
     Assertions.assertEquals(expectedBytes, result);
   }
 
-  @Test
-  void testMapDebtPositionsToEncodedPagati() {
+  @ParameterizedTest
+  @MethodSource("provideRemittanceInformation")
+  void testMapDebtPositionsToEncodedPagati(String remittanceInformation, String originalRemittanceInformation, String expectedRemittanceInformation) {
     // Given
     podamFactory.getStrategy().setDefaultNumberOfCollectionElements(2);
     DebtPositionDTO debtPosition = podamFactory.manufacturePojo(DebtPositionDTO.class);
@@ -111,6 +113,9 @@ class PagatiMapperTest {
       .flatMap(List::stream)
       .forEach(installment -> installment.setTransfers(List.of(installment.getTransfers().getFirst())));
     InstallmentDTO installment = debtPosition.getPaymentOptions().getFirst().getInstallments().get(1);
+    installment.setOriginalRemittanceInformation(originalRemittanceInformation);
+    TransferDTO transferDTO = installment.getTransfers().getFirst();
+    transferDTO.setRemittanceInformation(remittanceInformation);
     Organization organization = podamFactory.manufacturePojo(Organization.class);
     debtPosition.setOrganizationId(organization.getOrganizationId());
     ReceiptDTO receipt = podamFactory.manufacturePojo(ReceiptDTO.class);
@@ -149,6 +154,8 @@ class PagatiMapperTest {
       p.getDatiPagamento().getDatiSingoloPagamentos().forEach(TestUtils::checkNotNullFields);
 
       Assertions.assertEquals(installment.getIuv(), p.getDatiPagamento().getIdentificativoUnivocoVersamento());
+      Assertions.assertEquals(expectedRemittanceInformation,
+        p.getDatiPagamento().getDatiSingoloPagamentos().getFirst().getCausaleVersamento());
 
       return true;
     }), Mockito.eq(Pagati.class))).thenReturn(expectedBytes);
@@ -158,5 +165,13 @@ class PagatiMapperTest {
 
     // Then
     Assertions.assertEquals(expectedBytes, result);
+  }
+
+  private static Stream<Arguments> provideRemittanceInformation() {
+    return Stream.of(
+      Arguments.of("remittanceInformation", null, "remittanceInformation"),
+      Arguments.of("remittanceInformation", "originalRemittanceInformation", "remittanceInformation"),
+      Arguments.of(INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER +" with remittanceInformation", "originalRemittanceInformation", "originalRemittanceInformation")
+    );
   }
 }

@@ -136,7 +136,7 @@ public class PagatiMapper {
       ctDatiSingoloPagamentoPagatiConRicevuta.setIdentificativoUnivocoDovuto(installment.getIud());
       ctDatiSingoloPagamentoPagatiConRicevuta.setIdentificativoUnivocoRiscossione(receipt.getPaymentReceiptId());
       ctDatiSingoloPagamentoPagatiConRicevuta.setDatiSpecificiRiscossione(installment.getLegacyPaymentMetadata());
-      ctDatiSingoloPagamentoPagatiConRicevuta.setCausaleVersamento(transfer.getRemittanceInformation());
+      ctDatiSingoloPagamentoPagatiConRicevuta.setCausaleVersamento(Utilities.resolveRemittanceInformation(transfer.getRemittanceInformation(), installment.getOriginalRemittanceInformation()));
       ctDatiSingoloPagamentoPagatiConRicevuta.setEsitoSingoloPagamento(Constants.LEGACY_PAYMENT_OUTCOME_CODE_OK);
       ctDatiSingoloPagamentoPagatiConRicevuta.setDataEsitoSingoloPagamento(ConversionUtils.toXMLGregorianCalendar(receipt.getPaymentDateTime()));
       ctDatiSingoloPagamentoPagatiConRicevuta.setSingoloImportoPagato(ConversionUtils.centsAmountToBigDecimalEuroAmount(transfer.getAmountCents()));
