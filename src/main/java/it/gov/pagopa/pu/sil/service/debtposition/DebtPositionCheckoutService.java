@@ -77,7 +77,7 @@ public class DebtPositionCheckoutService {
     List<DebtPositionDTO> debtPositions = iuvs.stream().map(
         iuv -> debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
             organization.getOrganizationId(), iuv,
-            List.of(DebtPositionOrigin.SPONTANEOUS_SIL), accessToken))
+            List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL), accessToken))
         .flatMap(List::stream).toList();
 
     String cartId = UUID.randomUUID().toString();
