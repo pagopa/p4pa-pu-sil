@@ -99,7 +99,7 @@ class DebtPositionCheckoutServiceTest {
         Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()),
         anyString(),
-        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken)))
+        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)), eq(accessToken)))
         .thenReturn(List.of(debtPositionDTOList.getFirst()))
         .thenReturn(List.of(debtPositionDTOList.get(1)))
         .thenReturn(List.of(debtPositionDTOList.get(2)));
@@ -111,7 +111,7 @@ class DebtPositionCheckoutServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(
-        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)),
+        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)),
         eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(),
         eq(callbackUrl));
@@ -140,7 +140,7 @@ class DebtPositionCheckoutServiceTest {
         Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()),
         anyString(),
-        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken)))
+        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)), eq(accessToken)))
         .thenReturn(List.of(debtPositionDTOList.getFirst()))
         .thenReturn(List.of(debtPositionDTOList.get(1)))
         .thenReturn(List.of(debtPositionDTOList.get(2)));
@@ -152,7 +152,7 @@ class DebtPositionCheckoutServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(
-        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)),
+        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)),
         eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(),
         eq(null));
@@ -238,7 +238,7 @@ class DebtPositionCheckoutServiceTest {
         Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()),
         anyString(),
-        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)), eq(accessToken)))
+        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)), eq(accessToken)))
         .thenReturn(List.of(debtPositionDTOList.getFirst()))
         .thenReturn(List.of(debtPositionDTOList.get(1)))
         .thenReturn(List.of(debtPositionDTOList.get(2)));
@@ -251,7 +251,7 @@ class DebtPositionCheckoutServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(
-        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL)),
+        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)),
         eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(),
         eq(callbackUrl));
