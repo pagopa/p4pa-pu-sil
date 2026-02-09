@@ -50,7 +50,7 @@ public class ExportFileClient {
     RuntimeException ex = br;
     ProcessExecutionsErrorDTO error = br.getResponseBodyAs(ProcessExecutionsErrorDTO.class);
     if (error != null) {
-      ex = new ExportFileClientException(error.getCode(), error.getMessage());
+      ex = new ExportFileClientException(error.getCategory(), error.getMessage());
     }
     return ex;
   }

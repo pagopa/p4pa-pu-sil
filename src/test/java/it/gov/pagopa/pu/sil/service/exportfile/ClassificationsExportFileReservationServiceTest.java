@@ -166,7 +166,7 @@ class ClassificationsExportFileReservationServiceTest {
     ClassificationsExportRequestDTO request = podamFactory.manufacturePojo(ClassificationsExportRequestDTO.class);
 
     ExportFileClientException errorException = new ExportFileClientException(
-      ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");
 
     when(exportFileServiceMock.createClassificationsExportFile(any(), eq(accessToken)))
       .thenThrow(errorException);
@@ -183,6 +183,6 @@ class ClassificationsExportFileReservationServiceTest {
       )
     );
 
-    assertEquals(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
+    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
   }
 }
