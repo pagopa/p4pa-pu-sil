@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 public class ExportFileClientException extends RuntimeException {
 
-  private final ProcessExecutionsErrorDTO.CodeEnum code;
+  private final ProcessExecutionsErrorDTO.CategoryEnum code;
 
-  public ExportFileClientException(ProcessExecutionsErrorDTO.CodeEnum code, String message) {
+  public ExportFileClientException(ProcessExecutionsErrorDTO.CategoryEnum code, String message) {
     super(message);
     this.code = code;
   }

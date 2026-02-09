@@ -1733,15 +1733,15 @@
         },
         "required" : [ "amountCents", "category", "orgFiscalCode", "orgName", "remittanceInformation", "transferIndex" ]
       },
-      "CodeEnum" : {
+      "CategoryEnum" : {
         "type" : "string",
         "enum" : [ "NOT_FOUND", "BAD_REQUEST", "INVALID_FILE", "FILE_UPLOAD_ERROR", "CONFLICT", "UNAUTHORIZED", "GENERIC_ERROR" ]
       },
       "PuSilErrorDTO" : {
         "type" : "object",
         "properties" : {
-          "code" : {
-            "$ref" : "#/components/schemas/CodeEnum"
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryEnum"
           },
           "message" : {
             "type" : "string"
@@ -1750,7 +1750,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "code", "message" ]
+        "required" : [ "category", "message" ]
       },
       "ManageDebtPositionDTO" : {
         "type" : "object",
@@ -2544,6 +2544,10 @@
       "QueryPaymentStatusType" : {
         "type" : "string",
         "enum" : [ "INSTALLMENT_ID", "NOTICE_NUMBER", "IUD" ]
+      },
+      "CodeEnum" : {
+        "type" : "string",
+        "enum" : [ "INPUT_FILE", "OUTPUT_FILE", "DISCARDED_FILE", "PAYMENT_NOTICE_FILE" ]
       },
       "DownloadUrl" : {
         "type" : "object",
