@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 
-import static it.gov.pagopa.pu.debtpositions.dto.generated.CodeEnum.DEBT_POSITION_BAD_REQUEST;
+import static it.gov.pagopa.pu.debtpositions.dto.generated.CategoryEnum.DEBT_POSITION_BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -260,7 +260,7 @@ class PaaSILInviaDovutiServiceTest {
   }
 
   static Stream<Arguments> provideErrorScenarios() {
-    DebtPositionErrorDTO.DebtPositionErrorDTOBuilder errorDTO = DebtPositionErrorDTO.builder().code(DEBT_POSITION_BAD_REQUEST);
+    DebtPositionErrorDTO.DebtPositionErrorDTOBuilder errorDTO = DebtPositionErrorDTO.builder().category(DEBT_POSITION_BAD_REQUEST);
     return Stream.of(
       Arguments.of(null, new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore durante la creazione delle posizioni debitorie")),
       Arguments.of(errorDTO.message("[P4PA_INVALID_TAXONOMY_CATEGORY] Some error occurred").build(), new SilFaultException(SilFaults.fromNativeFault2LegacyCode("P4PA_INVALID_TAXONOMY_CATEGORY"), "Some error occurred")),
