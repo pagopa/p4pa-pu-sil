@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.connector.send_notification;
 
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDownloadMetadataDTO;
-import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactListElementDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.client.NotificationClient;
 import it.gov.pagopa.pu.sil.connector.send_notification.client.SendClient;
 import org.springframework.stereotype.Service;
