@@ -117,7 +117,7 @@ class SendNotificationControllerTest {
   @Test
   void givenCorrectRequestWhenGetLegalFactsThenOk() {
     String sendNotificationId = "sendNotificationId";
-    List<LegalFactListElementDTO> expectedResponseBody = List.of(new LegalFactListElementDTO());
+    List<LegalFactDTO> expectedResponseBody = List.of(new LegalFactDTO());
 
     Mockito.when(sendNotificationRetrieverServiceMock.getLegalFacts(
       sendNotificationId,
@@ -126,7 +126,7 @@ class SendNotificationControllerTest {
       "fakeAccessToken"
     )).thenReturn(expectedResponseBody);
 
-    ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
+    ResponseEntity<List<LegalFactDTO>> actualResponse =
       sendNotificationController.getLegalFacts(
         orgFiscalCode,
         sendNotificationId
@@ -151,7 +151,7 @@ class SendNotificationControllerTest {
     ).thenReturn(Collections.emptyList());
 
     // when
-    ResponseEntity<List<LegalFactListElementDTO>> actualResponse =
+    ResponseEntity<List<LegalFactDTO>> actualResponse =
       sendNotificationController.getLegalFacts(
         orgFiscalCode,
         sendNotificationId

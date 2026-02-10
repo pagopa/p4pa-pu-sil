@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.sil.connector.send_notification.LegalFactService;
 import it.gov.pagopa.pu.sil.connector.send_notification.NotificationService;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,12 +16,15 @@ import java.util.List;
 public class SendNotificationRetrieverServiceImpl implements SendNotificationRetrieverService {
   private final NotificationService notificationService;
   private final LegalFactService legalFactService;
+  private final String fileShareBaseUrl;
 
   public SendNotificationRetrieverServiceImpl(
     NotificationService notificationService,
-    LegalFactService legalFactService) {
+    LegalFactService legalFactService,
+    @Value("${public-base-url.fileshare}") String fileShareBaseUrl) {
     this.notificationService = notificationService;
     this.legalFactService = legalFactService;
+    this.fileShareBaseUrl = fileShareBaseUrl;
   }
 
   @Override
@@ -67,11 +71,20 @@ public class SendNotificationRetrieverServiceImpl implements SendNotificationRet
   }
 
   @Override
-  public List<LegalFactListElementDTO> getLegalFacts(String sendNotificationId, Long organizationId, UserInfo loggedUser, String accessToken) {
+  public List<LegalFactDTO> getLegalFacts(String sendNotificationId, Long organizationId, UserInfo loggedUser, String accessToken) {
     AuthorizationService.validateUserForOrganizationId(organizationId, loggedUser);
     SendNotificationDTO sendNotification = notificationService.getSendNotification(sendNotificationId, accessToken);
     validateSendNotificationOrganization(organizationId, sendNotification);
-    return legalFactService.getLegalFacts(sendNotificationId, accessToken);
+    List<LegalFactDTO> legalFactsDTO = legalFactService.getLegalFacts(sendNotificationId, accessToken);
+    legalFactsDTO.forEach(fact ->
+      fact.setUrl(buildFileShareLegalFactUrl(organizationId, sendNotificationId, fact.getUrl()))
+    );
+    return legalFactsDTO;
+  }
+
+  private String buildFileShareLegalFactUrl(Long organizationId, String sendNotificationId, String url) {
+    return String.format("%s/organization/%d/send-files/%s?filePath=%s",
+      fileShareBaseUrl, organizationId, sendNotificationId, url);
   }
 
   @Override

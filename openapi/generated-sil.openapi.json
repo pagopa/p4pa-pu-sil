@@ -656,7 +656,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                    "$ref" : "#/components/schemas/LegalFactDTO"
                   }
                 }
               }
@@ -669,7 +669,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                    "$ref" : "#/components/schemas/LegalFactDTO"
                   }
                 }
               }
@@ -682,7 +682,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                    "$ref" : "#/components/schemas/LegalFactDTO"
                   }
                 }
               }
@@ -695,7 +695,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                    "$ref" : "#/components/schemas/LegalFactDTO"
                   }
                 }
               }
@@ -708,7 +708,7 @@
                 "schema" : {
                   "type" : "array",
                   "items" : {
-                    "$ref" : "#/components/schemas/LegalFactListElementDTO"
+                    "$ref" : "#/components/schemas/LegalFactDTO"
                   }
                 }
               }
@@ -2337,32 +2337,24 @@
         },
         "required" : [ "debtPositionId", "navList" ]
       },
-      "LegalFactIdDTO" : {
+      "LegalFactCategoryDTO" : {
+        "type" : "string",
+        "enum" : [ "SENDER_ACK", "DIGITAL_DELIVERY", "ANALOG_DELIVERY", "RECIPIENT_ACCESS", "PEC_RECEIPT", "ANALOG_FAILURE_DELIVERY" ]
+      },
+      "LegalFactDTO" : {
         "type" : "object",
         "properties" : {
-          "key" : {
+          "fileName" : {
             "type" : "string"
           },
           "category" : {
+            "$ref" : "#/components/schemas/LegalFactCategoryDTO"
+          },
+          "url" : {
             "type" : "string"
           }
         },
-        "required" : [ "category", "key" ]
-      },
-      "LegalFactListElementDTO" : {
-        "type" : "object",
-        "properties" : {
-          "taxId" : {
-            "type" : "string"
-          },
-          "iun" : {
-            "type" : "string"
-          },
-          "legalFactId" : {
-            "$ref" : "#/components/schemas/LegalFactIdDTO"
-          }
-        },
-        "required" : [ "iun", "legalFactId" ]
+        "required" : [ "category", "fileName", "url" ]
       },
       "LegalFactDownloadMetadataDTO" : {
         "type" : "object",

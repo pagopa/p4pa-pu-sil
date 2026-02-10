@@ -2,11 +2,14 @@ package it.gov.pagopa.pu.sil.connector.send_notification.client;
 
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.config.SendNotificationApisHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -42,6 +45,11 @@ public class NotificationClient {
       log.warn("notification with sendNotificationId {} not found", sendNotificationId);
       return null;
     }
+  }
+
+  public List<LegalFactDTO> getLegalFacts(String sendNotificationId, String accessToken) {
+    return sendNotificationApisHolder.getNotificationApi(accessToken)
+      .getLegalFacts(sendNotificationId);
   }
 
 }

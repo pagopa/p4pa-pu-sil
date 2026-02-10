@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse;
+import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.config.SendNotificationApisHolder;
 import org.junit.jupiter.api.AfterEach;
@@ -19,6 +20,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationClientTest {
@@ -117,5 +120,25 @@ class NotificationClientTest {
       sendNotificationId, accessToken);
 
     Assertions.assertNull(result);
+  }
+
+  @Test
+  void whenGetLegalFactsThenSuccess() {
+    // given
+    String accessToken = "ACCESSTOKEN";
+    String sendNotificationId = "SEND_NOTIFICATION_ID";
+    List<LegalFactDTO> expectedResult = List.of(new LegalFactDTO());
+
+    when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
+      .thenReturn(notificationApiMock);
+    when(notificationApiMock.getLegalFacts(sendNotificationId))
+      .thenReturn(expectedResult);
+
+    // when
+    List<LegalFactDTO> actualResult = notificationClient.getLegalFacts(
+      sendNotificationId, accessToken);
+
+    // then
+    Assertions.assertSame(expectedResult, actualResult);
   }
 }
