@@ -120,7 +120,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: 'LegalFactListElementDTO'
+                  type: 'LegalFactDTO'
         '400':
           description: Invalid request
         '403':

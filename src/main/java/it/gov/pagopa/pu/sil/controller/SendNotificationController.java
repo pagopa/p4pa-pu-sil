@@ -89,7 +89,7 @@ public class SendNotificationController implements SendNotificationApi {
   }
 
   @Override
-  public ResponseEntity<List<LegalFactListElementDTO>> getLegalFacts(
+  public ResponseEntity<List<LegalFactDTO>> getLegalFacts(
     String orgFiscalCode, String sendNotificationId) {
 
     log.info("requested getLegalFacts having orgFiscalCode {} and sendNotificationId {}",
@@ -101,14 +101,12 @@ public class SendNotificationController implements SendNotificationApi {
     String accessToken = SecurityUtils.getAccessToken();
     Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
 
-    return ResponseEntity.ok(
-      sendNotificationRetrieverService.getLegalFacts(
-        sendNotificationId,
-        organizationId,
-        userInfo,
-        accessToken
-      )
-    );
+    return ResponseEntity.ok(sendNotificationRetrieverService.getLegalFacts(
+      sendNotificationId,
+      organizationId,
+      userInfo,
+      accessToken
+    ));
   }
 
   @Override
