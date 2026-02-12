@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
@@ -465,7 +465,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
         .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request)))
       .thenThrow(new ExportFileClientException(
-        CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
+        ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
@@ -483,7 +483,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
         .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request)))
       .thenThrow(new ExportFileClientException(
-        CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+        ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);

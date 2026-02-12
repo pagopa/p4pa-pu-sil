@@ -247,7 +247,6 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "CreateNotificationRequest" to "it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRequest",
       "CreateNotificationResponse" to "it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationResponse",
       "SendNotificationDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO",
-      "LegalFactListElementDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactListElementDTO",
       "LegalFactDownloadMetadataDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDownloadMetadataDTO",
       "ImportFileType" to "it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum",
       "ExportFileType" to "it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTypeEnum",
@@ -260,7 +259,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "InstallmentStatus" to "it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus",
       "PaymentOptionType" to "it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType",
       "Action" to "it.gov.pagopa.pu.debtpositions.dto.generated.Action",
-      "PersonEntityType" to "it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType"
+      "PersonEntityType" to "it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType",
+      "LegalFactCategoryDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactCategoryDTO",
+      "LegalFactDTO" to "it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDTO"
     )
   )
 }

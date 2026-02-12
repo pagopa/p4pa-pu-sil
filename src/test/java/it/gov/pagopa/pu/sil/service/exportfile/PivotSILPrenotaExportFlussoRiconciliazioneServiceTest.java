@@ -199,7 +199,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     request.setCodiceClassificazione(type);
 
     ExportFileClientException errorException = new ExportFileClientException(
-      ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");
 
     ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
     when(exportFileServiceMock.createClassificationsExportFile(classificationsExportFileRequestDTO, accessToken))
@@ -217,6 +217,6 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
       )
     );
 
-    assertEquals(ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
+    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
   }
 }

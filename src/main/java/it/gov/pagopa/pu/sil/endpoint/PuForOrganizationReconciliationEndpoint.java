@@ -358,10 +358,10 @@ public class PuForOrganizationReconciliationEndpoint {
       if (e instanceof ExportFileClientException ce) {
         SilFaults fault = switch (ce.getCode()) {
           case
-            ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
+            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
             SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA;
           case
-            ProcessExecutionsErrorDTO.CodeEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
+            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
             SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO;
           default -> SilFaults.PIVOT_SYSTEM_ERROR;
         };

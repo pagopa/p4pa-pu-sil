@@ -36,24 +36,24 @@ public class PuSilExceptionHandler {
 
   @ExceptionHandler({HttpClientErrorException.class})
   public ResponseEntity<PuSilErrorDTO> handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
-    return handleException(ex, request, ex.getStatusCode(), PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
+    return handleException(ex, request, ex.getStatusCode(), PuSilErrorDTO.CategoryEnum.GENERIC_ERROR);
   }
 
   @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
   public ResponseEntity<PuSilErrorDTO> handleViolationException(Exception ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
   @ExceptionHandler({ServletException.class, ErrorResponseException.class})
   public ResponseEntity<PuSilErrorDTO> handleServletException(Exception ex, HttpServletRequest request) {
     HttpStatusCode httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    PuSilErrorDTO.CodeEnum errorCode = PuSilErrorDTO.CodeEnum.GENERIC_ERROR;
+    PuSilErrorDTO.CategoryEnum errorCode = PuSilErrorDTO.CategoryEnum.GENERIC_ERROR;
     if (ex instanceof ErrorResponse errorResponse) {
       httpStatus = errorResponse.getStatusCode();
       if (httpStatus.isSameCodeAs(HttpStatus.NOT_FOUND)) {
-        errorCode = PuSilErrorDTO.CodeEnum.NOT_FOUND;
+        errorCode = PuSilErrorDTO.CategoryEnum.NOT_FOUND;
       } else if (httpStatus.is4xxClientError()) {
-        errorCode = PuSilErrorDTO.CodeEnum.BAD_REQUEST;
+        errorCode = PuSilErrorDTO.CategoryEnum.BAD_REQUEST;
       }
     }
     return handleException(ex, request, httpStatus, errorCode);
@@ -61,50 +61,50 @@ public class PuSilExceptionHandler {
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<PuSilErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
   @ExceptionHandler({RuntimeException.class, BalanceParseException.class})
   public ResponseEntity<PuSilErrorDTO> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CodeEnum.GENERIC_ERROR);
+    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CategoryEnum.GENERIC_ERROR);
   }
 
   @ExceptionHandler({AuthorizationDeniedException.class})
   public ResponseEntity<PuSilErrorDTO> handleAuthorizationDeniedException(Exception ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.FORBIDDEN, PuSilErrorDTO.CodeEnum.UNAUTHORIZED);
+    return handleException(ex, request, HttpStatus.FORBIDDEN, PuSilErrorDTO.CategoryEnum.UNAUTHORIZED);
   }
 
   @ExceptionHandler(PaymentNotFoundException.class)
   public ResponseEntity<PuSilErrorDTO> handlePaymentNotFoundException(PaymentNotFoundException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.NOT_FOUND);
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CategoryEnum.NOT_FOUND);
   }
 
   @ExceptionHandler(PaymentNotNotifiedException.class)
   public ResponseEntity<PuSilErrorDTO> handlePaymentNotNotifiedException(PaymentNotNotifiedException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.PRECONDITION_FAILED, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.PRECONDITION_FAILED, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
   @ExceptionHandler(PaymentInvalidStatusException.class)
   public ResponseEntity<PuSilErrorDTO> handlePaymentInvalidStatusException(PaymentInvalidStatusException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
   @ExceptionHandler(AssessmentNotFoundException.class)
   public ResponseEntity<PuSilErrorDTO> handleAssessmentNotFoundException(AssessmentNotFoundException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CodeEnum.NOT_FOUND);
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CategoryEnum.NOT_FOUND);
   }
 
   @ExceptionHandler(ExportFileClientException.class)
   public ResponseEntity<PuSilErrorDTO> handleExportFileClientException(ExportFileClientException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
   @ExceptionHandler(ExportFileServiceException.class)
   public ResponseEntity<PuSilErrorDTO> handleExportFileServiceException(ExportFileServiceException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
-  static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CodeEnum errorEnum) {
+  static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CategoryEnum errorEnum) {
     logException(ex, request, httpStatus);
 
     String message = buildReturnedMessage(ex);

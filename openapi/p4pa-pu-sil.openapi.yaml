@@ -120,7 +120,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: 'LegalFactListElementDTO'
+                  type: 'LegalFactDTO'
         '400':
           description: Invalid request
         '403':
@@ -963,10 +963,10 @@ components:
     PuSilErrorDTO:
       type: object
       required:
-        - code
+        - category
         - message
       properties:
-        code:
+        category:
           type: string
           enum:
             - NOT_FOUND

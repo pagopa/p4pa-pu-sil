@@ -30,7 +30,8 @@ class SendNotificationRetrieverServiceImplTest {
   void setUp() {
     sendNotificationRetrieverService = new SendNotificationRetrieverServiceImpl(
       notificationServiceMock,
-      legalFactServiceMock
+      legalFactServiceMock,
+      "http://fileshare.example.com"
     );
   }
 
@@ -225,7 +226,7 @@ class SendNotificationRetrieverServiceImplTest {
     UserInfo validUser = AuthorizationServiceTest.buildAdminUser(organizationId, "ORGFC", "orgIpaCode");
     String accessToken = "TOKEN";
     String sendNotificationId = "SEND_NOTIFICATION_ID";
-    List<LegalFactListElementDTO> expectedResult = List.of(new LegalFactListElementDTO());
+    List<LegalFactDTO> expectedResult = List.of(new LegalFactDTO());
 
     SendNotificationDTO sendNotificationForSameOrg = new SendNotificationDTO();
     sendNotificationForSameOrg.setOrganizationId(organizationId);
@@ -245,7 +246,7 @@ class SendNotificationRetrieverServiceImplTest {
     ).thenReturn(expectedResult);
 
     // When
-    List<LegalFactListElementDTO> actualResult =
+    List<LegalFactDTO> actualResult =
       sendNotificationRetrieverService.getLegalFacts(
         sendNotificationId,
         organizationId,
