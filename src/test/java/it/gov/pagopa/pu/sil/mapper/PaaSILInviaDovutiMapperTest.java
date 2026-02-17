@@ -211,8 +211,8 @@ class PaaSILInviaDovutiMapperTest {
             assertNotNull(i.getTransfers());
             assertEquals(1, i.getTransfers().size());
             TransferDTO transfer = i.getTransfers().getFirst();
-            String excludedFields = String.join(",", "transferId", "installmentId",
-              "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "mbdAttachment");
+            String excludedFields = String.join(",", "transferId", "installmentId", "mbdAttachment", "flagOwner",
+              "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
             if(testCase.equals("stamp")){
               excludedFields += ",iban,postalIban";
               assertNull(transfer.getIban());

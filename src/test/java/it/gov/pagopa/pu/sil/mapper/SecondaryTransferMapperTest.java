@@ -130,7 +130,8 @@ class SecondaryTransferMapperTest {
     assertDoesNotThrow(() -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData, "code", ACCESS_TOKEN));
 
     TestUtils.checkNotNullFields(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst(),
-      "transferId", "installmentId", "stampType", "stampHashDocument", "stampProvincialResidence", "mbdAttachment", "postalIban", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+      "transferId", "installmentId", "stampType", "stampHashDocument", "stampProvincialResidence", "mbdAttachment", "postalIban", "flagOwner",
+      "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
   }
 
   //endregion
