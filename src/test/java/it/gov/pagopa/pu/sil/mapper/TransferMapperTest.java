@@ -41,8 +41,8 @@ class TransferMapperTest {
     assertEquals(silTransferDTO.getStampProvincialResidence(), result.getStampProvincialResidence());
     assertEquals(silTransferDTO.getIban(), result.getIban());
 
-    TestUtils.checkNotNullFields(result, "transferId", "installmentId", "postalIban",
-      "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "mbdAttachment");
+    TestUtils.checkNotNullFields(result, "transferId", "installmentId", "postalIban", "mbdAttachment", "flagOwner",
+      "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
   }
 
   @Test
