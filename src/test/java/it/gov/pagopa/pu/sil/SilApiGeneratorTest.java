@@ -64,7 +64,9 @@ class SilApiGeneratorTest {
       .andReturn();
 
     String openApiResult = result.getResponse().getContentAsString()
-      .replace("\r", "");
+      .replace("\r", "")
+      .replaceAll("\"http://localhost(?::[0-9]+)?\"", "\"https://\\${hostname}/sil\"")
+      .replace("\"/sil/", "\"/");
 
     Assertions.assertTrue(openApiResult.startsWith("{\n  \"openapi\" : \"3."));
 
