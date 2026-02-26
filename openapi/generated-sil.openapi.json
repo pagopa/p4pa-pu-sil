@@ -6,7 +6,7 @@
     "version" : "0.0.1"
   },
   "servers" : [ {
-    "url" : "http://localhost",
+    "url" : "https://${hostname}/sil",
     "description" : "Generated server url"
   } ],
   "security" : [ {
@@ -41,7 +41,7 @@
     "description" : "the DebtPosition API"
   } ],
   "paths" : {
-    "/sil/organization/{orgFiscalCode}/debt-position/{iud}" : {
+    "/organization/{orgFiscalCode}/debt-position/{iud}" : {
       "put" : {
         "tags" : [ "DebtPosition" ],
         "summary" : "manage a single debt position",
@@ -132,7 +132,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/send-notification" : {
+    "/organization/{orgFiscalCode}/send-notification" : {
       "post" : {
         "tags" : [ "SendNotification" ],
         "summary" : "Create notification",
@@ -202,7 +202,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/payment" : {
+    "/organization/{orgFiscalCode}/payment" : {
       "post" : {
         "tags" : [ "Payment" ],
         "summary" : "request an instant payment operation",
@@ -255,7 +255,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/import" : {
+    "/organization/{orgFiscalCode}/import" : {
       "post" : {
         "tags" : [ "Import" ],
         "summary" : "request a massive import operation",
@@ -308,7 +308,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/export/paid" : {
+    "/organization/{orgFiscalCode}/export/paid" : {
       "post" : {
         "tags" : [ "Export" ],
         "summary" : "request a massive export operation",
@@ -361,7 +361,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/export/classifications" : {
+    "/organization/{orgFiscalCode}/export/classifications" : {
       "post" : {
         "tags" : [ "Export" ],
         "summary" : "request a massive export operation",
@@ -414,7 +414,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/debt-position" : {
+    "/organization/{orgFiscalCode}/debt-position" : {
       "post" : {
         "tags" : [ "DebtPosition" ],
         "summary" : "create a single debt position",
@@ -467,7 +467,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/checkout" : {
+    "/organization/{orgFiscalCode}/checkout" : {
       "post" : {
         "tags" : [ "Checkout" ],
         "operationId" : "checkout",
@@ -511,7 +511,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/send-notification/{sendNotificationId}" : {
+    "/organization/{orgFiscalCode}/send-notification/{sendNotificationId}" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send notification",
@@ -627,7 +627,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/send-notification/{sendNotificationId}/legal-facts" : {
+    "/organization/{orgFiscalCode}/send-notification/{sendNotificationId}/legal-facts" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send legal fact list",
@@ -720,7 +720,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/send-notification/{sendNotificationId}/legal-facts/{legalFactId}" : {
+    "/organization/{orgFiscalCode}/send-notification/{sendNotificationId}/legal-facts/{legalFactId}" : {
       "get" : {
         "tags" : [ "SendNotification" ],
         "summary" : "get send legal fact download metadata",
@@ -805,7 +805,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}" : {
+    "/organization/{orgFiscalCode}/printpaymentnotice/{iuv}" : {
       "get" : {
         "tags" : [ "PrintPaymentNotice" ],
         "summary" : "Print payment notice as PDF",
@@ -879,7 +879,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/payment/{idType}/{id}" : {
+    "/organization/{orgFiscalCode}/payment/{idType}/{id}" : {
       "get" : {
         "tags" : [ "Payment" ],
         "summary" : "request processing status of payment operation",
@@ -946,7 +946,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/payment/notice/{nav}" : {
+    "/organization/{orgFiscalCode}/payment/notice/{nav}" : {
       "get" : {
         "tags" : [ "Payment" ],
         "summary" : "handle the payment of an already existing payment notice",
@@ -1006,7 +1006,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/import/{importId}" : {
+    "/organization/{orgFiscalCode}/import/{importId}" : {
       "get" : {
         "tags" : [ "Import" ],
         "summary" : "request processing status of massive import operation",
@@ -1057,7 +1057,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/export/{exportId}" : {
+    "/organization/{orgFiscalCode}/export/{exportId}" : {
       "get" : {
         "tags" : [ "Export" ],
         "summary" : "request processing status of export operation",
@@ -1108,7 +1108,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/assessment/payment-reporting" : {
+    "/organization/{orgFiscalCode}/assessment/payment-reporting" : {
       "get" : {
         "tags" : [ "Assessment" ],
         "summary" : "retrieve the assessment data by payment reporting unique identifier",
@@ -1149,7 +1149,7 @@
         } ]
       }
     },
-    "/sil/organization/{orgFiscalCode}/assessment/bill" : {
+    "/organization/{orgFiscalCode}/assessment/bill" : {
       "get" : {
         "tags" : [ "Assessment" ],
         "summary" : "retrieve the assessment data by bill data",
@@ -1209,7 +1209,7 @@
         } ]
       }
     },
-    "/sil/debtor/{debtorFiscalCode}/payment/unpaid" : {
+    "/debtor/{debtorFiscalCode}/payment/unpaid" : {
       "get" : {
         "tags" : [ "DebtorQueryPayment" ],
         "summary" : "retrieve unpaid debt positions for a debtor",
@@ -1287,7 +1287,7 @@
         } ]
       }
     },
-    "/sil/debtor/{debtorFiscalCode}/payment/history" : {
+    "/debtor/{debtorFiscalCode}/payment/history" : {
       "get" : {
         "tags" : [ "DebtorQueryPayment" ],
         "summary" : "retrieve payment history for a debtor",
