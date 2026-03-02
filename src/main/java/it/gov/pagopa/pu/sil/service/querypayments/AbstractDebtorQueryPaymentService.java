@@ -19,6 +19,8 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -92,16 +94,17 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
   protected List<Organization> resolveOrganizations(DebtorQueryPaymentRequest request, UserInfo userInfo, String accessToken) {
     String ipaCode = request.getIpaCode();
 
-    if (ipaCode != null) {
-      Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, ipaCode);
-      Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
-        .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
-        .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
-      AuthorizationService.validateOrganizationBrokered(organization.getBrokerId(), userInfo);
-      return List.of(organization);
-    } else {
-      return organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken);
+    List<Organization> organizations = organizationService.findByBrokerIdAndStatus(userInfo.getBrokerId(), OrganizationStatus.ACTIVE, accessToken)
+      .stream()
+      .filter(Objects::nonNull)
+      .filter(o -> ipaCode == null || ipaCode.equals(o.getIpaCode()))
+      .toList();
+
+    if (organizations.isEmpty()) {
+      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
     }
+
+    return organizations;
   }
 
   /**

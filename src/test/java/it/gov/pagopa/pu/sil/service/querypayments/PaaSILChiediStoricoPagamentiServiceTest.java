@@ -2,11 +2,8 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 
 import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -161,20 +158,8 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
 
-      if (orgIpaCode != null) {
-        // Single organization path
-        mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-          .thenReturn(orgId);
-        mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
-          .thenAnswer(inv -> null);
-
-        when(organizationServiceMock.getOrganizationById(orgId, accessToken))
-          .thenReturn(Optional.of(org));
-      } else {
-        // Broker organizations path
-        when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
-          .thenReturn(List.of(org));
-      }
+      when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+        .thenReturn(List.of(org));
 
       when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
@@ -211,13 +196,8 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     Assertions.assertNotNull(ctDh, "CtPagatiConRicevuta DataHandler should be set");
 
     // Verify interactions
-    if (orgIpaCode != null) {
-      verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-      verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
-    } else {
-      verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
-      verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
-    }
+    verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
+
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken)
     );

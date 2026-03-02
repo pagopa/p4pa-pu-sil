@@ -1,12 +1,8 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -39,6 +35,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -154,20 +151,9 @@ class DebtorQueryPaymentServiceTest {
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
       mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(userInfo))
         .thenAnswer(inv -> null);
-      if (orgIpaCode != null) {
-        // Single organization path
-        mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode))
-          .thenReturn(orgId);
-        mockedAuth.when(() -> AuthorizationService.validateOrganizationBrokered(brokerId, userInfo))
-          .thenAnswer(inv -> null);
 
-        when(organizationServiceMock.getOrganizationById(orgId, accessToken))
-          .thenReturn(Optional.of(org));
-
-      } else {
-        when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
-          .thenReturn(List.of(org));
-      }
+      when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+        .thenReturn(List.of(org));
 
       when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         "RSSMRA80A01H501U",
@@ -209,13 +195,7 @@ class DebtorQueryPaymentServiceTest {
     Assertions.assertEquals(expectedReceiptUrl, item.getReceiptDownloadUrl());
 
     // Verify interactions
-    if (orgIpaCode != null) {
-      verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-      verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
-    } else {
-      verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
-      verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
-    }
+    verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       "RSSMRA80A01H501U",
       PersonEntityType.F,
@@ -232,7 +212,6 @@ class DebtorQueryPaymentServiceTest {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
-    long orgId = 42L;
     Long brokerId = 100L;
 
     AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest request = new AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest(
@@ -247,22 +226,20 @@ class DebtorQueryPaymentServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setBrokerId(brokerId);
 
-    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
-      .thenReturn(Optional.empty());
+    when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+      .thenReturn(List.of());
 
     // When - Then
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
       mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
-      mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-        .thenReturn(orgId);
 
       Assertions.assertThrows(SilFaultException.class, () ->
         service.processRequest(request, userInfo, accessToken)
       );
     }
 
-    verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
+    verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
     verifyNoInteractions(debtPositionServiceMock, receiptServiceMock, receiptMapperMock);
   }
 }

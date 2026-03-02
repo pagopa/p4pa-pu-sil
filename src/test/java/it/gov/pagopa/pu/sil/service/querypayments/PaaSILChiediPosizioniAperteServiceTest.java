@@ -32,6 +32,7 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivoc
 import jakarta.activation.DataHandler;
 import java.util.List;
 import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -136,22 +137,8 @@ class PaaSILChiediPosizioniAperteServiceTest {
       mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
 
-      if (orgIpaCode != null) {
-        // Single organization path
-        mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-          .thenReturn(orgId);
-        mockedAuth.when(() -> AuthorizationService.isOrganizationHandledByBroker(eq(brokerId), eq(userInfo)))
-          .thenAnswer(inv -> null);
-
-        when(organizationServiceMock.getOrganizationById(orgId, accessToken))
-          .thenReturn(Optional.of(org));
-
-      } else {
-        // Broker organizations path
-        when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
-          .thenReturn(List.of(org));
-
-      }
+      when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+        .thenReturn(List.of(org));
       when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
       ).thenReturn(List.of(dp));
@@ -176,13 +163,7 @@ class PaaSILChiediPosizioniAperteServiceTest {
     Assertions.assertNotNull(dh, "Dovuti DataHandler should be set");
 
     // Verify interactions
-    if (orgIpaCode != null) {
-      verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
-      verify(organizationServiceMock, never()).findByBrokerIdAndStatus(anyLong(), any(OrganizationStatus.class), anyString());
-    } else {
-      verify(organizationServiceMock, never()).getOrganizationById(anyLong(), anyString());
-      verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
-    }
+    verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
     verify(debtPositionServiceMock).getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
       eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken)
     );
