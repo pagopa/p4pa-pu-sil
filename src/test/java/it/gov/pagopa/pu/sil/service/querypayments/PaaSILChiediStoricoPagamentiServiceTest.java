@@ -208,7 +208,6 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
-    long orgId = 42L;
     Long brokerId = 100L;
     XMLGregorianCalendar dataFrom = toXmlCal(ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneId.systemDefault()));
     CtIdentificativoUnivocoPersonaFG idFG = new CtIdentificativoUnivocoPersonaFG();
@@ -223,22 +222,20 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setBrokerId(brokerId);
 
-    when(organizationServiceMock.getOrganizationById(orgId, accessToken))
-      .thenReturn(Optional.empty());
+    when(organizationServiceMock.findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken))
+      .thenReturn(List.of());
 
     // When - Then
     try (MockedStatic<AuthorizationService> mockedAuth = Mockito.mockStatic(AuthorizationService.class)) {
       mockedAuth.when(() -> AuthorizationService.validateBrokerAdminRole(eq(userInfo)))
         .thenAnswer(inv -> null);
-      mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
-        .thenReturn(orgId);
 
       Assertions.assertThrows(SilFaultException.class, () ->
         service.processRequest(request, userInfo, accessToken)
       );
     }
 
-    verify(organizationServiceMock).getOrganizationById(orgId, accessToken);
+    verify(organizationServiceMock).findByBrokerIdAndStatus(brokerId, OrganizationStatus.ACTIVE, accessToken);
     verifyNoInteractions(debtPositionServiceMock, receiptServiceMock, pagatiMapperMock);
   }
 
