@@ -137,6 +137,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     installment.setDebtor(debtor);
     installment.setIud("IUD-001");
     installment.setLegacyPaymentMetadata("MBDAAA|MBDBBB");
+    installment.setStatus(InstallmentStatus.PAID);
 
     TransferDTO transfer = new TransferDTO();
     transfer.setTransferIndex(1);
