@@ -134,6 +134,7 @@ class DebtorQueryPaymentServiceTest {
     installment.setIud("IUD-001");
     installment.setLegacyPaymentMetadata("MBDAAA|MBDBBB");
     installment.setReceiptId(123L);
+    installment.setStatus(InstallmentStatus.PAID);
     installment.setTransfers(List.of(transfer));
 
     PaymentOptionDTO paymentOption = new PaymentOptionDTO();
