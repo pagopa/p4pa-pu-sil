@@ -116,6 +116,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
     debtor.setEntityType(PersonEntityType.F);
     installment.setDebtor(debtor);
     installment.setIuv("IUV123");
+    installment.setStatus(InstallmentStatus.UNPAID);
 
     PaymentOptionDTO paymentOption = new PaymentOptionDTO();
     paymentOption.setPaymentOptionType(PaymentOptionType.DOWN_PAYMENT);

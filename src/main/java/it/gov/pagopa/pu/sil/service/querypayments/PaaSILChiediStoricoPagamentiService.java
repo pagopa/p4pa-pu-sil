@@ -75,6 +75,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
 
         return debtPosition.getPaymentOptions().stream()
           .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .filter(installment -> InstallmentStatus.PAID.equals(installment.getStatus()))
             .map(installment -> {
               PaaSILStoricoPagamenti payment = new PaaSILStoricoPagamenti();
               byte[] receiptData = receiptService.getReceiptById(installment.getReceiptId(), debtPosition.getOrganizationId(), accessToken);

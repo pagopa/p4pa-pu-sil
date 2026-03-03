@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -69,6 +70,7 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
 
         return debtPosition.getPaymentOptions().stream()
           .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .filter(installment -> InstallmentStatus.PAID.equals(installment.getStatus()))
             .map(installment -> PaymentHistoryDTO.builder()
               .ipaCode(organization.getIpaCode())
               .orgName(organization.getOrgName())

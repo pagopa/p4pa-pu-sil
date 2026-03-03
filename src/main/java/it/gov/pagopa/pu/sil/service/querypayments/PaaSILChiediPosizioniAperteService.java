@@ -73,6 +73,7 @@ public class PaaSILChiediPosizioniAperteService extends AbstractDebtorQueryPayme
 
         return debtPosition.getPaymentOptions().stream()
           .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .filter(installment -> InstallmentStatus.UNPAID.equals(installment.getStatus()))
             .map(installment -> {
               PaaSILPosizioniAperte openPosition = new PaaSILPosizioniAperte();
               openPosition.setCodIpaEnte(organization.getIpaCode());

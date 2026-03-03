@@ -61,14 +61,15 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
 
         return debtPosition.getPaymentOptions().stream()
           .flatMap(paymentOption -> paymentOption.getInstallments().stream()
+            .filter(installment -> InstallmentStatus.UNPAID.equals(installment.getStatus()))
             .map(installment -> UnpaidDebtPositionsDTO.builder()
-              .ipaCode(organization.getIpaCode())
-              .orgName(organization.getOrgName())
+                .ipaCode(organization.getIpaCode())
+                .orgName(organization.getOrgName())
               .paymentTriggerUrl(
                 getCheckoutUrl(organization.getOrganizationId(),
                   installment.getIuv(), null, organization.getOrgFiscalCode(),
                   accessToken))
-              .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, accessToken))
+                .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, accessToken))
               .build()));
       })
       .forEach(response::addDebtPositionsItem);
