@@ -6,17 +6,17 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
   java
-  id("org.springframework.boot") version "4.0.0"
+  id("org.springframework.boot") version "4.0.3"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "7.2.1.6560"
+  id("org.sonarqube") version "7.2.3.7755"
   id("com.github.ben-manes.versions") version "0.53.0"
-  id("org.openapi.generator") version "7.17.0"
+  id("org.openapi.generator") version "7.20.0"
   id("org.ajoberstar.grgit") version "5.3.2"
-  id("com.gorylenko.gradle-git-properties") version "2.5.4"
+  id("com.gorylenko.gradle-git-properties") version "2.5.7"
   //code generation for soap webservices classes (via  jaxb)
   id("com.intershop.gradle.jaxb") version "8.0.1"
-  id("com.github.jk1.dependency-license-report") version "3.0.1"
+  id("com.github.jk1.dependency-license-report") version "3.1.1"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -52,11 +52,11 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "3.0.0"
+val springDocOpenApiVersion = "3.0.2"
 val janinoVersion = "3.1.12"
-val openApiToolsVersion = "0.2.8"
-val micrometerVersion = "1.6.1"
-val httpClientVersion = "5.5.1"
+val openApiToolsVersion = "0.2.9"
+val micrometerVersion = "1.6.3"
+val httpClientVersion = "5.6"
 val springWolfAsyncApiVersion = "1.20.0"
 val podamVersion = "8.0.2.RELEASE"
 val jaxbVersion = "4.0.6"
@@ -65,12 +65,17 @@ val activationVersion = "2.1.4"
 val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.2"
 val caffeineVersion = "3.2.3"
-val javaJwtVersion = "4.5.0"
+val javaJwtVersion = "4.5.1"
 val jwksRsaVersion = "0.23.0"
 val bouncycastleVersion = "1.83"
 val nimbusVersion = "10.5"
 val commonsLang3Version = "3.20.0"
-val lz4JavaVersion = "1.10.1"
+val lz4JavaVersion = "1.10.4"
+
+// fix cve
+val jackson2CoreVersion = "2.21.1"
+val jackson3CoreVersion = "3.1.0"
+
 val springCloudDepsVersion = "2025.1.0"
 
 dependencyManagement {
@@ -129,7 +134,11 @@ dependencies {
   jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:2.1")
   jaxbext("org.jvnet.jaxb:jaxb-plugins:4.0.0")
 
-  compileOnly("org.projectlombok:lombok")
+  // CVE fix
+    implementation("tools.jackson.core:jackson-core:$jackson3CoreVersion")
+    implementation("com.fasterxml.jackson.core:jackson-core:$jackson2CoreVersion")
+
+    compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
   testAnnotationProcessor("org.projectlombok:lombok")
 
