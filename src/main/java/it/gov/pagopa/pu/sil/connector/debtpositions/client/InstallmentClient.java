@@ -43,7 +43,7 @@ public class InstallmentClient {
     try {
       return debtPositionsApisHolder
         .getInstallmentNoPiiSearchControllerApi(accessToken)
-        .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, debtPositionOrigins);
+        .crudInstallmentsFindAuthorizedByTransferSemanticKey(organizationId, iuv, iur, transferIndex, operatorExternalUserId, debtPositionOrigins);
     } catch (HttpClientErrorException.NotFound e) {
       log.info("Cannot find InstallmentNoPII by semantic key: organizationId {} - iuv {} - iur {} - transferIndex {}", organizationId, iuv, iur, transferIndex, e);
       return null;

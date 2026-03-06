@@ -45,7 +45,7 @@ class ClassificationApisHolderTest extends BaseApiHolderTest {
   void whenGetAssessmentsBalanceViewSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
         accessToken -> apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-            .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf("1", "IUF1"),
+            .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(1L, "IUF1"),
         new ParameterizedTypeReference<>() {},
         apisHolder::unload);
   }

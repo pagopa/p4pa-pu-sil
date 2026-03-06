@@ -98,7 +98,7 @@ class InstallmentClientTest {
     Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
       .thenReturn(installmentNoPiiSearchControllerApiMock);
     Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
-        organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
+        organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
       .thenReturn(expectedResult);
 
     // When
@@ -122,7 +122,7 @@ class InstallmentClientTest {
     Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
       .thenReturn(installmentNoPiiSearchControllerApiMock);
     Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
-      organizationId, iuv, iur, String.valueOf(transferIndex), operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
+      organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
       .thenThrow(HttpClientErrorException.NotFound.class);
 
     // When

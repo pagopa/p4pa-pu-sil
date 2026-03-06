@@ -17,12 +17,12 @@ public class AssessmentClient {
   public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndIuf(Long organizationId, String iuf, String accessToken) {
     log.info("Finding assessments balance view by organization ID and IUF");
     return classificationApisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-      .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(String.valueOf(organizationId), iuf);
+      .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(organizationId, iuf);
   }
 
   public CollectionModelAssessmentsBalanceView findClosedAssessmentsBalanceViewByOrganizationIdAndBill(Long organizationId, String billCode, String billYear, String accessToken) {
     log.info("Finding assessments balance view by organization ID, bill code and bill year");
     return classificationApisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-      .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndBill(String.valueOf(organizationId), billCode, billYear);
+      .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndBill(organizationId, billCode, billYear);
   }
 }
