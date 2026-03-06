@@ -45,7 +45,7 @@ class AssessmentClientTest {
 
     Mockito.when(apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken))
         .thenReturn(assessmentsBalanceViewSearchControllerApiMock);
-    Mockito.when(assessmentsBalanceViewSearchControllerApiMock.crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(String.valueOf(organizationId), iuf))
+    Mockito.when(assessmentsBalanceViewSearchControllerApiMock.crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(organizationId, iuf))
         .thenReturn(expectedBalanceView);
     // When
     CollectionModelAssessmentsBalanceView result =
@@ -68,7 +68,7 @@ class AssessmentClientTest {
     Mockito.when(apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken))
       .thenReturn(assessmentsBalanceViewSearchControllerApiMock);
     Mockito.when(assessmentsBalanceViewSearchControllerApiMock
-        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndBill(String.valueOf(organizationId), billCode, billYear))
+        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndBill(organizationId, billCode, billYear))
       .thenReturn(expectedBalanceView);
     // When
     CollectionModelAssessmentsBalanceView result =
