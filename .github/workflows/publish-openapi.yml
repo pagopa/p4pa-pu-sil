@@ -8,7 +8,7 @@ on:
       - uat
       - main
     paths:
-      - 'openapi/generated.openapi.json'
+      - 'openapi/generated-internal.openapi.json'
   workflow_dispatch:
 
 permissions:
@@ -40,7 +40,7 @@ jobs:
           OPENAPI_FILE_GENERATED=$DEST_DIR/$REPO_NAME.$ENV.generated.openapi.json
           OPENAPI_FILE_MANUAL=$DEST_DIR/$REPO_NAME.$ENV.openapi.yaml
 
-          cp ../$REPO_NAME/openapi/generated.openapi.json $OPENAPI_FILE_GENERATED
+          cp ../$REPO_NAME/openapi/generated-internal.openapi.json $OPENAPI_FILE_GENERATED
           cp ../$REPO_NAME/openapi/$REPO_NAME.openapi.yaml $OPENAPI_FILE_MANUAL
 
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
