@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
+import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType.*;
-import static it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService.ALLOWED_ORIGINS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
@@ -169,7 +169,7 @@ class DebtPositionInstallmentServiceTest {
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), IUD, inst.getIud(), false);
 
     when(debtPositionService
-      .getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), inst.getIud(), ALLOWED_ORIGINS, accessToken))
+      .getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), inst.getIud(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(dp));
     // Act
     List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByIud(
@@ -184,7 +184,7 @@ class DebtPositionInstallmentServiceTest {
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), IUD, inst.getIud(), false);
 
     when(debtPositionService
-      .getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), inst.getIud(), ALLOWED_ORIGINS, accessToken))
+      .getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), inst.getIud(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(otherDp));
 
     // Act & Assert
@@ -200,7 +200,7 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
 
-    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), ALLOWED_ORIGINS, accessToken)).thenReturn(List.of(dp));
+    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(List.of(dp));
 
     // Act
     List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByIuv(
@@ -214,7 +214,7 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
 
-    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), ALLOWED_ORIGINS, accessToken))
+    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(otherDp));
 
     // Act & Assert
@@ -230,7 +230,7 @@ class DebtPositionInstallmentServiceTest {
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
     dp.setStatus(DebtPositionStatus.CANCELLED);
 
-    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), ALLOWED_ORIGINS, accessToken))
+    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(dp));
 
     // Act

@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
+import it.gov.pagopa.pu.sil.util.Constants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +43,8 @@ public class DebtPositionInstallmentService {
     Organization organization,
     String accessToken) {
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByOrganizationIdAndIud(
-      organization.getOrganizationId(), request.id(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken);
-    return findFirstValidPair(debtPositions, inst -> inst.getIud().equals(request.id()), SilFaults.PAA_IUD_NON_VALIDO);
+      organization.getOrganizationId(), request.id(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
+    return findFirstValidPair(debtPositions, inst -> Objects.equals(inst.getIud(), request.id()), SilFaults.PAA_IUD_NON_VALIDO);
   }
 
   public List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallmentsByIuv(
@@ -51,8 +52,8 @@ public class DebtPositionInstallmentService {
     Organization organization,
     String accessToken) {
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-      organization.getOrganizationId(), request.id(), InstallmentFacadeService.ALLOWED_ORIGINS, accessToken);
-    return findFirstValidPair(debtPositions, inst -> inst.getIuv().equals(request.id()), SilFaults.PAA_IUV_NON_VALIDO);
+      organization.getOrganizationId(), request.id(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
+    return findFirstValidPair(debtPositions, inst -> Objects.equals(inst.getIuv(), request.id()), SilFaults.PAA_IUV_NON_VALIDO);
   }
 
   private Pair<DebtPositionDTO, InstallmentDTO> createPairFromInstallmentId(Long installmentId, String accessToken) {
@@ -62,7 +63,7 @@ public class DebtPositionInstallmentService {
       throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "id session non valido");
     }
 
-    InstallmentDTO installment = findInstallment(debtPosition, inst -> inst.getInstallmentId().equals(installmentId), SilFaults.PAA_ID_SESSION_NON_VALIDO);
+    InstallmentDTO installment = findInstallment(debtPosition, inst -> Objects.equals(inst.getInstallmentId(), installmentId), SilFaults.PAA_ID_SESSION_NON_VALIDO);
     return Pair.of(debtPosition, installment);
   }
 
