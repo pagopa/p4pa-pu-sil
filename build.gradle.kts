@@ -63,7 +63,6 @@ val podamVersion = "8.0.2.RELEASE"
 val jaxbVersion = "4.0.6"
 val jaxbApiVersion = "4.0.4"
 val activationVersion = "2.1.4"
-val wsdl4jVersion = "1.6.3"
 val xmlSchemaVersion = "2.3.2"
 val caffeineVersion = "3.2.3"
 val javaJwtVersion = "4.5.1"
@@ -123,7 +122,6 @@ dependencies {
   implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
 
   //webservice soap
-  implementation("wsdl4j:wsdl4j:$wsdl4jVersion")
   implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
   runtimeOnly("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
   //jaxb
