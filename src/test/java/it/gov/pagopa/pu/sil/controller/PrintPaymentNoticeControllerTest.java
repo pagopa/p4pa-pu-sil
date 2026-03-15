@@ -34,9 +34,9 @@ class PrintPaymentNoticeControllerTest {
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @Test
-  void whenNotifyPaymentThenOk() {
+  void whenGenerateNoticeThenOk() {
     // Given
-    String iuv = "IUV";
+    String nav = "NAV";
     String orgFiscalCode = "fakeFiscalCode";
     String accessToken = "fakeAccessToken";
     UserInfo userInfo = podamFactory.manufacturePojo(UserInfo.class);
@@ -51,12 +51,12 @@ class PrintPaymentNoticeControllerTest {
 
     Resource expectedResource = new ByteArrayResource("fakePDFContent".getBytes());
 
-    when(noticeServiceMock.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken))
+    when(noticeServiceMock.generateNoticeByNav(orgFiscalCode, nav, userInfo, accessToken))
       .thenReturn(expectedResource);
 
 
     // When Then
-    ResponseEntity<Resource> response = controller.generateNotice(orgFiscalCode, iuv);
+    ResponseEntity<Resource> response = controller.generateNotice(orgFiscalCode, nav);
 
     //Verify
     Assertions.assertEquals(expectedResource, response.getBody());

@@ -805,7 +805,7 @@
         } ]
       }
     },
-    "/organization/{orgFiscalCode}/printpaymentnotice/{iuv}" : {
+    "/organization/{orgFiscalCode}/printpaymentnotice/{nav}" : {
       "get" : {
         "tags" : [ "PrintPaymentNotice" ],
         "summary" : "Print payment notice as PDF",
@@ -821,7 +821,7 @@
             "pattern" : "^\\d{11}$"
           }
         }, {
-          "name" : "iuv",
+          "name" : "nav",
           "in" : "path",
           "required" : true,
           "schema" : {

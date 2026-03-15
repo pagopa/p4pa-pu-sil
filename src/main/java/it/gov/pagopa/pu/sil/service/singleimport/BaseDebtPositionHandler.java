@@ -116,12 +116,12 @@ public abstract class BaseDebtPositionHandler<I, O> {
     InstallmentDTO installmentOnDb = debtPositionWithInstallment.getRight();
 
     //generate the notice
-    byte[] noticeAsBytes = noticeService.generateNotice(installmentOnDb.getIuv(), debtPositionOnDb, accessToken);
+    byte[] noticeAsBytes = noticeService.generateNotice(installmentOnDb.getNav(), debtPositionOnDb, accessToken);
 
     //compress the notice into a zip file
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
          ZipOutputStream zos = new ZipOutputStream(baos)) {
-      String name = "avviso_" + organization.getOrgFiscalCode() + "_" + installmentOnDb.getIuv() + ".pdf";
+      String name = "avviso_" + organization.getOrgFiscalCode() + "_" + installmentOnDb.getNav() + ".pdf";
       ZipEntry entry = new ZipEntry(name);
       zos.putNextEntry(entry);
       zos.write(noticeAsBytes);

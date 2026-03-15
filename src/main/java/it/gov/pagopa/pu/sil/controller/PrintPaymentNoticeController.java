@@ -18,13 +18,13 @@ public class PrintPaymentNoticeController implements PrintPaymentNoticeApi {
   private final NoticeService noticeService;
 
   @Override
-  public ResponseEntity<Resource> generateNotice(String orgFiscalCode, String iuv) {
+  public ResponseEntity<Resource> generateNotice(String orgFiscalCode, String nav) {
 
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
 
     //generate the payment notice PDF
-    Resource pdfResource = noticeService.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken);
+    Resource pdfResource = noticeService.generateNoticeByNav(orgFiscalCode, nav, userInfo, accessToken);
 
     //return it as a response
     return ResponseEntity.ok(pdfResource);

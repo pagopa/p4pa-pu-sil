@@ -51,6 +51,11 @@ public class DebtPositionServiceImpl implements DebtPositionService {
   }
 
   @Override
+  public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
+    return client.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin, accessToken);
+  }
+
+  @Override
   public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIud(Long organizationId, String iud, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
     return client.getDebtPositionsByOrganizationIdAndIud(organizationId, iud, debtPositionOrigin, accessToken);
   }

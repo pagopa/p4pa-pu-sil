@@ -92,21 +92,21 @@ class DebtPositionClientTest {
   }
 
   @Test
-  void whenGetDebtPositionsByOrganizationIdAndIuvThenInvokeApi() {
+  void whenGetDebtPositionsByOrganizationIdAndNavThenInvokeApi() {
     // Given
     String accessToken = "ACCESSTOKEN";
     Long organizationId = 1L;
-    String iuv = "IUV";
+    String nav = "NAV";
     List<DebtPositionOrigin> debtPositionOrigin = List.of(DebtPositionOrigin.ORDINARY);
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
 
     Mockito.when(apisHolderMock.getDebtPositionApi(accessToken))
       .thenReturn(debtPositionApiMock);
-    Mockito.when(debtPositionApiMock.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin))
+    Mockito.when(debtPositionApiMock.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin))
       .thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = client.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin, accessToken);
+    List<DebtPositionDTO> result = client.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin, accessToken);
 
     // Then
     Assertions.assertEquals(expectedResult, result);

@@ -58,6 +58,17 @@ public interface DebtPositionService {
   List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIuv(Long organizationId, String iuv, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
 
   /**
+   * Retrieves a list of DebtPositionDTOs by organization ID and IUV.
+   *
+   * @param organizationId the ID of the organization
+   * @param nav the NAV (Identificativo Numero Avviso)
+   * @param debtPositionOrigin the list of debt position origins to filter by
+   * @param accessToken the access token for authentication
+   * @return a list of DebtPositionDTOs matching the criteria
+   */
+  List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken);
+
+  /**
    * Retrieves a list of DebtPositionDTOs by organization ID and IUD.
    *
    * @param organizationId the ID of the organization

@@ -25,8 +25,8 @@ public class NoticeService {
   private final DebtPositionService debtPositionService;
   private final PagopaPaymentsService pagopaPaymentsService;
 
-  public byte[] generateNotice(String iuv, DebtPositionDTO debtPositionDTO, String accessToken) {
-    return Optional.ofNullable(pagopaPaymentsService.generateNotice(iuv, debtPositionDTO, accessToken))
+  public byte[] generateNotice(String nav, DebtPositionDTO debtPositionDTO, String accessToken) {
+    return Optional.ofNullable(pagopaPaymentsService.generateNotice(nav, debtPositionDTO, accessToken))
       .map(resource -> {
         try {
           return resource.getContentAsByteArray();
@@ -34,27 +34,27 @@ public class NoticeService {
           throw new ApplicationException(ioe);
         }
       })
-      .orElseThrow(() -> new ApplicationException("notice not found for org["+debtPositionDTO.getOrganizationId()+"] iuv["+iuv+"]"));
+      .orElseThrow(() -> new ApplicationException("notice not found for org["+debtPositionDTO.getOrganizationId()+"] nav["+nav+"]"));
   }
 
-  public Resource generateNoticeByIuv(String orgFiscalCode, String iuv, UserInfo userInfo, String accessToken) {
+  public Resource generateNoticeByNav(String orgFiscalCode, String nav, UserInfo userInfo, String accessToken) {
     //check user is authorized to access the resource
     Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
     AuthorizationService.validateAdminRole(organizationId, userInfo);
 
     //retrieve debt position by organizationId and IUV
-    DebtPositionDTO debtPosition = debtPositionService.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, Constants.PRINT_NOTICE_ALLOWED_ORIGINS, accessToken)
+    DebtPositionDTO debtPosition = debtPositionService.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, Constants.PRINT_NOTICE_ALLOWED_ORIGINS, accessToken)
       .stream()
       .filter(dp -> dp.getPaymentOptions().stream()
         .flatMap(po -> po.getInstallments().stream())
-        .anyMatch(installment -> iuv.equals(installment.getIuv()) && InstallmentStatus.UNPAID.equals(installment.getStatus())))
+        .anyMatch(installment -> nav.equals(installment.getNav()) && InstallmentStatus.UNPAID.equals(installment.getStatus())))
       .findFirst()
-      .orElseThrow(() -> new PaymentNotFoundException("No installment found for IUV: " + iuv));
+      .orElseThrow(() -> new PaymentNotFoundException("No installment found for NAV: " + nav));
 
     //generate the payment notice PDF
-    Resource pdfResource = pagopaPaymentsService.generateNotice(iuv, debtPosition, accessToken);
+    Resource pdfResource = pagopaPaymentsService.generateNotice(nav, debtPosition, accessToken);
     if(pdfResource == null) {
-      throw new ApplicationException("Error generating notice for IUV: " + iuv);
+      throw new ApplicationException("Error generating notice for NAV: " + nav);
     }
     return pdfResource;
   }

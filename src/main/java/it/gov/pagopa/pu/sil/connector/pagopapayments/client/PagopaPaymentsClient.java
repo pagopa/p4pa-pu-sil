@@ -15,7 +15,7 @@ public class PagopaPaymentsClient {
 		this.pagoPaPaymentsApisHolder = pagoPaPaymentsApisHolder;
 	}
 
-	public Resource generateNotice(String iuv, DebtPositionDTO debtPosition, String accessToken) {
-		return pagoPaPaymentsApisHolder.getPrintPaymentNoticeApi(accessToken).generateNotice(iuv, debtPosition);
+	public Resource generateNotice(String nav, DebtPositionDTO debtPosition, String accessToken) {
+		return pagoPaPaymentsApisHolder.getPrintPaymentNoticeApi(accessToken).generateNotice(nav, debtPosition);
 	}
 }
