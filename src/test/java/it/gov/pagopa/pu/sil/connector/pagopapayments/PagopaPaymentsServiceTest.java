@@ -37,15 +37,15 @@ class PagopaPaymentsServiceTest {
   void whenGenerateNoticeThenInvokeClient() {
     // Given
     String accessToken = "accessToken";
-    String iuv = "IUV";
+    String nav = "NAV";
     DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
     Resource resource = new ByteArrayResource("notice content".getBytes());
 
-    when(pagopaPaymentsClientMock.generateNotice(iuv, debtPositionDTO, accessToken))
+    when(pagopaPaymentsClientMock.generateNotice(nav, debtPositionDTO, accessToken))
       .thenReturn(resource);
 
     // When
-    Resource result = service.generateNotice(iuv, debtPositionDTO, accessToken);
+    Resource result = service.generateNotice(nav, debtPositionDTO, accessToken);
 
     // Then
     assertEquals(resource, result);

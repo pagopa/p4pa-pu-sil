@@ -56,14 +56,13 @@ class DebtPositionServiceTest {
     // Given
     Long organizationId = 1L;
     String iuv = "IUV";
-    List<DebtPositionOrigin> debtPositionOrigin = null;
     String accessToken = "ACCESSTOKEN";
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
 
-    Mockito.when(clientMock.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin, accessToken)).thenReturn(expectedResult);
+    Mockito.when(clientMock.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, null, accessToken)).thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin, accessToken);
+    List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, null, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);
@@ -74,14 +73,13 @@ class DebtPositionServiceTest {
     // Given
     Long organizationId = 1L;
     String iud = "IUD";
-    List<DebtPositionOrigin> debtPositionOrigin = null;
     String accessToken = "ACCESSTOKEN";
     List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
 
-    Mockito.when(clientMock.getDebtPositionsByOrganizationIdAndIud(organizationId, iud, debtPositionOrigin, accessToken)).thenReturn(expectedResult);
+    Mockito.when(clientMock.getDebtPositionsByOrganizationIdAndIud(organizationId, iud, null, accessToken)).thenReturn(expectedResult);
 
     // When
-    List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndIud(organizationId, iud, debtPositionOrigin, accessToken);
+    List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndIud(organizationId, iud, null, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);

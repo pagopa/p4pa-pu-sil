@@ -18,7 +18,7 @@ public class PagopaPaymentsServiceImpl implements PagopaPaymentsService {
 	}
 
 	@Override
-	public Resource generateNotice(String iuv, DebtPositionDTO debtPosition, String accessToken) {
-		return pagopaPaymentsClient.generateNotice(iuv, debtPosition, accessToken);
+	public Resource generateNotice(String nav, DebtPositionDTO debtPosition, String accessToken) {
+		return pagopaPaymentsClient.generateNotice(nav, debtPosition, accessToken);
 	}
 }
