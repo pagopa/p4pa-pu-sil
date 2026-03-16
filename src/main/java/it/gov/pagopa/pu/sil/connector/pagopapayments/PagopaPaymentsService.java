@@ -10,10 +10,10 @@ public interface PagopaPaymentsService {
 
   /**
    * Generates the PDF of a payment notice for a specific debt position.
-   * @param iuv the IUV (Identificativo Unico di Versamento) of the payment notice
+   * @param nav the NAV of the payment notice
    * @param debtPosition the debt position details
    * @param accessToken the access token for authentication
    * @return a Resource containing the generated PDF notice
    */
-  Resource generateNotice(String iuv, DebtPositionDTO debtPosition, String accessToken);
+  Resource generateNotice(String nav, DebtPositionDTO debtPosition, String accessToken);
 }

@@ -38,16 +38,16 @@ class PagopaPaymentsClientTest {
   void whenGenerateNoticeThenInvokeWithAccessToken() {
     // Given
     String accessToken = "ACCESSTOKEN";
-    String iuv = "IUV";
+    String nav = "NAV";
     DebtPositionDTO debtPositionDTO = new DebtPositionDTO();
     Resource resource = new ByteArrayResource("notice content".getBytes());
 
     Mockito.when(pagoPaPaymentsApisHolderMock.getPrintPaymentNoticeApi(accessToken))
       .thenReturn(printPaymentNoticeApiMock);
-    Mockito.when(printPaymentNoticeApiMock.generateNotice(iuv, debtPositionDTO)).thenReturn(resource);
+    Mockito.when(printPaymentNoticeApiMock.generateNotice(nav, debtPositionDTO)).thenReturn(resource);
 
     // When
-    Resource returnedResource = pagopaPaymentsClient.generateNotice(iuv, debtPositionDTO, accessToken);
+    Resource returnedResource = pagopaPaymentsClient.generateNotice(nav, debtPositionDTO, accessToken);
 
     // Then
     Assertions.assertEquals(resource, returnedResource);

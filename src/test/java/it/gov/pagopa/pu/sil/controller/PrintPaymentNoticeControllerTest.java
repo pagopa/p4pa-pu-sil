@@ -34,7 +34,7 @@ class PrintPaymentNoticeControllerTest {
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @Test
-  void whenNotifyPaymentThenOk() {
+  void whenGenerateNoticeThenOk() {
     // Given
     String iuv = "IUV";
     String orgFiscalCode = "fakeFiscalCode";

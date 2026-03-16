@@ -107,12 +107,14 @@ class PaaSILImportaDovutoServiceTest {
     Mockito.when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     String iud = installmentDTO.getIud();
     String iuv = installmentDTO.getIuv();
+    String nav = installmentDTO.getNav();
     DebtPositionDTO processedDebtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
     processedDebtPositionDTO.setDebtPositionTypeOrgId(debtPositionDTO.getDebtPositionTypeOrgId());
     processedDebtPositionDTO.setStatus(DebtPositionStatus.UNPAID);
     InstallmentDTO processedInstallmentDTO = processedDebtPositionDTO.getPaymentOptions().getLast().getInstallments().getLast();
     processedInstallmentDTO.setIud(iud);
     processedInstallmentDTO.setIuv(iuv);
+    processedInstallmentDTO.setNav(nav);
     Mockito.when(paaSILImportaDovutoMapperMock.mapRequestToDebtPosition(request, org, TOKEN)).thenReturn(Pair.of(debtPositionDTO, action));
 
     switch (action) {
@@ -124,11 +126,11 @@ class PaaSILImportaDovutoServiceTest {
           .thenReturn(List.of(processedDebtPositionDTO));
         ManageDebtPositionDTO manageDebtPositionDTO = podamFactory.manufacturePojo(ManageDebtPositionDTO.class);
         Mockito.when(manageDebtPositionMapperMock.mapToManageDebtPositionDTO(
-          eq(processedDebtPositionDTO),
-          eq(debtPositionDTO),
-          eq(installmentDTO),
-          eq(action),
-          eq(true)
+          processedDebtPositionDTO,
+          debtPositionDTO,
+          installmentDTO,
+          action,
+          true
         )).thenReturn(manageDebtPositionDTO);
         Mockito.when(manageDebtPositionServiceMock.manageDebtPositionInstallments(processedDebtPositionDTO.getDebtPositionId(), manageDebtPositionDTO, TOKEN))
           .thenReturn(processedDebtPositionDTO);
@@ -136,7 +138,7 @@ class PaaSILImportaDovutoServiceTest {
       case Constants.LEGACY_IMPORT_ACTION_PRINT:
         Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIud(eq(orgId), eq(iud), Mockito.any(), eq(TOKEN)))
           .thenReturn(List.of(processedDebtPositionDTO));
-        Mockito.when(noticeServiceMock.generateNotice(processedInstallmentDTO.getIuv(), processedDebtPositionDTO, TOKEN))
+        Mockito.when(noticeServiceMock.generateNotice(processedInstallmentDTO.getNav(), processedDebtPositionDTO, TOKEN))
           .thenReturn("PDF NOTICE".getBytes());
         break;
       default:
