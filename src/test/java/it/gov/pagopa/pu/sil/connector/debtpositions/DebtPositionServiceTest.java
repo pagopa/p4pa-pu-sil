@@ -69,23 +69,6 @@ class DebtPositionServiceTest {
   }
 
   @Test
-  void whenGetDebtPositionsByOrganizationIdAndNavThenReturnListOfDebtPositionDTO() {
-    // Given
-    Long organizationId = 1L;
-    String nav = "NAV";
-    String accessToken = "ACCESSTOKEN";
-    List<DebtPositionDTO> expectedResult = List.of(new DebtPositionDTO());
-
-    Mockito.when(clientMock.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, null, accessToken)).thenReturn(expectedResult);
-
-    // When
-    List<DebtPositionDTO> result = service.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, null, accessToken);
-
-    // Then
-    Assertions.assertSame(expectedResult, result);
-  }
-
-  @Test
   void whenGetDebtPositionsByOrganizationIdAndIudThenReturnListOfDebtPositionDTO() {
     // Given
     Long organizationId = 1L;

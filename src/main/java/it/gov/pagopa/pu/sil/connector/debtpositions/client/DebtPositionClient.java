@@ -55,12 +55,6 @@ public class DebtPositionClient {
       .getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, debtPositionOrigin);
   }
 
-  public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndNav(Long organizationId, String nav, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
-    return debtPositionsApisHolder
-      .getDebtPositionApi(accessToken)
-      .getDebtPositionsByOrganizationIdAndNav(organizationId, nav, debtPositionOrigin);
-  }
-
   public List<DebtPositionDTO> getDebtPositionsByOrganizationIdAndIud(Long organizationId, String iud, List<DebtPositionOrigin> debtPositionOrigin, String accessToken) {
     return debtPositionsApisHolder
       .getDebtPositionApi(accessToken)

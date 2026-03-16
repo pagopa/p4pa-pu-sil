@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.sil.service.notice;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.pagopapayments.PagopaPaymentsService;
@@ -11,6 +12,7 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
@@ -37,22 +39,25 @@ public class NoticeService {
       .orElseThrow(() -> new ApplicationException("notice not found for org["+debtPositionDTO.getOrganizationId()+"] nav["+nav+"]"));
   }
 
-  public Resource generateNoticeByNav(String orgFiscalCode, String nav, UserInfo userInfo, String accessToken) {
+  public Resource generateNoticeByIuv(String orgFiscalCode, String iuv, UserInfo userInfo, String accessToken) {
     //check user is authorized to access the resource
     Long organizationId = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, orgFiscalCode);
     AuthorizationService.validateAdminRole(organizationId, userInfo);
 
     //retrieve debt position by organizationId and IUV
-    DebtPositionDTO debtPosition = debtPositionService.getDebtPositionsByOrganizationIdAndNav(organizationId, nav, Constants.PRINT_NOTICE_ALLOWED_ORIGINS, accessToken)
+    Pair<DebtPositionDTO, InstallmentDTO> debtPositionWithInstallment = debtPositionService
+      .getDebtPositionsByOrganizationIdAndIuv(organizationId, iuv, Constants.PRINT_NOTICE_ALLOWED_ORIGINS, accessToken)
       .stream()
-      .filter(dp -> dp.getPaymentOptions().stream()
+      .flatMap(dp -> dp.getPaymentOptions().stream()
         .flatMap(po -> po.getInstallments().stream())
-        .anyMatch(installment -> nav.equals(installment.getNav()) && InstallmentStatus.UNPAID.equals(installment.getStatus())))
+        .filter(installment -> iuv.equals(installment.getIuv()) && InstallmentStatus.UNPAID.equals(installment.getStatus()))
+        .map(installment -> Pair.of(dp, installment)))
       .findFirst()
-      .orElseThrow(() -> new PaymentNotFoundException("No installment found for NAV: " + nav));
+      .orElseThrow(() -> new PaymentNotFoundException("No installment found for IUV: " + iuv));
 
+    String nav = debtPositionWithInstallment.getRight().getNav();
     //generate the payment notice PDF
-    Resource pdfResource = pagopaPaymentsService.generateNotice(nav, debtPosition, accessToken);
+    Resource pdfResource = pagopaPaymentsService.generateNotice(nav, debtPositionWithInstallment.getLeft(), accessToken);
     if(pdfResource == null) {
       throw new ApplicationException("Error generating notice for NAV: " + nav);
     }

@@ -50,17 +50,17 @@ public class VerifyNoticeService extends BaseVerifyNoticeService<Pair<String, St
     PaymentResponse response = new PaymentResponse();
     return switch (installment.getStatus()) {
       case UNPAID -> doCheckOut(installment, organization, callbackUrl, accessToken)
-        .downloadNoticeUrl(composeDownloadNoticeUrl(organization.getOrgFiscalCode(), installment.getNav()));
+        .downloadNoticeUrl(composeDownloadNoticeUrl(organization.getOrgFiscalCode(), installment.getIuv()));
       case PAID -> response.outcome(OutcomeEnum.ALREADY_PAID);
       case UNPAYABLE -> response.outcome(OutcomeEnum.NOT_PAYABLE);
       default -> response.outcome(OutcomeEnum.NOT_FOUND);
     };
   }
 
-  private String composeDownloadNoticeUrl(String orgFiscalCode, String nav) {
+  private String composeDownloadNoticeUrl(String orgFiscalCode, String iuv) {
     return UriComponentsBuilder.fromUriString(puSilBaseUrl)
-      .path("/organization/{orgFiscalCode}/printpaymentnotice/{nav}")
-      .buildAndExpand(orgFiscalCode, nav)
+      .path("/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
+      .buildAndExpand(orgFiscalCode, iuv)
       .toUriString();
   }
 }

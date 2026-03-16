@@ -167,7 +167,7 @@ paths:
           description: Notification not found
         '500':
           description: Internal server error
-  /sil/organization/{orgFiscalCode}/printpaymentnotice/{nav}:
+  /sil/organization/{orgFiscalCode}/printpaymentnotice/{iuv}:
     get:
       tags:
         - PrintPaymentNotice
@@ -181,7 +181,7 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/OrgFiscalCode'
-        - name: nav
+        - name: iuv
           in: path
           required: true
           schema:

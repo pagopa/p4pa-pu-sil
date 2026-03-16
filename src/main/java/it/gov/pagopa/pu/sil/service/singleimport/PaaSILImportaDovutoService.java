@@ -52,13 +52,13 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
 
   @Override
   protected PaaSILImportaDovutoRisposta mapToRespone(DebtPositionDTO debtPosition, String orgFiscalCode, DataHandler notice, String action) {
+    String iuv = debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getIuv();
     PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
     response.setEsito(RegistryOutcome.OK.getValue());
-    response.setIdentificativoUnivocoVersamento(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getIuv());
+    response.setIdentificativoUnivocoVersamento(iuv);
     response.setBase64ZipAvviso(notice);
     if (action.equals(Constants.LEGACY_IMPORT_ACTION_MODIFY) || action.equals(Constants.LEGACY_IMPORT_ACTION_INSERT)) {
-      String nav = debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getNav();
-      response.setUrlFileAvviso(composeDownloadPdfNoticeUrl(orgFiscalCode, nav));
+      response.setUrlFileAvviso(composeDownloadPdfNoticeUrl(orgFiscalCode, iuv));
     }
     return response;
   }
@@ -74,10 +74,10 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
     return manageDebtPositionMapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, action, true);
   }
 
-  private String composeDownloadPdfNoticeUrl(String orgFiscalCode, String nav) {
+  private String composeDownloadPdfNoticeUrl(String orgFiscalCode, String iuv) {
     return UriComponentsBuilder.fromUriString(puSilBaseUrl)
-      .path("/organization/{orgFiscalCode}/printpaymentnotice/{nav}")
-      .buildAndExpand(orgFiscalCode, nav)
+      .path("/organization/{orgFiscalCode}/printpaymentnotice/{iuv}")
+      .buildAndExpand(orgFiscalCode, iuv)
       .toUriString();
   }
 }

@@ -121,7 +121,7 @@ public abstract class BaseDebtPositionHandler<I, O> {
     //compress the notice into a zip file
     try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
          ZipOutputStream zos = new ZipOutputStream(baos)) {
-      String name = "avviso_" + organization.getOrgFiscalCode() + "_" + installmentOnDb.getNav() + ".pdf";
+      String name = "avviso_" + organization.getOrgFiscalCode() + "_" + installmentOnDb.getIuv() + ".pdf";
       ZipEntry entry = new ZipEntry(name);
       zos.putNextEntry(entry);
       zos.write(noticeAsBytes);
