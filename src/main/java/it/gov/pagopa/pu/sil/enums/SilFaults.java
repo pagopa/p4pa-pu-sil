@@ -49,7 +49,10 @@ public enum SilFaults {
   PIVOT_TIPO_FLUSSO_NON_VALIDO("Tipo di flusso tesoreria non valido"),
   PIVOT_BOLLETTA_NON_TROVATA("Bolletta non trovata"),
   PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA("Nessuna rendicontazione associata allo IUF della bolletta"),
-  PIVOT_RICHIESTA_CON_PARAMETRI_MULTIPLI("Richiesta con parametri multipli")
+  PIVOT_RICHIESTA_CON_PARAMETRI_MULTIPLI("Richiesta con parametri multipli"),
+  DEBITORI_DIVERSI_NELLO_STESSO_OPZIONE_DI_PAGAMENTO("Le rate di un'opzione di pagamento devono avere lo stesso debitore"),
+  STATO_RATA_NON_VALIDO("La rata non e' in uno stato valido per l'operazione richiesta"),
+  IMPORTO_RATA_NON_VALIDO("La somma degli importi dei beneficiari deve essere uguale all'importo della rata"),
   ;
 
   private final String description;
