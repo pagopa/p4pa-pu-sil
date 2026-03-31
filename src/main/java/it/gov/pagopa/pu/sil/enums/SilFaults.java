@@ -39,6 +39,9 @@ public enum SilFaults {
   PAA_REQUEST_TOKEN_NON_VALIDO("requestToken non valido"),
   PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA("dataEsecuzionePagamento non presente o non valida", "MISSING_DUE_DATE", "INVALID_DUE_DATE"),
   PAA_DOVUTO_DUPLICATO("Dovuto già esistente", "INSTALLMENT_ALREADY_EXISTS", "DEBT_POSITION_ALREADY_EXISTS"),
+  PAA_DEBITORI_DIVERSI_NELLA_STESSA_OPZIONE_DI_PAGAMENTO("Le rate di un'opzione di pagamento devono avere lo stesso debitore"),
+  PAA_STATO_RATA_NON_VALIDO("La rata non e' in uno stato valido per l'operazione richiesta"),
+  PAA_IMPORTO_RATA_NON_VALIDO("La somma degli importi dei beneficiari deve essere uguale all'importo della rata"),
 
   PIVOT_SYSTEM_ERROR("PIVOT_SYSTEM_ERROR"),
   PIVOT_ENTE_NON_VALIDO("Ente non valido o utente non autorizzato"),
