@@ -229,3 +229,6 @@ cache:
   taxonomy:
     size: "\${CACHE_TAXONOMY_SIZE:100}"
     expire-in: "\${CACHE_TAXONOMY_MINUTES:60}"
+
+nav:
+  aux-digit: "\${NAV_AUX_DIGIT:3}"

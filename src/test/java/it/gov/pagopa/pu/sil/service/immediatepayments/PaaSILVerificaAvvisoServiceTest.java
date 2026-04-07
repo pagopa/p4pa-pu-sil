@@ -1,10 +1,5 @@
 package it.gov.pagopa.pu.sil.service.immediatepayments;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
@@ -20,8 +15,6 @@ import it.gov.pagopa.pu.sil.service.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvvisoRisposta;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,12 +23,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import uk.co.jemos.podam.api.PodamFactory;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PaaSILVerificaAvvisoServiceTest {
@@ -47,7 +47,6 @@ class PaaSILVerificaAvvisoServiceTest {
   @Mock
   private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
 
-  @InjectMocks
   private PaaSILVerificaAvvisoService paaSILVerificaAvvisoService;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
@@ -58,6 +57,8 @@ class PaaSILVerificaAvvisoServiceTest {
   private static final String TOKEN = "ACCESS_TOKEN";
   private Organization org = null;
   private Long orgId = null;
+
+  private static final String AUX_DIGIT = "3";
 
   @BeforeEach
   void setUp() {
@@ -74,6 +75,8 @@ class PaaSILVerificaAvvisoServiceTest {
 
     request = podamFactory.manufacturePojo(PaaSILVerificaAvviso.class);
     request.setEnteSILInviaRispostaPagamentoUrl("https://example.com/callback");
+
+    paaSILVerificaAvvisoService = new PaaSILVerificaAvvisoService(organizationServiceMock, installmentFacadeServiceMock, debtPositionCheckoutServiceMock, AUX_DIGIT);
   }
 
   @Test

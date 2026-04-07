@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.util.Utilities;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -15,11 +16,14 @@ public class DebtPositionMapper {
 
   private final DebtPositionTypeService debtPositionTypeService;
   private final TransferMapper transferMapper;
+  private final String auxDigit;
 
   public DebtPositionMapper(DebtPositionTypeService debtPositionTypeService,
-                            TransferMapper transferMapper) {
+                            TransferMapper transferMapper,
+                            @Value("${nav.aux-digit}") String auxDigit) {
     this.debtPositionTypeService = debtPositionTypeService;
     this.transferMapper = transferMapper;
+    this.auxDigit = auxDigit;
   }
 
   public DebtPositionDTO mapRequestToDebtPosition(it.gov.pagopa.pu.sil.dto.generated.DebtPositionDTO source, Organization organization, String accessToken) {
@@ -62,7 +66,7 @@ public class DebtPositionMapper {
       .status(InstallmentStatus.UNPAID)
       .iud(source.getIud())
       .iuv(source.getIuv())
-      .nav(Utilities.iuv2Nav(source.getIuv()))
+      .nav(Utilities.iuv2Nav(source.getIuv(), auxDigit))
       .amountCents(source.getAmountCents())
       .dueDate(source.getDueDate())
       .remittanceInformation(source.getRemittanceInformation())

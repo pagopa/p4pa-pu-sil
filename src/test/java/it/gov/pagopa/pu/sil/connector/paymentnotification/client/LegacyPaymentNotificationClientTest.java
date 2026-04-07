@@ -32,9 +32,11 @@ class LegacyPaymentNotificationClientTest {
 
   private LegacyPaymentNotificationClient client;
 
+  private static final String AUX_DIGIT = "3";
+
   @BeforeEach
   void setUp() {
-    client = new LegacyPaymentNotificationClient(legacyPaymentNotificationApisHolderMock, registryLoggerMock);
+    client = new LegacyPaymentNotificationClient(legacyPaymentNotificationApisHolderMock, registryLoggerMock, AUX_DIGIT);
   }
 
   @AfterEach
@@ -65,7 +67,7 @@ class LegacyPaymentNotificationClientTest {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_notificaPagamento)
       .orgSilServiceName("TestApp")
-      .iuv(Utilities.nav2Iuv(nav))
+      .iuv(Utilities.nav2Iuv(nav, AUX_DIGIT))
       .loggedUser(loggedUser)
       .build();
     RegistryLoggerTest.configureRegistryLoggerMock(registryLoggerMock, expectedContextData, paymentNotification, false, false);

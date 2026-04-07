@@ -33,9 +33,11 @@ class LegacyActualizationClientTest {
 
   private LegacyActualizationClient client;
 
+  private static final String AUX_DIGIT = "3";
+
   @BeforeEach
   void setUp() {
-    client = new LegacyActualizationClient(legacyActualizationApisHolderMock, registryLoggerMock);
+    client = new LegacyActualizationClient(legacyActualizationApisHolderMock, registryLoggerMock, AUX_DIGIT);
   }
 
   @AfterEach
@@ -64,7 +66,7 @@ class LegacyActualizationClientTest {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName("TestApp")
-      .iuv(Utilities.nav2Iuv(pagamento.getNumeroAvviso()))
+      .iuv(Utilities.nav2Iuv(pagamento.getNumeroAvviso(), AUX_DIGIT))
       .loggedUser(loggedUser)
       .build();
 

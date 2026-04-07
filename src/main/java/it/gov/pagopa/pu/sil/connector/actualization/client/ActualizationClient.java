@@ -12,6 +12,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -19,11 +20,14 @@ import org.springframework.stereotype.Component;
 public class ActualizationClient {
   private final ActualizationApisHolder actualizationApisHolder;
   private final RegistryLogger registryLogger;
+  private final String auxDigit;
 
   public ActualizationClient(ActualizationApisHolder actualizationApisHolder,
-                             RegistryLogger registryLogger) {
+                             RegistryLogger registryLogger,
+                             @Value("${nav.aux-digit}") String auxDigit) {
     this.actualizationApisHolder = actualizationApisHolder;
     this.registryLogger = registryLogger;
+    this.auxDigit = auxDigit;
   }
 
   public UpdatedPayment actualization(OrgSilServiceDTO orgSilServiceDTO, UserInfo loggedUser, String accessToken, Payment request) {
@@ -31,7 +35,7 @@ public class ActualizationClient {
       .orgFiscalCode(request.getOrgFiscalCode())
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName(orgSilServiceDTO.getApplicationName())
-      .iuv(Utilities.nav2Iuv(request.getNav()))
+      .iuv(Utilities.nav2Iuv(request.getNav(), auxDigit))
       .loggedUser(loggedUser)
       .build();
 
