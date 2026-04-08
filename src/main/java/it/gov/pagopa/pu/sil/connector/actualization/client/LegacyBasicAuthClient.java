@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -18,11 +19,14 @@ import org.springframework.stereotype.Component;
 public class LegacyBasicAuthClient {
   private final LegacyActualizationApisHolder legacyActualizationApisHolder;
   private final RegistryLogger registryLogger;
+  private final String auxDigit;
 
   public LegacyBasicAuthClient(LegacyActualizationApisHolder legacyActualizationApisHolder,
-                               RegistryLogger registryLogger) {
+                               RegistryLogger registryLogger,
+                               @Value("${nav.aux-digit}") String auxDigit) {
     this.legacyActualizationApisHolder = legacyActualizationApisHolder;
     this.registryLogger = registryLogger;
+    this.auxDigit = auxDigit;
   }
 
   public Token login(String orgFiscalCode, String orgSilServiceName, String nav, UserInfo loggedUser, Credentials credentials, String authUrl) {
@@ -30,7 +34,7 @@ public class LegacyBasicAuthClient {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName(orgSilServiceName)
-      .iuv(Utilities.nav2Iuv(nav))
+      .iuv(Utilities.nav2Iuv(nav, auxDigit))
       .loggedUser(loggedUser)
       .build();
 

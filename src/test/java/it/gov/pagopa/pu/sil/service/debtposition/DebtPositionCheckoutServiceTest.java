@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
@@ -16,6 +15,7 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,7 +99,7 @@ class DebtPositionCheckoutServiceTest {
         Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()),
         anyString(),
-        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)), eq(accessToken)))
+        eq(Constants.ORDINARY_DEBT_POSITION_ORIGINS), eq(accessToken)))
         .thenReturn(List.of(debtPositionDTOList.getFirst()))
         .thenReturn(List.of(debtPositionDTOList.get(1)))
         .thenReturn(List.of(debtPositionDTOList.get(2)));
@@ -111,7 +111,7 @@ class DebtPositionCheckoutServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(
-        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)),
+        eq(organization.getOrganizationId()), anyString(), eq(Constants.ORDINARY_DEBT_POSITION_ORIGINS),
         eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(),
         eq(callbackUrl));
@@ -140,7 +140,7 @@ class DebtPositionCheckoutServiceTest {
         Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()),
         anyString(),
-        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)), eq(accessToken)))
+        eq(Constants.ORDINARY_DEBT_POSITION_ORIGINS), eq(accessToken)))
         .thenReturn(List.of(debtPositionDTOList.getFirst()))
         .thenReturn(List.of(debtPositionDTOList.get(1)))
         .thenReturn(List.of(debtPositionDTOList.get(2)));
@@ -152,7 +152,7 @@ class DebtPositionCheckoutServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(
-        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)),
+        eq(organization.getOrganizationId()), anyString(), eq(Constants.ORDINARY_DEBT_POSITION_ORIGINS),
         eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(),
         eq(null));
@@ -238,7 +238,7 @@ class DebtPositionCheckoutServiceTest {
         Optional.of(organization));
     when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(eq(organization.getOrganizationId()),
         anyString(),
-        eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)), eq(accessToken)))
+        eq(Constants.ORDINARY_DEBT_POSITION_ORIGINS), eq(accessToken)))
         .thenReturn(List.of(debtPositionDTOList.getFirst()))
         .thenReturn(List.of(debtPositionDTOList.get(1)))
         .thenReturn(List.of(debtPositionDTOList.get(2)));
@@ -251,7 +251,7 @@ class DebtPositionCheckoutServiceTest {
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
     verify(debtPositionServiceMock, times(3)).getDebtPositionsByOrganizationIdAndIuv(
-        eq(organization.getOrganizationId()), anyString(), eq(List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL)),
+        eq(organization.getOrganizationId()), anyString(), eq(Constants.ORDINARY_DEBT_POSITION_ORIGINS),
         eq(accessToken));
     verify(cartRequestMapperMock).mapDebtPositionsToCartRequest(eq(debtPositionDTOList), eq(organization), anyString(),
         eq(callbackUrl));

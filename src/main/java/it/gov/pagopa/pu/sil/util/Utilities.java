@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.util;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import org.slf4j.MDC;
 
 import java.time.LocalDate;
@@ -26,26 +27,26 @@ public class Utilities {
     return (int) ((System.currentTimeMillis() - OFFSET_2025_01_01_MILLIS) / 1000L);
   }
 
-  public static String iuv2Nav(String iuv) {
+  public static String iuv2Nav(String iuv, String auxDigit) {
     if (iuv == null || iuv.isBlank()) {
       return null;
     } else if (iuv.contains(IUV_SEPARATOR)) {
       return Arrays.stream(iuv.split(IUV_SEPARATOR))
-        .map(Utilities::iuv2Nav)
+        .map(iuvToMap -> iuv2Nav(iuvToMap, auxDigit))
         .collect(Collectors.joining(IUV_SEPARATOR));
     } else {
-      return Constants.AUX_DIGIT + iuv;
+      return auxDigit + iuv;
     }
   }
 
-  public static String nav2Iuv(String nav) {
+  public static String nav2Iuv(String nav, String auxDigit) {
     if (nav == null || nav.isBlank()) {
       return null;
     } else if (nav.contains(IUV_SEPARATOR)) {
       return Arrays.stream(nav.split(IUV_SEPARATOR))
-        .map(Utilities::nav2Iuv)
+        .map(navToMap -> nav2Iuv(navToMap, auxDigit))
         .collect(Collectors.joining(IUV_SEPARATOR));
-    } else if (nav.length() < 2 || !nav.startsWith(Constants.AUX_DIGIT)) {
+    } else if (nav.length() < 2 || !nav.startsWith(auxDigit)) {
       throw new IllegalArgumentException("Invalid NAV format: " + nav);
     } else {
       return nav.substring(1);
@@ -63,7 +64,7 @@ public class Utilities {
   /**
    * Checks if the fiscal code is a valid natural person fiscal code.
    * A valid natural person fiscal code is either 16 characters long or equals the anonymous fiscal code.
-   * A natural person must have a {@link it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType#F}.
+   * A natural person must have a {@link PersonEntityType#F}.
    *
    * @param fiscalCode the fiscal code to check
    * @return true if the fiscal code is a valid natural person fiscal code, false otherwise

@@ -33,9 +33,11 @@ class ActualizationClientTest {
 
   private ActualizationClient client;
 
+  private static final String AUX_DIGIT = "3";
+
   @BeforeEach
   void setUp() {
-    client = new ActualizationClient(nativeActualizationApisHolderMock, registryLoggerMock);
+    client = new ActualizationClient(nativeActualizationApisHolderMock, registryLoggerMock, AUX_DIGIT);
   }
 
   @AfterEach
@@ -63,7 +65,7 @@ class ActualizationClientTest {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName("TestApp")
-      .iuv(Utilities.nav2Iuv(payment.getNav()))
+      .iuv(Utilities.nav2Iuv(payment.getNav(), AUX_DIGIT))
       .loggedUser(loggedUser)
       .build();
 

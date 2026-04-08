@@ -9,7 +9,6 @@ import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
@@ -30,13 +29,18 @@ public class RegistryProducerService {
   @Value("${spring.cloud.stream.bindings.registryProducer-out-0.binder}")
   private String binder;
 
+
   private final StreamBridge streamBridge;
 
   private final ObjectMapper objectMapper;
 
-  public RegistryProducerService(StreamBridge streamBridge, ObjectMapper objectMapper) {
+  private final String auxDigit;
+
+  public RegistryProducerService(StreamBridge streamBridge, ObjectMapper objectMapper,
+                                 @Value("${nav.aux-digit}") String auxDigit) {
     this.streamBridge = streamBridge;
     this.objectMapper = objectMapper;
+    this.auxDigit = auxDigit;
   }
 
   @Configuration
@@ -51,7 +55,7 @@ public class RegistryProducerService {
                              String requestorId, String grantorId,
                              RegistryOutcome outcome, Object body) {
     UserOrganizationRoles userOrg = contextData.getLoggedUser().getOrganizations().stream()
-      .filter(x -> StringUtils.equals(x.getOrganizationFiscalCode(), contextData.getOrgFiscalCode()))
+      .filter(x -> x.getOrganizationFiscalCode().equals(contextData.getOrgFiscalCode()))
       .findFirst()
       .orElseThrow(() -> new ApplicationException("invalid user for organization " + contextData.getOrgFiscalCode()));
 
@@ -77,7 +81,7 @@ public class RegistryProducerService {
           .brokerFiscalCode(contextData.getLoggedUser().getBrokerFiscalCode())
           .orgFiscalCode(userOrg.getOrganizationFiscalCode())
           .iuv(contextData.getIuv())
-          .nav(Utilities.iuv2Nav(contextData.getIuv()))
+          .nav(Utilities.iuv2Nav(contextData.getIuv(), auxDigit))
           .requestorId(requestorId)
           .grantorId(grantorId)
           .outcome(outcome)
