@@ -49,18 +49,13 @@ import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static it.gov.pagopa.pu.sil.util.Constants.ZONEID;
 
 @Endpoint
 @RequiredArgsConstructor
@@ -532,12 +527,16 @@ public class PuForOrganizationPaymentsEndpoint {
       .map(XMLGregorianCalendar::toGregorianCalendar)
       .map(GregorianCalendar::toZonedDateTime)
       .map(DateUtils::toOffsetDateTimeEndOfTheDay)
-      .orElseGet(() -> {
-        ZonedDateTime endOfTodayInZone = LocalDate.now(ZONEID)
-          .atTime(LocalTime.MAX)
-          .atZone(ZONEID);
-        return DateUtils.toOffsetDateTimeEndOfTheDay(endOfTodayInZone);
-      });
+      .orElse(null);
+
+    if (to == null) {
+      return FaultUtils.setFaultOnResponse(
+        response,
+        SilFaults.PAA_DATE_TO_NON_VALIDO,
+        SilFaults.PAA_DATE_TO_NON_VALIDO.description()
+      );
+    }
+
 
     String debtPositionTypeOrgCode = optRequest.map(PaaSILPrenotaExportFlusso::getIdentificativoTipoDovuto)
       .orElse(null);
