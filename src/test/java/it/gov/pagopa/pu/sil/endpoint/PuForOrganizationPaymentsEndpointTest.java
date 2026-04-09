@@ -725,24 +725,18 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   @Test
-  void givenRequestWithoutDateToWhenPaaSILPrenotaExportFlussoThenOK() throws Exception {
+  void givenRequestWithoutToDateWhenPaaSILPrenotaExportFlussoThrowsClientExceptionThenResponseContainsExpectedFaultCode() throws Exception {
     PaaSILPrenotaExportFlusso request = podamFactory.manufacturePojo(PaaSILPrenotaExportFlusso.class);
     request.setDateTo(null);
     request.setIdentificativoTipoDovuto("THAT_TYPE");
-
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    Long expectedToken = 12345L;
-
-    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
-    )).thenReturn(expectedToken);
 
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
 
     Assertions.assertNotNull(response);
-    Assertions.assertEquals(String.valueOf(expectedToken), response.getRequestToken());
+    Assertions.assertEquals(SilFaults.PAA_DATE_TO_NON_VALIDO.code(), response.getFault().getFaultCode());
   }
 
   @Test
