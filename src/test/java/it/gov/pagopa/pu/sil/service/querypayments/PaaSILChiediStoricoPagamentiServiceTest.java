@@ -1,28 +1,12 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
-import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
@@ -36,14 +20,7 @@ import it.veneto.regione.pagamenti.ente.PaaSILStoricoPagamenti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import jakarta.activation.DataHandler;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Optional;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,6 +32,21 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Optional;
+
+import static it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.PU_BFF_APP_NAME;
+import static it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.RESOURCE_RECEIPT;
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class PaaSILChiediStoricoPagamentiServiceTest {
 
@@ -64,6 +56,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
   @Mock private ReceiptService receiptServiceMock;
   @Mock private PagatiMapper pagatiMapperMock;
   @Mock private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
+  @Mock private AuthnService authnServiceMock;
 
   private PaaSILChiediStoricoPagamentiService service;
 
@@ -76,7 +69,22 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       authorizationServiceMock,
       debtPositionCheckoutServiceMock,
       receiptServiceMock,
-      pagatiMapperMock
+      pagatiMapperMock,
+      authnServiceMock
+    );
+  }
+
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      debtPositionServiceMock,
+      organizationServiceMock,
+      authorizationServiceMock,
+      debtPositionCheckoutServiceMock,
+      receiptServiceMock,
+      pagatiMapperMock,
+      authnServiceMock
     );
   }
 
@@ -86,6 +94,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     // Given
     String orgIpaCode = useIpaCode ? "IPA123" : null;
     String accessToken = "token";
+    String orgAccessToken = "orgAccessToken";
     long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
@@ -118,7 +127,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     org.setOrgFiscalCode("11111111111");
     org.setStatus(OrganizationStatus.ACTIVE);
     org.setBrokerId(brokerId);
-    Optional.ofNullable(orgIpaCode).ifPresent(org::setIpaCode);
+    org.setIpaCode(Optional.ofNullable(orgIpaCode).orElse("orgIpaCode"));
 
     InstallmentDTO installment = new InstallmentDTO();
     installment.setReceiptId(1001L);
@@ -181,17 +190,18 @@ class PaaSILChiediStoricoPagamentiServiceTest {
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.PAID), any(), eq(accessToken))
       ).thenReturn(List.of(dp));
 
+      when(authnServiceMock.getAccessToken(org.getIpaCode())).thenReturn(orgAccessToken);
       when(receiptServiceMock.getReceiptById(1001L, orgId, accessToken)).thenReturn(marshalledReceipt);
       when(pagatiMapperMock.mapDebtPositionsToEncodedPagatiConRicevuta(installment, org, accessToken))
         .thenReturn(pagatiBytes);
       doReturn(limitedScopeToken).when(authorizationServiceMock).requestLimitedToken(LimitedTokenRequest.builder()
         .organizationId(orgId)
-        .app("pu-bff")
-        .resource("receipt")
+        .app(PU_BFF_APP_NAME)
+        .resource(RESOURCE_RECEIPT)
         .resourceId(installment.getReceiptId().toString())
         .expireInSeconds(24L * 60 * 60)
         .singleUsage(false)
-        .build(), accessToken);
+        .build(), orgAccessToken);
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -203,7 +213,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
     Assertions.assertEquals(1, response.getPaaSILStoricoPagamentis().size());
 
     PaaSILStoricoPagamenti item = response.getPaaSILStoricoPagamentis().getFirst();
-    Assertions.assertEquals(orgIpaCode, item.getCodIpaEnte());
+    Assertions.assertEquals(org.getIpaCode(), item.getCodIpaEnte());
     Assertions.assertEquals("Comune di Test", item.getDeNomeEnte());
     Assertions.assertEquals(expectedReceiptUrl, item.getUrlDownloadRT());
     DataHandler rtDh = item.getRt();

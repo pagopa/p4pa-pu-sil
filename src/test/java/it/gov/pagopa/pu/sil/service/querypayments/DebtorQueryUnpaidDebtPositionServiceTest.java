@@ -1,26 +1,12 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionType;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentDTO;
@@ -31,8 +17,7 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
-import java.util.List;
-import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +28,13 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
+
+import java.util.List;
+import java.util.Optional;
+
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DebtorQueryUnpaidDebtPositionServiceTest {
@@ -56,6 +48,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
   @Mock private AuthorizationService authorizationServiceMock;
   @Mock private PaymentMapper paymentMapperMock;
   @Mock private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
+  @Mock private AuthnService authnServiceMock;
 
   private DebtorQueryUnpaidDebtPositionService service;
 
@@ -67,7 +60,21 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
       organizationServiceMock,
       authorizationServiceMock,
       debtPositionCheckoutServiceMock,
-      paymentMapperMock
+      paymentMapperMock,
+      authnServiceMock
+    );
+  }
+
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      debtPositionServiceMock,
+      organizationServiceMock,
+      authorizationServiceMock,
+      debtPositionCheckoutServiceMock,
+      paymentMapperMock,
+      authnServiceMock
     );
   }
 
@@ -77,6 +84,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
     // Given
     String orgIpaCode = useIpaCode ? "IPA123" : null;
     String accessToken = "token";
+    String orgAccessToken = "orgAccessToken";
     long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
@@ -100,7 +108,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
     org.setOrgName("Comune di Test");
     org.setStatus(OrganizationStatus.ACTIVE);
     org.setBrokerId(brokerId);
-    Optional.ofNullable(orgIpaCode).ifPresent(org::setIpaCode);
+    org.setIpaCode(Optional.ofNullable(orgIpaCode).orElse("orgIpaCode"));
 
     InstallmentDTO installment = new InstallmentDTO();
     PersonDTO debtor = new PersonDTO();
@@ -152,8 +160,9 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
       when(debtPositionServiceMock.getDebtPositionsByDebtorFiscalCodeAndDebtorEntityType(
         eq("RSSMRA80A01H501U"), any(PersonEntityType.class), eq(List.of(orgId)), eq(debtPositionTypeOrgCodesToExclude), eq(InstallmentStatus.UNPAID), eq(dateFilter), eq(accessToken))
       ).thenReturn(List.of(dp));
+      when(authnServiceMock.getAccessToken(org.getIpaCode())).thenReturn(orgAccessToken);
 
-      when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(userInfo.getOrganizations().getFirst().getOrganizationId()), anyString(), eq(null), any(), eq(accessToken)))
+      when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(userInfo.getOrganizations().getFirst().getOrganizationId()), anyString(), eq(null), any(), eq(orgAccessToken)))
         .thenReturn(TRIGGER_PAY_URL);
       when(paymentMapperMock.mapToPaymentDTO(installment, accessToken))
         .thenReturn(paymentDTO);
@@ -167,7 +176,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
     Assertions.assertEquals(1, response.getDebtPositions().size());
 
     UnpaidDebtPositionsDTO item = response.getDebtPositions().getFirst();
-    Assertions.assertEquals(orgIpaCode, item.getIpaCode());
+    Assertions.assertEquals(org.getIpaCode(), item.getIpaCode());
     Assertions.assertEquals("Comune di Test", item.getOrgName());
     Assertions.assertEquals(TRIGGER_PAY_URL, item.getPaymentTriggerUrl());
     Assertions.assertEquals(paymentDTO, item.getUnpaidDebtPosition());
