@@ -268,19 +268,4 @@ class PaaSILInviaDovutiServiceTest {
     );
   }
 
-  @Test
-  void givenInvalidTipoDovutoWhenPaaSILInviaDovutiThenFault() {
-    //given
-    when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    when(paaSILInviaDovutiMapperMock.mapRequestToDebtPositions(eq(request), eq(org), any(), eq(TOKEN)))
-      .thenThrow(new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
-
-    //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,
-      () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, TOKEN));
-
-    //verify
-    Assertions.assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Identificativo tipo dovuto non valido", exception.getDescription());
-  }
 }

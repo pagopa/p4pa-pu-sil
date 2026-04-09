@@ -318,5 +318,48 @@ class PaaSILInviaDovutiMapperTest {
       TestUtils.checkAllNotNullFields(mt, excludedFields.split(","));
     });
   }
+
+  @Test
+  void givenInvalidTipoDovutoWithMultipleTransfersWhenMapRequestToDebtPositionsThenFault() {
+    // given
+    PaaSILInviaDovuti request = new PaaSILInviaDovuti();
+    Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
+    dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
+    dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
+
+    CtDatiSingoloVersamentoDovuti validTransfer = new CtDatiSingoloVersamentoDovuti();
+    validTransfer.setCausaleVersamento("causale VALID");
+    validTransfer.setImportoSingoloVersamento(BigDecimal.TEN);
+    validTransfer.setIdentificativoTipoDovuto("VALID_TYPE");
+    validTransfer.setIdentificativoUnivocoDovuto("IUD-VALID");
+    validTransfer.setDatiSpecificiRiscossione("9/DATI_SPECIFICI");
+
+    CtDatiSingoloVersamentoDovuti invalidTransfer = new CtDatiSingoloVersamentoDovuti();
+    invalidTransfer.setCausaleVersamento("causale INVALID");
+    invalidTransfer.setImportoSingoloVersamento(BigDecimal.ONE);
+    invalidTransfer.setIdentificativoTipoDovuto("INVALID_TYPE");
+    invalidTransfer.setIdentificativoUnivocoDovuto("IUD-INVALID");
+    invalidTransfer.setDatiSpecificiRiscossione("9/DATI_SPECIFICI");
+
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(validTransfer);
+    dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(invalidTransfer);
+
+    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
+    doNothing().when(validationServiceMock).validateCartSize(2);
+    when(personMapperMock.getAndValidateDebtor(any())).thenReturn(podamFactory.manufacturePojo(PersonDTO.class));
+    doReturn(podamFactory.manufacturePojo(DebtPositionTypeOrg.class)).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), validTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+    doReturn(null).when(debtPositionTypeServiceMock)
+      .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), invalidTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
+
+    // when
+    SilFaultException exception = assertThrows(SilFaultException.class,
+      () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+
+    // then
+    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
+    assertEquals("Identificativo tipo dovuto non valido", exception.getDescription());
+  }
 }
 
