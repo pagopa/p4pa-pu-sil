@@ -1,7 +1,5 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
@@ -11,19 +9,23 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
-import java.time.OffsetDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
 
 /**
  * Abstract base class for PaaSIL query payment services.
@@ -35,22 +37,27 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Slf4j
 public abstract class AbstractDebtorQueryPaymentService<I, O> {
+  public static final String PU_BFF_APP_NAME = "p4pa-pu-bff";
+  public static final String RESOURCE_RECEIPT = "receipt";
   private final String bffBaseUrl;
   protected final DebtPositionService debtPositionService;
   protected final OrganizationService organizationService;
   protected final AuthorizationService authorizationService;
   protected final DebtPositionCheckoutService debtPositionCheckoutService;
+  protected final AuthnService authnService;
 
   protected AbstractDebtorQueryPaymentService(@Value("${public-base-url.bff}") String bffBaseUrl,
                                               DebtPositionService debtPositionService,
                                               OrganizationService organizationService,
                                               AuthorizationService authorizationService,
-                                              DebtPositionCheckoutService debtPositionCheckoutService) {
+                                              DebtPositionCheckoutService debtPositionCheckoutService,
+                                              AuthnService authnService) {
     this.bffBaseUrl = bffBaseUrl;
     this.debtPositionService = debtPositionService;
     this.organizationService = organizationService;
     this.authorizationService = authorizationService;
     this.debtPositionCheckoutService = debtPositionCheckoutService;
+    this.authnService = authnService;
   }
 
   /**
@@ -133,19 +140,18 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
    *
    * @param organizationId the organization ID
    * @param receiptId      the receipt ID
-   * @param accessToken    the access token for calling downstream services
    * @return the composed URL to download the receipt PDF
    */
-  protected String composeReceiptDownloadUrl(Long organizationId, Long receiptId, String accessToken) {
+  protected String composeReceiptDownloadUrl(Long organizationId, String organizationIpaCode, Long receiptId) {
     LimitedTokenRequest limitedTokenRequest = LimitedTokenRequest.builder()
       .organizationId(organizationId)
-      .app("pu-bff")
-      .resource("receipt")
+      .app(PU_BFF_APP_NAME)
+      .resource(RESOURCE_RECEIPT)
       .resourceId(receiptId.toString())
       .expireInSeconds(24L * 60 * 60)
       .singleUsage(false)
       .build();
-    AccessToken limitedScopeToken = authorizationService.requestLimitedToken(limitedTokenRequest, accessToken);
+    AccessToken limitedScopeToken = authorizationService.requestLimitedToken(limitedTokenRequest, authnService.getAccessToken(organizationIpaCode));
     return UriComponentsBuilder.fromUriString(bffBaseUrl)
       .path("/organization/{organizationId}/receipts/{receiptId}/pdf")
       .queryParam("token", limitedScopeToken.getAccessToken())
@@ -153,8 +159,8 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       .toUriString();
   }
 
-  protected String getCheckoutUrl(Long organizationId, String iuvs, String callbackUrl, String orgFiscalCode, String accessToken) {
-    return debtPositionCheckoutService.composeDebtPositionsCheckoutUrl(organizationId, iuvs, callbackUrl, orgFiscalCode, accessToken);
+  protected String getCheckoutUrl(Long organizationId, String organizationIpaCode, String iuvs, String callbackUrl, String orgFiscalCode) {
+    return debtPositionCheckoutService.composeDebtPositionsCheckoutUrl(organizationId, iuvs, callbackUrl, orgFiscalCode, authnService.getAccessToken(organizationIpaCode));
   }
 
   protected abstract DebtorQueryPaymentRequest transformRequest(I request);

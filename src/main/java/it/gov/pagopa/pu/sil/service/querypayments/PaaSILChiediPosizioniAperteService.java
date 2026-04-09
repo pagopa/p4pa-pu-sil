@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -18,11 +19,11 @@ import it.veneto.regione.pagamenti.ente.PaaSILChiediPosizioniAperteRisposta;
 import it.veneto.regione.pagamenti.ente.PaaSILPosizioniAperte;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import jakarta.activation.DataHandler;
-import java.util.List;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -38,8 +39,10 @@ public class PaaSILChiediPosizioniAperteService extends AbstractDebtorQueryPayme
                                                AuthorizationService authorizationService,
                                                JAXBTransformService jaxbTransformService,
                                                DebtPositionCheckoutService debtPositionCheckoutService,
-                                               DebtPositionTypeService debtPositionTypeService, DovutiMapper dovutiMapper) {
-    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService);
+                                               DebtPositionTypeService debtPositionTypeService,
+                                               DovutiMapper dovutiMapper,
+                                               AuthnService authnService) {
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService, authnService);
     this.jaxbTransformService = jaxbTransformService;
     this.debtPositionTypeService = debtPositionTypeService;
     this.dovutiMapper = dovutiMapper;
@@ -81,9 +84,8 @@ public class PaaSILChiediPosizioniAperteService extends AbstractDebtorQueryPayme
 
               try {
                 openPosition.setUrlPagamento(
-                  getCheckoutUrl(organization.getOrganizationId(),
-                    installment.getIuv(), null, organization.getOrgFiscalCode(),
-                    accessToken));
+                  getCheckoutUrl(organization.getOrganizationId(), organization.getIpaCode(),
+                    installment.getIuv(), null, organization.getOrgFiscalCode()));
               } catch (Exception e) {
                 log.error("Error generating payment URL for installment[{}]",
                   installment.getInstallmentId(), e);
