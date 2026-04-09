@@ -267,4 +267,5 @@ class PaaSILInviaDovutiServiceTest {
       Arguments.of(errorDTO.message("Some error without brackets").build(), new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Some error without brackets"))
     );
   }
+
 }

@@ -14,8 +14,6 @@ public class Constants {
   public static final ZoneId ZONEID = ZoneId.of("Europe/Rome");
   public static final TimeZone DEFAULT_TIMEZONE = TimeZone.getTimeZone(ZONEID);
 
-  public static final String AUX_DIGIT = "3";
-
   public static final long EXPIRATION_SPONTANEOUS_SIL_DEBT_POSITION_MINUTES = 120L;
 
   public static final String ANONYMOUS_FISCAL_CODE = "ANONIMO";

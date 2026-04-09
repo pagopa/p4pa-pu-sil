@@ -143,6 +143,8 @@ rest:
     max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${AUTH_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${AUTH_PRINT_BODY_WHEN_ERROR:true}"
+    post-token:
+      client_secret: "\${P4PA_AUTH_CLIENT_SECRET:clientsecret}"
   debt-position:
     base-url: "\${DEBT_POSITION_BASE_URL:}"
     max-attempts: "\${DEBT_POSITION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
@@ -229,3 +231,6 @@ cache:
   taxonomy:
     size: "\${CACHE_TAXONOMY_SIZE:100}"
     expire-in: "\${CACHE_TAXONOMY_MINUTES:60}"
+
+nav:
+  aux-digit: "\${NAV_AUX_DIGIT:3}"

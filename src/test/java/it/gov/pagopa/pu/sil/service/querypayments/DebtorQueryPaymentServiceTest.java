@@ -1,29 +1,13 @@
 package it.gov.pagopa.pu.sil.service.querypayments;
 
-import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
-import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFilter;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryDTO;
@@ -34,11 +18,7 @@ import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +30,18 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+
+import static it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.PU_BFF_APP_NAME;
+import static it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.RESOURCE_RECEIPT;
+import static it.gov.pagopa.pu.sil.util.Constants.EXCLUDED_DEBT_POSITION_TYPE_CODES;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class DebtorQueryPaymentServiceTest {
 
@@ -59,6 +51,7 @@ class DebtorQueryPaymentServiceTest {
   @Mock private ReceiptService receiptServiceMock;
   @Mock private ReceiptMapper receiptMapperMock;
   @Mock private DebtPositionCheckoutService debtPositionCheckoutServiceMock;
+  @Mock private AuthnService authnServiceMock;
 
   private DebtorQueryPaymentService service;
 
@@ -71,7 +64,21 @@ class DebtorQueryPaymentServiceTest {
       authorizationServiceMock,
       receiptServiceMock,
       debtPositionCheckoutServiceMock,
-      receiptMapperMock
+      receiptMapperMock,
+      authnServiceMock
+    );
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      debtPositionServiceMock,
+      organizationServiceMock,
+      authorizationServiceMock,
+      receiptServiceMock,
+      debtPositionCheckoutServiceMock,
+      receiptMapperMock,
+      authnServiceMock
     );
   }
 
@@ -81,6 +88,7 @@ class DebtorQueryPaymentServiceTest {
     // Given
     String orgIpaCode = useIpaCode ? "IPA123" : null;
     String accessToken = "token";
+    String orgAccessToken = "orgToken";
     long orgId = 42L;
     Long brokerId = 100L;
     List<String> debtPositionTypeOrgCodesToExclude = EXCLUDED_DEBT_POSITION_TYPE_CODES;
@@ -109,7 +117,7 @@ class DebtorQueryPaymentServiceTest {
     org.setOrgFiscalCode("11111111111");
     org.setStatus(OrganizationStatus.ACTIVE);
     org.setBrokerId(brokerId);
-    Optional.ofNullable(orgIpaCode).ifPresent(org::setIpaCode);
+    org.setIpaCode(Optional.ofNullable(orgIpaCode).orElse("orgIpaCode"));
 
     PersonDTO debtor = new PersonDTO();
     debtor.setFiscalCode("RSSMRA80A01H501U");
@@ -184,14 +192,15 @@ class DebtorQueryPaymentServiceTest {
         .thenReturn(marshalledReceipt);
       when(receiptMapperMock.map2ReceiptWithAdditionalNodeDataDTO(installment, accessToken))
         .thenReturn(receipt);
+      when(authnServiceMock.getAccessToken(org.getIpaCode())).thenReturn(orgAccessToken);
       doReturn(limitedScopeToken).when(authorizationServiceMock).requestLimitedToken(LimitedTokenRequest.builder()
         .organizationId(orgId)
-        .app("pu-bff")
-        .resource("receipt")
+        .app(PU_BFF_APP_NAME)
+        .resource(RESOURCE_RECEIPT)
         .resourceId(installment.getReceiptId().toString())
         .expireInSeconds(24L * 60 * 60)
         .singleUsage(false)
-        .build(), accessToken);
+        .build(), orgAccessToken);
 
       response = service.processRequest(request, userInfo, accessToken);
     }
@@ -203,7 +212,7 @@ class DebtorQueryPaymentServiceTest {
     Assertions.assertEquals(1, response.getPayments().size());
 
     PaymentHistoryDTO item = response.getPayments().getFirst();
-    Assertions.assertEquals(orgIpaCode, item.getIpaCode());
+    Assertions.assertEquals(org.getIpaCode(), item.getIpaCode());
     Assertions.assertEquals("Comune di Test", item.getOrgName());
     Assertions.assertEquals(receipt, item.getReceipt());
     Assertions.assertArrayEquals(marshalledReceipt, item.getReceiptBytes());

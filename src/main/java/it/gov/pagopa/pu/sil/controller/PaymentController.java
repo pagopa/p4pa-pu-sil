@@ -20,6 +20,7 @@ import it.gov.pagopa.pu.sil.util.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,15 +31,18 @@ public class PaymentController implements PaymentApi {
   private final VerifyNoticeService verifyNoticeService;
   private final QueryPaymentsService queryPaymentsService;
   private final RegistryLogger registryLogger;
+  private final String auxDigit;
 
   public PaymentController(InstantPaymentService instantPaymentService,
                            VerifyNoticeService verifyNoticeService,
                            QueryPaymentsService queryPaymentsService,
-                           RegistryLogger registryLogger) {
+                           RegistryLogger registryLogger,
+                           @Value("${nav.aux-digit}") String auxDigit) {
     this.instantPaymentService = instantPaymentService;
     this.verifyNoticeService = verifyNoticeService;
     this.queryPaymentsService = queryPaymentsService;
     this.registryLogger = registryLogger;
+    this.auxDigit = auxDigit;
   }
 
   @Override
@@ -77,7 +81,7 @@ public class PaymentController implements PaymentApi {
     RegistryContextData contextData = RegistryContextData.builder()
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.PTDP_paaSILVerificaAvviso)
-      .iuv(Utilities.nav2Iuv(nav))
+      .iuv(Utilities.nav2Iuv(nav, auxDigit))
       .loggedUser(userInfo)
       .build();
 

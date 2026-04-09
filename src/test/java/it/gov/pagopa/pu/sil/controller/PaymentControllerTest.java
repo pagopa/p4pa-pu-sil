@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -45,7 +44,8 @@ class PaymentControllerTest {
   @Mock
   private RegistryLogger registryLoggerMock;
 
-  @InjectMocks
+  private static final String AUX_DIGIT = "3";
+
   private PaymentController controller;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
@@ -59,6 +59,8 @@ class PaymentControllerTest {
     userInfo = AuthorizationServiceTest.buildAdminUser(1L, orgFiscalCode, orgIpaCode);
     userInfo.setMappedExternalUserId("fakeExternalUser");
     SecurityUtilsTest.configureSecurityContext(accessToken, userInfo);
+
+    controller = new PaymentController(instantPaymentServiceMock, verifyNoticeServiceMock, queryPaymentsServiceMock, registryLoggerMock, AUX_DIGIT);
   }
 
   @AfterEach

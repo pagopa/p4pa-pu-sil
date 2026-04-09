@@ -136,6 +136,10 @@ abstract class AbstractImmediatePaymentsMapper {
       DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
         org.getOrganizationId(), singleTransfer.getIdentificativoTipoDovuto(), accessToken);
 
+      if (debtPositionTypeOrg == null) {
+        throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+      }
+
       MixedTransferDTO mixedTransferDTO = MixedTransferDTO.builder()
         .iud(singleTransfer.getIdentificativoUnivocoDovuto())
         .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))

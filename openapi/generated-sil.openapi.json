@@ -2335,7 +2335,7 @@
             "format" : "date-time"
           }
         },
-        "required" : [ "debtPositionId", "navList" ]
+        "required" : [ "navList" ]
       },
       "LegalFactCategoryDTO" : {
         "type" : "string",

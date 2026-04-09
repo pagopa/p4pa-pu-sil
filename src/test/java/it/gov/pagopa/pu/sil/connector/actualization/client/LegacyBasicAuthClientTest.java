@@ -32,9 +32,11 @@ class LegacyBasicAuthClientTest {
 
   private LegacyBasicAuthClient client;
 
+  private static final String AUX_DIGIT = "3";
+
   @BeforeEach
   void setUp() {
-    client = new LegacyBasicAuthClient(legacyActualizationApisHolderMock, registryLoggerMock);
+    client = new LegacyBasicAuthClient(legacyActualizationApisHolderMock, registryLoggerMock, AUX_DIGIT);
   }
 
   @AfterEach
@@ -57,7 +59,7 @@ class LegacyBasicAuthClientTest {
       .orgFiscalCode(orgFiscalCode)
       .eventType(RegistryEventType.SIL_attualizzazioneImporti)
       .orgSilServiceName(orgSilServiceName)
-      .iuv(Utilities.nav2Iuv(nav))
+      .iuv(Utilities.nav2Iuv(nav, AUX_DIGIT))
       .loggedUser(loggedUser)
       .build();
 

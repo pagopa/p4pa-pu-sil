@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionOrigin;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
@@ -15,6 +14,7 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -76,8 +76,7 @@ public class DebtPositionCheckoutService {
 
     List<DebtPositionDTO> debtPositions = iuvs.stream().map(
         iuv -> debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
-            organization.getOrganizationId(), iuv,
-            List.of(DebtPositionOrigin.SPONTANEOUS_SIL, DebtPositionOrigin.ORDINARY_SIL), accessToken))
+            organization.getOrganizationId(), iuv, Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
         .flatMap(List::stream).toList();
 
     String cartId = UUID.randomUUID().toString();

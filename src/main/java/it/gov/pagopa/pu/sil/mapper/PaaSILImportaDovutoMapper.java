@@ -14,9 +14,9 @@ import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamento;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Versamento;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -26,7 +26,6 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class PaaSILImportaDovutoMapper {
 
   public static final String IMPORT_DOVUTO = "_IMPORT-DOVUTO_";
@@ -36,7 +35,21 @@ public class PaaSILImportaDovutoMapper {
   private final PersonMapper personMapper;
   private final SecondaryTransferMapper secondaryTransferMapper;
   private final ValidationService immediatePaymentsValidationService;
+  private final String auxDigit;
 
+  public PaaSILImportaDovutoMapper(DebtPositionTypeService debtPositionTypeService,
+                                   JAXBTransformService jaxbTransformService,
+                                   PersonMapper personMapper,
+                                   SecondaryTransferMapper secondaryTransferMapper,
+                                   ValidationService immediatePaymentsValidationService,
+                                   @Value("${nav.aux-digit}") String auxDigit) {
+    this.debtPositionTypeService = debtPositionTypeService;
+    this.jaxbTransformService = jaxbTransformService;
+    this.personMapper = personMapper;
+    this.secondaryTransferMapper = secondaryTransferMapper;
+    this.immediatePaymentsValidationService = immediatePaymentsValidationService;
+    this.auxDigit = auxDigit;
+  }
 
   public Pair<DebtPositionDTO, String> mapRequestToDebtPosition(PaaSILImportaDovuto request, Organization organization, String accessToken) {
 
@@ -115,7 +128,7 @@ public class PaaSILImportaDovutoMapper {
       .status(InstallmentStatus.UNPAID)
       .iud(datiVersamento.getIdentificativoUnivocoDovuto())
       .iuv(datiVersamento.getIdentificativoUnivocoVersamento())
-      .nav(Utilities.iuv2Nav(datiVersamento.getIdentificativoUnivocoVersamento()))
+      .nav(Utilities.iuv2Nav(datiVersamento.getIdentificativoUnivocoVersamento(), auxDigit))
       .amountCents(amountCents)
       .dueDate(dueDate)
       .remittanceInformation(datiVersamento.getCausaleVersamento())

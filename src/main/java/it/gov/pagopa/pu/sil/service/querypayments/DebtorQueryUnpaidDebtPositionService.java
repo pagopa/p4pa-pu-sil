@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.UnpaidDebtPositionsDTO;
@@ -11,10 +12,11 @@ import it.gov.pagopa.pu.sil.mapper.PaymentMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,8 +29,9 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
                                                  OrganizationService organizationService,
                                                  AuthorizationService authorizationService,
                                                  DebtPositionCheckoutService debtPositionCheckoutService,
-                                                 PaymentMapper paymentMapper) {
-    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService);
+                                                 PaymentMapper paymentMapper,
+                                                 AuthnService authnService) {
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService, authnService);
     this.paymentMapper = paymentMapper;
   }
 
@@ -66,9 +69,8 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
                 .ipaCode(organization.getIpaCode())
                 .orgName(organization.getOrgName())
               .paymentTriggerUrl(
-                getCheckoutUrl(organization.getOrganizationId(),
-                  installment.getIuv(), null, organization.getOrgFiscalCode(),
-                  accessToken))
+                getCheckoutUrl(organization.getOrganizationId(), organization.getIpaCode(),
+                  installment.getIuv(), null, organization.getOrgFiscalCode()))
                 .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, accessToken))
               .build()));
       })

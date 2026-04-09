@@ -12,21 +12,26 @@ import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvvisoRisposta;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class PaaSILVerificaAvvisoService extends BaseVerifyNoticeService<PaaSILVerificaAvviso, PaaSILVerificaAvvisoRisposta> {
 
+  private final String auxDigit;
+
   public PaaSILVerificaAvvisoService(OrganizationService organizationService,
                                      InstallmentFacadeService installmentFacadeService,
-                                     DebtPositionCheckoutService debtPositionCheckoutService) {
+                                     DebtPositionCheckoutService debtPositionCheckoutService,
+                                     @Value("${nav.aux-digit}") String auxDigit) {
     super(organizationService, installmentFacadeService, debtPositionCheckoutService);
+    this.auxDigit = auxDigit;
   }
 
   @Override
   protected String getNav(PaaSILVerificaAvviso request) {
-    return Utilities.iuv2Nav(request.getIdentificativoUnivocoVersamento());
+    return Utilities.iuv2Nav(request.getIdentificativoUnivocoVersamento(), auxDigit);
   }
 
   @Override
