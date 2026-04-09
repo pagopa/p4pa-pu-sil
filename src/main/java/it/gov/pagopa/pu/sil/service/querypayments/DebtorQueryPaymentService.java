@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.service.querypayments;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
+import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryDTO;
@@ -12,14 +13,15 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.querypayments.AbstractDebtorQueryPaymentService.DebtorQueryPaymentRequest;
 import it.gov.pagopa.pu.sil.service.receipt.ReceiptService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -33,8 +35,9 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
                                       AuthorizationService authorizationService,
                                       ReceiptService receiptService,
                                       DebtPositionCheckoutService debtPositionCheckoutService,
-                                      ReceiptMapper receiptMapper) {
-    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService);
+                                      ReceiptMapper receiptMapper,
+                                      AuthnService authnService) {
+    super(bffBaseUrl, debtPositionService, organizationService, authorizationService, debtPositionCheckoutService, authnService);
     this.receiptService = receiptService;
     this.receiptMapper = receiptMapper;
   }
@@ -76,7 +79,7 @@ public class DebtorQueryPaymentService extends AbstractDebtorQueryPaymentService
               .orgName(organization.getOrgName())
               .receipt(receiptMapper.map2ReceiptWithAdditionalNodeDataDTO(installment, accessToken))
               .receiptBytes(receiptService.getReceiptById(installment.getReceiptId(), organization.getOrganizationId(), accessToken))
-              .receiptDownloadUrl(composeReceiptDownloadUrl(organization.getOrganizationId(), installment.getReceiptId(), accessToken))
+              .receiptDownloadUrl(composeReceiptDownloadUrl(organization.getOrganizationId(), organization.getIpaCode(), installment.getReceiptId()))
               .build()));
       })
       .forEach(response::addPaymentsItem);

@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sil.connector.auth.config.AuthApisHolder;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
+import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,9 +17,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import uk.co.jemos.podam.api.PodamFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +31,8 @@ class AuthnClientTest {
   private AuthnApi authnApiMock;
 
   private AuthnClient authnClient;
+
+  private final PodamFactory podamFactory = TestUtils.getPodamFactory();
 
   @BeforeEach
   void setUp() {
@@ -87,5 +90,28 @@ class AuthnClientTest {
     AccessToken result = authnClient.postLimitedToken(limitedTokenRequest, accessToken);
 
     assertSame(expectedResult, result);
+  }
+
+  @Test
+  void givenParamsWhenGetTokenThenReturnAccessToken(){
+    //given
+    String grantType = "grantType";
+    String scope = "scope";
+    String clientId= "clientId";
+    String subjectToken = "subjectToken";
+    String subjectIssuer = "subjectIssuer";
+    String subjectTokenType = "subjectTokenType";
+    String clientSecret = "clientSecret";
+
+    AccessToken expectedResult = podamFactory.manufacturePojo(AccessToken.class);
+    Mockito.when(authApisHolderMock.getAuthnApi(null)).thenReturn(authnApiMock);
+    Mockito.when(authnApiMock.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret )).thenReturn(expectedResult);
+
+    //when
+    AccessToken result = authnClient.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
+
+    //then
+    assertNotNull(result);
+    assertEquals(expectedResult, result);
   }
 }
