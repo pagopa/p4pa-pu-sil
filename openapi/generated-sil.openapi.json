@@ -2337,6 +2337,10 @@
         },
         "required" : [ "navList" ]
       },
+      "FileStatus" : {
+        "type" : "string",
+        "enum" : [ "WAITING", "READY", "UPLOADED", "EXPIRED" ]
+      },
       "LegalFactCategoryDTO" : {
         "type" : "string",
         "enum" : [ "SENDER_ACK", "DIGITAL_DELIVERY", "ANALOG_DELIVERY", "RECIPIENT_ACCESS", "PEC_RECEIPT", "ANALOG_FAILURE_DELIVERY" ]
@@ -2352,6 +2356,13 @@
           },
           "url" : {
             "type" : "string"
+          },
+          "status" : {
+            "$ref" : "#/components/schemas/FileStatus"
+          },
+          "downloadDate" : {
+            "type" : "string",
+            "format" : "date-time"
           }
         },
         "required" : [ "category", "fileName", "url" ]

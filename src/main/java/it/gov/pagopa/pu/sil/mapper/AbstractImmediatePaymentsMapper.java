@@ -16,6 +16,7 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDov
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ abstract class AbstractImmediatePaymentsMapper {
         .stampProvincialResidence(stamp.getProvinciaResidenza())
         .stampType(stamp.getTipoBollo()),
       () -> {
-        if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
+        if (StringUtils.isBlank(debtPositionTypeOrg.getIban())) {
           transferDTO.iban(org.getIban())
             .postalIban(org.getPostalIban());
         } else {
@@ -157,7 +158,7 @@ abstract class AbstractImmediatePaymentsMapper {
           .stampProvincialResidence(stamp.getProvinciaResidenza())
           .stampType(stamp.getTipoBollo()),
         () -> {
-          if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
+          if (StringUtils.isBlank(debtPositionTypeOrg.getIban())) {
             mixedTransferDTO.iban(org.getIban())
               .postalIban(org.getPostalIban());
           } else {
