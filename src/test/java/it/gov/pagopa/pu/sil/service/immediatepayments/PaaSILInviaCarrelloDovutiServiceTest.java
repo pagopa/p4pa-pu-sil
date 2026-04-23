@@ -260,7 +260,7 @@ class PaaSILInviaCarrelloDovutiServiceTest {
   }
 
   static Stream<Arguments> provideErrorScenarios() {
-    DebtPositionErrorDTO.DebtPositionErrorDTOBuilder errorDTO = DebtPositionErrorDTO.builder().category(DEBT_POSITION_BAD_REQUEST);
+    DebtPositionErrorDTO.DebtPositionErrorDTOBuilder errorDTO = DebtPositionErrorDTO.builder().category(DEBT_POSITION_BAD_REQUEST).code("ERRORCODE");
     return Stream.of(
       Arguments.of(null, new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore durante la creazione delle posizioni debitorie")),
       Arguments.of(errorDTO.message("[INVALID_TAXONOMY_CATEGORY] Some error occurred").build(), new SilFaultException(SilFaults.fromNativeFault2LegacyCode("INVALID_TAXONOMY_CATEGORY"), "Some error occurred")),

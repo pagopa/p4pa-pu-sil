@@ -78,7 +78,7 @@ abstract class AbstractImmediatePaymentsMapper {
         .stampProvincialResidence(stamp.getProvinciaResidenza())
         .stampType(stamp.getTipoBollo()),
       () -> {
-        if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
+        if (StringUtils.isBlank(debtPositionTypeOrg.getIban())) {
           transferDTO.iban(org.getIban())
             .postalIban(org.getPostalIban());
         } else {
@@ -157,7 +157,7 @@ abstract class AbstractImmediatePaymentsMapper {
           .stampProvincialResidence(stamp.getProvinciaResidenza())
           .stampType(stamp.getTipoBollo()),
         () -> {
-          if (StringUtils.isAllBlank(debtPositionTypeOrg.getIban(), debtPositionTypeOrg.getPostalIban())) {
+          if (StringUtils.isBlank(debtPositionTypeOrg.getIban())) {
             mixedTransferDTO.iban(org.getIban())
               .postalIban(org.getPostalIban());
           } else {
