@@ -2,7 +2,9 @@
 
 This application belong to the **inbound/outbound** tier of the **Piattaforma Unitaria** product.
 
-See [PU Microservice Architecture](https://pagopa.atlassian.net/wiki/spaces/SPAC/pages/1405845916/Architettura+microservizi) for more details.
+See [PU Microservice Architecture](https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/reference/technical-docs/Architettura_microservizi.pdf) for more details.
+
+See [p4pa-doc](https://github.com/pagopa/p4pa-doc) for further documentation.
 
 ## 🧱 Role
 
@@ -98,6 +100,8 @@ See [log configured pattern](/src/main/resources/logback-spring.xml).
   * To send notification using PagoPa SEND service;
 * [p4pa-workflow-hub](https://github.com/pagopa/p4pa-workflow-hub):
   * To get workflow execution status;
+* [p4pa-fileshare](https://github.com/pagopa/p4pa-fileshare):
+  * To download receipts.
 
 ### 🌍 External
 * SIL - organization exposed services:
@@ -162,7 +166,6 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | AUTH_MAX_ATTEMPTS                        | Auth API max attempts                               | 3       |
 | AUTH_WAIT_TIME_MILLIS                    | Auth retry waiting time (milliseconds)              | 500     |
 | AUTH_PRINT_BODY_WHEN_ERROR               | To print body when an error occurs                  | true    |
-| P4PA_AUTH_CLIENT_SECRET                  | piattaforma-unitaria's client secret                |         |
 | DEBT_POSITION_BASE_URL                   | DebtPosition microservice URL                       |         |
 | DEBT_POSITION_MAX_ATTEMPTS               | DebtPosition API max attempts                       | 3       |
 | DEBT_POSITION_WAIT_TIME_MILLIS           | DebtPosition retry waiting time (milliseconds)      | 500     |
@@ -191,6 +194,10 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | WORKFLOW_HUB_MAX_ATTEMPTS                | Workflow-Hub API max attempts                       | 3       |
 | WORKFLOW_HUB_WAIT_TIME_MILLIS            | Workflow-Hub retry waiting time (milliseconds)      | 500     |
 | WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR       | To print body when an error occurs                  | true    |
+| FILESHARE_BASE_URL                       | Fileshare microservice URL                          |         |
+| FILESHARE_MAX_ATTEMPTS                   | Fileshare API max attempts                          | 3       |
+| FILESHARE_WAIT_TIME_MILLIS               | Fileshare retry waiting time (milliseconds)         | 500     |
+| FILESHARE_PRINT_BODY_WHEN_ERROR          | To print body when an error occurs                  | true    |
 
 ##### 🌍 External services
 | ENV                                        | DESCRIPTION                                            | DEFAULT |
@@ -243,6 +250,11 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | REST_AGID_INTEGRITY_PU_PRIVATEKEY         | AGID Data Integrity header - private key                                                                                                                                                                       |                      |
 | REST_AGID_INTEGRITY_PU_PUBLICKEY          | AGID Data Integrity header - public key                                                                                                                                                                        |                      |
 | NAV_AUX_DIGIT                             | The aux digit of NAV                                                                                                                                                                                           | 3                    |
+
+#### 🔑 keys
+| ENV                          | DESCRIPTION                                                              | DEFAULT |
+|------------------------------|--------------------------------------------------------------------------|---------|
+| P4PA_AUTH_CLIENT_SECRET      | client_secret used on M2M authentication to get a technical access token |         |
 
 
 ## 🛠️ Getting Started

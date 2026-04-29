@@ -210,6 +210,7 @@ public-base-url:
   pu-sil: "\${PUBLIC_BASE_URL_PU_SIL:}"
 
 springdoc:
+  api-docs.version: openapi_3_0
   writer-with-default-pretty-printer: true
 
 checkout:
