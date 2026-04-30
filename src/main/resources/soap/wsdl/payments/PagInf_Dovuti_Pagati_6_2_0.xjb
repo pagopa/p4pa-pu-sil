@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<jaxb:bindings version="2.1"
+              xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+              xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+              jaxb:extensionBindingPrefixes="xjc"
+              xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <jaxws:bindings xmlns:jaxws="http://java.sun.com/xml/ns/jaxws">
+        <jaxws:enableWrapperStyle>true</jaxws:enableWrapperStyle>
+        <jaxws:enableAsyncMapping>false</jaxws:enableAsyncMapping>
+    </jaxws:bindings>
+
+    <jaxb:bindings schemaLocation="PagInf_Dovuti_Pagati_6_2_0.xsd" node="/xs:schema[@targetNamespace='http://www.regione.veneto.it/schemas/2012/Pagamenti/Ente/']">
+        <jaxb:globalBindings>
+            <xjc:simple />
+            <xjc:javaType name="java.lang.String" xmlType="xs:string" adapter="it.gov.pagopa.pu.sil.util.soap.TrimStringXmlAdapter"/>
+        </jaxb:globalBindings>
+    </jaxb:bindings>
+</jaxb:bindings>
