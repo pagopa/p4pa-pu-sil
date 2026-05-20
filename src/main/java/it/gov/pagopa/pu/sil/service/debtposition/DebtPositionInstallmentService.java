@@ -10,10 +10,12 @@ import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.Constants;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static it.gov.pagopa.pu.sil.util.ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary;
@@ -23,11 +25,13 @@ public class DebtPositionInstallmentService {
   private final DebtPositionService debtPositionService;
   private final SessionIdMapper sessionIdMapper;
   private final DebtPositionTypeService debtPositionTypeService;
+  private final List<String> categoryAllowedPrefixes;
 
-  public DebtPositionInstallmentService(DebtPositionService debtPositionService, SessionIdMapper sessionIdMapper, DebtPositionTypeService debtPositionTypeService) {
+  public DebtPositionInstallmentService(DebtPositionService debtPositionService, SessionIdMapper sessionIdMapper, DebtPositionTypeService debtPositionTypeService, @Value("${category.allowed-prefixes}") List<String> categoryAllowedPrefixes) {
     this.debtPositionService = debtPositionService;
     this.sessionIdMapper = sessionIdMapper;
     this.debtPositionTypeService = debtPositionTypeService;
+    this.categoryAllowedPrefixes = categoryAllowedPrefixes;
   }
 
   public List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallmentsByInstallmentId(
@@ -102,6 +106,10 @@ public class DebtPositionInstallmentService {
       DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
       category = debtPositionType.getTaxonomyCode();
     }
-    return category.replace("9/", "").replace("/", "");
+    Optional<String> prefix = categoryAllowedPrefixes.stream().filter(category::startsWith).findAny();
+    if (prefix.isPresent()) {
+      category = category.replace(prefix.get(), "");
+    }
+    return category.replace("/", "");
   }
 }
