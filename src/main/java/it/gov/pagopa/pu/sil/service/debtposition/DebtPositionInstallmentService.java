@@ -9,11 +9,13 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static it.gov.pagopa.pu.sil.util.ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary;
@@ -102,6 +104,10 @@ public class DebtPositionInstallmentService {
       DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
       category = debtPositionType.getTaxonomyCode();
     }
-    return category.replace("9/", "").replace("/", "");
+    Optional<String> prefix = ValidationUtils.CATEGORY_ALLOWED_PREFIXES.stream().filter(category::startsWith).findAny();
+    if (prefix.isPresent()) {
+      category = category.replace(prefix.get(), "");
+    }
+    return category.replace("/", "");
   }
 }

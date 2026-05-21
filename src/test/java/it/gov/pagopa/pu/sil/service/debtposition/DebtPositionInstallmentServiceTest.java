@@ -33,9 +33,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DebtPositionInstallmentServiceTest {
   @Mock
-  private DebtPositionService debtPositionService;
+  private DebtPositionService debtPositionServiceMock;
   @Mock
-  private SessionIdMapper sessionIdMapper;
+  private SessionIdMapper sessionIdMapperMock;
   @Mock
   private DebtPositionTypeService debtPositionTypeServiceMock;
 
@@ -51,6 +51,11 @@ class DebtPositionInstallmentServiceTest {
   private List<Pair<DebtPositionDTO, InstallmentDTO>> pairList = new ArrayList<>();
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
+
+  @BeforeEach
+  void setUp() {
+    installmentService = new DebtPositionInstallmentService(debtPositionServiceMock, sessionIdMapperMock,debtPositionTypeServiceMock);
+  }
 
   @BeforeEach
   void init() {
@@ -81,8 +86,8 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, inst.getInstallmentId().toString(), false);
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(inst.getInstallmentId().toString())).thenReturn(installmentIds);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(inst.getInstallmentId(), accessToken)).thenReturn(dp);
+    when(sessionIdMapperMock.mapSessionIdToInstallmentIds(inst.getInstallmentId().toString())).thenReturn(installmentIds);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(inst.getInstallmentId(), accessToken)).thenReturn(dp);
 
     // Act
     List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByInstallmentId(
@@ -96,8 +101,8 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, inst.getInstallmentId().toString(), false);
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(Long.valueOf(request.id()), accessToken)).thenReturn(otherDp);
+    when(sessionIdMapperMock.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(Long.valueOf(request.id()), accessToken)).thenReturn(otherDp);
 
     // Act & Assert
     assertThrows(SilFaultException.class, () ->
@@ -124,10 +129,10 @@ class DebtPositionInstallmentServiceTest {
     inst3.setInstallmentId(3L);
     pairList.add(Pair.of(dp3, inst3));
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(3L, accessToken)).thenReturn(dp3);
+    when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(3L, accessToken)).thenReturn(dp3);
 
     // Act
     List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByInstallmentId(
@@ -153,9 +158,9 @@ class DebtPositionInstallmentServiceTest {
     InstallmentDTO inst2 = dp2.getPaymentOptions().getFirst().getInstallments().getFirst();
     inst2.setInstallmentId(999L);
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp2);
+    when(sessionIdMapperMock.mapSessionIdToInstallmentIds(sessionId)).thenReturn(installmentIds);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(1L, accessToken)).thenReturn(dp);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp2);
 
     // Act & Assert
     assertThrows(SilFaultException.class, () ->
@@ -168,7 +173,7 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), IUD, inst.getIud(), false);
 
-    when(debtPositionService
+    when(debtPositionServiceMock
       .getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), inst.getIud(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(dp));
     // Act
@@ -183,7 +188,7 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), IUD, inst.getIud(), false);
 
-    when(debtPositionService
+    when(debtPositionServiceMock
       .getDebtPositionsByOrganizationIdAndIud(org.getOrganizationId(), inst.getIud(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(otherDp));
 
@@ -200,7 +205,7 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
 
-    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(List.of(dp));
+    when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(List.of(dp));
 
     // Act
     List<Pair<DebtPositionDTO, InstallmentDTO>> result = installmentService.getDebtPositionsAndInstallmentsByIuv(
@@ -214,7 +219,7 @@ class DebtPositionInstallmentServiceTest {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
 
-    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
+    when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(otherDp));
 
     // Act & Assert
@@ -230,7 +235,7 @@ class DebtPositionInstallmentServiceTest {
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
     dp.setStatus(DebtPositionStatus.CANCELLED);
 
-    when(debtPositionService.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
+    when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(org.getOrganizationId(), inst.getIuv(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken))
       .thenReturn(List.of(dp));
 
     // Act
@@ -290,8 +295,8 @@ class DebtPositionInstallmentServiceTest {
   void givenNullDpWhenGetDebtPositionsAndInstallmentsByInstallmentIdThenThrowSilFaultException() {
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, inst.getIuv(), false);
 
-    when(sessionIdMapper.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
-    when(debtPositionService.getDebtPositionDTOByInstallmentId(inst.getInstallmentId(), accessToken)).thenReturn(null);
+    when(sessionIdMapperMock.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
+    when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(inst.getInstallmentId(), accessToken)).thenReturn(null);
 
     SilFaultException exception = assertThrows(SilFaultException.class, () ->
       installmentService.getDebtPositionsAndInstallmentsByInstallmentId(request, accessToken)

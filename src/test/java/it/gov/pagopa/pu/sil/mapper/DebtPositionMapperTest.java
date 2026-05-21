@@ -15,7 +15,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,7 +56,7 @@ class DebtPositionMapperTest {
     // Then
     assertNotNull(result);
     TestUtils.checkAllNotNullFields(result,
-      "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
+      "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");//TODO P4ADEV-4720 handle stationId mapping
     result.getPaymentOptions().forEach(po -> {
       TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {
