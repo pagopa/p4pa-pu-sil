@@ -54,7 +54,7 @@ class DebtPositionInstallmentServiceTest {
 
   @BeforeEach
   void setUp() {
-    installmentService = new DebtPositionInstallmentService(debtPositionServiceMock, sessionIdMapperMock,debtPositionTypeServiceMock,List.of("9/"));
+    installmentService = new DebtPositionInstallmentService(debtPositionServiceMock, sessionIdMapperMock,debtPositionTypeServiceMock);
   }
 
   @BeforeEach

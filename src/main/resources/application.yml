@@ -235,6 +235,3 @@ cache:
 
 nav:
   aux-digit: "\${NAV_AUX_DIGIT:3}"
-
-category:
-  allowed-prefixes: "6/,7/,8/,9/"

@@ -12,14 +12,18 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ValidationUtils {
+  //region Category domain
   private static final Pattern LEGACY_PAYMENT_METADATA_PATTERN = Pattern.compile("^[0126789]/\\S{3,138}$");
   private static final Pattern LEGACY_PAYMENT_METADATA_SECONDARY_PATTERN = Pattern.compile("^[0126789]/(\\d{7}(?:IM|TS|SP|SA|AP))/.{0,128}$");
+  public static final List<String> CATEGORY_ALLOWED_PREFIXES = List.of("6/","7/","8/","9/");
+  //endregion
 
   private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$");
   private static final Set<String> ISO_COUNTRIES = Set.of(Locale.getISOCountries());

@@ -9,8 +9,8 @@ import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,13 +25,11 @@ public class DebtPositionInstallmentService {
   private final DebtPositionService debtPositionService;
   private final SessionIdMapper sessionIdMapper;
   private final DebtPositionTypeService debtPositionTypeService;
-  private final List<String> categoryAllowedPrefixes;
 
-  public DebtPositionInstallmentService(DebtPositionService debtPositionService, SessionIdMapper sessionIdMapper, DebtPositionTypeService debtPositionTypeService, @Value("${category.allowed-prefixes}") List<String> categoryAllowedPrefixes) {
+  public DebtPositionInstallmentService(DebtPositionService debtPositionService, SessionIdMapper sessionIdMapper, DebtPositionTypeService debtPositionTypeService) {
     this.debtPositionService = debtPositionService;
     this.sessionIdMapper = sessionIdMapper;
     this.debtPositionTypeService = debtPositionTypeService;
-    this.categoryAllowedPrefixes = categoryAllowedPrefixes;
   }
 
   public List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallmentsByInstallmentId(
@@ -106,7 +104,7 @@ public class DebtPositionInstallmentService {
       DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
       category = debtPositionType.getTaxonomyCode();
     }
-    Optional<String> prefix = categoryAllowedPrefixes.stream().filter(category::startsWith).findAny();
+    Optional<String> prefix = ValidationUtils.CATEGORY_ALLOWED_PREFIXES.stream().filter(category::startsWith).findAny();
     if (prefix.isPresent()) {
       category = category.replace(prefix.get(), "");
     }

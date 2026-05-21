@@ -38,7 +38,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
     this.secondaryTransferMapper = secondaryTransferMapper;
   }
 
-  public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization organization, String cartId, String accessToken) {
+  public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaCarrelloDovuti request, Organization organization, String cartId, String accessToken) {//TODO P4ADEV-4720 handle stationId mapping
     //validate "dovuti"
     validationService.validatePrimaryDebtPositionOrganization(request, organization.getIpaCode());
     //validate "dovuti secondari"
