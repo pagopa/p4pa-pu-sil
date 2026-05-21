@@ -51,7 +51,7 @@ public class PaaSILImportaDovutoMapper {
     this.auxDigit = auxDigit;
   }
 
-  public Pair<DebtPositionDTO, String> mapRequestToDebtPosition(PaaSILImportaDovuto request, Organization organization, String accessToken) {//TODO P4ADEV-4720 handle stationId mapping
+  public Pair<DebtPositionDTO, String> mapRequestToDebtPosition(PaaSILImportaDovuto request, Organization organization, String accessToken) {
 
     //unmarshall versamento
     Versamento versamento;

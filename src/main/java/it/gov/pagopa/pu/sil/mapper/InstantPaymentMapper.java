@@ -26,7 +26,7 @@ public class InstantPaymentMapper {
     this.transferMapper = transferMapper;
   }
 
-  public List<DebtPositionDTO> mapRequestToDebtPositions(InstantPaymentRequest request, Organization organization, String cartId, String accessToken) {//TODO P4ADEV-4720 handle stationId mapping
+  public List<DebtPositionDTO> mapRequestToDebtPositions(InstantPaymentRequest request, Organization organization, String cartId, String accessToken) {
     return request.getPayments().stream()
       .flatMap(payment -> payment.getTransfers().stream()
         .map(transfer -> createDebtPosition(payment, organization, transfer, cartId, accessToken))

@@ -26,7 +26,7 @@ public class DebtPositionMapper {
     this.auxDigit = auxDigit;
   }
 
-  public DebtPositionDTO mapRequestToDebtPosition(it.gov.pagopa.pu.sil.dto.generated.DebtPositionDTO source, Organization organization, String accessToken) {//TODO P4ADEV-4720 handle stationId mapping
+  public DebtPositionDTO mapRequestToDebtPosition(it.gov.pagopa.pu.sil.dto.generated.DebtPositionDTO source, Organization organization, String accessToken) {
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       organization.getOrganizationId(), source.getDebtPositionTypeOrgCode(), accessToken);
 

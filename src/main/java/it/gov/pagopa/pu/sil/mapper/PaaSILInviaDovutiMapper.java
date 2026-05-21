@@ -31,7 +31,7 @@ public class PaaSILInviaDovutiMapper extends AbstractImmediatePaymentsMapper {
     super(jaxbTransformService, debtPositionService, validationService, personMapper, debtPositionInstallmentService);
   }
 
-  public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {//TODO P4ADEV-4720 handle stationId mapping
+  public PaymentRequestMappingResult mapRequestToDebtPositions(PaaSILInviaDovuti request, Organization organization, String cartId, String accessToken) {
     //unmarshall "dovuti"
     Dovuti dovutiObj;
     try {
