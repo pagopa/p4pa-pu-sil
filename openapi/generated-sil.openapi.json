@@ -1424,6 +1424,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "stationId" : {
+            "type" : "string",
+            "nullable" : true
+          },
           "debtPositionTypeOrgId" : {
             "type" : "integer",
             "format" : "int64"
@@ -1912,7 +1916,7 @@
         }
       },
       "CreateNotificationRequest" : {
-        "required" : [ "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ],
+        "required" : [ "campaignId", "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ],
         "type" : "object",
         "properties" : {
           "organizationId" : {
@@ -1975,6 +1979,9 @@
             "type" : "integer",
             "format" : "int32",
             "nullable" : true
+          },
+          "campaignId" : {
+            "type" : "string"
           }
         },
         "nullable" : true

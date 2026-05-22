@@ -9,12 +9,7 @@ import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPer
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.math.BigDecimal;
@@ -249,7 +244,7 @@ class ValidationUtilsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"0/ValidData", "1/AnotherValidData", "9/Valid123", "2/Valid-Data"})
+  @ValueSource(strings = {"0/ValidData", "1/AnotherValidData", "9/Valid123", "2/Valid-Data", "6/valid", "7/valid", "8/valid"})
   void isValidLegacyPaymentMetadata_ValidInputs_ReturnsTrue(String input) {
     assertTrue(ValidationUtils.isValidLegacyPaymentMetadata(input));
   }
@@ -262,7 +257,7 @@ class ValidationUtilsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/."})
+  @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/.", "6/1234534IM/", "7/2435236SA/", "8/1646246AP/"})
   @NullSource
   void isValidLegacyPaymentMetadataSecondary_ValidInputs_ReturnsTrue(String input) {
     assertTrue(ValidationUtils.isValidLegacyPaymentMetadataSecondary(input));
@@ -276,7 +271,7 @@ class ValidationUtilsTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/."})
+  @ValueSource(strings = {"0/1234534IM/", "1/2435236SA/an b", "9/1646246AP/long/long", "2/9079248TS/.", "6/1234534IM/", "7/2435236SA/", "8/1646246AP/"})
   void getTransferCategoryFromLegacyPaymentMetadataSecondary_ValidInputs_ReturnsCategory(String input) {
     String category = ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary(input);
     assertNotNull(category);
