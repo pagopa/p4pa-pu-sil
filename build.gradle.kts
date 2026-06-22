@@ -418,6 +418,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateNodeCheckout") {
