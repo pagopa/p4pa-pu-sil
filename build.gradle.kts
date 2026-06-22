@@ -316,6 +316,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateP4PASENDNOTIFICATION") {
@@ -347,6 +349,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePROCESSEXECUTION") {
@@ -382,6 +386,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateDEBTPOSITIONS") {
@@ -483,6 +489,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyActualization") {
@@ -644,6 +652,8 @@ jaxb {
       )
     )
     library.set("resttemplate")
+
+    workerIsolation.set("process")
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
@@ -681,6 +691,8 @@ jaxb {
       )
     )
     library.set("resttemplate")
+
+    workerIsolation.set("process")
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePaymentNotification") {
@@ -755,6 +767,11 @@ jaxb {
     invokerPackage.set("it.gov.pagopa.pu.classification.generated")
     apiPackage.set("it.gov.pagopa.pu.classification.client.generated")
     modelPackage.set("it.gov.pagopa.pu.classification.dto.generated")
+    typeMappings.set(
+      mapOf(
+        "LocalDateTime" to "java.time.LocalDateTime"
+      )
+    )
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
@@ -775,11 +792,8 @@ jaxb {
       )
     )
     library.set("resttemplate")
-    typeMappings.set(
-      mapOf(
-        "LocalDateTime" to "java.time.LocalDateTime"
-      )
-    )
+
+    workerIsolation.set("process")
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {
@@ -818,5 +832,7 @@ jaxb {
       )
     )
     library.set("resttemplate")
+
+    workerIsolation.set("process")
   }
 }
