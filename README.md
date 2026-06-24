@@ -58,6 +58,7 @@ See [Postman collection](/postman/p4pa-pu-sil.postman_collection.json) and [Post
 * `pivotSILChiediAccertamento`: To get an assessment;
 
 ### 📌 Common HTTP status returned:
+* `200`: Successful operation;
 * `401`: Invalid access token provided, thus a new login is required;
 * `403`: Trying to access a not authorized resource.
 
