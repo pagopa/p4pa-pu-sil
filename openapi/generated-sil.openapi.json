@@ -1916,7 +1916,7 @@
         }
       },
       "CreateNotificationRequest" : {
-        "required" : [ "campaignId", "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ],
+        "required" : [ "externalCampaignId", "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ],
         "type" : "object",
         "properties" : {
           "organizationId" : {
@@ -1980,8 +1980,21 @@
             "format" : "int32",
             "nullable" : true
           },
-          "campaignId" : {
+          "externalCampaignId" : {
             "type" : "string"
+          },
+          "subUnitCode" : {
+            "maxLength" : 32,
+            "minLength" : 0,
+            "pattern" : "^[A-Za-z0-9_-]+$",
+            "type" : "string",
+            "nullable" : true
+          },
+          "campaignName" : {
+            "maxLength" : 64,
+            "minLength" : 0,
+            "type" : "string",
+            "nullable" : true
           }
         },
         "nullable" : true
