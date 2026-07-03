@@ -47,6 +47,6 @@ public class SilLegacyJwtAuthService {
       .withExpiresAt(Instant.now().plusSeconds(expirationTimeInSeconds));
     String token = jwtBuilder
       .sign(algorithm);
-    return new AccessToken(token, tokenType, expirationTimeInSeconds);
+    return new AccessToken(token, tokenType, expirationTimeInSeconds, null, null);
   }
 }
