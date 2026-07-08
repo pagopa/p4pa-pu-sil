@@ -1130,6 +1130,8 @@ components:
           type: string
         balance:
           type: string
+        stationId:
+          type: string
         debtor:
           type: 'PersonDTO'
         transfers:
@@ -1156,8 +1158,6 @@ components:
             the url to redirect the navigation flow to, after completing the payment operation.
             If not set, a generic PU page will be used. The parameters paymentId and outcome (OK/KO)
             will be added to query string of url.
-        stationId:
-          type: string
     PaymentResponse:
       type: object
       properties:
