@@ -29,11 +29,11 @@ public class InstantPaymentMapper {
   public List<DebtPositionDTO> mapRequestToDebtPositions(InstantPaymentRequest request, Organization organization, String cartId, String accessToken) {
     return request.getPayments().stream()
       .flatMap(payment -> payment.getTransfers().stream()
-        .map(transfer -> createDebtPosition(payment, organization, transfer, cartId, accessToken))
+        .map(transfer -> createDebtPosition(payment, organization, transfer, cartId, request.getStationId(), accessToken))
       ).toList();
   }
 
-  private DebtPositionDTO createDebtPosition(PaymentDTO payment, Organization org, TransferDTO transfer, String cartId, String accessToken) {
+  private DebtPositionDTO createDebtPosition(PaymentDTO payment, Organization org, TransferDTO transfer, String cartId, String stationId, String accessToken) {
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
       org.getOrganizationId(), payment.getDebtPositionTypeOrgCode(), accessToken);
 
@@ -72,6 +72,7 @@ public class InstantPaymentMapper {
       .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))
       .iupdOrg(cartId + "-" + transfer.getTransferIndex())
       .description(payment.getDescription())
+      .stationId(stationId)
       .paymentOptions(List.of(paymentOption))
       .build();
   }

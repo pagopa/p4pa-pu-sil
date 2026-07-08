@@ -83,7 +83,7 @@ class InstantPaymentMapperTest {
     assertTrue(installmentDTO.getSourceFlowName().contains("CART_ID"));
 
     TestUtils.checkNotNullFields(dp,
-      "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");//TODO P4ADEV-4720 handle stationId mapping
+      "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
     dp.getPaymentOptions().forEach(po -> {
       TestUtils.checkNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {

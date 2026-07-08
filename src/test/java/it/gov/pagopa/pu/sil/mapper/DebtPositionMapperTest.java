@@ -56,7 +56,7 @@ class DebtPositionMapperTest {
     // Then
     assertNotNull(result);
     TestUtils.checkAllNotNullFields(result,
-      "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");//TODO P4ADEV-4720 handle stationId mapping
+      "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
     result.getPaymentOptions().forEach(po -> {
       TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {

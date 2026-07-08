@@ -128,7 +128,7 @@ class PaaSILImportaDovutoMapperTest {
 
     DebtPositionDTO dp = response.getLeft();
     TestUtils.checkAllNotNullFields(dp,
-      "debtPositionId", "validityDate", "iupdOrg", "description", "multiDebtor", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");//TODO P4ADEV-4720 handle stationId mapping
+      "debtPositionId", "validityDate", "iupdOrg", "description", "multiDebtor", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");
     dp.getPaymentOptions().forEach(po -> {
       TestUtils.checkAllNotNullFields(po, "paymentOptionId", "debtPositionId", "description", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {
