@@ -211,6 +211,17 @@ class JaxbTransformServiceTest {
     Assertions.assertEquals(expectedResponse.getDatiVersamento().getDataEsecuzionePagamento(), response.getDatiVersamento().getDataEsecuzionePagamento());
   }
 
+  @Test
+  void givenUnexpectedRootElementThenApplicationException() {
+    byte[] request = ("<Versamento xmlns=\"http://www.regione.veneto.it/schemas/2012/Pagamenti/Ente/\"><versioneOggetto>6.0</versioneOggetto><soggettoPagatore><identificativoUnivocoPagatore><tipoIdentificativoUnivoco>F</tipoIdentificativoUnivoco><codiceIdentificativoUnivoco>TSTTNT80A01H501O</codiceIdentificativoUnivoco></identificativoUnivocoPagatore><anagraficaPagatore>UTENTE TESTER</anagraficaPagatore></soggettoPagatore><datiVersamento><dataEsecuzionePagamento>2025-07-18</dataEsecuzionePagamento><identificativoUnivocoVersamento>010312345678901</identificativoUnivocoVersamento><identificativoUnivocoDovuto>99979588_10</identificativoUnivocoDovuto><importoSingoloVersamento>0.96</importoSingoloVersamento><identificativoTipoDovuto>RESTITUZIONE_FEAGA_FEASR</identificativoTipoDovuto><causaleVersamento>Restituzione PVA: XXXX</causaleVersamento><datiSpecificiRiscossione>9/---</datiSpecificiRiscossione></datiVersamento><azione>I</azione></Versamento>")
+      .getBytes(StandardCharsets.UTF_8);
+
+    // when
+    ApplicationException resultException = Assertions.assertThrows(ApplicationException.class, () -> jaxbTransformService.unmarshalling(request, Dovuti.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd"));
+
+    // then
+    Assertions.assertEquals("Unexpected root element name: found Versamento instead of Dovuti", resultException.getMessage());
+  }
 
   @Test
   void givenNullObjectWhenUnmarshallingThenOk() {
