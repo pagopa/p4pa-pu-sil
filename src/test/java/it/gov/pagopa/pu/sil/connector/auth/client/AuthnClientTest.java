@@ -105,7 +105,7 @@ class AuthnClientTest {
 
     AccessToken expectedResult = podamFactory.manufacturePojo(AccessToken.class);
     Mockito.when(authApisHolderMock.getAuthnApi(null)).thenReturn(authnApiMock);
-    Mockito.when(authnApiMock.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret )).thenReturn(expectedResult);
+    Mockito.when(authnApiMock.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret, null)).thenReturn(expectedResult);
 
     //when
     AccessToken result = authnClient.postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
