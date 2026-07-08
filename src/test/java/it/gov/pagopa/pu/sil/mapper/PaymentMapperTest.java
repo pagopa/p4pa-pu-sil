@@ -109,7 +109,7 @@ class PaymentMapperTest {
     assertEquals(1, result.getTransfers().size());
     assertEquals(silTransfer, result.getTransfers().getFirst());
 
-    TestUtils.checkNotNullFields(result);
+    TestUtils.checkNotNullFields(result, "stationId");
     result.getTransfers().forEach(TestUtils::checkNotNullFields);
   }
 }

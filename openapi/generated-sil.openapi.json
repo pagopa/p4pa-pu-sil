@@ -2168,10 +2168,6 @@
             "type" : "string",
             "description" : "the url to redirect the navigation flow to, after completing the payment operation. If not set, a generic PU page will be used. The parameters paymentId and outcome (OK/KO) will be added to query string of url. ",
             "nullable" : true
-          },
-          "stationId" : {
-            "type" : "string",
-            "nullable" : true
           }
         }
       },
@@ -2200,6 +2196,10 @@
             "nullable" : true
           },
           "balance" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "stationId" : {
             "type" : "string",
             "nullable" : true
           },
