@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
-import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -91,12 +88,17 @@ class PaymentMapperTest {
     when(transferMapperMock.mapToSilTransferDTO(debtPositionTransfer, installment.getOriginalRemittanceInformation()))
       .thenReturn(silTransfer);
 
+    DebtPositionDTO debtPosition = DebtPositionDTO.builder()
+        .stationId("stationId")
+        .build();
+
     // When
-    PaymentDTO result = mapper.mapToPaymentDTO(installment, accessToken);
+    PaymentDTO result = mapper.mapToPaymentDTO(installment, debtPosition, accessToken);
 
     // Then
     assertNotNull(result);
     assertEquals(debtPositionTypeOrg.getCode(), result.getDebtPositionTypeOrgCode());
+    assertEquals(debtPosition.getStationId(), result.getStationId());
     assertEquals(iud, result.getIud());
     assertEquals(amountCents, result.getTotalAmountCents());
     assertEquals(remittanceInfo, result.getDescription());
@@ -109,7 +111,7 @@ class PaymentMapperTest {
     assertEquals(1, result.getTransfers().size());
     assertEquals(silTransfer, result.getTransfers().getFirst());
 
-    TestUtils.checkNotNullFields(result, "stationId");
+    TestUtils.checkNotNullFields(result);
     result.getTransfers().forEach(TestUtils::checkNotNullFields);
   }
 }
