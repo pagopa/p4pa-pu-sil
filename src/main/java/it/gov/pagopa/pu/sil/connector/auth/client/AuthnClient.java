@@ -35,6 +35,6 @@ public class AuthnClient {
 
   public AccessToken postToken(String clientId, String grantType, String scope, String subjectToken, String subjectIssuer, String subjectTokenType, String clientSecret) {
     return authApisHolder.getAuthnApi(null)
-      .postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret);
+      .postToken(clientId, grantType, scope, subjectToken, subjectIssuer, subjectTokenType, clientSecret, null);
   }
 }
