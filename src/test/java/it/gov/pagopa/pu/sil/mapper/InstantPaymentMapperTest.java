@@ -63,6 +63,7 @@ class InstantPaymentMapperTest {
 
     assertEquals(org.getOrganizationId(), dp.getOrganizationId());
     assertEquals(paymentDTO.getDescription(), dp.getDescription());
+    assertEquals(paymentDTO.getStationId(), dp.getStationId());
     assertTrue(dp.getIupdOrg().contains("CART_ID"));
     assertEquals(DebtPositionStatus.UNPAID, dp.getStatus());
     assertEquals(DebtPositionOrigin.SPONTANEOUS_SIL, dp.getDebtPositionOrigin());
@@ -83,7 +84,7 @@ class InstantPaymentMapperTest {
     assertTrue(installmentDTO.getSourceFlowName().contains("CART_ID"));
 
     TestUtils.checkNotNullFields(dp,
-      "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");//TODO P4ADEV-4720 handle stationId mapping
+      "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
     dp.getPaymentOptions().forEach(po -> {
       TestUtils.checkNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
       po.getInstallments().forEach(i -> {

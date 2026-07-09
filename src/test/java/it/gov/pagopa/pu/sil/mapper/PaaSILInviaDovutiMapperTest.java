@@ -200,7 +200,7 @@ class PaaSILInviaDovutiMapperTest {
 
     result.forEach(dp -> {
       TestUtils.checkAllNotNullFields(dp,
-        "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");//TODO P4ADEV-4720 handle stationId mapping
+        "debtPositionId", "validityDate", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "stationId");
       dp.getPaymentOptions().forEach(po -> {
         TestUtils.checkNotNullFields(po, "paymentOptionId", "debtPositionId", "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "description");
         po.getInstallments().forEach(i -> {
@@ -298,7 +298,7 @@ class PaaSILInviaDovutiMapperTest {
     assertNotNull(result);
     assertEquals(1, result.size());
     MixedDebtPositionDTO mixedDebtPositionDTO = result.getFirst();
-    TestUtils.checkAllNotNullFields(mixedDebtPositionDTO, "stationId");//TODO P4ADEV-4720 handle stationId mapping
+    TestUtils.checkAllNotNullFields(mixedDebtPositionDTO, "stationId");
 
     List<MixedTransferDTO> mixedTransfers = mixedDebtPositionDTO.getTransfers();
     assertEquals(3, mixedTransfers.size());

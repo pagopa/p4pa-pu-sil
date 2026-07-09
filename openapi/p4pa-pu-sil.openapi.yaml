@@ -1130,6 +1130,8 @@ components:
           type: string
         balance:
           type: string
+        stationId:
+          type: string
         debtor:
           type: 'PersonDTO'
         transfers:
@@ -1387,6 +1389,8 @@ components:
           type: boolean
         flagPagoPaPayment:
           type: boolean
+        stationId:
+          type: string
         paymentOptions:
           type: array
           items:

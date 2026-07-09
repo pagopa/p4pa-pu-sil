@@ -2199,6 +2199,10 @@
             "type" : "string",
             "nullable" : true
           },
+          "stationId" : {
+            "type" : "string",
+            "nullable" : true
+          },
           "debtor" : {
             "$ref" : "#/components/schemas/PersonDTO"
           },
