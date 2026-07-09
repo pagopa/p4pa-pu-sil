@@ -71,7 +71,7 @@ public class DebtorQueryUnpaidDebtPositionService extends AbstractDebtorQueryPay
               .paymentTriggerUrl(
                 getCheckoutUrl(organization.getOrganizationId(), organization.getIpaCode(),
                   installment.getIuv(), null, organization.getOrgFiscalCode()))
-                .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, accessToken))
+                .unpaidDebtPosition(paymentMapper.mapToPaymentDTO(installment, debtPosition, accessToken))
               .build()));
       })
       .forEach(response::addDebtPositionsItem);

@@ -1981,12 +1981,12 @@
             "nullable" : true
           },
           "externalCampaignId" : {
-            "type" : "string"
-          },
-          "subUnitCode" : {
             "maxLength" : 32,
             "minLength" : 0,
             "pattern" : "^[A-Za-z0-9_-]+$",
+            "type" : "string"
+          },
+          "subUnitCode" : {
             "type" : "string",
             "nullable" : true
           },
@@ -2196,6 +2196,10 @@
             "nullable" : true
           },
           "balance" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "stationId" : {
             "type" : "string",
             "nullable" : true
           },

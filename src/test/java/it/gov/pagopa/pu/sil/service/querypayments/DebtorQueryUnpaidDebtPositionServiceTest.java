@@ -164,7 +164,7 @@ class DebtorQueryUnpaidDebtPositionServiceTest {
 
       when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(eq(userInfo.getOrganizations().getFirst().getOrganizationId()), anyString(), eq(null), any(), eq(orgAccessToken)))
         .thenReturn(TRIGGER_PAY_URL);
-      when(paymentMapperMock.mapToPaymentDTO(installment, accessToken))
+      when(paymentMapperMock.mapToPaymentDTO(installment, dp, accessToken))
         .thenReturn(paymentDTO);
 
       response = service.processRequest(request, userInfo, accessToken);
