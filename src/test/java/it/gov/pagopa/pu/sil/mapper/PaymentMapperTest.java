@@ -88,9 +88,8 @@ class PaymentMapperTest {
     when(transferMapperMock.mapToSilTransferDTO(debtPositionTransfer, installment.getOriginalRemittanceInformation()))
       .thenReturn(silTransfer);
 
-    DebtPositionDTO debtPosition = DebtPositionDTO.builder()
-        .stationId("stationId")
-        .build();
+    DebtPositionDTO debtPosition = new DebtPositionDTO();
+    debtPosition.setStationId("stationId");
 
     // When
     PaymentDTO result = mapper.mapToPaymentDTO(installment, debtPosition, accessToken);
