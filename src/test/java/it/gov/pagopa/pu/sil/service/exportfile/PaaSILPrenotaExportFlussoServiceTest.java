@@ -9,10 +9,11 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILPrenotaExportFlusso;
 import org.junit.jupiter.api.AfterEach;
@@ -210,7 +211,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
       )
     );
 
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE, exception.getCode());
   }
 
   @Test
@@ -225,8 +226,9 @@ class PaaSILPrenotaExportFlussoServiceTest {
     OffsetDateTime to = OffsetDateTime.now();
     String debtPositionTypeOrgCode = "code";
 
-    ExportFileClientException errorException = new ExportFileClientException(
-      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "");
+    ExportFileClientException errorException = new ExportFileClientException(new InvalidValueException(
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "")
+    );
 
     when(exportFileServiceMock.createPaidExportFile(any(), eq(accessToken)))
       .thenThrow(errorException);
@@ -245,7 +247,7 @@ class PaaSILPrenotaExportFlussoServiceTest {
       )
     );
 
-    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
+    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), exception.getCode());
   }
 
 }

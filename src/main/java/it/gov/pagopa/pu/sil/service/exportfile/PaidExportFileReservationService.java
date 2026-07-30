@@ -8,13 +8,13 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.PaidExportRequestDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -43,13 +43,7 @@ public class PaidExportFileReservationService extends
       debtPositionTypeOrgId =
         Optional.ofNullable(
             paidExportRequestDTO.getExportFilters().getDebtPositionTypeOrgCode())
-          .map(debtPositionTypeOrgCode -> getAndValidateDebtPositionTypeOrg(
-            organizationId,
-            debtPositionTypeOrgCode,
-            accessToken,
-            SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
-            SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO
-          )).map(DebtPositionTypeOrg::getDebtPositionTypeOrgId).orElse(null);
+          .map(debtPositionTypeOrgCode -> getAndValidateDebtPositionTypeOrg(organizationId, debtPositionTypeOrgCode, accessToken)).map(DebtPositionTypeOrg::getDebtPositionTypeOrgId).orElse(null);
     }
 
     PaidExportFileRequestDTO requestDTO = mapToExportRequest(organizationId,

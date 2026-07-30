@@ -8,10 +8,11 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
@@ -76,7 +77,7 @@ class PaaSILImportaDovutoMapperTest {
   @Test
   void mapRequestToDebtPositionPair_UnmarshallingFailure_ReturnsError() {
     PaaSILImportaDovuto request = new PaaSILImportaDovuto();
-    when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenThrow(new ApplicationException("Error"));
+    when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenThrow(new RuntimeException("Error"));
 
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
 
@@ -97,9 +98,10 @@ class PaaSILImportaDovutoMapperTest {
     when(personMapperMock.getAndValidateDebtor(versamento.getSoggettoPagatore())).thenReturn(podamFactory.manufacturePojo(PersonDTO.class));
     when(jaxbTransformServiceMock.marshallingNoNamespace(versamento.getDatiVersamento().getBilancio(), Bilancio.class)).thenThrow(new RuntimeException("simulated error"));
 
-    ApplicationException exception = Assertions.assertThrows(ApplicationException.class, () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
 
-    assertTrue(exception.getMessage().startsWith("Invalid bilancio format"));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_BALANCE, exception.getCode());
+    assertEquals("Invalid bilancio format", exception.getMessage());
   }
 
   @Test
@@ -137,10 +139,8 @@ class PaaSILImportaDovutoMapperTest {
           "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "sourceFlowName", "switchToExpired",
           "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "originalRemittanceInformation");
         if (i.getTransfers() != null) {
-          i.getTransfers().forEach(t -> {
-            TestUtils.checkAllNotNullFields(t, "transferId", "installmentId",
-              "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-          });
+          i.getTransfers().forEach(t -> TestUtils.checkAllNotNullFields(t, "transferId", "installmentId",
+            "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId"));
         }
       });
     });

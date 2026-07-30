@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.service.receipt;
 
 import it.gov.pagopa.pu.sil.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -46,11 +48,12 @@ class ReceiptServiceTest {
     String accessToken = "validToken";
     when(fileShareServiceMock.downloadReceipt(organizationId, receiptId, accessToken)).thenReturn(null);
 
-    ApplicationException exception = assertThrows(ApplicationException.class, () ->
+    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
       receiptService.getReceiptById(receiptId, organizationId, accessToken)
     );
 
-    assertEquals("[RECEIPT_NOT_FOUND] Receipt with id %s not found ".formatted(receiptId), exception.getMessage());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_RECEIPT_NOT_FOUND, exception.getCode());
+    assertEquals("Receipt with id %s not found ".formatted(receiptId), exception.getMessage());
   }
 
   @Test
@@ -63,10 +66,11 @@ class ReceiptServiceTest {
     when(fileShareServiceMock.downloadReceipt(organizationId, receiptId, accessToken)).thenReturn(resourceMock);
     when(resourceMock.getContentAsByteArray()).thenThrow(new IOException("IO error"));
 
-    ApplicationException exception = assertThrows(ApplicationException.class, () ->
+    IllegalStateBusinessException exception = assertThrows(IllegalStateBusinessException.class, () ->
       receiptService.getReceiptById(receiptId, organizationId, accessToken)
     );
 
+    assertEquals(ErrorCodeConstants.ERROR_CODE_RECEIPT_ERROR, exception.getCode());
     assertEquals("java.io.IOException: IO error", exception.getCause().toString());
   }
 }

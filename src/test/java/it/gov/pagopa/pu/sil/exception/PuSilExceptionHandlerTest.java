@@ -3,7 +3,9 @@ package it.gov.pagopa.pu.sil.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.config.json.JsonConfig;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
+import it.gov.pagopa.pu.sil.exception.transcoder.handler.ConstraintViolationExceptionMessageTranscoderTest;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.UtilitiesTest;
 import jakarta.servlet.ServletException;
@@ -15,9 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.internal.engine.ConstraintViolationImpl;
-import org.hibernate.validator.internal.engine.path.MutablePath;
-import org.junit.jupiter.api.AfterEach;
+import org.apache.hc.client5.http.HttpHostConnectException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,9 +44,9 @@ import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
+import static it.gov.pagopa.pu.sil.exception.transcoder.handler.ConstraintViolationExceptionMessageTranscoderTest.EXPECTED_CONSTRAINT_EXCEPTION_MESSAGE_TRANSCODED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
@@ -81,19 +81,12 @@ class PuSilExceptionHandlerTest {
     }
   }
 
+  private final String traceId = "TRACEID";
+
   @BeforeEach
   void init() {
     TestUtils.clearDefaultTimezone();
-  }
-
-  private final String traceId = "TRACEID";
-  @BeforeEach
-  void setTraceId(){
     UtilitiesTest.setTraceId(traceId);
-  }
-  @AfterEach
-  void clearTraceId(){
-    UtilitiesTest.clearTraceIdContext();
   }
 
   @Data
@@ -126,14 +119,78 @@ class PuSilExceptionHandlerTest {
     return mockMvc.perform(requestBuilder);
   }
 
+
+  @Test
+  void handleInvalidValueExceptionError() throws Exception {
+    doThrow(new InvalidValueException("ERRORCODE", "Error", List.of(new ErrorFieldDTO().field("fieldName").error("fieldError").message("fieldErrorMessage")))).when(testControllerSpy).testEndpoint(DATA,BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ERRORCODE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[ERRORCODE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].field").value("fieldName"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].error").value("fieldError"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].message").value("fieldErrorMessage"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+
+  }
+
+  @Test
+  void handleForbiddenErrorExceptionError() throws Exception {
+    doThrow(new ForbiddenException("ERRORCODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isForbidden())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("FORBIDDEN"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ERRORCODE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[ERRORCODE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+
+  }
+
+  @Test
+  void handleNotAuthorizedExceptionError() throws Exception {
+    doThrow(new NotAuthorizedException("ERRORCODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("UNAUTHORIZED"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ERRORCODE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[ERRORCODE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+
+  }
+
+  @Test
+  void handleConflictExceptionError() throws Exception {
+    doThrow(new ConflictException("ERRORCODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isConflict())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("CONFLICT"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ERRORCODE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[ERRORCODE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+
+  }
+
   @Test
   void handleMissingServletRequestParameterException() throws Exception {
 
     performRequest(null, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Required request parameter 'data' for method parameter type String is not present"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] Required request parameter 'data' for method parameter type String is not present"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].field").value("data"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].error").value("NotNull"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].message").value("Required request parameter 'data' for method parameter type String is not present"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+
   }
 
   @Test
@@ -143,7 +200,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isForbidden())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(HttpStatus.FORBIDDEN.value()+" Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[GENERIC_ERROR] " + HttpStatus.FORBIDDEN.value()+" Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -154,7 +213,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[GENERIC_ERROR] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -166,7 +227,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[GENERIC_ERROR] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -175,7 +238,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.parseMediaType("application/hal+json"))
       .andExpect(MockMvcResultMatchers.status().isNotAcceptable())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("No acceptable representation"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] No acceptable representation"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -184,7 +249,23 @@ class PuSilExceptionHandlerTest {
     mockMvc.perform(MockMvcRequestBuilders.post("/NOTEXISTENTURL"))
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("NOT_FOUND"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("No static resource NOTEXISTENTURL for request '/NOTEXISTENTURL'."))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[NOT_FOUND] No static resource NOTEXISTENTURL for request '/NOTEXISTENTURL'."))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+  }
+
+  @Test
+  void handleResourceNotFoundException() throws Exception {
+    doThrow(new ResourceNotFoundException("ERROR_CODE", "Error"))
+      .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ERROR_CODE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[ERROR_CODE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -193,7 +274,21 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON, null)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Required request body is missing"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] Required request body is missing"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+  }
+
+  @Test
+  void handleMalformedBodyException() throws Exception {
+    performRequest(DATA, MediaType.APPLICATION_JSON,
+      "{\"")
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] Cannot parse body. Unexpected end-of-input: was expecting closing '\"' for name"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -203,7 +298,14 @@ class PuSilExceptionHandlerTest {
       "{\"notRequiredField\":\"notRequired\",\"lowerCaseAlphabeticField\":\"ABC\"}")
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Invalid request content. lowerCaseAlphabeticField: must match \"[a-z]+\"; requiredField: must not be null"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] Invalid request content. lowerCaseAlphabeticField: must match \"[a-z]+\"; requiredField: must not be null"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].field").value("lowerCaseAlphabeticField"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].error").value("Pattern"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].message").value("must match \"[a-z]+\""))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[1].field").value("requiredField"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[1].error").value("NotNull"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[1].message").value("must not be null"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -213,7 +315,11 @@ class PuSilExceptionHandlerTest {
       "{\"notRequiredField\":\"notRequired\",\"dateTimeField\":\"2025-02-05\"}")
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Cannot parse body. dateTimeField: Text '2025-02-05' could not be parsed at index 10"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] Cannot parse body. dateTimeField: Text '2025-02-05' could not be parsed at index 10"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].field").value("dateTimeField"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].error").value("DateTimeParse"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields[0].message").value("Text '2025-02-05' could not be parsed at index 10"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -225,23 +331,49 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("500 INTERNAL_SERVER_ERROR \"Error\""))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[GENERIC_ERROR] 500 INTERNAL_SERVER_ERROR \"Error\""))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
-  private final ConstraintViolationException constraintViolationException = new ConstraintViolationException("Error", Set.of(ConstraintViolationImpl.forParameterValidation(
-    "error message template", Map.of(), Map.of(), "resolved message", null, null, null, null, MutablePath.createPathFromString("fieldName").materialize(), null, null, null
-  )));
+  @Test
+  void handleHttpClientErrorTooManyRequestsException() throws Exception {
+    doThrow(HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS, "TooManyRequests", null, null, null))
+      .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
 
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("TOO_MANY_REQUESTS"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[TOO_MANY_REQUESTS] 429 TooManyRequests"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+  }
+
+  private final ConstraintViolationException constraintViolationException = ConstraintViolationExceptionMessageTranscoderTest.buildConstraintViolationException();
   @Test
   void handleViolationException() throws Exception {
     doThrow(constraintViolationException).when(testControllerSpy).testEndpoint(DATA, BODY);
 
-    performRequest(DATA, MediaType.APPLICATION_JSON)
+    assertConstraintViolationException();
+  }
+
+  private void assertConstraintViolationException() throws Exception {
+    ResultActions resultActions = performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Invalid request content. fieldName: resolved message"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] " + EXPECTED_CONSTRAINT_EXCEPTION_MESSAGE_TRANSCODED.getMessage()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+
+    for (int i = 0; i < EXPECTED_CONSTRAINT_EXCEPTION_MESSAGE_TRANSCODED.getFields().size(); i++) {
+      ErrorFieldDTO errorFieldDTO = EXPECTED_CONSTRAINT_EXCEPTION_MESSAGE_TRANSCODED.getFields().get(i);
+      resultActions
+        .andExpect(MockMvcResultMatchers.jsonPath("$.fields[" + i + "].field").value(errorFieldDTO.getField()))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.fields[" + i + "].error").value(errorFieldDTO.getError()))
+        .andExpect(MockMvcResultMatchers.jsonPath("$.fields[" + i + "].message").value(errorFieldDTO.getMessage()));
+    }
   }
 
   @Test
@@ -251,7 +383,21 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[BAD_REQUEST] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+  }
+
+  @Test
+  void handleHttpHostConnectionExceptionException() throws Exception {
+    doThrow(new RuntimeException("connection refused", new HttpHostConnectException("error"))).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_CONNECTION_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[PU_SIL_CONNECTION_ERROR] connection refused"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -262,7 +408,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("NOT_FOUND"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PAYMENT_NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[PAYMENT_NOT_FOUND] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -273,7 +421,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isPreconditionFailed())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PAYMENT_NOT_NOTIFIED"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[PAYMENT_NOT_NOTIFIED] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -284,7 +434,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isConflict())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("INVALID_PAYMENT_STATUS"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[INVALID_PAYMENT_STATUS] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -295,7 +447,9 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isForbidden())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("UNAUTHORIZED"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("UNAUTHORIZED"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[UNAUTHORIZED] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -306,39 +460,48 @@ class PuSilExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ASSESSMENT_NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[ASSESSMENT_NOT_FOUND] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
   @Test
   void handleExportFileClientException() throws Exception {
-    doThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_BAD_REQUEST, "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new ExportFileClientException(new InvalidValueException(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_BAD_REQUEST.getValue(), "Error"))).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PROCESS_EXECUTIONS_BAD_REQUEST"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[PROCESS_EXECUTIONS_BAD_REQUEST] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
   @Test
   void handleExportFileServiceException() throws Exception {
-    doThrow(new ExportFileServiceException(SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO, "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new ExportFileServiceException(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE, "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("INVALID_DEBT_POSITION_TYPE_ORG_CODE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[INVALID_DEBT_POSITION_TYPE_ORG_CODE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
   @Test
   void handleBalanceParseException() throws Exception {
-    doThrow(new BalanceParseException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new BalanceParseException("Error", null)).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("INVALID_BALANCE"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[INVALID_BALANCE] Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 }

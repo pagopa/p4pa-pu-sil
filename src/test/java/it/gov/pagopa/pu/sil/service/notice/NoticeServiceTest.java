@@ -6,9 +6,11 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.pagopapayments.PagopaPaymentsService;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
+import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,9 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.io.IOException;
 import java.util.List;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeServiceTest {
@@ -49,7 +54,7 @@ class NoticeServiceTest {
     byte[] pdfContent = "fakePDFContent".getBytes();
 
     //given
-    Mockito.when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(new ByteArrayResource(pdfContent));
+    when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(new ByteArrayResource(pdfContent));
 
     //when
     byte[] response = noticeService.generateNotice(nav, debtPositionDTO, accessToken);
@@ -64,30 +69,32 @@ class NoticeServiceTest {
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
 
     //given
-    Mockito.when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(null);
+    when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(null);
 
     //when
-    ApplicationException exception = Assertions.assertThrows(ApplicationException.class, ()-> noticeService.generateNotice(nav, debtPositionDTO, accessToken));
+    ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, ()-> noticeService.generateNotice(nav, debtPositionDTO, accessToken));
 
     //verify
-    Assertions.assertTrue(exception.getMessage().startsWith("notice not found for org"));
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, exception.getCode());
+    Assertions.assertTrue(exception.getMessage().startsWith("Notice not found for org"));
   }
 
   @Test
   void givenIoExceptionWhenGenerateNoticeThenException() throws IOException {
     String nav = "NAV123";
     DebtPositionDTO debtPositionDTO = podamFactory.manufacturePojo(DebtPositionDTO.class);
-    Resource pdfResource = Mockito.mock(ByteArrayResource.class);
+    Resource pdfResource = mock(ByteArrayResource.class);
     IOException ioException = new IOException("IO error");
-    Mockito.when(pdfResource.getContentAsByteArray()).thenThrow(ioException);
+    when(pdfResource.getContentAsByteArray()).thenThrow(ioException);
 
     //given
-    Mockito.when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(pdfResource);
+    when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(pdfResource);
 
     //when
-    ApplicationException exception = Assertions.assertThrows(ApplicationException.class, ()-> noticeService.generateNotice(nav, debtPositionDTO, accessToken));
+    IllegalStateBusinessException exception = Assertions.assertThrows(IllegalStateBusinessException.class, ()-> noticeService.generateNotice(nav, debtPositionDTO, accessToken));
 
     //verify
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_GENERATE_NOTICE_ERROR, exception.getCode());
     Assertions.assertEquals(ioException, exception.getCause());
   }
   //endregion
@@ -118,9 +125,9 @@ class NoticeServiceTest {
     Resource pdfResource = new ByteArrayResource("fakePDFContent".getBytes());
 
     //given
-    Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(Mockito.eq(organizationId), Mockito.eq(iuv), Mockito.anyList(), Mockito.eq(accessToken)))
+    when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(Mockito.eq(organizationId), Mockito.eq(iuv), Mockito.anyList(), Mockito.eq(accessToken)))
         .thenReturn(List.of(debtPositionDTO));
-    Mockito.when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(pdfResource);
+    when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(pdfResource);
 
     //when
     Resource response = noticeService.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken);
@@ -146,7 +153,7 @@ class NoticeServiceTest {
     SecurityContextHolder.setContext(securityContext);
 
     //given
-    Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(Mockito.eq(organizationId), Mockito.eq(iuv), Mockito.anyList(), Mockito.eq(accessToken)))
+    when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(Mockito.eq(organizationId), Mockito.eq(iuv), Mockito.anyList(), Mockito.eq(accessToken)))
       .thenReturn(List.of(debtPositionDTO));
 
     //when
@@ -179,15 +186,16 @@ class NoticeServiceTest {
     SecurityContextHolder.setContext(securityContext);
 
     //given
-    Mockito.when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(Mockito.eq(organizationId), Mockito.eq(iuv), Mockito.anyList(), Mockito.eq(accessToken)))
+    when(debtPositionServiceMock.getDebtPositionsByOrganizationIdAndIuv(Mockito.eq(organizationId), Mockito.eq(iuv), Mockito.anyList(), Mockito.eq(accessToken)))
       .thenReturn(List.of(debtPositionDTO));
-    Mockito.when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(null);
+    when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(null);
 
     //when
-    ApplicationException exception = Assertions.assertThrows(ApplicationException.class, () -> noticeService.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken));
+    ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> noticeService.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken));
 
     //verify
-    Assertions.assertTrue(exception.getMessage().startsWith("Error generating notice for NAV"));
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, exception.getCode());
+    Assertions.assertTrue(exception.getMessage().startsWith("Notice not found for NAV"));
   }
   //endregion
 }

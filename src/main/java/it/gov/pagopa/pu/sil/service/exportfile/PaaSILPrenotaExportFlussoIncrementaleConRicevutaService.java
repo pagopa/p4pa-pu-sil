@@ -8,14 +8,14 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileFilter.Deb
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -47,12 +47,7 @@ public class PaaSILPrenotaExportFlussoIncrementaleConRicevutaService extends Abs
     if (!IDENTIFICATIVO_TIPO_DOVUTO_SECONDARIO.equals(
       debtPositionTypeOrgCode)) {
       debtPositionTypeOrgId = Optional.ofNullable(debtPositionTypeOrgCode)
-        .map(code -> getAndValidateDebtPositionTypeOrg(
-          organizationId,
-          code,
-          accessToken,
-          SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
-          SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO))
+        .map(code -> getAndValidateDebtPositionTypeOrg(organizationId, code, accessToken))
         .map(DebtPositionTypeOrg::getDebtPositionTypeOrgId)
         .orElse(null);
     }

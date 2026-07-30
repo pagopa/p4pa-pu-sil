@@ -14,6 +14,7 @@ import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -48,6 +49,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PuForOrganizationReconciliationEndpointTest {
@@ -93,6 +96,10 @@ class PuForOrganizationReconciliationEndpointTest {
   }
 
   @AfterEach
+  void afterEach() {
+    verifyNoMoreInteractions();
+    clear();
+  }
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(
       registryLoggerMock,
@@ -104,7 +111,6 @@ class PuForOrganizationReconciliationEndpointTest {
     );
   }
 
-  @AfterEach
   void clear(){
     RequestContextHolder.resetRequestAttributes();
     SecurityUtilsTest.clearSecurityContext();
@@ -123,7 +129,7 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     PivotSILChiediAccertamentoRisposta expectedResponse = new PivotSILChiediAccertamentoRisposta();
-    Mockito.when(queryAssessmentsServiceMock.handlePivotSILChiediAccertamento(
+    when(queryAssessmentsServiceMock.handlePivotSILChiediAccertamento(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(request)
     )).thenReturn(expectedResponse);
 
@@ -143,7 +149,7 @@ class PuForOrganizationReconciliationEndpointTest {
     IntestazionePPT intestazionePPT = podamFactory.manufacturePojo(IntestazionePPT.class);
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
-    Mockito.when(queryAssessmentsServiceMock.handlePivotSILChiediAccertamento(
+    when(queryAssessmentsServiceMock.handlePivotSILChiediAccertamento(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(request)
     )).thenThrow(new RuntimeException("Unexpected error"));
 
@@ -174,7 +180,7 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+    when(exportFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.CLASSIFICATIONS)
     )).thenReturn(processingStatus);
 
@@ -198,7 +204,7 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+    when(exportFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.CLASSIFICATIONS)
     )).thenThrow(new RuntimeException("Unexpected error"));
     //When
@@ -230,7 +236,7 @@ class PuForOrganizationReconciliationEndpointTest {
       IngestionFlowFileTypeEnum.TREASURY_XLS,
       IngestionFlowFileTypeEnum.TREASURY_POSTE};
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+    when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ingestionFlowFileTypeEnums)
     )).thenReturn(ingestionFlowFile);
 
@@ -258,7 +264,7 @@ class PuForOrganizationReconciliationEndpointTest {
     ImportStatusResponseDTO ingestionFlowFile = podamFactory.manufacturePojo(ImportStatusResponseDTO.class)
       .status(IngestionFlowFileStatus.COMPLETED);
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+    when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(ingestionFlowFile);
 
@@ -290,7 +296,7 @@ class PuForOrganizationReconciliationEndpointTest {
       .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
       .importPath(HARDCODED_IMPORT_PATH)
       .build();
-    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
+    when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION)
     )).thenReturn(importFileResponseDTO);
 
@@ -334,7 +340,7 @@ class PuForOrganizationReconciliationEndpointTest {
       .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
       .importPath(HARDCODED_IMPORT_PATH)
       .build();
-    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
+    when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
     )).thenReturn(importFileResponseDTO);
 
@@ -367,9 +373,9 @@ class PuForOrganizationReconciliationEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     String customMessage = "Tipo flusso non valido";
 
-    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
+    when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
-    )).thenThrow(new IngestionFlowFileTypeValidationException(customMessage));
+    )).thenThrow(new IngestionFlowFileTypeValidationException("CODE", customMessage, request.getTipoFlusso()));
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
@@ -386,7 +392,9 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response);
     Assertions.assertNotNull(response.getFault());
     Assertions.assertEquals(SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.code(), response.getFault().getFaultCode());
-    Assertions.assertTrue(response.getFault().getDescription().contains(customMessage));
+    Assertions.assertEquals(
+      SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.description().formatted(request.getTipoFlusso()),
+      response.getFault().getDescription());
   }
 
   @Test
@@ -398,7 +406,7 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(INVALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
+    when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(INVALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
     )).thenThrow(new AuthorizationDeniedException("Utente non autorizzato"));
 
@@ -441,7 +449,7 @@ class PuForOrganizationReconciliationEndpointTest {
     expectedResponse.setRequestToken(String.valueOf(expectedToken));
     expectedResponse.setDataA(request.getDataUltimoAggiornamentoA());
 
-    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
+    when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock.doReservation(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request)
     )).thenReturn(expectedResponse);
 
@@ -462,10 +470,11 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
+    when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
         .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request)))
-      .thenThrow(new ExportFileClientException(
-        ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION, "Invalid file version"));
+      .thenThrow(new ExportFileClientException(new InvalidValueException(
+        ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION.getValue(), "Invalid file version"))
+      );
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
@@ -480,10 +489,11 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
+    when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
         .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request)))
-      .thenThrow(new ExportFileClientException(
-        ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+      .thenThrow(new ExportFileClientException(new InvalidValueException(
+        ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "Invalid time range"))
+      );
 
     PivotSILPrenotaExportFlussoRiconciliazioneRisposta response =
       puForOrganizationReconciliationEndpoint.pivotSILPrenotaExportFlussoRiconciliazione(request, header);
@@ -498,7 +508,7 @@ class PuForOrganizationReconciliationEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
+    when(pivotSILPrenotaExportFlussoRiconciliazioneServiceMock
       .doReservation(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(request))
     ).thenThrow(new RuntimeException("Unexpected error"));
 

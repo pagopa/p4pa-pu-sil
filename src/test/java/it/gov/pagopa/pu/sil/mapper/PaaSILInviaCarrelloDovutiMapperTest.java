@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
@@ -85,7 +84,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     request.setListaDovuti(new ListaDovuti());
     request.getListaDovuti().getElementoListaDovutis().add(new ElementoListaDovuti());
     request.getListaDovuti().getElementoListaDovutis().getFirst().setDovuti(new byte[]{});
-    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
+    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new RuntimeException("Error"));
 
     SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
@@ -247,7 +246,7 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     assertEquals(1, result.size());
     assertEquals(1, result.getFirst().getPaymentOptions().size());
     assertEquals(1, result.getFirst().getPaymentOptions().getFirst().getInstallments().size());
-    assertEquals(1, result.getFirst().getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().size());
+    assertEquals(1, Objects.requireNonNull(result.getFirst().getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers()).size());
     TransferDTO firstTransfer = result.getFirst().getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst();
     assertEquals(expectedCategory, firstTransfer.getCategory());
 
@@ -262,12 +261,10 @@ class PaaSILInviaCarrelloDovutiMapperTest {
             "ingestionFlowFileAction", "ingestionFlowFileLineNumber", "receiptId", "switchToExpired",
             "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId", "originalRemittanceInformation");
           if (i.getTransfers() != null) {
-            i.getTransfers().forEach(t -> {
-              TestUtils.checkNotNullFields(t, "transferId", "installmentId",
-                "stampType", "stampHashDocument", "stampProvincialResidence", "postalIban",
-                "mbdAttachment", "flagOwner",
-                "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
-            });
+            i.getTransfers().forEach(t -> TestUtils.checkNotNullFields(t, "transferId", "installmentId",
+              "stampType", "stampHashDocument", "stampProvincialResidence", "postalIban",
+              "mbdAttachment", "flagOwner",
+              "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId"));
           }
         });
       });

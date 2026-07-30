@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.processexecutions.config;
 
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.sil.config.json.JsonConfig;
+import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,21 +15,29 @@ import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
-class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
+class ProcessExecutionsApisHolderTest extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
   private ProcessExecutionsApisHolder processExecutionsApisHolder;
+  private ProcessExecutionsApiClientConfig apiClientConfig;
 
   @BeforeEach
   void setUp() {
-    Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-    Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    ProcessExecutionsApiClientConfig clientConfig = ProcessExecutionsApiClientConfig.builder()
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
+    apiClientConfig = ProcessExecutionsApiClientConfig.builder()
       .baseUrl("http://example.com")
+      .maxAttempts(3)
       .build();
-    processExecutionsApisHolder = new ProcessExecutionsApisHolder(clientConfig, restTemplateBuilderMock);
+    processExecutionsApisHolder = new ProcessExecutionsApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonConfig().objectMapperJackson3());
+
+    verify(restTemplateMock)
+      .setErrorHandler(Mockito.any(HttpClientErrorJsonBodyHandler.class));
   }
 
   @AfterEach
@@ -35,6 +45,16 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
     Mockito.verifyNoMoreInteractions(
       restTemplateBuilderMock,
       restTemplateMock
+    );
+  }
+
+  @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken -> processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
+        .createIngestionFlowFileReservation(new IngestionFlowFileRequestDTO()),
+      new ParameterizedTypeReference<>() {
+      }
     );
   }
 

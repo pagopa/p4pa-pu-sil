@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.sil.service.exportfile;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -22,13 +22,17 @@ public abstract class AbstractExportFileReservationService {
         return AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     }
 
-    protected DebtPositionTypeOrg getAndValidateDebtPositionTypeOrg(Long organizationId, String debtPositionTypeOrgCode, String accessToken, SilFaults invalidFault, SilFaults notEnabledFault) {
+    protected DebtPositionTypeOrg getAndValidateDebtPositionTypeOrg(Long organizationId, String debtPositionTypeOrgCode, String accessToken) {
         DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
                 organizationId, debtPositionTypeOrgCode, accessToken);
         if (debtPositionTypeOrg == null) {
-            throw new ExportFileServiceException(invalidFault, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
+          throw new ExportFileServiceException(
+            ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE,
+            "Cannot find debtPositionTypeOrg having code " + debtPositionTypeOrgCode + " for organizationId: " + organizationId);
         } else if (Boolean.FALSE.equals(debtPositionTypeOrg.getFlagActive())) {
-            throw new ExportFileServiceException(notEnabledFault, "Tipo dovuto non abilitato: " + debtPositionTypeOrgCode);
+            throw new ExportFileServiceException(
+              ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_STATUS,
+              "DebtPositionTypeOrg not enabled: " + debtPositionTypeOrgCode);
         }
         return debtPositionTypeOrg;
     }

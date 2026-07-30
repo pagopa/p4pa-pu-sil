@@ -6,10 +6,12 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.pagopapayments.PagopaPaymentsService;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
+import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,10 +35,10 @@ public class NoticeService {
         try {
           return resource.getContentAsByteArray();
         } catch (IOException ioe) {
-          throw new ApplicationException(ioe);
+          throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_GENERATE_NOTICE_ERROR, "Something went wrong while generating notice for nav " + nav + " of organization " + debtPositionDTO.getOrganizationId() ,ioe);
         }
       })
-      .orElseThrow(() -> new ApplicationException("notice not found for org["+debtPositionDTO.getOrganizationId()+"] nav["+nav+"]"));
+      .orElseThrow(() -> new ResourceNotFoundException(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, "Notice not found for org["+debtPositionDTO.getOrganizationId()+"] nav["+nav+"]"));
   }
 
   public Resource generateNoticeByIuv(String orgFiscalCode, String iuv, UserInfo userInfo, String accessToken) {
@@ -59,7 +61,7 @@ public class NoticeService {
     //generate the payment notice PDF
     Resource pdfResource = pagopaPaymentsService.generateNotice(nav, debtPositionWithInstallment.getLeft(), accessToken);
     if(pdfResource == null) {
-      throw new ApplicationException("Error generating notice for NAV: " + nav);
+      throw new ResourceNotFoundException(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, "Notice not found for NAV: " + nav);
     }
     return pdfResource;
   }

@@ -6,11 +6,12 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFil
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.CodiceClassificazioneType;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
@@ -30,7 +31,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -102,7 +102,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     request.setDataUltimoAggiornamentoDa(fromXml);
     request.setDataUltimoAggiornamentoA(toXml);
     CodiceClassificazioneType type = new CodiceClassificazioneType();
-    type.getClassificaziones().addAll(List.of("RT_IUF"));
+    type.getClassificaziones().add("RT_IUF");
     request.setCodiceClassificazione(type);
 
     ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
@@ -151,7 +151,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     );
 
     // Then
-    assertEquals(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE, exception.getCode());
   }
 
   @Test
@@ -181,7 +181,7 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     );
 
     // Then
-    assertEquals(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, exception.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_STATUS, exception.getCode());
   }
 
   @Test
@@ -195,11 +195,12 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
     PivotSILPrenotaExportFlussoRiconciliazione request = podamFactory.manufacturePojo(PivotSILPrenotaExportFlussoRiconciliazione.class);
     request.setImportoTesoreria("100,00");
     CodiceClassificazioneType type = new CodiceClassificazioneType();
-    type.getClassificaziones().addAll(List.of("RT_IUF"));
+    type.getClassificaziones().add("RT_IUF");
     request.setCodiceClassificazione(type);
 
-    ExportFileClientException errorException = new ExportFileClientException(
-      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");
+    ExportFileClientException errorException = new ExportFileClientException(new InvalidValueException(
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "error")
+    );
 
     ClassificationsExportFileRequestDTO classificationsExportFileRequestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
     when(exportFileServiceMock.createClassificationsExportFile(classificationsExportFileRequestDTO, accessToken))
@@ -217,6 +218,6 @@ class PivotSILPrenotaExportFlussoRiconciliazioneServiceTest {
       )
     );
 
-    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
+    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), exception.getCode());
   }
 }

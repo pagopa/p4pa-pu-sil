@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFil
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,12 +32,7 @@ public class ClassificationsExportFileReservationService extends AbstractExportF
     Optional.ofNullable(classificationsExportRequestDTO.getExportFilters().getDebtPositionTypeOrgCodes())
       .ifPresent(debtPositionTypeOrgCodes ->
           debtPositionTypeOrgCodes.forEach(debtPositionTypeOrgCode ->
-            getAndValidateDebtPositionTypeOrg(
-              organizationId,
-              debtPositionTypeOrgCode,
-              accessToken,
-              SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
-              SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO)));
+            getAndValidateDebtPositionTypeOrg(organizationId, debtPositionTypeOrgCode, accessToken)));
 
     ClassificationsExportFileRequestDTO requestDTO = mapToExportRequest(organizationId, classificationsExportRequestDTO);
     Long exportFileId = exportFileService.createClassificationsExportFile(requestDTO, accessToken);

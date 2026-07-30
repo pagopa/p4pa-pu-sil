@@ -4,11 +4,13 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -57,7 +60,7 @@ public class PaaSILImportaDovutoMapper {
     Versamento versamento;
     try {
       versamento = jaxbTransformService.unmarshalling(request.getDovuto(), Versamento.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd");
-    } catch (ApplicationException unmarshallingException) {
+    } catch (Exception unmarshallingException) {
       String errorMessage = "XML non conforme: \n" +
         jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, request.getDovuto());
       log.error("error unmarshalling PaaSILImportaDovuto: [{}]", errorMessage, unmarshallingException);
@@ -78,9 +81,9 @@ public class PaaSILImportaDovutoMapper {
 
     DebtPositionDTO debtPositionDTO = DebtPositionDTO.builder()
       .status(DebtPositionStatus.UNPAID)
-      .organizationId(organization.getOrganizationId())
+      .organizationId(Objects.requireNonNull(organization.getOrganizationId()))
       .debtPositionOrigin(DebtPositionOrigin.ORDINARY_SIL)
-      .debtPositionTypeOrgId(debtPositionTypeOrg.getDebtPositionTypeOrgId())
+      .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))
       .description("Posizione debitoria " + debtPositionTypeOrg.getDescription())
       .flagPuPagoPaPayment(true)
       .paymentOptions(List.of(PaymentOptionDTO.builder()
@@ -119,10 +122,10 @@ public class PaaSILImportaDovutoMapper {
       balanceString = jaxbTransformService.marshallingNoNamespace(datiVersamento.getBilancio(), Bilancio.class);
     } catch (Exception e) {
       log.error("Error unmarshalling bilancio: {}", datiVersamento.getBilancio(), e);
-      throw new ApplicationException("Invalid bilancio format", e);
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_BALANCE, "Invalid bilancio format", e);
     }
 
-    String now = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    String now = LocalDate.now(Constants.ZONEID).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
     return installmentDTO
       .status(InstallmentStatus.UNPAID)
