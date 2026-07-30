@@ -16,14 +16,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 @Slf4j
-@Component
+@Service
 public class RegistryProducerService {
 
   @Value("${spring.cloud.stream.bindings.registryProducer-out-0.binder}")
