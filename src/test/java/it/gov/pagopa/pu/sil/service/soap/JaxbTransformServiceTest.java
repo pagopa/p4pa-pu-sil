@@ -1,7 +1,8 @@
 package it.gov.pagopa.pu.sil.service.soap;
 
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILAutorizzaImportFlusso;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
@@ -9,7 +10,6 @@ import jakarta.xml.bind.UnmarshalException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.xml.sax.SAXParseException;
@@ -23,6 +23,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(
   classes = {
@@ -217,9 +219,10 @@ class JaxbTransformServiceTest {
       .getBytes(StandardCharsets.UTF_8);
 
     // when
-    ApplicationException resultException = Assertions.assertThrows(ApplicationException.class, () -> jaxbTransformService.unmarshalling(request, Dovuti.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd"));
+    InvalidValueException resultException = Assertions.assertThrows(InvalidValueException.class, () -> jaxbTransformService.unmarshalling(request, Dovuti.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd"));
 
     // then
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, resultException.getCode());
     Assertions.assertEquals("Unexpected root element name: found Versamento instead of Dovuti", resultException.getMessage());
   }
 
@@ -241,7 +244,7 @@ class JaxbTransformServiceTest {
   void getDetailUnmarshalExceptionMessage_WithSAXParseException_ReturnsDetailedMessage() {
     // given
     SAXParseException saxParseException = new SAXParseException("Invalid character", null, null, 2, 33);
-    ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error", saxParseException));
+    RuntimeException applicationException = new RuntimeException(new UnmarshalException("Unmarshal error", saxParseException));
     byte[] xml = ("""
       <root>
         <element>Invalid\u000Char</element>
@@ -258,7 +261,7 @@ class JaxbTransformServiceTest {
   void getDetailUnmarshalExceptionMessage_WithSAXParseExceptionButNoField_ReturnsMessage() {
     // given
     SAXParseException saxParseException = new SAXParseException("Invalid character", null, null, 2, 1);
-    ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error", saxParseException));
+    RuntimeException applicationException = new RuntimeException(new UnmarshalException("Unmarshal error", saxParseException));
     byte[] xml = ("""
       <root>
         <>
@@ -274,7 +277,7 @@ class JaxbTransformServiceTest {
   @Test
   void getDetailUnmarshalExceptionMessage_WithNoSAXParseException_ReturnsFallbackMessage() {
     // given
-    ApplicationException applicationException = new ApplicationException(new UnmarshalException("Unmarshal error"));
+    RuntimeException applicationException = new RuntimeException(new UnmarshalException("Unmarshal error"));
     byte[] xml = "<root></root>".getBytes();
 
     // when
@@ -296,9 +299,9 @@ class JaxbTransformServiceTest {
   @Test
   void getDetailUnmarshalExceptionMessage_WithErrorHandling_ReturnsFallbackMessage() {
     // given
-    ApplicationException applicationException = Mockito.mock(ApplicationException.class);
-    Mockito.when(applicationException.getCause()).thenThrow(new RuntimeException("Unexpected error"));
-    Mockito.when(applicationException.getMessage()).thenReturn("exception message");
+    RuntimeException applicationException = mock(RuntimeException.class);
+    when(applicationException.getCause()).thenThrow(new RuntimeException("Unexpected error"));
+    when(applicationException.getMessage()).thenReturn("exception message");
     byte[] xml = "<root></root>".getBytes();
 
     // when

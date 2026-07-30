@@ -1,10 +1,12 @@
 package it.gov.pagopa.pu.sil.exception;
 
+import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
 import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
+import it.gov.pagopa.pu.sil.exception.transcoder.ExceptionMessageTranscoded;
+import it.gov.pagopa.pu.sil.exception.transcoder.ExceptionMessageTranscoderService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.event.Level;
@@ -17,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,24 +26,42 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.DatabindException;
 
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Objects;
 
 @RestControllerAdvice
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class PuSilExceptionHandler {
 
+  private static final String ERROR_MESSAGE_FORMAT = "[%s] %s";
+
+  private static final ExceptionMessageTranscoderService exceptionMessageTranscoderService = new ExceptionMessageTranscoderService();
+
   @ExceptionHandler({HttpClientErrorException.class})
   public ResponseEntity<PuSilErrorDTO> handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
     return handleException(ex, request, ex.getStatusCode(), PuSilErrorDTO.CategoryEnum.GENERIC_ERROR);
   }
 
-  @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class, ConversionFailedException.class})
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<PuSilErrorDTO> handleConflictException(ConflictException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CategoryEnum.CONFLICT);
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<PuSilErrorDTO> handleForbiddenException(ForbiddenException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.FORBIDDEN, PuSilErrorDTO.CategoryEnum.FORBIDDEN);
+  }
+
+  @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class, ConversionFailedException.class, InvalidValueException.class})
   public ResponseEntity<PuSilErrorDTO> handleViolationException(Exception ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(NotAuthorizedException.class)
+  public ResponseEntity<PuSilErrorDTO> handleNotAuthorizedException(Exception ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.UNAUTHORIZED, PuSilErrorDTO.CategoryEnum.UNAUTHORIZED);
   }
 
   @ExceptionHandler({ServletException.class, ErrorResponseException.class})
@@ -63,6 +82,11 @@ public class PuSilExceptionHandler {
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<PuSilErrorDTO> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<PuSilErrorDTO> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CategoryEnum.NOT_FOUND);
   }
 
   @ExceptionHandler({RuntimeException.class, BalanceParseException.class})
@@ -108,12 +132,16 @@ public class PuSilExceptionHandler {
   static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CategoryEnum errorEnum) {
     logException(ex, request, httpStatus);
 
-    String message = buildReturnedMessage(ex);
+    ExceptionMessageTranscoded code2message = buildReturnedMessage(ex);
+
+    String code = Objects.requireNonNullElse(code2message.getCode(), errorEnum.getValue());
+    String message = code2message.getMessage();
+    List<ErrorFieldDTO> fields = code2message.getFields();
 
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new PuSilErrorDTO(errorEnum, message, Utilities.getTraceId()));
+      .body(new PuSilErrorDTO(errorEnum, code, String.format(ERROR_MESSAGE_FORMAT, code, message), fields, Utilities.getTraceId()));
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
@@ -132,40 +160,8 @@ public class PuSilExceptionHandler {
     }
   }
 
-  private static String buildReturnedMessage(Exception ex) {
-    switch (ex) {
-      case HttpMessageNotReadableException httpMessageNotReadableException -> {
-        if (httpMessageNotReadableException.getCause() instanceof DatabindException jsonMappingException) {
-          return "Cannot parse body. " +
-            jsonMappingException.getPath().stream()
-              .map(JacksonException.Reference::getPropertyName)
-              .collect(Collectors.joining(".")) +
-            ": " + jsonMappingException.getOriginalMessage();
-        }
-        return "Required request body is missing";
-      }
-      case MethodArgumentNotValidException methodArgumentNotValidException -> {
-        return "Invalid request content." +
-          methodArgumentNotValidException.getBindingResult()
-            .getAllErrors().stream()
-            .map(e -> " " +
-              (e instanceof FieldError fieldError ? fieldError.getField() : e.getObjectName()) +
-              ": " + e.getDefaultMessage())
-            .sorted()
-            .collect(Collectors.joining(";"));
-      }
-      case ConstraintViolationException constraintViolationException -> {
-        return "Invalid request content." +
-          constraintViolationException.getConstraintViolations()
-            .stream()
-            .map(e -> " " + e.getPropertyPath() + ": " + e.getMessage())
-            .sorted()
-            .collect(Collectors.joining(";"));
-      }
-      default -> {
-        return ex.getMessage();
-      }
-    }
+  private static ExceptionMessageTranscoded buildReturnedMessage(Exception ex) {
+    return exceptionMessageTranscoderService.transcode(ex);
   }
 
   static String getRequestDetails(HttpServletRequest request) {

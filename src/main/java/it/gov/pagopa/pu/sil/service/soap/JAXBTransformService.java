@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.service.soap;
 
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.xml.bind.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.extern.slf4j.Slf4j;
@@ -63,8 +64,7 @@ public class JAXBTransformService {
       marshaller.marshal(objectToMarshall, baos);
       return outConverterFun.apply(baos);
     } catch ( JAXBException | IOException e ) {
-      log.error("marshalling - Error due parsing", e);
-      throw new ApplicationException(e);
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_MARSHALLING_ERROR, "An error occurred while marshalling using class " + clazz + ": " + e.getMessage(), e);
     }
   }
 
@@ -110,7 +110,7 @@ public class JAXBTransformService {
       JAXBElement<T> element = unmarshaller.unmarshal(source, clazz);
       XmlRootElement rootElement = clazz.getAnnotation(XmlRootElement.class);
       if(rootElement != null && !rootElement.name().equals(element.getName().getLocalPart())) {
-        throw new ApplicationException("Unexpected root element name: found " + element.getName().getLocalPart() + " instead of " + rootElement.name());
+        throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, "Unexpected root element name: found " + element.getName().getLocalPart() + " instead of " + rootElement.name());
       }
       return element.getValue();
     } catch (SAXException | IOException | JAXBException e ) {
@@ -122,7 +122,7 @@ public class JAXBTransformService {
         bytes = string.getBytes(StandardCharsets.UTF_8);
         return unmarshalling(bytes, clazz, xsdFile, false);
       }
-      throw new ApplicationException(e);
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, "Cannot unmarshal using " + clazz, e);
     }
   }
 
@@ -151,7 +151,7 @@ public class JAXBTransformService {
     return out.toString();
   }
 
-  public String getDetailUnmarshalExceptionMessage(ApplicationException unmarshallingException, byte[] xml){
+  public String getDetailUnmarshalExceptionMessage(Throwable unmarshallingException, byte[] xml){
     String detailErrorMessage = null;
     try {
       if (unmarshallingException.getCause()!=null &&
@@ -164,12 +164,13 @@ public class JAXBTransformService {
         if(StringUtils.isNotBlank(field))
           detailErrorMessage = "element: "+field+" - "+detailErrorMessage;
       }
+      unmarshallingException = unmarshallingException.getCause();
     }catch(Exception e){
       log.trace("error setting detailedErrorTagInfo", e);
     }
     //fallback in case of errors
     if(StringUtils.isBlank(detailErrorMessage))
-      detailErrorMessage = Optional.ofNullable(unmarshallingException).map(ApplicationException::getMessage)
+      detailErrorMessage = Optional.ofNullable(unmarshallingException).map(Throwable::getMessage)
         .orElse("null exception");
     return detailErrorMessage;
   }

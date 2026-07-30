@@ -23,10 +23,15 @@ public class TestUtils {
 
   static {
     clearDefaultTimezone();
+    clearLocale();
   }
 
   public static void clearDefaultTimezone() {
     TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
+
+  public static void clearLocale() {
+    Locale.setDefault(Locale.ITALY);
   }
 
   public static PodamFactory getPodamFactory() {

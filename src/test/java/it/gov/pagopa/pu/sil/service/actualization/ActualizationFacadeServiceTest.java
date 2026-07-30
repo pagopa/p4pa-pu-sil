@@ -11,10 +11,7 @@ import it.gov.pagopa.pu.sil.connector.actualization.ActualizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
-import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
-import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
-import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
+import it.gov.pagopa.pu.sil.exception.*;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
@@ -34,6 +31,8 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ActualizationFacadeServiceTest {
@@ -87,14 +86,14 @@ class ActualizationFacadeServiceTest {
     ActualizationResultDTO actualizationResultDTO = podamFactory.manufacturePojo(ActualizationResultDTO.class);
     if (testCase.equals("happyCase")) {
       updatedPayment.codice(null).dettaglio(null);
-      Mockito.when(amountUpdatesMapperMock.pagamentoAggiornato2AmountUpdatesDTO(updatedPayment)).thenReturn(actualizationResultDTO);
+      when(amountUpdatesMapperMock.pagamentoAggiornato2AmountUpdatesDTO(updatedPayment)).thenReturn(actualizationResultDTO);
     } else {
       updatedPayment.codice(PagamentoAggiornato.CodiceEnum.fromValue(testCase)).dettaglio("errore " + testCase);
     }
 
-    Mockito.when(silAccessTokenServiceMock.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, token)).thenReturn(silAccessToken);
-    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
-    Mockito.when(legacyActualizationServiceMock.actualization(Mockito.eq(orgFiscalCode), Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(silAccessToken), Mockito.any(Pagamento.class))).thenReturn(updatedPayment);
+    when(silAccessTokenServiceMock.getSilAccessToken(orgFiscalCode, nav, loggedUser, orgSilService, token)).thenReturn(silAccessToken);
+    when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
+    when(legacyActualizationServiceMock.actualization(Mockito.eq(orgFiscalCode), Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(silAccessToken), Mockito.any(Pagamento.class))).thenReturn(updatedPayment);
 
 
     switch (testCase) {
@@ -130,14 +129,14 @@ class ActualizationFacadeServiceTest {
     UpdatedPayment updatedPayment = podamFactory.manufacturePojo(UpdatedPayment.class);
     ActualizationResultDTO actualizationResultDTO = podamFactory.manufacturePojo(ActualizationResultDTO.class);
 
-    Mockito.when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
+    when(orgSilServiceComponentMock.getOrgSilServiceById(orgSilServiceId, token)).thenReturn(Optional.of(orgSilService));
     if (testCase.equals("happyCase")) {
-      Mockito.when(actualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenReturn(updatedPayment);
-      Mockito.when(amountUpdatesMapperMock.updatedPayment2AmountUpdatesDTO(updatedPayment)).thenReturn(actualizationResultDTO);
+      when(actualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenReturn(updatedPayment);
+      when(amountUpdatesMapperMock.updatedPayment2AmountUpdatesDTO(updatedPayment)).thenReturn(actualizationResultDTO);
     } else {
-      HttpServerErrorException mockedException = Mockito.mock(HttpServerErrorException.class);
-      Mockito.when(mockedException.getResponseBodyAs(Error.class)).thenReturn(Error.builder().code(testCase).message("error " + testCase).build());
-      Mockito.when(actualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenThrow(mockedException);
+      HttpServerErrorException mockedException = mock(HttpServerErrorException.class);
+      when(mockedException.getResponseBodyAs(Error.class)).thenReturn(Error.builder().code(testCase).message("error " + testCase).build());
+      when(actualizationServiceMock.actualization(Mockito.eq(orgSilService), Mockito.eq(loggedUser), Mockito.eq(token), Mockito.any(Payment.class))).thenThrow(mockedException);
     }
 
     switch (testCase) {
@@ -145,18 +144,10 @@ class ActualizationFacadeServiceTest {
         ActualizationResultDTO result = service.actualize(orgSilServiceId, nav, loggedUser, token);
         assertEquals(actualizationResultDTO, result);
       }
-      case "002" -> {
-        Assertions.assertThrows(PaymentNotFoundException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
-      }
-      case "003" -> {
-        Assertions.assertThrows(PaymentNotNotifiedException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
-      }
-      case "004" -> {
-        Assertions.assertThrows(PaymentInvalidStatusException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
-      }
-      case "genericError" -> {
-        Assertions.assertThrows(ApplicationException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
-      }
+      case "002" -> Assertions.assertThrows(PaymentNotFoundException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
+      case "003" -> Assertions.assertThrows(PaymentNotNotifiedException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
+      case "004" -> Assertions.assertThrows(PaymentInvalidStatusException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
+      case "genericError" -> Assertions.assertThrows(IllegalStateBusinessException.class, () -> service.actualize(orgSilServiceId, nav, loggedUser, token));
       default -> Assertions.fail("unexpected test case " + testCase);
     }
   }

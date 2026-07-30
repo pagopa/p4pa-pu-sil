@@ -10,13 +10,14 @@ import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.notice.NoticeService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.activation.DataHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -133,8 +134,10 @@ public abstract class BaseDebtPositionHandler<I, O> {
 
       return Triple.of(response, installmentOnDb.getIuv(), RegistryOutcome.OK);
     } catch (Exception e) {
-      log.error("Error generating zip for notice org[{}] iud[{}]", organization.getOrganizationId(), iud, e);
-      throw new ApplicationException(e);
+      throw new IllegalStateBusinessException(
+        ErrorCodeConstants.ERROR_CODE_GENERATE_NOTICE_ERROR,
+        "Error generating zip for notice org[%s] iud[%s]".formatted(organization.getOrganizationId(), iud),
+        e);
     }
   }
 

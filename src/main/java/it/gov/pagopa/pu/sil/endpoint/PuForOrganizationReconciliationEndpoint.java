@@ -24,6 +24,7 @@ import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconc
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.queryassessments.LegacyQueryAssessmentsService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
@@ -341,7 +342,7 @@ public class PuForOrganizationReconciliationEndpoint {
       return FaultUtils.setFaultOnResponse(
         new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
         SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
-        ie.getMessage()
+        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.description().formatted(ie.getRejectedValue())
       );
     }
     return FaultUtils.unauthorizedOrSystemExceptionHandler(
@@ -355,37 +356,43 @@ public class PuForOrganizationReconciliationEndpoint {
 
   private <T extends Risposta> Function<Exception, T> exportFileExceptionHandler(Supplier<T> response) {
     return (Exception e) -> {
-      if (e instanceof ExportFileClientException ce) {
-        SilFaults fault = switch (ce.getCode()) {
-          case
-            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
-            SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA;
-          case
-            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
-            SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO;
-          default -> SilFaults.PIVOT_SYSTEM_ERROR;
-        };
+      SilFaults fault = SilFaults.PIVOT_SYSTEM_ERROR;
+      switch (e) {
+        case ExportFileClientException ce -> {
+          if (ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION.getValue().equals(ce.getCode())) {
+            fault = SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA;
+          } else if (ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue().equals(ce.getCode())) {
+            fault = SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO;
+          }
 
-        return FaultUtils.setFaultOnResponse(
-          response.get(),
-          fault,
-          fault.description()
-        );
+          return FaultUtils.setFaultOnResponse(
+            response.get(),
+            fault,
+            fault.description()
+          );
+        }
+        case ExportFileServiceException se -> {
+          if(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE.equals(se.getCode())) {
+            fault = SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO;
+          } else if (ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_STATUS.equals(se.getCode())) {
+            fault = SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO;
+          }
+          return FaultUtils.setFaultOnResponse(
+            response.get(),
+            fault,
+            fault.description() + ": " + se.getMessage()
+          );
+        }
+        default -> {
+          return FaultUtils.unauthorizedOrSystemExceptionHandler(
+            response.get(),
+            T::setFault,
+            FaultBean::new,
+            SilFaults.PIVOT_ENTE_NON_VALIDO,
+            fault
+          ).apply(e);
+        }
       }
-      if (e instanceof ExportFileServiceException se) {
-        return FaultUtils.setFaultOnResponse(
-          response.get(),
-          se.getFault(),
-          se.getFault().description() + ": " + se.getMessage()
-        );
-      }
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
-        response.get(),
-        T::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR
-      ).apply(e);
     };
   }
 }

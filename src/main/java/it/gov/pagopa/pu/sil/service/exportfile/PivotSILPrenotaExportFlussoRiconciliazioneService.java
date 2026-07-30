@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.mapper.ClassificationsExportFileRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.veneto.regione.pagamenti.pivot.ente.PivotSILPrenotaExportFlussoRiconciliazione;
@@ -36,12 +35,7 @@ public class PivotSILPrenotaExportFlussoRiconciliazioneService extends AbstractE
       .flatMap(t -> Optional.ofNullable(t.getTipos()))
       .ifPresent(debtPositionTypeOrgCodes ->
         debtPositionTypeOrgCodes.forEach(debtPositionTypeOrgCode ->
-          getAndValidateDebtPositionTypeOrg(
-            organizationId,
-            debtPositionTypeOrgCode,
-            accessToken,
-            SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO,
-            SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO)));
+          getAndValidateDebtPositionTypeOrg(organizationId, debtPositionTypeOrgCode, accessToken)));
 
     ClassificationsExportFileRequestDTO requestDTO = classificationsExportFileRequestMapper.mapToExportFileRequest(organizationId, request);
     Long exportFileId = exportFileService.createClassificationsExportFile(requestDTO, accessToken);

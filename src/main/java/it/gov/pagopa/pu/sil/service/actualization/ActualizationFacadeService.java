@@ -11,13 +11,11 @@ import it.gov.pagopa.pu.sil.connector.actualization.ActualizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
-import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
-import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
-import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;
+import it.gov.pagopa.pu.sil.exception.*;
 import it.gov.pagopa.pu.sil.mapper.AmountUpdatesMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.SilAccessTokenService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
@@ -88,7 +86,7 @@ public class ActualizationFacadeService {
         if (errorResponse != null) {
           throw buildException(errorResponse.getCode(), errorResponse.getMessage());
         } else {
-          throw new ApplicationException("[GENERIC_ERROR] Unexpected error: " + e.getMessage(), e);
+          throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_ACTUALIZATION_ERROR, "Unexpected error: " + e.getMessage(), e);
         }
       }
     }
@@ -100,7 +98,7 @@ public class ActualizationFacadeService {
       case "003" -> new PaymentNotNotifiedException(message);
       case "004" -> new PaymentInvalidStatusException(message);
       default ->
-        new ApplicationException("[GENERIC_ERROR] Unexpected error code: " + code + " - " + message);
+        new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_ACTUALIZATION_ERROR, "Unexpected error code: " + code + " - " + message);
     };
   }
 }

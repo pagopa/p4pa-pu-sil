@@ -1,8 +1,12 @@
 package it.gov.pagopa.pu.sil.exception;
 
-public class PaymentNotNotifiedException extends RuntimeException {
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
+
+public class PaymentNotNotifiedException extends BaseBusinessException {
+
   public PaymentNotNotifiedException(String message) {
-    super(message);
+    super(ErrorCodeConstants.ERROR_CODE_PAYMENT_NOT_NOTIFIED, message);
   }
+  
 }
 

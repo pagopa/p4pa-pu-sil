@@ -1,8 +1,10 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -16,7 +18,10 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -35,7 +40,7 @@ public class SecondaryTransferMapper {
       try {
         return Optional.of(jaxbTransformService.unmarshalling(xmlDovutiSecondari, DovutiEntiSecondari.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd")
           .getDatiVersamentoEntiSecondari());
-      } catch (ApplicationException unmarshallingException) {
+      } catch (Exception unmarshallingException) {
         String errorMessage = "XML dovuti enti secondari non conforme: \n" +
           jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, xmlDovutiSecondari);
         log.error("error unmarshalling PaaSILInviaCarrelloDovuti dovutEntiSecondari: [{}]", errorMessage, unmarshallingException);

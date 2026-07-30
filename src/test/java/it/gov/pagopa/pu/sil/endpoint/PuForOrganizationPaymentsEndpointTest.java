@@ -16,6 +16,7 @@ import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
@@ -36,6 +37,7 @@ import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthoriza
 import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
 import it.gov.pagopa.pu.sil.service.querypayments.*;
 import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -63,6 +65,8 @@ import java.util.stream.Stream;
 import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
 import static it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus.PROCESSING;
 import static it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PuForOrganizationPaymentsEndpointTest {
@@ -131,12 +135,16 @@ class PuForOrganizationPaymentsEndpointTest {
   }
 
   @AfterEach
+  void afterEach() {
+    clear();
+    verifyNoMoreInteractions();
+  }
+
   void clear(){
     RequestContextHolder.resetRequestAttributes();
     SecurityUtilsTest.clearSecurityContext();
   }
 
-  @AfterEach
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(
       registryLoggerMock,
@@ -171,7 +179,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+    when(exportFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.PAID)
     )).thenReturn(processingStatus);
 
@@ -195,7 +203,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(exportFileProcessingStatusServiceMock.getProcessingStatus(
+    when(exportFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken), Mockito.eq(ExportFile.ExportFileTypeEnum.PAID)
     )).thenThrow(new RuntimeException("Unexpected error"));
 
@@ -235,7 +243,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
+    when(ingestionFlowFileProcessingStatusServiceMock.getProcessingStatus(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(requestToken),
       Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(statusDTO);
@@ -292,7 +300,7 @@ class PuForOrganizationPaymentsEndpointTest {
       .authorizationToken(HARDCODED_AUTHORIZATION_TOKEN)
       .importPath(HARDCODED_IMPORT_PATH)
       .build();
-    Mockito.when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
+    when(ingestionFlowFileAuthorizationServiceMock.authorizeIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)
     )).thenReturn(importFileResponseDTO);
 
@@ -330,7 +338,7 @@ class PuForOrganizationPaymentsEndpointTest {
       RegistryOutcome.OK
     );
 
-    Mockito.when(paaSILImportaDovutoServiceMock.handleAction(Mockito.same(request), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(userInfo), Mockito.any()))
+    when(paaSILImportaDovutoServiceMock.handleAction(Mockito.same(request), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.same(userInfo), Mockito.any()))
       .thenReturn(tripleResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
@@ -345,8 +353,8 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // Then
     Assertions.assertNotNull(result);
-    Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractRequestExtraInfo(request, header);
-    Mockito.verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractResponseExtraInfo(result);
+    verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractRequestExtraInfo(request, header);
+    verify(registryExtraInfoHandlerPaaSILImportaDovutoServiceMock).extractResponseExtraInfo(result);
   }
   // endregion
 
@@ -364,7 +372,7 @@ class PuForOrganizationPaymentsEndpointTest {
       RegistryOutcome.OK
     );
 
-    Mockito.when(paaSILInviaDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+    when(paaSILInviaDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
       .thenReturn(expectedResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
@@ -379,8 +387,8 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // Then
     Assertions.assertNotNull(result);
-    Mockito.verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractRequestExtraInfo(request, header);
-    Mockito.verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractResponseExtraInfo(result);
+    verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractRequestExtraInfo(request, header);
+    verify(registryExtraInfoHandlerPaaSILInviaDovutiMock).extractResponseExtraInfo(result);
   }
   // endregion
 
@@ -398,7 +406,7 @@ class PuForOrganizationPaymentsEndpointTest {
       RegistryOutcome.OK
     );
 
-    Mockito.when(paaSILInviaCarrelloDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
+    when(paaSILInviaCarrelloDovutiServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, "TOKEN"))
       .thenReturn(expectedResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
@@ -413,8 +421,8 @@ class PuForOrganizationPaymentsEndpointTest {
 
     // Then
     Assertions.assertNotNull(result);
-    Mockito.verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractRequestExtraInfo(request, header);
-    Mockito.verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractResponseExtraInfo(result);
+    verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractRequestExtraInfo(request, header);
+    verify(registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock).extractResponseExtraInfo(result);
   }
   // endregion
 
@@ -428,7 +436,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     PaaSILVerificaAvvisoRisposta expectedResponse = new PaaSILVerificaAvvisoRisposta();
 
-    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
+    when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
@@ -455,7 +463,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
+    when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Description"));
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
@@ -484,7 +492,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
     PaaSILChiediPagatiRisposta expectedResponse = new PaaSILChiediPagatiRisposta();
 
-    Mockito.when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
@@ -500,7 +508,7 @@ class PuForOrganizationPaymentsEndpointTest {
     // Given
     PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
 
-    Mockito.when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
 
     // When
@@ -521,7 +529,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediPagatiConRicevuta request = podamFactory.manufacturePojo(PaaSILChiediPagatiConRicevuta.class);
     PaaSILChiediPagatiConRicevutaRisposta expectedResponse = new PaaSILChiediPagatiConRicevutaRisposta();
 
-    Mockito.when(paaSILChiediPagatiConRicevutaServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediPagatiConRicevutaServiceMock.processRequest(request, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
@@ -537,7 +545,7 @@ class PuForOrganizationPaymentsEndpointTest {
     // Given
     PaaSILChiediPagatiConRicevuta request = podamFactory.manufacturePojo(PaaSILChiediPagatiConRicevuta.class);
 
-    Mockito.when(paaSILChiediPagatiConRicevutaServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediPagatiConRicevutaServiceMock.processRequest(request, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
 
     // When
@@ -558,7 +566,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediEsitoCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILChiediEsitoCarrelloDovuti.class);
     PaaSILChiediEsitoCarrelloDovutiRisposta expectedResponse = new PaaSILChiediEsitoCarrelloDovutiRisposta();
 
-    Mockito.when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
@@ -574,7 +582,7 @@ class PuForOrganizationPaymentsEndpointTest {
     // Given
     PaaSILChiediEsitoCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILChiediEsitoCarrelloDovuti.class);
 
-    Mockito.when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
 
     // When
@@ -598,7 +606,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     PaaSILChiediStoricoPagamentiRisposta expectedResponse = new PaaSILChiediStoricoPagamentiRisposta();
 
-    Mockito.when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
@@ -617,7 +625,7 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
 
     // When
@@ -647,7 +655,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
     PaaSILChiediPosizioniAperteRisposta expectedResponse = new PaaSILChiediPosizioniAperteRisposta();
 
-    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
       .thenReturn(expectedResponse);
 
     // When
@@ -663,7 +671,7 @@ class PuForOrganizationPaymentsEndpointTest {
     // Given
     PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
 
-    Mockito.when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
+    when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
       .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
 
     // When
@@ -697,7 +705,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 12345L;
 
-    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+    when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenReturn(expectedToken);
 
@@ -748,9 +756,11 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+    when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
-    )).thenThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+    )).thenThrow(new ExportFileClientException(new InvalidValueException(
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "Invalid time range"))
+    );
 
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
@@ -769,9 +779,9 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
+    when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
-    )).thenThrow(new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
+    )).thenThrow(new ExportFileServiceException(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE, "Identificativo tipo dovuto non valido"));
 
     // When
     PaaSILPrenotaExportFlussoRisposta response = puForOrganizationPaymentsEndpoint.paaSILPrenotaExportFlusso(request, header);
@@ -793,7 +803,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
     Long expectedToken = 12345L;
 
-    Mockito.when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
+    when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
     )).thenReturn(expectedToken);
 
@@ -815,9 +825,11 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
+    when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
-    )).thenThrow(new ExportFileClientException(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "Invalid time range"));
+    )).thenThrow(new ExportFileClientException(new InvalidValueException(
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "Invalid time range"))
+    );
 
     // When
     PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint
@@ -837,9 +849,9 @@ class PuForOrganizationPaymentsEndpointTest {
     intestazionePPT.setCodIpaEnte(VALID_ORG_IPA_CODE);
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
-    Mockito.when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
+    when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
-    )).thenThrow(new ExportFileServiceException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido"));
+    )).thenThrow(new ExportFileServiceException(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE, "Identificativo tipo dovuto non valido"));
 
     // When
     PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint

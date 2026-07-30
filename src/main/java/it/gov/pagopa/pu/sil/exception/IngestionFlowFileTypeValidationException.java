@@ -1,7 +1,14 @@
 package it.gov.pagopa.pu.sil.exception;
 
-public class IngestionFlowFileTypeValidationException extends RuntimeException {
-  public IngestionFlowFileTypeValidationException(String message) {
-    super(message);
+import lombok.Getter;
+
+@Getter
+public class IngestionFlowFileTypeValidationException extends BaseBusinessException {
+
+  private final String rejectedValue;
+
+  public IngestionFlowFileTypeValidationException(String code, String message, String rejectedValue) {
+    super(code, message);
+    this.rejectedValue = rejectedValue;
   }
 }

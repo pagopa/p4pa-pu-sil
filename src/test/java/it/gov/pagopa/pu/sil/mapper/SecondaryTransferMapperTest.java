@@ -1,8 +1,9 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
+import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
@@ -25,6 +26,7 @@ import uk.co.jemos.podam.api.PodamFactory;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -104,7 +106,7 @@ class SecondaryTransferMapperTest {
     list.getElementoListaDovutiEntiSecondaris().add(el);
 
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(DovutiEntiSecondari.class), any()))
-      .thenThrow(new ApplicationException("fail"));
+      .thenThrow(new RuntimeException("fail"));
     when(jaxbTransformServiceMock.getDetailUnmarshalExceptionMessage(any(), any()))
       .thenReturn("details");
 
@@ -129,7 +131,7 @@ class SecondaryTransferMapperTest {
 
     assertDoesNotThrow(() -> secondaryTransferMapper.fillSecondaryTransferData(debtPosition, secondaryTransferData, "code", ACCESS_TOKEN));
 
-    TestUtils.checkNotNullFields(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst(),
+    TestUtils.checkNotNullFields(Objects.requireNonNull(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers()).getFirst(),
       "transferId", "installmentId", "stampType", "stampHashDocument", "stampProvincialResidence", "mbdAttachment", "postalIban", "flagOwner",
       "creationDate", "updateDate", "updateOperatorExternalId", "updateTraceId");
   }
@@ -204,7 +206,7 @@ class SecondaryTransferMapperTest {
     if (legacyMode) {
       installmentToSync.setTransfers(List.of(t2Sync));
     } else {
-      TransferDTO t1Sync = installmentOnDb.getTransfers().getFirst().toBuilder().remittanceInformation("new1").build();
+      TransferDTO t1Sync = Objects.requireNonNull(installmentOnDb.getTransfers()).getFirst().toBuilder().remittanceInformation("new1").build();
       installmentToSync.setTransfers(List.of(t1Sync, t2Sync));
     }
 
@@ -254,7 +256,7 @@ class SecondaryTransferMapperTest {
     if (legacyMode) {
       installmentToSync.setTransfers(List.of(t2Sync));
     } else {
-      TransferDTO t1Sync = installmentOnDb.getTransfers().getFirst().toBuilder().build();
+      TransferDTO t1Sync = Objects.requireNonNull(installmentOnDb.getTransfers()).getFirst().toBuilder().build();
       installmentToSync.setTransfers(List.of(t1Sync, t2Sync));
     }
 

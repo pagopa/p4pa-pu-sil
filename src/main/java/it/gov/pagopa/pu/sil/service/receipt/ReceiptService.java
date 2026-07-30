@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.sil.service.receipt;
 
 import it.gov.pagopa.pu.sil.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,10 @@ public class ReceiptService {
         try {
           return resource.getContentAsByteArray();
         } catch (IOException ioe) {
-          throw new ApplicationException(ioe);
+          throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_RECEIPT_ERROR, "Something went wrong while retrieving receipt " + receiptId, ioe);
         }
       })
-      .orElseThrow(() -> new ApplicationException("[RECEIPT_NOT_FOUND] Receipt with id %s not found ".formatted(receiptId)));
+      .orElseThrow(() -> new ResourceNotFoundException(ErrorCodeConstants.ERROR_CODE_RECEIPT_NOT_FOUND, "Receipt with id %s not found ".formatted(receiptId)));
   }
 
 }

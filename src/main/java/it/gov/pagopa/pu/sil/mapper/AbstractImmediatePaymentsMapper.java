@@ -4,20 +4,26 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.ValidationService;
 import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
-import it.gov.pagopa.pu.sil.util.*;
+import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
+import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Bilancio;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Dovuti;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 abstract class AbstractImmediatePaymentsMapper {
@@ -31,7 +37,7 @@ abstract class AbstractImmediatePaymentsMapper {
   protected DebtPositionDTO dovutiMapper(RegistryEventType operationType, String cartId, Dovuti dovutiObj, Organization org, String accessToken) {
     if (!RegistryEventType.PTDP_paaSILInviaDovuti.equals(operationType) &&
       !RegistryEventType.PTDP_paaSILInviaCarrelloDovuti.equals(operationType)) {
-      throw new ApplicationException("invalid operation type: " + operationType);
+      throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_UNSUPPORTED_REGISTRY_EVENT_TYPE, "invalid operation type: " + operationType);
     }
     if (StringUtils.isNotBlank(dovutiObj.getDatiVersamento().getIdentificativoUnivocoVersamento())) {
       throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "L'inserimento dello IUV è deprecato");

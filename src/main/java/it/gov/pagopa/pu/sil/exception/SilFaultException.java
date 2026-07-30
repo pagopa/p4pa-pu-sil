@@ -4,19 +4,17 @@ import it.gov.pagopa.pu.sil.enums.SilFaults;
 import lombok.Getter;
 
 @Getter
-public class SilFaultException extends ApplicationException {
+public class SilFaultException extends BaseBusinessException {
   private final SilFaults fault;
   private final String description;
 
   public SilFaultException(SilFaults fault, String description) {
-    super("Fault %s - %s: %s".formatted(fault.code(), fault.description(), description));
+    super(fault.code(), "Fault %s - %s: %s".formatted(fault.code(), fault.description(), description));
     this.fault = fault;
     this.description = description;
   }
 
   public SilFaultException(SilFaults fault) {
-    super("Fault %s - %s".formatted(fault.code(), fault.description()));
-    this.fault = fault;
-    this.description = fault.description();
+    this(fault, "Fault %s - %s".formatted(fault.code(), fault.description()));
   }
 }

@@ -6,10 +6,11 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDT
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,7 +124,7 @@ class ClassificationsExportFileReservationServiceTest {
     );
 
     // Then
-    assertEquals(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE, exception.getCode());
   }
 
   @Test
@@ -151,7 +152,7 @@ class ClassificationsExportFileReservationServiceTest {
     );
 
     // Then
-    assertEquals(SilFaults.PIVOT_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO, exception.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_STATUS, exception.getCode());
   }
 
   @Test
@@ -165,8 +166,9 @@ class ClassificationsExportFileReservationServiceTest {
 
     ClassificationsExportRequestDTO request = podamFactory.manufacturePojo(ClassificationsExportRequestDTO.class);
 
-    ExportFileClientException errorException = new ExportFileClientException(
-      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, "error");
+    ExportFileClientException errorException = new ExportFileClientException(new InvalidValueException(
+      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "error")
+    );
 
     when(exportFileServiceMock.createClassificationsExportFile(any(), eq(accessToken)))
       .thenThrow(errorException);
@@ -183,6 +185,6 @@ class ClassificationsExportFileReservationServiceTest {
       )
     );
 
-    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE, exception.getCode());
+    assertEquals(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), exception.getCode());
   }
 }

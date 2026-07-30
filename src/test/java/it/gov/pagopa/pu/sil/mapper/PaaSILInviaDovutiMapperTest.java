@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.immediatepayments.PaymentRequestMappingResult;
@@ -74,7 +73,7 @@ class PaaSILInviaDovutiMapperTest {
   @Test
   void mapRequestToDebtPositions_UnmarshallingFailure_ReturnsError() {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
-    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new ApplicationException("Error"));
+    when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new RuntimeException("Error"));
 
     SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
@@ -164,21 +163,25 @@ class PaaSILInviaDovutiMapperTest {
     DebtPositionTypeOrg debtPositionTypeOrg = podamFactory.manufacturePojo(DebtPositionTypeOrg.class);
     DebtPositionType debtPositionType = podamFactory.manufacturePojo(DebtPositionType.class);
     String expectedCategory = debtPositionType.getTaxonomyCode();
-    if (testCase.equals("stamp")) {
-      CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
-      datiMarcaBolloDigitale.setTipoBollo("01");
-      datiMarcaBolloDigitale.setHashDocumento("HASH_DOCUMENTO");
-      datiMarcaBolloDigitale.setProvinciaResidenza("IT");
-      versamento.setDatiMarcaBolloDigitale(datiMarcaBolloDigitale);
-    } else if(testCase.equals("customValidCategory")) {
-      datiSpecificiRiscossione = "9/1234567IM/CUSTOM_VALID_CATEGORY";
-      expectedCategory = "9/1234567IM/";
-    } else if(testCase.equals("customInvalidCategory")) {
-      datiSpecificiRiscossione = "9/1234888/CUSTOM_INVALID_CATEGORY";
-      debtPositionTypeOrg.setIban(null);
-      debtPositionTypeOrg.setPostalIban(null);
-      org.setIban("IT60X0542811101000000123456");
-      org.setPostalIban("IT60X0542811101000000654321");
+    switch (testCase) {
+      case "stamp" -> {
+        CtDatiMarcaBolloDigitale datiMarcaBolloDigitale = new CtDatiMarcaBolloDigitale();
+        datiMarcaBolloDigitale.setTipoBollo("01");
+        datiMarcaBolloDigitale.setHashDocumento("HASH_DOCUMENTO");
+        datiMarcaBolloDigitale.setProvinciaResidenza("IT");
+        versamento.setDatiMarcaBolloDigitale(datiMarcaBolloDigitale);
+      }
+      case "customValidCategory" -> {
+        datiSpecificiRiscossione = "9/1234567IM/CUSTOM_VALID_CATEGORY";
+        expectedCategory = "9/1234567IM/";
+      }
+      case "customInvalidCategory" -> {
+        datiSpecificiRiscossione = "9/1234888/CUSTOM_INVALID_CATEGORY";
+        debtPositionTypeOrg.setIban(null);
+        debtPositionTypeOrg.setPostalIban(null);
+        org.setIban("IT60X0542811101000000123456");
+        org.setPostalIban("IT60X0542811101000000654321");
+      }
     }
     versamento.setDatiSpecificiRiscossione(datiSpecificiRiscossione);
     PersonDTO debtor = podamFactory.manufacturePojo(PersonDTO.class);
