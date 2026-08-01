@@ -15,6 +15,8 @@ import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
 import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.soap.PuForOrganizationReconciliationExceptionHandler;
+import it.gov.pagopa.pu.sil.exception.soap.transcoder.PuForOrganizationReconciliationExceptionTranscoder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -35,7 +37,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -76,7 +77,6 @@ class PuForOrganizationReconciliationEndpointTest {
   @Mock
   private LegacyQueryAssessmentsService queryAssessmentsServiceMock;
 
-  @InjectMocks
   private PuForOrganizationReconciliationEndpoint puForOrganizationReconciliationEndpoint;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
@@ -89,10 +89,20 @@ class PuForOrganizationReconciliationEndpointTest {
     userInfo = new UserInfo();
     userInfo.setMappedExternalUserId("USERID");
     userInfo.setOrganizations(List.of(
-      new UserOrganizationRoles("OID1", 1L, INVALID_ORG_IPA_CODE, INVALID_ORGANIZATION_FISCAL_CODE, "email", List.of("")),
-      new UserOrganizationRoles("OID2", 2L, VALID_ORG_IPA_CODE, VALID_ORGANIZATION_FISCAL_CODE, "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN))
+      new UserOrganizationRoles("OID1", 1L, INVALID_ORG_IPA_CODE, INVALID_ORGANIZATION_FISCAL_CODE, "email", List.of(""), List.of()),
+      new UserOrganizationRoles("OID2", 2L, VALID_ORG_IPA_CODE, VALID_ORGANIZATION_FISCAL_CODE, "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN), List.of())
     ));
     SecurityUtilsTest.configureSecurityContext(accessToken, userInfo);
+
+    puForOrganizationReconciliationEndpoint = new PuForOrganizationReconciliationEndpoint(
+      registryLoggerMock,
+      new PuForOrganizationReconciliationExceptionHandler(new PuForOrganizationReconciliationExceptionTranscoder()),
+      ingestionFlowFileAuthorizationServiceMock,
+      ingestionFlowFileProcessingStatusServiceMock,
+      pivotSILPrenotaExportFlussoRiconciliazioneServiceMock,
+      exportFileProcessingStatusServiceMock,
+      queryAssessmentsServiceMock
+    );
   }
 
   @AfterEach
@@ -375,7 +385,7 @@ class PuForOrganizationReconciliationEndpointTest {
 
     when(ingestionFlowFileAuthorizationServiceMock.authorizeTreasuryIngestionFlowFile(
       Mockito.same(userInfo), Mockito.same(accessToken), Mockito.eq(VALID_ORG_IPA_CODE), Mockito.eq(request.getTipoFlusso())
-    )).thenThrow(new IngestionFlowFileTypeValidationException("CODE", customMessage, request.getTipoFlusso()));
+    )).thenThrow(new IngestionFlowFileTypeValidationException(customMessage, request.getTipoFlusso()));
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
@@ -393,7 +403,7 @@ class PuForOrganizationReconciliationEndpointTest {
     Assertions.assertNotNull(response.getFault());
     Assertions.assertEquals(SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.code(), response.getFault().getFaultCode());
     Assertions.assertEquals(
-      SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO.description().formatted(request.getTipoFlusso()),
+      "Tipo di flusso non valido: %s".formatted(request.getTipoFlusso()),
       response.getFault().getDescription());
   }
 
