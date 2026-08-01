@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
@@ -781,7 +780,7 @@ class PuForOrganizationPaymentsEndpointTest {
     when(paaSILPrenotaExportFlussoServiceMock.paaSILPrenotaExportFlusso(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
     )).thenThrow(new ExportFileClientException(new InvalidValueException(
-      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "Invalid time range"))
+      "INVALID_DATE_FILTER_INTERVAL", "Invalid time range"))
     );
 
     // When
@@ -849,9 +848,7 @@ class PuForOrganizationPaymentsEndpointTest {
 
     when(paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock.doReservation(
       Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean()
-    )).thenThrow(new ExportFileClientException(new InvalidValueException(
-      ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), "Invalid time range"))
-    );
+    )).thenThrow(new ExportFileClientException(new InvalidValueException("INVALID_DATE_FILTER_INTERVAL", "Invalid time range")));
 
     // When
     PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta response = puForOrganizationPaymentsEndpoint

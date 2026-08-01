@@ -1,6 +1,5 @@
 package it.gov.pagopa.pu.sil.exception.soap.transcoder;
 
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
@@ -17,8 +16,9 @@ import java.util.Map;
 public class PuForOrganizationReconciliationExceptionTranscoder extends BaseSoapExceptionTranscoder {
 
   protected static final Map<String, SilFaults> errorCode2SilFault = Map.of(
-    ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION.getValue(), SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA,
-    ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE.getValue(), SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO
+    "INVALID_FILE_VERSION", SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA,
+    "INVALID_DATE_FILTER_INTERVAL", SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO,
+    "INVALID_DATE_FILTER_COMBINATION", SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO
   );
 
   public PuForOrganizationReconciliationExceptionTranscoder() {

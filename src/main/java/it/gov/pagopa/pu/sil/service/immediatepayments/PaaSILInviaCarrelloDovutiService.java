@@ -9,10 +9,10 @@ import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovutiRisposta;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpServerErrorException;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -31,11 +31,7 @@ public class PaaSILInviaCarrelloDovutiService extends AbstractImmediatePaymentsS
 
   @Override
   protected List<DebtPositionDTO> createDebtPositionsFromMapping(PaymentRequestMappingResult paymentRequestMappingResult, String accessToken) {
-    try {
-      return instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
-    } catch (HttpServerErrorException e) {
-      throw buildException(e);
-    }
+    return instantPaymentsFacade.createDebtPositionsFromMapping(paymentRequestMappingResult, accessToken);
   }
 
   @Override

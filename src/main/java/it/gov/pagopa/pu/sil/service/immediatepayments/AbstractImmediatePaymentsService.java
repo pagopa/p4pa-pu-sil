@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.service.immediatepayments;
 
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
@@ -15,20 +14,17 @@ import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
-import org.springframework.web.client.HttpServerErrorException;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractImmediatePaymentsService<I, O> {
-  private static final Pattern VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN = Pattern.compile("^\\[([^\\]]*)\\]\\s*(.*)$");
 
   protected final InstantPaymentsFacade instantPaymentsFacade;
   protected final OrganizationService organizationService;
@@ -96,18 +92,4 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     return Triple.of(response, iuvs, RegistryOutcome.OK);
   }
 
-  protected SilFaultException buildException(HttpServerErrorException e) {
-    DebtPositionErrorDTO errorResponse = e.getResponseBodyAs(DebtPositionErrorDTO.class);
-    if (errorResponse == null) {
-      return new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "errore durante la creazione delle posizioni debitorie");
-    }
-    Matcher matcher = VALUE_BETWEEN_SQUARE_BRACKETS_PATTERN.matcher(errorResponse.getMessage());
-    if (matcher.matches()) {
-      return new SilFaultException(
-        SilFaults.fromNativeFault2LegacyCode(matcher.group(1)),
-        matcher.group(2).trim()
-      );
-    }
-    return new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, errorResponse.getMessage());
-  }
 }
