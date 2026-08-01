@@ -18,6 +18,8 @@ import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.InvalidValueException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.soap.PuForOrganizationPaymentsExceptionHandler;
+import it.gov.pagopa.pu.sil.exception.soap.transcoder.PuForOrganizationPaymentExceptionTranscoder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -51,7 +53,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -115,7 +116,6 @@ class PuForOrganizationPaymentsEndpointTest {
   @Mock
   private ExportFileProcessingStatusService exportFileProcessingStatusServiceMock;
 
-  @InjectMocks
   private PuForOrganizationPaymentsEndpoint puForOrganizationPaymentsEndpoint;
 
   private final PodamFactory podamFactory = TestUtils.getPodamFactory();
@@ -128,10 +128,32 @@ class PuForOrganizationPaymentsEndpointTest {
     userInfo = new UserInfo();
     userInfo.setMappedExternalUserId("USERID");
     userInfo.setOrganizations(List.of(
-      new UserOrganizationRoles("OID1", 1L, INVALID_ORG_IPA_CODE, "CF_1", "email", List.of("")),
-      new UserOrganizationRoles("OID2", 2L, VALID_ORG_IPA_CODE, VALID_ORGANIZATION_FISCAL_CODE, "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN))
+      new UserOrganizationRoles("OID1", 1L, INVALID_ORG_IPA_CODE, "CF_1", "email", List.of(""), List.of()),
+      new UserOrganizationRoles("OID2", 2L, VALID_ORG_IPA_CODE, VALID_ORGANIZATION_FISCAL_CODE, "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN), List.of())
     ));
     SecurityUtilsTest.configureSecurityContext(accessToken, userInfo);
+
+    puForOrganizationPaymentsEndpoint = new PuForOrganizationPaymentsEndpoint(
+      registryLoggerMock,
+      new PuForOrganizationPaymentsExceptionHandler(new PuForOrganizationPaymentExceptionTranscoder()),
+      paaSILImportaDovutoServiceMock,
+      ingestionFlowFileAuthorizationServiceMock,
+      ingestionFlowFileProcessingStatusServiceMock,
+      registryExtraInfoHandlerPaaSILImportaDovutoServiceMock,
+      paaSILInviaDovutiServiceMock,
+      registryExtraInfoHandlerPaaSILInviaDovutiMock,
+      paaSILInviaCarrelloDovutiServiceMock,
+      registryExtraInfoHandlerPaaSILInviaCarrelloDovutiMock,
+      paaSILVerificaAvvisoServiceMock,
+      paaSILChiediPagatiServiceMock,
+      paaSILChiediPagatiConRicevutaServiceMock,
+      paaSILChiediEsitoCarrelloDovutiServiceMock,
+      paaSILPrenotaExportFlussoServiceMock,
+      paaSILPrenotaExportFlussoIncrementaleConRicevutaServiceMock,
+      exportFileProcessingStatusServiceMock,
+      paaSILChiediPosizioniAperteServiceMock,
+      paaSILChiediStoricoPagamentiServiceMock
+    );
   }
 
   @AfterEach

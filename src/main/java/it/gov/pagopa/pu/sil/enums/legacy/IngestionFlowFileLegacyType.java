@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.enums.legacy;
 
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
 import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
-import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +31,6 @@ public enum IngestionFlowFileLegacyType {
       .findFirst()
       .map(IngestionFlowFileLegacyType::getValue)
       .orElseThrow(() -> new IngestionFlowFileTypeValidationException(
-        ErrorCodeConstants.ERROR_CODE_INVALID_INGESTION_FLOW_FILE_LEGACY_TYPE,
         "Invalid ingestion flow file type: %s".formatted(legacyValue),
         legacyValue));
   }
