@@ -1,14 +1,18 @@
 package it.gov.pagopa.pu.sil.exception.soap.transcoder;
 
+import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.BaseBusinessException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.soap.SoapFaultTranscoded;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -51,13 +55,20 @@ public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExcepti
 
     Map.entry("INVALID_IBAN", SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO),
 
-    Map.entry("IMMUTABLE_FIELD", SilFaults.PAA_CAMPO_NON_MODIFICABILE),
-
     Map.entry("MISSING_DUE_DATE", SilFaults.PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA),
     Map.entry("INVALID_DUE_DATE", SilFaults.PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA),
 
     Map.entry("INSTALLMENT_ALREADY_EXISTS", SilFaults.PAA_DOVUTO_DUPLICATO),
     Map.entry("DEBT_POSITION_ALREADY_EXISTS", SilFaults.PAA_DOVUTO_DUPLICATO)
+  );
+
+  private static final Map<String, String> fieldNameTranscoding = Map.ofEntries(
+    Map.entry("debtPositionTypeOrgId", "identificativoTipoDovuto"),
+    Map.entry("iuv", "identificativoUnivocoVersamento"),
+    Map.entry("iud", "identificativoUnivocoDovuto"),
+    Map.entry("legacyPaymentMetadata", "datiSpecificiRiscossione"),
+    Map.entry("debtor.entityType", "identificativoUnivocoPagatore.tipoIdentificativoUnivoco"),
+    Map.entry("debtor.fiscalCode", "identificativoUnivocoPagatore.codiceIdentificativoUnivoco")
   );
 
   public PuForOrganizationPaymentExceptionTranscoder() {
@@ -82,7 +93,23 @@ public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExcepti
       if(fault != null) {
         return new SoapFaultTranscoded(fault, fault.description() + ": " + efse.getMessage());
       }
-    }
+    } else if(exception instanceof BaseBusinessException bbe
+      && "IMMUTABLE_FIELD".equals(bbe.getCode())) {
+        SilFaults fault = SilFaults.PAA_CAMPO_NON_MODIFICABILE;
+
+        String immutableFields = bbe.getFields().stream()
+          .map(ErrorFieldDTO::getField)
+          .filter(field -> !"nav".equals(field)) // skipped because SIL send always IUV and it will also reported
+          .map(field -> fieldNameTranscoding.getOrDefault(field, field))
+          .collect(Collectors.joining(", "));
+
+        String description = StringUtils.isEmpty(immutableFields)
+          ? fault.description()
+          : fault.description() + ": " + immutableFields;
+
+        return new SoapFaultTranscoded(fault, description);
+      }
+
 
     return null;
   }
