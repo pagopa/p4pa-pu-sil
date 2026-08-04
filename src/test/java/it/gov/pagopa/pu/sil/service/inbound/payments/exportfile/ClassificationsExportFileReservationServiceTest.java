@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.ClassificationsExportRequestDTO;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;

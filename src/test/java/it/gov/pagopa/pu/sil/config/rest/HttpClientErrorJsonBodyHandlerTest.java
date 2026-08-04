@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ErrorFieldDTO;
 import it.gov.pagopa.pu.sil.config.json.JsonConfig;
 import it.gov.pagopa.pu.sil.connector.debtpositions.mapper.DebtPositionErrorDTOMapper;
-import it.gov.pagopa.pu.sil.exception.*;
+import it.gov.pagopa.pu.sil.exception.common.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

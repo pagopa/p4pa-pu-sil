@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.xml.bind.JAXBContext;
 import lombok.extern.slf4j.Slf4j;

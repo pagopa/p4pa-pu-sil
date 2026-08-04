@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.exception;
 
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 
 public class BalanceParseException extends BaseBusinessException {

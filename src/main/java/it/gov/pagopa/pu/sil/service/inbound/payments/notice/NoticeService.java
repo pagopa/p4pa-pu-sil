@@ -6,9 +6,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.pagopapayments.PagopaPaymentsService;
-import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
-import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
@@ -38,7 +38,7 @@ public class NoticeService {
           throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_GENERATE_NOTICE_ERROR, "Something went wrong while generating notice for nav " + nav + " of organization " + debtPositionDTO.getOrganizationId() ,ioe);
         }
       })
-      .orElseThrow(() -> new ResourceNotFoundException(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, "Notice not found for org["+debtPositionDTO.getOrganizationId()+"] nav["+nav+"]"));
+      .orElseThrow(() -> new NotFoundException(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, "Notice not found for org["+debtPositionDTO.getOrganizationId()+"] nav["+nav+"]"));
   }
 
   public Resource generateNoticeByIuv(String orgFiscalCode, String iuv, UserInfo userInfo, String accessToken) {
@@ -61,7 +61,7 @@ public class NoticeService {
     //generate the payment notice PDF
     Resource pdfResource = pagopaPaymentsService.generateNotice(nav, debtPositionWithInstallment.getLeft(), accessToken);
     if(pdfResource == null) {
-      throw new ResourceNotFoundException(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, "Notice not found for NAV: " + nav);
+      throw new NotFoundException(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, "Notice not found for NAV: " + nav);
     }
     return pdfResource;
   }

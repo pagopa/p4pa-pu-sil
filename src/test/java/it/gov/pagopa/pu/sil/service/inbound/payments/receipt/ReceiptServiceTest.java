@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.service.inbound.payments.receipt;
 
 import it.gov.pagopa.pu.sil.connector.fileshare.FileShareService;
-import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
-import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,7 +48,7 @@ class ReceiptServiceTest {
     String accessToken = "validToken";
     when(fileShareServiceMock.downloadReceipt(organizationId, receiptId, accessToken)).thenReturn(null);
 
-    ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () ->
+    NotFoundException exception = assertThrows(NotFoundException.class, () ->
       receiptService.getReceiptById(receiptId, organizationId, accessToken)
     );
 

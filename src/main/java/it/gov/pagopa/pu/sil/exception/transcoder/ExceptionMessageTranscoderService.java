@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.exception.transcoder;
 
-import it.gov.pagopa.pu.sil.exception.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
 import it.gov.pagopa.pu.sil.exception.transcoder.handler.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.converter.HttpMessageNotReadableException;

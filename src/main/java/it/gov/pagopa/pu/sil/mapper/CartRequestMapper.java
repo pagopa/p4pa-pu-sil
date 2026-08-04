@@ -6,7 +6,7 @@ import it.gov.pagopa.nodo.checkout.dto.generated.PaymentNotice;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

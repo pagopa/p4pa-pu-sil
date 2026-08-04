@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.config.rest;
 
-import it.gov.pagopa.pu.sil.exception.RestInvokeConflictException;
-import it.gov.pagopa.pu.sil.exception.RestInvokeForbiddenException;
-import it.gov.pagopa.pu.sil.exception.RestInvokeInvalidValueException;
-import it.gov.pagopa.pu.sil.exception.RestInvokeNotAuthorizedException;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeConflictException;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeForbiddenException;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeInvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotAuthorizedException;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;

@@ -4,7 +4,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFil
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;

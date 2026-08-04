@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.exception.transcoder.handler;
 
-import it.gov.pagopa.pu.sil.exception.BaseBusinessException;
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.exception.transcoder.ExceptionMessageTranscoded;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.exception;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
 import lombok.Getter;
 
 @Getter

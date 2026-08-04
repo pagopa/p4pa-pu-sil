@@ -6,9 +6,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.pagopapayments.PagopaPaymentsService;
-import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
-import it.gov.pagopa.pu.sil.exception.ResourceNotFoundException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -72,7 +72,7 @@ class NoticeServiceTest {
     when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(null);
 
     //when
-    ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, ()-> noticeService.generateNotice(nav, debtPositionDTO, accessToken));
+    NotFoundException exception = Assertions.assertThrows(NotFoundException.class, ()-> noticeService.generateNotice(nav, debtPositionDTO, accessToken));
 
     //verify
     Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, exception.getCode());
@@ -191,7 +191,7 @@ class NoticeServiceTest {
     when(pagopaPaymentsServiceMock.generateNotice(nav, debtPositionDTO, accessToken)).thenReturn(null);
 
     //when
-    ResourceNotFoundException exception = Assertions.assertThrows(ResourceNotFoundException.class, () -> noticeService.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken));
+    NotFoundException exception = Assertions.assertThrows(NotFoundException.class, () -> noticeService.generateNoticeByIuv(orgFiscalCode, iuv, userInfo, accessToken));
 
     //verify
     Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_NOTICE_NOT_FOUND, exception.getCode());

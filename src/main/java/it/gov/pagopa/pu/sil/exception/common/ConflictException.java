@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.exception;
+package it.gov.pagopa.pu.sil.exception.common;
 
 import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
 

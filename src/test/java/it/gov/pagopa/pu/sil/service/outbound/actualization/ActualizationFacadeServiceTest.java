@@ -11,7 +11,7 @@ import it.gov.pagopa.pu.sil.connector.actualization.ActualizationService;
 import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
-import it.gov.pagopa.pu.sil.exception.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.PaymentInvalidStatusException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotFoundException;
 import it.gov.pagopa.pu.sil.exception.PaymentNotNotifiedException;

@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.exception.soap.transcoder;
 
 import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.soap.SoapFaultTranscoded;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;

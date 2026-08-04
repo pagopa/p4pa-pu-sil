@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

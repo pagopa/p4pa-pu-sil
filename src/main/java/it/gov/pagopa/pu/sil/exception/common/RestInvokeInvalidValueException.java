@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.sil.exception;
+package it.gov.pagopa.pu.sil.exception.common;
 
 import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
 import lombok.Getter;
@@ -7,12 +7,12 @@ import java.util.List;
 
 @Getter
 @SuppressWarnings("java:S110") // Suppress "Inheritance tree of classes should not be too deep": allowed for exception hierarchy
-public class RestInvokeConflictException extends ConflictException {
+public class RestInvokeInvalidValueException extends InvalidValueException {
 
   private final String applicationName;
   private final String category;
 
-  public RestInvokeConflictException(String applicationName, String category, String code, String message, List<ErrorFieldDTO> fields) {
+  public RestInvokeInvalidValueException(String applicationName, String category, String code, String message, List<ErrorFieldDTO> fields) {
     super(code, message, fields);
     this.applicationName = applicationName;
     this.category = category;

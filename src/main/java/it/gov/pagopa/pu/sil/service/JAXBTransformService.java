@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.service;
 
-import it.gov.pagopa.pu.sil.exception.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.xml.bind.*;
 import jakarta.xml.bind.annotation.XmlRootElement;
