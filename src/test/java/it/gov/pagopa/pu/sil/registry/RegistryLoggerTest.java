@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
-import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class RegistryLoggerTest {
@@ -836,7 +837,7 @@ public class RegistryLoggerTest {
           : isNull()
       )).thenAnswer(answer);
     } else {
-      Mockito.when(registryLoggerMock.execute(
+      when(registryLoggerMock.execute(
         Mockito.eq(contextData),
         Mockito.same(request),
         Mockito.argThat(requestHandler),

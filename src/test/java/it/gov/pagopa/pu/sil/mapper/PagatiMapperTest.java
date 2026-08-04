@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
-import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.Pagati;
 import it.veneto.regione.schemas._2012.pagamenti.ente.PagatiConRicevuta;
@@ -20,9 +20,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static it.gov.pagopa.pu.sil.util.Constants.INSTALLMENT_REMITTANCE_INFORMATION_PLACEHOLDER;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PagatiMapperTest {
@@ -46,21 +48,21 @@ class PagatiMapperTest {
     debtPosition.getPaymentOptions()
       .stream().map(PaymentOptionDTO::getInstallments)
       .flatMap(List::stream)
-      .forEach(installment -> installment.setTransfers(List.of(installment.getTransfers().getFirst())));
+      .forEach(installment -> installment.setTransfers(List.of(Objects.requireNonNull(installment.getTransfers()).getFirst())));
     InstallmentDTO installment = debtPosition.getPaymentOptions().getFirst().getInstallments().get(1);
     Organization organization = podamFactory.manufacturePojo(Organization.class);
-    debtPosition.setOrganizationId(organization.getOrganizationId());
+    debtPosition.setOrganizationId(Objects.requireNonNull(organization.getOrganizationId()));
     ReceiptDTO receipt = podamFactory.manufacturePojo(ReceiptDTO.class);
-    receipt.setCreditorReferenceId(installment.getIuv());
+    receipt.setCreditorReferenceId(Objects.requireNonNull(installment.getIuv()));
     if(!testType.equals("mdb")){
-      installment.getTransfers().getFirst().setStampHashDocument(null);
+      Objects.requireNonNull(installment.getTransfers()).getFirst().setStampHashDocument(null);
     }
     byte[] expectedBytes = "expectedBytes".getBytes();
 
-    Mockito.when(receiptServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
+    when(receiptServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
       .thenReturn(receipt);
 
-    Mockito.when(jaxbTransformServiceMock.marshallingAsBytes(Mockito.argThat(p -> {
+    when(jaxbTransformServiceMock.marshallingAsBytes(Mockito.argThat(p -> {
       Assertions.assertNotNull(p);
       TestUtils.checkNotNullFields(p, "riferimentoDataRichiesta");
       TestUtils.checkNotNullFields(p.getDominio(), "identificativoStazioneRichiedente");
@@ -111,22 +113,22 @@ class PagatiMapperTest {
     debtPosition.getPaymentOptions()
       .stream().map(PaymentOptionDTO::getInstallments)
       .flatMap(List::stream)
-      .forEach(installment -> installment.setTransfers(List.of(installment.getTransfers().getFirst())));
+      .forEach(installment -> installment.setTransfers(List.of(Objects.requireNonNull(installment.getTransfers()).getFirst())));
     InstallmentDTO installment = debtPosition.getPaymentOptions().getFirst().getInstallments().get(1);
     installment.setOriginalRemittanceInformation(originalRemittanceInformation);
-    TransferDTO transferDTO = installment.getTransfers().getFirst();
+    TransferDTO transferDTO = Objects.requireNonNull(installment.getTransfers()).getFirst();
     transferDTO.setRemittanceInformation(remittanceInformation);
     Organization organization = podamFactory.manufacturePojo(Organization.class);
-    debtPosition.setOrganizationId(organization.getOrganizationId());
+    debtPosition.setOrganizationId(Objects.requireNonNull(organization.getOrganizationId()));
     ReceiptDTO receipt = podamFactory.manufacturePojo(ReceiptDTO.class);
-    receipt.setCreditorReferenceId(installment.getIuv());
+    receipt.setCreditorReferenceId(Objects.requireNonNull(installment.getIuv()));
 
     byte[] expectedBytes = "expectedBytes".getBytes();
 
-    Mockito.when(receiptServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
+    when(receiptServiceMock.getReceiptById(installment.getReceiptId(), "accessToken"))
       .thenReturn(receipt);
 
-    Mockito.when(jaxbTransformServiceMock.marshallingAsBytes(Mockito.argThat(p -> {
+    when(jaxbTransformServiceMock.marshallingAsBytes(Mockito.argThat(p -> {
       Assertions.assertNotNull(p);
       TestUtils.checkNotNullFields(p, "riferimentoDataRichiesta");
       TestUtils.checkNotNullFields(p.getDominio(), "identificativoStazioneRichiedente");

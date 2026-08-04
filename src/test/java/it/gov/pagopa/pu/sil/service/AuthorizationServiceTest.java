@@ -1,19 +1,9 @@
 package it.gov.pagopa.pu.sil.service;
 
-import static it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService.CALLBACK_URL_SESSION_DATA_KEY;
-import static org.mockito.Mockito.when;
-
-import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.auth.dto.generated.LimitedScopeResource;
-import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
-import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.auth.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+
+import java.util.List;
+import java.util.Map;
+
+import static it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService.CALLBACK_URL_SESSION_DATA_KEY;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthorizationServiceTest {

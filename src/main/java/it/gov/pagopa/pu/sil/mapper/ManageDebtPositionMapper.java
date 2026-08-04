@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.mapper.soap.SecondaryTransferMapper;
 import it.gov.pagopa.pu.sil.util.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
