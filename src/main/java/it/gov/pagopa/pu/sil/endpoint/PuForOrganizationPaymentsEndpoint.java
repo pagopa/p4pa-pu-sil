@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.endpoint;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
@@ -12,8 +11,7 @@ import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
-import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
-import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.soap.PuForOrganizationPaymentsExceptionHandler;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
@@ -22,18 +20,17 @@ import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInv
 import it.gov.pagopa.pu.sil.registry.extrainfo.RegistryExtraInfoHandlerPaaSILInviaDovuti;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
-import it.gov.pagopa.pu.sil.service.exportfile.PaaSILPrenotaExportFlussoService;
-import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaCarrelloDovutiService;
-import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILInviaDovutiService;
-import it.gov.pagopa.pu.sil.service.immediatepayments.PaaSILVerificaAvvisoService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.querypayments.*;
-import it.gov.pagopa.pu.sil.service.singleimport.PaaSILImportaDovutoService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.exportfile.ExportFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.exportfile.soap.PaaSILPrenotaExportFlussoIncrementaleConRicevutaService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.exportfile.soap.PaaSILPrenotaExportFlussoService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.PaaSILInviaCarrelloDovutiService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.PaaSILInviaDovutiService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.PaaSILVerificaAvvisoService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.ingestionflowfile.IngestionFlowFileAuthorizationService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.ingestionflowfile.IngestionFlowFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.soap.*;
+import it.gov.pagopa.pu.sil.service.inbound.payments.singleimport.soap.PaaSILImportaDovutoService;
 import it.gov.pagopa.pu.sil.util.DateUtils;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.pagamenti.ente.ppthead.IntestazionePPT;
@@ -54,8 +51,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 @Endpoint
 @RequiredArgsConstructor
@@ -65,6 +60,7 @@ public class PuForOrganizationPaymentsEndpoint {
   public static final String NAME = "PagamentiTelematiciDovutiPagati";
 
   private final RegistryLogger registryLogger;
+  private final PuForOrganizationPaymentsExceptionHandler exceptionHandler;
 
   private final PaaSILImportaDovutoService paaSILImportaDovutoService;
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
@@ -113,13 +109,10 @@ public class PuForOrganizationPaymentsEndpoint {
       response.setDownloadUrl(processingStatus.getRight());
       return response;
     } catch (Exception e) {
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      return exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediStatoExportFlussoRisposta(),
         PaaSILChiediStatoExportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
   }
 
@@ -149,13 +142,10 @@ public class PuForOrganizationPaymentsEndpoint {
       }
       return response;
     } catch (Exception e) {
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      return exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediStatoImportFlussoRisposta(),
         PaaSILChiediStatoImportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
   }
 
@@ -194,12 +184,9 @@ public class PuForOrganizationPaymentsEndpoint {
         response.setImportPath(result.getImportPath());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      exceptionHandler.buildExceptionHandlerFunction(
         new PaaSILAutorizzaImportFlussoRisposta(),
-        PaaSILAutorizzaImportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
+        PaaSILAutorizzaImportFlussoRisposta::setFault
       )
     );
   }
@@ -209,8 +196,6 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILImportaDovutoRisposta paaSILImportaDovuto(
     @RequestPayload PaaSILImportaDovuto request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    PaaSILImportaDovutoRisposta response = new PaaSILImportaDovutoRisposta();
-    response.setEsito(RegistryOutcome.KO.getValue());
     UserInfo userInfo = SecurityUtils.getLoggedUser();
     String accessToken = SecurityUtils.getAccessToken();
     String orgIpaCode = SoapUtils.getOrganizationIpaCodeFromHeader(header,
@@ -228,12 +213,9 @@ public class PuForOrganizationPaymentsEndpoint {
       contextData,
       request,
       () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, accessToken),
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
-        response,
-        PaaSILImportaDovutoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
+      exceptionHandler.buildExceptionHandlerFunction(
+        new PaaSILImportaDovutoRisposta(),
+        PaaSILImportaDovutoRisposta::setFault
       ),
       () -> registryExtraInfoHandlerPaaSILImportaDovuto.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILImportaDovuto::extractResponseExtraInfo
@@ -264,12 +246,9 @@ public class PuForOrganizationPaymentsEndpoint {
       contextData,
       request,
       () -> paaSILInviaDovutiService.processRequest(request, orgIpaCode, userInfo, accessToken),
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      exceptionHandler.buildExceptionHandlerFunction(
         new PaaSILInviaDovutiRisposta(),
-        PaaSILInviaDovutiRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
+        PaaSILInviaDovutiRisposta::setFault
       ),
       () -> registryExtraInfoHandlerPaaSILInviaDovuti.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILInviaDovuti::extractResponseExtraInfo
@@ -299,12 +278,9 @@ public class PuForOrganizationPaymentsEndpoint {
       contextData,
       request,
       () -> paaSILInviaCarrelloDovutiService.processRequest(request, orgIpaCode, userInfo, accessToken),
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      exceptionHandler.buildExceptionHandlerFunction(
         new PaaSILInviaCarrelloDovutiRisposta(),
-        PaaSILInviaCarrelloDovutiRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
+        PaaSILInviaCarrelloDovutiRisposta::setFault
       ),
       () -> registryExtraInfoHandlerPaaSILInviaCarrelloDovuti.extractRequestExtraInfo(request, header),
       registryExtraInfoHandlerPaaSILInviaCarrelloDovuti::extractResponseExtraInfo
@@ -337,12 +313,9 @@ public class PuForOrganizationPaymentsEndpoint {
         paaSILVerificaAvvisoService.processRequest(request, orgIpaCode, userInfo, accessToken),
         null,
         RegistryOutcome.OK),
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      exceptionHandler.buildExceptionHandlerFunction(
         new PaaSILVerificaAvvisoRisposta(),
-        PaaSILVerificaAvvisoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
+        PaaSILVerificaAvvisoRisposta::setFault
       ));
   }
 
@@ -357,13 +330,10 @@ public class PuForOrganizationPaymentsEndpoint {
     try {
       response = paaSILChiediPagatiService.processRequest(request, userInfo, accessToken);
     }catch(Exception e){
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+      response = exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediPagatiRisposta(),
         PaaSILChiediPagatiRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
 
     return response;
@@ -380,13 +350,10 @@ public class PuForOrganizationPaymentsEndpoint {
     try {
       response = paaSILChiediPagatiConRicevutaService.processRequest(request, userInfo, accessToken);
     }catch(Exception e){
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+      response = exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediPagatiConRicevutaRisposta(),
         PaaSILChiediPagatiConRicevutaRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
 
     return response;
@@ -403,13 +370,10 @@ public class PuForOrganizationPaymentsEndpoint {
     try {
       response = paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken);
     }catch(Exception e){
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+      response = exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediEsitoCarrelloDovutiRisposta(),
         PaaSILChiediEsitoCarrelloDovutiRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
 
     return response;
@@ -420,12 +384,11 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILChiediAvvisiPendentiRisposta paaSILChiediAvvisiPendenti(
     @RequestPayload PaaSILChiediAvvisiPendenti request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
+    return exceptionHandler.setFault(
       new PaaSILChiediAvvisiPendentiRisposta(),
+      PaaSILChiediAvvisiPendentiRisposta::setFault,
       SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILChiediAvvisiPendenti non è una operazione supportata",
-      FaultBean::new,
-      PaaSILChiediAvvisiPendentiRisposta::setFault
+      "paaSILChiediAvvisiPendenti non è una operazione supportata"
     );
   }
 
@@ -441,13 +404,10 @@ public class PuForOrganizationPaymentsEndpoint {
     try {
       response = paaSILChiediPosizioniAperteService.processRequest(request, userInfo, accessToken);
     } catch(Exception e) {
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+      response = exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediPosizioniAperteRisposta(),
         PaaSILChiediPosizioniAperteRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
 
     return response;
@@ -465,13 +425,10 @@ public class PuForOrganizationPaymentsEndpoint {
     try {
       response = paaSILChiediStoricoPagamentiService.processRequest(request, userInfo, accessToken);
     } catch(Exception e) {
-      response = FaultUtils.unauthorizedOrSystemExceptionHandler(
+      response = exceptionHandler.setExceptionTranscoded(
         new PaaSILChiediStoricoPagamentiRisposta(),
         PaaSILChiediStoricoPagamentiRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
 
     return response;
@@ -482,12 +439,11 @@ public class PuForOrganizationPaymentsEndpoint {
   public PaaSILRegistraPagamentoRisposta paaSILRegistraPagamento(
     @RequestPayload PaaSILRegistraPagamento request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
+    return exceptionHandler.setFault(
       new PaaSILRegistraPagamentoRisposta(),
+      PaaSILRegistraPagamentoRisposta::setFault,
       SilFaults.PAA_SYSTEM_ERROR,
-      "paaSILRegistraPagamento non è una operazione supportata",
-      FaultBean::new,
-      PaaSILRegistraPagamentoRisposta::setFault
+      "paaSILRegistraPagamento non è una operazione supportata"
     );
   }
 
@@ -516,8 +472,9 @@ public class PuForOrganizationPaymentsEndpoint {
       .orElse(null);
 
     if (from == null) {
-      return FaultUtils.setFaultOnResponse(
+      return exceptionHandler.setFault(
         response,
+        PaaSILPrenotaExportFlussoRisposta::setFault,
         SilFaults.PAA_DATE_FROM_NON_VALIDO,
         SilFaults.PAA_DATE_FROM_NON_VALIDO.description()
       );
@@ -530,8 +487,9 @@ public class PuForOrganizationPaymentsEndpoint {
       .orElse(null);
 
     if (to == null) {
-      return FaultUtils.setFaultOnResponse(
+      return exceptionHandler.setFault(
         response,
+        PaaSILPrenotaExportFlussoRisposta::setFault,
         SilFaults.PAA_DATE_TO_NON_VALIDO,
         SilFaults.PAA_DATE_TO_NON_VALIDO.description()
       );
@@ -554,8 +512,11 @@ public class PuForOrganizationPaymentsEndpoint {
       response.setRequestToken(String.valueOf(result));
       return response;
     } catch (Exception e) {
-      return handleExportFileRequestValidationException(PaaSILPrenotaExportFlussoRisposta::new)
-        .apply(e);
+      return exceptionHandler.setExceptionTranscoded(
+        new PaaSILPrenotaExportFlussoRisposta(),
+        PaaSILPrenotaExportFlussoRisposta::setFault,
+        e
+      );
     }
   }
 
@@ -611,44 +572,12 @@ public class PuForOrganizationPaymentsEndpoint {
       }
       return response;
     } catch (Exception e) {
-      return handleExportFileRequestValidationException(PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::new)
-        .apply(e);
+      return exceptionHandler.setExceptionTranscoded(
+        new PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta(),
+        PaaSILPrenotaExportFlussoIncrementaleConRicevutaRisposta::setFault,
+        e
+      );
     }
-  }
-
-  private <T extends Risposta> Function<Exception, T> handleExportFileRequestValidationException(Supplier<T> response) {
-    return (Exception e) -> {
-      if (e instanceof ExportFileClientException ce) {
-        SilFaults fault = switch (ce.getCode()) {
-          case
-            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
-            SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA;
-          case
-            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
-            SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO;
-          default -> SilFaults.PAA_SYSTEM_ERROR;
-        };
-        return FaultUtils.setFaultOnResponse(
-          response.get(),
-          fault,
-          fault.description()
-        );
-      }
-      if (e instanceof ExportFileServiceException se) {
-        return FaultUtils.setFaultOnResponse(
-          response.get(),
-          se.getFault(),
-          se.getFault().description() + ": " + se.getMessage()
-        );
-      }
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
-        response.get(),
-        T::setFault,
-        FaultBean::new,
-        SilFaults.PAA_ENTE_NON_VALIDO,
-        SilFaults.PAA_SYSTEM_ERROR
-      ).apply(e);
-    };
   }
 
   private void setDownloadUrls(PaaSILChiediStatoImportFlussoRisposta response, List<DownloadUrl> urls, PaaSILChiediStatoImportFlusso request) {

@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.sil.security;
 
 import it.gov.pagopa.pu.sil.controller.generated.SendNotificationApi;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.notification.SendNotificationRetrieverService;
+import it.gov.pagopa.pu.sil.service.inbound.send.SendNotificationRetrieverService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

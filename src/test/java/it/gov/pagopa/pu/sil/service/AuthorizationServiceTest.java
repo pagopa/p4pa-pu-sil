@@ -1,19 +1,9 @@
 package it.gov.pagopa.pu.sil.service;
 
-import static it.gov.pagopa.pu.sil.service.debtposition.DebtPositionCheckoutService.CALLBACK_URL_SESSION_DATA_KEY;
-import static org.mockito.Mockito.when;
-
-import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
-import it.gov.pagopa.pu.auth.dto.generated.LimitedScopeResource;
-import it.gov.pagopa.pu.auth.dto.generated.LimitedTokenRequest;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfoLimitedScope;
-import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.auth.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.sil.exception.InvalidAccessTokenException;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +13,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+
+import java.util.List;
+import java.util.Map;
+
+import static it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService.CALLBACK_URL_SESSION_DATA_KEY;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthorizationServiceTest {
@@ -205,8 +201,8 @@ public class AuthorizationServiceTest {
       expectedUserInfo = new UserInfo();
       expectedUserInfo.setMappedExternalUserId("USERID");
       expectedUserInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of(""), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(SecurityUtils.OPERATOR_ROLE_ADMIN), List.of())
       ));
     }
 
@@ -233,8 +229,8 @@ public class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -260,8 +256,8 @@ public class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -287,8 +283,8 @@ public class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -314,8 +310,8 @@ public class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -341,8 +337,8 @@ public class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -368,8 +364,8 @@ public class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -393,17 +389,17 @@ public class AuthorizationServiceTest {
     userInfo.setMappedExternalUserId("userId");
     userInfo.setBrokerFiscalCode(brokerFiscalCode);
     userInfo.setOrganizations(List.of(
-      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN")),
-      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"))
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN"), List.of()),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"), List.of())
     ));
 
     // When/Then
     if (expectError) {
       Assertions.assertThrows(AuthorizationDeniedException.class,
-        () -> authorizationService.validateBrokerAdminRole(userInfo)
+        () -> AuthorizationService.validateBrokerAdminRole(userInfo)
       );
     } else {
-      Assertions.assertDoesNotThrow(() -> authorizationService.validateBrokerAdminRole(userInfo));
+      Assertions.assertDoesNotThrow(() -> AuthorizationService.validateBrokerAdminRole(userInfo));
     }
   }
 
@@ -422,18 +418,18 @@ public class AuthorizationServiceTest {
     userInfo.setMappedExternalUserId("userId");
     userInfo.setBrokerId(userBrokerId);
     userInfo.setOrganizations(List.of(
-      new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-      new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
     ));
 
     // When/Then
     if (expectError) {
       Assertions.assertThrows(AuthorizationDeniedException.class,
-        () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
+        () -> AuthorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
       );
     } else {
       Assertions.assertDoesNotThrow(
-        () -> authorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
+        () -> AuthorizationService.validateOrganizationBrokered(orgBrokerId, userInfo)
       );
     }
   }

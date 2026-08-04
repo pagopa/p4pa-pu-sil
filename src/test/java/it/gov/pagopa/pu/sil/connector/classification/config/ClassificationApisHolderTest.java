@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.classification.config;
 
+import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
-import it.gov.pagopa.pu.sil.exception.responseerrorhandler.ClassificationResponseErrorHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,39 +14,57 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class ClassificationApisHolderTest extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
   private ClassificationApisHolder apisHolder;
+  private ClassificationApiClientConfig apiClientConfig;
 
   @BeforeEach
   void setUp() {
-    Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-    Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    Mockito.doNothing().when(restTemplateMock).setErrorHandler(Mockito.any(
-      ClassificationResponseErrorHandler.class));
-    ClassificationApiClientConfig clientConfig = ClassificationApiClientConfig.builder()
-        .baseUrl("http://example.com")
-        .build();
-    apisHolder = new ClassificationApisHolder(clientConfig, restTemplateBuilderMock, new JsonMapper());
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
+
+    apiClientConfig = ClassificationApiClientConfig.builder()
+      .baseUrl("http://example.com")
+      .maxAttempts(3)
+      .build();
+    apisHolder = new ClassificationApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonMapper());
+
+    verify(restTemplateMock)
+      .setErrorHandler(Mockito.any(HttpClientErrorJsonBodyHandler.class));
   }
 
   @AfterEach
   void verifyNoMoreInteractions() {
     Mockito.verifyNoMoreInteractions(
-        restTemplateBuilderMock,
-        restTemplateMock
+      restTemplateBuilderMock,
+      restTemplateMock
+    );
+  }
+
+  @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken -> apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
+        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(1L, "IUF1"),
+      new ParameterizedTypeReference<>() {
+      }
     );
   }
 
   @Test
   void whenGetAssessmentsBalanceViewSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-        accessToken -> apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
-            .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(1L, "IUF1"),
-        new ParameterizedTypeReference<>() {},
-        apisHolder::unload);
+      accessToken -> apisHolder.getAssessmentsBalanceViewSearchControllerApi(accessToken)
+        .crudAssessmentsBalanceViewFindClosedByOrganizationIdAndIuf(1L, "IUF1"),
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
   }
 }

@@ -7,7 +7,7 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;
-import it.gov.pagopa.pu.sil.service.soap.JAXBTransformService;
+import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;

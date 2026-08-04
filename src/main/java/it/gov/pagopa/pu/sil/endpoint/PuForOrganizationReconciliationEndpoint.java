@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.endpoint;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile.IngestionFlowFileTypeEnum;
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ImportFileResponseDTO;
@@ -11,20 +10,17 @@ import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.ExportFileLegacyStatus;
 import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
-import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
-import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
-import it.gov.pagopa.pu.sil.exception.IngestionFlowFileTypeValidationException;
+import it.gov.pagopa.pu.sil.exception.soap.PuForOrganizationReconciliationExceptionHandler;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.registry.RegistryLogger;
 import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
-import it.gov.pagopa.pu.sil.service.exportfile.ExportFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.exportfile.PivotSILPrenotaExportFlussoRiconciliazioneService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileAuthorizationService;
-import it.gov.pagopa.pu.sil.service.ingestionflowfile.IngestionFlowFileProcessingStatusService;
-import it.gov.pagopa.pu.sil.service.queryassessments.LegacyQueryAssessmentsService;
-import it.gov.pagopa.pu.sil.util.soap.FaultUtils;
+import it.gov.pagopa.pu.sil.service.inbound.payments.exportfile.ExportFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.exportfile.soap.PivotSILPrenotaExportFlussoRiconciliazioneService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.ingestionflowfile.IngestionFlowFileAuthorizationService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.ingestionflowfile.IngestionFlowFileProcessingStatusService;
+import it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments.soap.LegacyQueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.soap.SoapUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
@@ -39,9 +35,6 @@ import org.springframework.ws.server.endpoint.annotation.ResponsePayload;
 import org.springframework.ws.soap.SoapHeaderElement;
 import org.springframework.ws.soap.server.endpoint.annotation.SoapHeader;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 @Endpoint
 @Slf4j
 @RequiredArgsConstructor
@@ -50,6 +43,8 @@ public class PuForOrganizationReconciliationEndpoint {
   public static final String NAME = "PagamentiTelematiciPagatiRiconciliati";
 
   private final RegistryLogger registryLogger;
+  private final PuForOrganizationReconciliationExceptionHandler exceptionHandler;
+
   private final IngestionFlowFileAuthorizationService ingestionFlowFileAuthorizationService;
   private final IngestionFlowFileProcessingStatusService ingestionFlowFileProcessingStatusService;
   private final PivotSILPrenotaExportFlussoRiconciliazioneService pivotSILPrenotaExportFlussoRiconciliazioneService;
@@ -75,13 +70,11 @@ public class PuForOrganizationReconciliationEndpoint {
         request
       );
     } catch (Exception e) {
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      return exceptionHandler.setExceptionTranscoded(
         new PivotSILChiediAccertamentoRisposta(),
         PivotSILChiediAccertamentoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR
-      ).apply(e);
+        e
+      );
     }
   }
 
@@ -108,13 +101,10 @@ public class PuForOrganizationReconciliationEndpoint {
       response.setDownloadUrl(processingStatus.getRight());
       return response;
     } catch (Exception e) {
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      return exceptionHandler.setExceptionTranscoded(
         new PivotSILChiediStatoExportFlussoRiconciliazioneRisposta(),
         PivotSILChiediStatoExportFlussoRiconciliazioneRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR
-      ).apply(e);
+        e);
     }
   }
 
@@ -144,12 +134,10 @@ public class PuForOrganizationReconciliationEndpoint {
       response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
       return response;
     } catch (Exception e) {
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      return exceptionHandler.setExceptionTranscoded(
         new PivotSILChiediStatoImportFlussoTesoreriaRisposta(),
         PivotSILChiediStatoImportFlussoTesoreriaRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR).apply(e);
+        e);
     }
   }
 
@@ -176,12 +164,10 @@ public class PuForOrganizationReconciliationEndpoint {
       response.setStato(IngestionFlowFileLegacyStatus.fromValue2LegacyValue(processingStatusDTO.getStatus()));
       return response;
     } catch (Exception e) {
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
+      return exceptionHandler.setExceptionTranscoded(
         new PivotSILChiediStatoImportFlussoRisposta(),
         PivotSILChiediStatoImportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR).apply(e);
+        e);
     }
   }
 
@@ -219,7 +205,10 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setImportPath(result.getImportPath());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
-      this::handleIngestionFlowFileTypeValidationException
+      exceptionHandler.buildExceptionHandlerFunction(
+        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
+        PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault
+      )
     );
   }
 
@@ -257,12 +246,10 @@ public class PuForOrganizationReconciliationEndpoint {
         response.setImportPath(result.getImportPath());
         return Triple.of(response, null, RegistryOutcome.OK);
       },
-      FaultUtils.unauthorizedOrSystemExceptionHandler(
+      exceptionHandler.buildExceptionHandlerFunction(
         new PivotSILAutorizzaImportFlussoRisposta(),
-        PivotSILAutorizzaImportFlussoRisposta::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR)
+        PivotSILAutorizzaImportFlussoRisposta::setFault
+      )
     );
   }
 
@@ -287,8 +274,10 @@ public class PuForOrganizationReconciliationEndpoint {
         request
       );
     } catch (Exception e) {
-      response = exportFileExceptionHandler(PivotSILPrenotaExportFlussoRiconciliazioneRisposta::new)
-        .apply(e);
+      response = exceptionHandler.setExceptionTranscoded(
+        new PivotSILPrenotaExportFlussoRiconciliazioneRisposta(),
+        PivotSILPrenotaExportFlussoRiconciliazioneRisposta::setFault,
+        e);
     }
     return response;
   }
@@ -299,12 +288,11 @@ public class PuForOrganizationReconciliationEndpoint {
   public PivotSILChiediPagatiRiconciliatiRisposta pivotSILChiediPagatiRiconciliati(
     @RequestPayload PivotSILChiediPagatiRiconciliati request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
+    return exceptionHandler.setFault(
       new PivotSILChiediPagatiRiconciliatiRisposta(),
+      PivotSILChiediPagatiRiconciliatiRisposta::setFault,
       SilFaults.PIVOT_SYSTEM_ERROR,
-      "paaSILRegistraPagamento non è una operazione supportata",
-      FaultBean::new,
-      PivotSILChiediPagatiRiconciliatiRisposta::setFault
+      "paaSILRegistraPagamento non è una operazione supportata"
     );
   }
 
@@ -313,12 +301,11 @@ public class PuForOrganizationReconciliationEndpoint {
   public PivotSILAutorizzaImportFlussoRendicontazioneRisposta pivotSILAutorizzaImportFlussoRendicontazione(
     @RequestPayload PivotSILAutorizzaImportFlussoRendicontazione request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
+    return exceptionHandler.setFault(
       new PivotSILAutorizzaImportFlussoRendicontazioneRisposta(),
+      PivotSILAutorizzaImportFlussoRendicontazioneRisposta::setFault,
       SilFaults.PIVOT_SYSTEM_ERROR,
-      "pivotSILAutorizzaImportFlussoRendicontazione non è una operazione supportata",
-      FaultBean::new,
-      PivotSILAutorizzaImportFlussoRendicontazioneRisposta::setFault
+      "pivotSILAutorizzaImportFlussoRendicontazione non è una operazione supportata"
     );
   }
 
@@ -327,66 +314,13 @@ public class PuForOrganizationReconciliationEndpoint {
   public PivotSILAutorizzaImportFlussoRTRisposta pivotSILAutorizzaImportFlussoRT(
     @RequestPayload PivotSILAutorizzaImportFlussoRT request,
     @SoapHeader("{http://www.regione.veneto.it/pagamenti/pivot/ente/ppthead}intestazionePPT") SoapHeaderElement header) {
-    return FaultUtils.setFaultOnResponse(
+    return exceptionHandler.setFault(
       new PivotSILAutorizzaImportFlussoRTRisposta(),
+      PivotSILAutorizzaImportFlussoRTRisposta::setFault,
       SilFaults.PIVOT_SYSTEM_ERROR,
-      "pivotSILAutorizzaImportFlussoRT non è una operazione supportata",
-      FaultBean::new,
-      PivotSILAutorizzaImportFlussoRTRisposta::setFault
+      "pivotSILAutorizzaImportFlussoRT non è una operazione supportata"
     );
   }
 
-  private PivotSILAutorizzaImportFlussoTesoreriaRisposta handleIngestionFlowFileTypeValidationException(Exception e) {
-    if (e instanceof IngestionFlowFileTypeValidationException ie) {
-      return FaultUtils.setFaultOnResponse(
-        new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
-        SilFaults.PIVOT_TIPO_FLUSSO_NON_VALIDO,
-        ie.getMessage()
-      );
-    }
-    return FaultUtils.unauthorizedOrSystemExceptionHandler(
-      new PivotSILAutorizzaImportFlussoTesoreriaRisposta(),
-      PivotSILAutorizzaImportFlussoTesoreriaRisposta::setFault,
-      FaultBean::new,
-      SilFaults.PIVOT_ENTE_NON_VALIDO,
-      SilFaults.PIVOT_SYSTEM_ERROR
-    ).apply(e);
-  }
-
-  private <T extends Risposta> Function<Exception, T> exportFileExceptionHandler(Supplier<T> response) {
-    return (Exception e) -> {
-      if (e instanceof ExportFileClientException ce) {
-        SilFaults fault = switch (ce.getCode()) {
-          case
-            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_FILE_VERSION ->
-            SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA;
-          case
-            ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_INVALID_TIME_RANGE ->
-            SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO;
-          default -> SilFaults.PIVOT_SYSTEM_ERROR;
-        };
-
-        return FaultUtils.setFaultOnResponse(
-          response.get(),
-          fault,
-          fault.description()
-        );
-      }
-      if (e instanceof ExportFileServiceException se) {
-        return FaultUtils.setFaultOnResponse(
-          response.get(),
-          se.getFault(),
-          se.getFault().description() + ": " + se.getMessage()
-        );
-      }
-      return FaultUtils.unauthorizedOrSystemExceptionHandler(
-        response.get(),
-        T::setFault,
-        FaultBean::new,
-        SilFaults.PIVOT_ENTE_NON_VALIDO,
-        SilFaults.PIVOT_SYSTEM_ERROR
-      ).apply(e);
-    };
-  }
 }
 

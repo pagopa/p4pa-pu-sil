@@ -1,9 +1,10 @@
 package it.gov.pagopa.pu.sil.connector.classification.config;
 
 import it.gov.pagopa.pu.classification.client.generated.AssessmentsBalanceViewSearchControllerApi;
+import it.gov.pagopa.pu.classification.dto.generated.ClassificationErrorDTO;
 import it.gov.pagopa.pu.classification.generated.ApiClient;
 import it.gov.pagopa.pu.classification.generated.BaseApi;
-import it.gov.pagopa.pu.sil.exception.responseerrorhandler.ClassificationResponseErrorHandler;
+import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
@@ -28,7 +29,8 @@ public class ClassificationApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
 
-    restTemplate.setErrorHandler(new ClassificationResponseErrorHandler(clientConfig, jsonMapper));
+    restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "CLASSIFICATION", clientConfig.isPrintBodyWhenError(),
+      ClassificationErrorDTO.class, ClassificationErrorDTO::getCode, ClassificationErrorDTO::getMessage));
 
     this.assessmentsBalanceViewSearchControllerApi = new AssessmentsBalanceViewSearchControllerApi(apiClient);
   }

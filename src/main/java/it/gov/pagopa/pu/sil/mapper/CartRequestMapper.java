@@ -6,7 +6,8 @@ import it.gov.pagopa.nodo.checkout.dto.generated.PaymentNotice;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -39,7 +41,7 @@ public class CartRequestMapper {
       .flatMap(dp -> dp.getPaymentOptions().stream())
       .flatMap(option -> option.getInstallments().stream())
       .map(installment -> (PaymentNotice) PaymentNotice.builder()
-        .noticeNumber(installment.getNav())
+        .noticeNumber(Objects.requireNonNull(installment.getNav()))
         .fiscalCode(org.getOrgFiscalCode())
         .amount(installment.getAmountCents().intValue())
         .companyName(org.getOrgName())
@@ -50,16 +52,18 @@ public class CartRequestMapper {
     boolean allCCP = debtPositions.stream()
       .flatMap(dp -> dp.getPaymentOptions().stream())
       .flatMap(option -> option.getInstallments().stream())
-      .flatMap(installment -> installment.getTransfers().stream())
+      .flatMap(installment -> Objects.requireNonNull(installment.getTransfers()).stream())
       .allMatch(transfer -> StringUtils.isNotBlank(transfer.getPostalIban()));
 
-    URI callbackUriOk, callbackUriKo, callbackUriCancel;
+    URI callbackUriOk;
+    URI callbackUriKo;
+    URI callbackUriCancel;
     try {
       callbackUriOk = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlOk));
       callbackUriKo = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlKo));
       callbackUriCancel = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlCancel));
-    } catch (URISyntaxException use) {
-      throw new ApplicationException(use);
+    } catch (URISyntaxException e) {
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, "Malformed DebtPosition callback URI", e);
     }
 
     return CartRequest.builder()
@@ -78,23 +82,25 @@ public class CartRequestMapper {
   public CartRequest mapInstallmentToCartRequest(InstallmentDTO installment, Organization org,
                                                  String cartId, String requestCallbackUrl) {
     PaymentNotice paymentNotice = PaymentNotice.builder()
-      .noticeNumber(installment.getNav())
+      .noticeNumber(Objects.requireNonNull(installment.getNav()))
       .fiscalCode(org.getOrgFiscalCode())
       .amount(installment.getAmountCents().intValue())
       .companyName(org.getOrgName())
       .description(installment.getRemittanceInformation())
       .build();
 
-    boolean allCCP = installment.getTransfers().stream()
+    boolean allCCP = Objects.requireNonNull(installment.getTransfers()).stream()
       .allMatch(transfer -> StringUtils.isNotBlank(transfer.getPostalIban()));
 
-    URI callbackUriOk, callbackUriKo, callbackUriCancel;
+    URI callbackUriOk;
+    URI callbackUriKo;
+    URI callbackUriCancel;
     try {
       callbackUriOk = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlOk));
       callbackUriKo = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlKo));
       callbackUriCancel = new URI(StringUtils.firstNonBlank(requestCallbackUrl, defaultCallbackUrlCancel));
-    } catch (URISyntaxException use) {
-      throw new ApplicationException(use);
+    } catch (URISyntaxException e) {
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, "Malformed Installment callback URI", e);
     }
 
     return CartRequest.builder()

@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
+import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
-import it.gov.pagopa.pu.sil.exception.responseerrorhandler.DebtPositionsResponseErrorHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,48 +14,67 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import tools.jackson.databind.json.JsonMapper;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class DebtPositionsApisHolderTest extends BaseApiHolderTest {
-    @Mock
-    private RestTemplateBuilder restTemplateBuilderMock;
+  @Mock
+  private RestTemplateBuilder restTemplateBuilderMock;
 
-    private DebtPositionsApisHolder apisHolder;
+  private DebtPositionsApisHolder apisHolder;
+  private DebtPositionsApiClientConfig apiClientConfig;
 
-    @BeforeEach
-    void setUp() {
-        Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-        Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-        Mockito.doNothing().when(restTemplateMock).setErrorHandler(Mockito.any(
-          DebtPositionsResponseErrorHandler.class));
-        DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
-          .baseUrl("http://example.com")
-          .build();
-        apisHolder = new DebtPositionsApisHolder(clientConfig, restTemplateBuilderMock, new JsonMapper());
-    }
+  @BeforeEach
+  void setUp() {
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
 
-    @AfterEach
-    void verifyNoMoreInteractions() {
-        Mockito.verifyNoMoreInteractions(
-                restTemplateBuilderMock,
-                restTemplateMock
-        );
-    }
+    apiClientConfig = DebtPositionsApiClientConfig.builder()
+      .baseUrl("http://example.com")
+      .maxAttempts(3)
+      .build();
+    apisHolder = new DebtPositionsApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonMapper());
 
-    @Test
-    void whenGetDebtPositionTypeOrgSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-        assertAuthenticationShouldBeSetInThreadSafeMode(
-                accessToken -> apisHolder.getDebtPositionTypeOrgSearchControllerApi(accessToken)
-                        .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(1L, "CODE"),
-                new ParameterizedTypeReference<>() {},
-                apisHolder::unload);
-    }
+    verify(restTemplateMock)
+      .setErrorHandler(Mockito.any(HttpClientErrorJsonBodyHandler.class));
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      restTemplateBuilderMock,
+      restTemplateMock
+    );
+  }
+
+  @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken -> apisHolder.getDebtPositionTypeOrgSearchControllerApi(accessToken)
+        .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(1L, "CODE"),
+      new ParameterizedTypeReference<>() {
+      }
+    );
+  }
+
+  @Test
+  void whenGetDebtPositionTypeOrgSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> apisHolder.getDebtPositionTypeOrgSearchControllerApi(accessToken)
+        .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(1L, "CODE"),
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
+  }
 
   @Test
   void whenGetDebtPositionTypeEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getDebtPositionTypeEntityControllerApi(accessToken)
         .crudGetDebtpositiontype("1"),
-      new ParameterizedTypeReference<>() {},
+      new ParameterizedTypeReference<>() {
+      },
       apisHolder::unload);
   }
 
@@ -64,7 +83,8 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getInstallmentApi(accessToken)
         .getInstallmentsByOrganizationIdAndNav(1L, "NAV", null),
-      new ParameterizedTypeReference<>() {},
+      new ParameterizedTypeReference<>() {
+      },
       apisHolder::unload);
   }
 
@@ -73,7 +93,8 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getInstallmentNoPiiSearchControllerApi(accessToken)
         .crudInstallmentsIsInstallmentExists(1L, "IUD", "IUV", "NAV", null),
-      new ParameterizedTypeReference<>() {},
+      new ParameterizedTypeReference<>() {
+      },
       apisHolder::unload);
   }
 
@@ -82,7 +103,8 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getDebtPositionApi(accessToken)
         .getDebtPositionByInstallmentId(1L),
-      new ParameterizedTypeReference<>() {},
+      new ParameterizedTypeReference<>() {
+      },
       apisHolder::unload);
   }
 
@@ -91,7 +113,8 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getDebtPositionSearchControllerApi(accessToken)
         .crudDebtPositionsFindByInstallmentId(1L),
-      new ParameterizedTypeReference<>() {},
+      new ParameterizedTypeReference<>() {
+      },
       apisHolder::unload);
   }
 
@@ -100,7 +123,8 @@ class DebtPositionsApisHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> apisHolder.getReceiptApi(accessToken)
         .getReceipt(1L),
-      new ParameterizedTypeReference<>() {},
+      new ParameterizedTypeReference<>() {
+      },
       apisHolder::unload);
   }
 
