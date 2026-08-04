@@ -117,6 +117,12 @@ public class CommonExceptionHandler {
   }
 
   static String getRequestDetails(HttpServletRequest request) {
-    return "%s %s".formatted(request.getMethod(), request.getRequestURI());
+    String method = Objects.requireNonNullElse(request.getMethod(), "")
+      .replace('\n', '_')
+      .replace('\r', '_');
+    String requestUri = Objects.requireNonNullElse(request.getRequestURI(), "")
+      .replace('\n', '_')
+      .replace('\r', '_');
+    return "%s %s".formatted(method, requestUri);
   }
 }
