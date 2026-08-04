@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -72,7 +73,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
     debtPositions.stream()
       .flatMap(debtPosition -> {
         Organization organization = organizations.stream()
-          .filter(org -> org.getOrganizationId().equals(debtPosition.getOrganizationId()))
+          .filter(org -> Objects.equals(org.getOrganizationId(), debtPosition.getOrganizationId()))
           .findFirst()
           .orElseThrow();
 
@@ -85,7 +86,7 @@ public class PaaSILChiediStoricoPagamentiService extends AbstractDebtorQueryPaym
               payment.setRt(new DataHandler(new ByteArrayDataSource("application/octet-stream", receiptData)));
               payment.setCodIpaEnte(organization.getIpaCode());
               payment.setDeNomeEnte(organization.getOrgName());
-              payment.setUrlDownloadRT(composeReceiptDownloadUrl(organization.getOrganizationId(), organization.getIpaCode(), installment.getReceiptId()));
+              payment.setUrlDownloadRT(composeReceiptDownloadUrl(organization.getOrganizationId(), organization.getIpaCode(), Objects.requireNonNull(installment.getReceiptId())));
               byte[] pagatiConRicevuta = pagatiMapper.mapDebtPositionsToEncodedPagatiConRicevuta(installment, organization, accessToken);
               payment.setCtPagatiConRicevuta(new DataHandler(new ByteArrayDataSource("application/octet-stream", pagatiConRicevuta)));
               return payment;

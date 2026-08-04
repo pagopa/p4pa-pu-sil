@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.organization.dto.generated.JwtAlgorithm;
 import it.gov.pagopa.pu.sil.util.CertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
-@Component
+@Service
 public class AlgorithmResolverService {
   private static final String RSA = "RSA";
   private static final String ECDSA = "EC";
