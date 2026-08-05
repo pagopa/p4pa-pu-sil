@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.security;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.sil.controller.generated.SendNotificationApi;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.send.SendNotificationRetrieverService;
@@ -25,6 +26,8 @@ class WebSecurityConfigTest {
   private SendNotificationRetrieverService sendNotificationRetrieverService;
   @MockitoBean
   private AuthorizationService authorizationServiceMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {
