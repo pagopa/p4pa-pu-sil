@@ -25,6 +25,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -160,6 +161,19 @@ public abstract class CommonExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
 
+  }
+
+  @Test
+  void handleAuthorizationDeniedException() throws Exception {
+    doThrow(new AuthorizationDeniedException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isForbidden())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("FORBIDDEN"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("FORBIDDEN"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
   @Test
@@ -329,7 +343,7 @@ public abstract class CommonExceptionHandlerTest {
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("TOO_MANY_REQUESTS"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("TOO_MANY_REQUESTS"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("429 TooManyRequests"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())

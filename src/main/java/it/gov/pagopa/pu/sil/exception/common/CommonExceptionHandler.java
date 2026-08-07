@@ -21,6 +21,7 @@ import org.springframework.web.ErrorResponse;
 import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
@@ -51,6 +52,11 @@ public class CommonExceptionHandler {
     return handleException(ex, request, HttpStatus.UNAUTHORIZED, PuSilErrorDTO.CategoryEnum.UNAUTHORIZED);
   }
 
+  @ExceptionHandler(HttpClientErrorException.TooManyRequests.class)
+  public ResponseEntity<PuSilErrorDTO> handleInvokedHttpClientTooManyRequestsError(Exception ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.TOO_MANY_REQUESTS, PuSilErrorDTO.CategoryEnum.TOO_MANY_REQUESTS);
+  }
+
   @ExceptionHandler({ServletException.class, ErrorResponseException.class})
   public ResponseEntity<PuSilErrorDTO> handleServletException(Exception ex, HttpServletRequest request) {
     HttpStatusCode httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -78,7 +84,7 @@ public class CommonExceptionHandler {
 
   @ExceptionHandler({AuthorizationDeniedException.class})
   public ResponseEntity<PuSilErrorDTO> handleAuthorizationDeniedException(Exception ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.FORBIDDEN, PuSilErrorDTO.CategoryEnum.UNAUTHORIZED);
+    return handleException(ex, request, HttpStatus.FORBIDDEN, PuSilErrorDTO.CategoryEnum.FORBIDDEN);
   }
 
   public static ResponseEntity<PuSilErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, PuSilErrorDTO.CategoryEnum errorEnum) {
@@ -96,7 +102,7 @@ public class CommonExceptionHandler {
       .body(new PuSilErrorDTO(errorEnum, code, message, fields, Utilities.getTraceId()));
   }
 
-  private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
+  public static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
     boolean printStackTrace = httpStatus.is5xxServerError();
     Level logLevel = printStackTrace ? Level.ERROR : Level.INFO;
     log.makeLoggingEventBuilder(logLevel)
@@ -116,7 +122,7 @@ public class CommonExceptionHandler {
     return exceptionMessageTranscoderService.transcode(ex);
   }
 
-  static String getRequestDetails(HttpServletRequest request) {
+  public static String getRequestDetails(HttpServletRequest request) {
     String method = Objects.requireNonNullElse(request.getMethod(), "")
       .replace('\n', '_')
       .replace('\r', '_');
