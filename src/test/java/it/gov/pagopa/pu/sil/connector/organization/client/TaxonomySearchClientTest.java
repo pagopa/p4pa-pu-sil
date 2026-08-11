@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.sil.connector.organization.client;
 import it.gov.pagopa.pu.organization.client.generated.TaxonomySearchControllerApi;
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.organization.config.OrganizationApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TaxonomySearchClientTest {
@@ -44,9 +46,9 @@ class TaxonomySearchClientTest {
         String taxonomyCode = "TAXONOMYCODE";
         Taxonomy expectedResult = new Taxonomy();
 
-        Mockito.when(organizationApisHolderMock.getTaxonomyCodeDtoSearchControllerApi(accessToken))
+        when(organizationApisHolderMock.getTaxonomyCodeDtoSearchControllerApi(accessToken))
                 .thenReturn(taxonomySearchControllerApiMock);
-        Mockito.when(taxonomySearchControllerApiMock.crudTaxonomiesFindByTaxonomyCode(taxonomyCode))
+        when(taxonomySearchControllerApiMock.crudTaxonomiesFindByTaxonomyCode(taxonomyCode))
                 .thenReturn(expectedResult);
 
         // When
@@ -62,10 +64,10 @@ class TaxonomySearchClientTest {
     String accessToken = "ACCESSTOKEN";
     String taxonomyCode = "TAXONOMYCODE";
 
-    Mockito.when(organizationApisHolderMock.getTaxonomyCodeDtoSearchControllerApi(accessToken))
+    when(organizationApisHolderMock.getTaxonomyCodeDtoSearchControllerApi(accessToken))
       .thenReturn(taxonomySearchControllerApiMock);
-    Mockito.when(taxonomySearchControllerApiMock.crudTaxonomiesFindByTaxonomyCode(taxonomyCode))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+    when(taxonomySearchControllerApiMock.crudTaxonomiesFindByTaxonomyCode(taxonomyCode))
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     // When
     Taxonomy result = taxonomySearchClient.findByTaxonomyCode(taxonomyCode, accessToken);

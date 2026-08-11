@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.fileshare.config;
 
-import it.gov.pagopa.pu.fileshare.controller.ApiClient;
-import it.gov.pagopa.pu.fileshare.controller.BaseApi;
-import it.gov.pagopa.pu.fileshare.controller.generated.ReceiptApi;
+import it.gov.pagopa.pu.fileshare.generated.ApiClient;
+import it.gov.pagopa.pu.fileshare.generated.BaseApi;
+import it.gov.pagopa.pu.fileshare.client.generated.ReceiptApi;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import jakarta.annotation.PreDestroy;

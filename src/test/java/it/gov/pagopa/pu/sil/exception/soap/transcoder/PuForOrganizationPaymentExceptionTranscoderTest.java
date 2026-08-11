@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.sil.exception.soap.SoapFaultTranscoded;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
@@ -87,6 +88,7 @@ class PuForOrganizationPaymentExceptionTranscoderTest extends BaseSoapExceptionT
     // Given
     RestInvokeConflictException exception = new RestInvokeConflictException(
       "APPNAME",
+      HttpStatus.CONFLICT,
       "CATEGORY",
       "IMMUTABLE_FIELD",
       "ERROR MESSAGE",

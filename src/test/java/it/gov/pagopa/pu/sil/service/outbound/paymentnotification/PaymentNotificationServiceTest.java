@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.service.outbound.paymentnotification;
 
-import it.gov.pagopa.paymentnotification.dto.generated.PaymentDataDTO;
-import it.gov.pagopa.paymentnotification.legacy.dto.generated.PaymentNotification;
+import it.gov.pagopa.sil.paymentnotification.dto.generated.PaymentDataDTO;
+import it.gov.pagopa.sil.paymentnotificationlegacy.dto.generated.PaymentNotification;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
@@ -11,8 +11,8 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.connector.paymentnotification.LegacyPaymentNotificationService;
-import it.gov.pagopa.pu.sil.connector.paymentnotification.NativePaymentNotificationService;
+import it.gov.pagopa.pu.sil.connector.sil.paymentnotification.LegacyPaymentNotificationService;
+import it.gov.pagopa.pu.sil.connector.sil.paymentnotification.NativePaymentNotificationService;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.mapper.PaymentNotificationMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;

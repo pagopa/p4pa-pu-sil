@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.config;
 
-import it.gov.pagopa.pu.debtpositions.controller.ApiClient;
-import it.gov.pagopa.pu.debtpositions.controller.BaseApi;
-import it.gov.pagopa.pu.debtpositions.controller.generated.*;
+import it.gov.pagopa.pu.debtpositions.generated.ApiClient;
+import it.gov.pagopa.pu.debtpositions.generated.BaseApi;
+import it.gov.pagopa.pu.debtpositions.client.generated.*;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import it.gov.pagopa.pu.sil.connector.debtpositions.mapper.DebtPositionErrorDTOMapper;

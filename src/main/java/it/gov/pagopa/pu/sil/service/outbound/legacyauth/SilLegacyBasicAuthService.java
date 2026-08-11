@@ -1,11 +1,11 @@
 package it.gov.pagopa.pu.sil.service.outbound.legacyauth;
 
-import it.gov.pagopa.actualization.legacy.dto.generated.Credentials;
-import it.gov.pagopa.actualization.legacy.dto.generated.Token;
+import it.gov.pagopa.sil.actualizationlegacy.dto.generated.Credentials;
+import it.gov.pagopa.sil.actualizationlegacy.dto.generated.Token;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.auth.dto.generated.AccessToken;
 import it.gov.pagopa.pu.organization.dto.generated.SilServiceLegacyBasicAuthConfigDTO;
-import it.gov.pagopa.pu.sil.connector.actualization.LegacyBasicAuthService;
+import it.gov.pagopa.pu.sil.connector.sil.actualization.LegacyBasicAuthService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

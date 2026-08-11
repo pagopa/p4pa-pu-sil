@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.connector.auth.config;
 
-import it.gov.pagopa.pu.auth.controller.ApiClient;
-import it.gov.pagopa.pu.auth.controller.BaseApi;
-import it.gov.pagopa.pu.auth.controller.generated.AuthnApi;
+import it.gov.pagopa.pu.auth.generated.ApiClient;
+import it.gov.pagopa.pu.auth.generated.BaseApi;
+import it.gov.pagopa.pu.auth.client.generated.AuthnApi;
 import it.gov.pagopa.pu.auth.dto.generated.AuthErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import jakarta.annotation.PreDestroy;

@@ -58,7 +58,7 @@ val micrometerVersion = "1.7.0"
 val httpClientVersion = "5.6.1"
 val httpCoreVersion = "5.4.2"
 val kafkaAppender = "0.2.0-RC2"
-val lz4JavaVersion = "1.11.0"
+val lz4JavaVersion = "1.11.1"
 val springWolfAsyncApiVersion = "1.21.0"
 val springWolfUiAsyncApiVersion = "1.21.0"
 val podamVersion = "8.0.2.RELEASE"
@@ -295,7 +295,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-auth.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.auth.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.auth.generated")
+  apiPackage.set("it.gov.pagopa.pu.auth.client.generated")
   modelPackage.set("it.gov.pagopa.pu.auth.dto.generated")
   configOptions.set(
     mapOf(
@@ -328,7 +329,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-send-notification.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.sendnotification.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.sendnotification.generated")
+  apiPackage.set("it.gov.pagopa.pu.sendnotification.client.generated")
   modelPackage.set("it.gov.pagopa.pu.sendnotification.dto.generated")
   configOptions.set(
     mapOf(
@@ -361,7 +363,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-process-executions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.processexecutions.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.processexecutions.generated")
+  apiPackage.set("it.gov.pagopa.pu.processexecutions.client.generated")
   modelPackage.set("it.gov.pagopa.pu.processexecutions.dto.generated")
   typeMappings.set(
     mapOf(
@@ -398,7 +401,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-debt-positions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.debtpositions.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.debtpositions.generated")
+  apiPackage.set("it.gov.pagopa.pu.debtpositions.client.generated")
   modelPackage.set("it.gov.pagopa.pu.debtpositions.dto.generated")
   typeMappings.set(
     mapOf(
@@ -436,7 +440,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/node_checkout.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.nodo.checkout.controller.generated")
+  invokerPackage.set("it.gov.pagopa.nodo.checkout.generated")
+  apiPackage.set("it.gov.pagopa.nodo.checkout.client.generated")
   modelPackage.set("it.gov.pagopa.nodo.checkout.dto.generated")
   configOptions.set(
     mapOf(
@@ -501,8 +506,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/amount-updates-legacy.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
-  modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
+  invokerPackage.set("it.gov.pagopa.sil.actualizationlegacy.generated")
+  apiPackage.set("it.gov.pagopa.sil.actualizationlegacy.client.generated")
+  modelPackage.set("it.gov.pagopa.sil.actualizationlegacy.dto.generated")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
@@ -533,8 +539,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/amount-updates.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.actualization.controller.generated")
-  modelPackage.set("it.gov.pagopa.actualization.dto.generated")
+  invokerPackage.set("it.gov.pagopa.sil.actualization.generated")
+  apiPackage.set("it.gov.pagopa.sil.actualization.client.generated")
+  modelPackage.set("it.gov.pagopa.sil.actualization.dto.generated")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
@@ -565,7 +572,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-workflow-hub.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   invokerPackage.set("it.gov.pagopa.pu.workflowhub.generated")
-  apiPackage.set("it.gov.pagopa.pu.workflowhub.controller.generated")
+  apiPackage.set("it.gov.pagopa.pu.workflowhub.client.generated")
   modelPackage.set("it.gov.pagopa.pu.workflowhub.dto.generated")
   typeMappings.set(
     mapOf(
@@ -631,7 +638,8 @@ jaxb {
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-registries.generated.openapi.json")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.pu.registries.controller.generated")
+    invokerPackage.set("it.gov.pagopa.pu.registries.generated")
+    apiPackage.set("it.gov.pagopa.pu.registries.client.generated")
     modelPackage.set("it.gov.pagopa.pu.registries.dto.generated")
     configOptions.set(
       mapOf(
@@ -664,7 +672,8 @@ jaxb {
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-fileshare.openapi.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
+    invokerPackage.set("it.gov.pagopa.pu.fileshare.generated")
+    apiPackage.set("it.gov.pagopa.pu.fileshare.client.generated")
     modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
     typeMappings.set(
       mapOf(
@@ -703,8 +712,9 @@ jaxb {
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/external/payment-notification.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.paymentnotification.controller.generated")
-    modelPackage.set("it.gov.pagopa.paymentnotification.dto.generated")
+    invokerPackage.set("it.gov.pagopa.sil.paymentnotification.generated")
+    apiPackage.set("it.gov.pagopa.sil.paymentnotification.client.generated")
+    modelPackage.set("it.gov.pagopa.sil.paymentnotification.dto.generated")
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
@@ -734,8 +744,9 @@ jaxb {
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/external/payment-notification-legacy.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.paymentnotification.legacy.controller.generated")
-    modelPackage.set("it.gov.pagopa.paymentnotification.legacy.dto.generated")
+    invokerPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.generated")
+    apiPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.client.generated")
+    modelPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.dto.generated")
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",

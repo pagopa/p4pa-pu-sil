@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.processexecutions.client;
 
-import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.sil.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import org.junit.jupiter.api.AfterEach;
@@ -12,10 +12,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileClientTest {
-
-  private final String accessToken = "ACCESSTOKEN";
 
   @Mock
   private ProcessExecutionsApisHolder processExecutionsApisHolderMock;
@@ -42,9 +42,10 @@ class IngestionFlowFileClientTest {
     Long expectedId = 77L;
     IngestionFlowFileRequestDTO dto = new IngestionFlowFileRequestDTO();
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
+    String accessToken = "ACCESSTOKEN";
+    when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
       .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFileReservation(dto))
+    when(ingestionFlowFileControllerApiMock.createIngestionFlowFileReservation(dto))
       .thenReturn(expectedId);
 
     // When

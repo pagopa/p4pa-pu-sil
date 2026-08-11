@@ -1,10 +1,11 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentApi;
-import it.gov.pagopa.pu.debtpositions.controller.generated.InstallmentNoPiiSearchControllerApi;
+import it.gov.pagopa.pu.debtpositions.client.generated.InstallmentApi;
+import it.gov.pagopa.pu.debtpositions.client.generated.InstallmentNoPiiSearchControllerApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentNoPII;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,11 +14,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
 import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InstallmentClientTest {
@@ -54,9 +56,9 @@ class InstallmentClientTest {
       String iuv = "IUV";
       String nav = "NAV";
 
-      Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
+      when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
           .thenReturn(installmentNoPiiSearchControllerApiMock);
-      Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsIsInstallmentExists(organizationId, iud, iuv, nav, ORDINARY_DEBT_POSITION_ORIGINS))
+      when(installmentNoPiiSearchControllerApiMock.crudInstallmentsIsInstallmentExists(organizationId, iud, iuv, nav, ORDINARY_DEBT_POSITION_ORIGINS))
           .thenReturn(Boolean.TRUE);
 
       // When
@@ -72,9 +74,9 @@ class InstallmentClientTest {
     String accessToken = "ACCESSTOKEN";
     List<InstallmentDTO> expectedResult = List.of(new InstallmentDTO());
 
-    Mockito.when(apisHolderMock.getInstallmentApi(accessToken))
+    when(apisHolderMock.getInstallmentApi(accessToken))
       .thenReturn(installmentApiMock);
-    Mockito.when(installmentApiMock.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null)).thenReturn(expectedResult);
+    when(installmentApiMock.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null)).thenReturn(expectedResult);
 
     //when
     List<InstallmentDTO> result = client.getInstallmentsByOrganizationIdAndNav(1L, "NAV", null, accessToken);
@@ -95,9 +97,9 @@ class InstallmentClientTest {
 
     InstallmentNoPII expectedResult = new InstallmentNoPII();
 
-    Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
+    when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
       .thenReturn(installmentNoPiiSearchControllerApiMock);
-    Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
+    when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
         organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
       .thenReturn(expectedResult);
 
@@ -119,11 +121,11 @@ class InstallmentClientTest {
     int transferIndex = 1;
     String operatorExternalUserId = "OPERATOR_ID";
 
-    Mockito.when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
+    when(apisHolderMock.getInstallmentNoPiiSearchControllerApi(accessToken))
       .thenReturn(installmentNoPiiSearchControllerApiMock);
-    Mockito.when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
+    when(installmentNoPiiSearchControllerApiMock.crudInstallmentsFindAuthorizedByTransferSemanticKey(
       organizationId, iuv, iur, transferIndex, operatorExternalUserId, ORDINARY_DEBT_POSITION_ORIGINS))
-      .thenThrow(HttpClientErrorException.NotFound.class);
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     // When
     InstallmentNoPII result = client.findAuthorizedByTransferSemanticKey(

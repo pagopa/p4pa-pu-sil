@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.connector.send_notification.config;
 
-import it.gov.pagopa.pu.sendnotification.controller.ApiClient;
-import it.gov.pagopa.pu.sendnotification.controller.BaseApi;
-import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
-import it.gov.pagopa.pu.sendnotification.controller.generated.SendApi;
+import it.gov.pagopa.pu.sendnotification.generated.ApiClient;
+import it.gov.pagopa.pu.sendnotification.generated.BaseApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.NotificationApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.SendApi;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import jakarta.annotation.PreDestroy;
