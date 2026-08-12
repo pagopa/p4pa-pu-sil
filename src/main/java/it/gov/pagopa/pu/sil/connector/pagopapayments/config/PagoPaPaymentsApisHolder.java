@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.pagopapayments.dto.generated.PagoPaPaymentsErrorDTO;
 import it.gov.pagopa.pu.pagopapayments.generated.ApiClient;
 import it.gov.pagopa.pu.pagopapayments.generated.BaseApi;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.connector.pagopapayments.mapper.PagoPaPaymentsErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.context.annotation.Lazy;
@@ -30,7 +31,7 @@ public class PagoPaPaymentsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "PAGOPA-PAYMENTS", clientConfig.isPrintBodyWhenError(),
-      PagoPaPaymentsErrorDTO.class, PagoPaPaymentsErrorDTO::getCode, PagoPaPaymentsErrorDTO::getMessage));
+      PagoPaPaymentsErrorDTO.class, PagoPaPaymentsErrorDTOMapper::map));
 
     this.printPaymentNoticeApi = new PrintPaymentNoticeApi(apiClient);
   }

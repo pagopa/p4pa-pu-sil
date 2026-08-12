@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.classification.dto.generated.ClassificationErrorDTO;
 import it.gov.pagopa.pu.classification.generated.ApiClient;
 import it.gov.pagopa.pu.classification.generated.BaseApi;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.connector.classification.mapper.ClassificationErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class ClassificationApisHolder {
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
 
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "CLASSIFICATION", clientConfig.isPrintBodyWhenError(),
-      ClassificationErrorDTO.class, ClassificationErrorDTO::getCode, ClassificationErrorDTO::getMessage));
+      ClassificationErrorDTO.class, ClassificationErrorDTOMapper::map));
 
     this.assessmentsBalanceViewSearchControllerApi = new AssessmentsBalanceViewSearchControllerApi(apiClient);
   }

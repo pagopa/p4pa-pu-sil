@@ -8,6 +8,7 @@ import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileCont
 import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.connector.processexecutions.mapper.ProcessExecutionsErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class ProcessExecutionsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "PROCESS-EXECUTIONS", clientConfig.isPrintBodyWhenError(),
-      ProcessExecutionsErrorDTO.class, ProcessExecutionsErrorDTO::getCode, ProcessExecutionsErrorDTO::getMessage));
+      ProcessExecutionsErrorDTO.class, ProcessExecutionsErrorDTOMapper::map));
 
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
     this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);

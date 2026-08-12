@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.auth.generated.BaseApi;
 import it.gov.pagopa.pu.auth.client.generated.AuthnApi;
 import it.gov.pagopa.pu.auth.dto.generated.AuthErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.connector.auth.mapper.AuthErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class AuthApisHolder {
         apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
         apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
         restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "AUTH", clientConfig.isPrintBodyWhenError(),
-          AuthErrorDTO.class, AuthErrorDTO::getCode, AuthErrorDTO::getErrorDescription));
+          AuthErrorDTO.class, AuthErrorDTOMapper::map));
 
         this.authnApi = new AuthnApi(apiClient);
     }
