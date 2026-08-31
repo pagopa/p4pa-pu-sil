@@ -5,6 +5,8 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.AbstractQueryPaymentsService;
@@ -14,6 +16,7 @@ import it.veneto.regione.pagamenti.ente.PaaSILChiediPagati;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiRisposta;
 import jakarta.activation.DataHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +59,9 @@ public class PaaSILChiediPagatiService extends AbstractQueryPaymentsService<PaaS
 
   @Override
   protected PaymentStatusRequest validateAndTransformRequest(PaaSILChiediPagati request, String orgIpaCode) {
-    // no validation needed in this scenario
+    if(StringUtils.isBlank(request.getIdSession())) {
+      throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Errore, è obbligatorio specificare un idSession.");
+    }
     return new PaymentStatusRequest(orgIpaCode, QueryPaymentStatusType.INSTALLMENT_ID, request.getIdSession(), false);
   }
 }

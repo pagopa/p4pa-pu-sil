@@ -20,6 +20,7 @@ import it.gov.pagopa.pu.sil.util.Constants;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.activation.DataHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -91,6 +92,9 @@ public abstract class BaseDebtPositionHandler<I, O> {
     //for modify and cancel we always have only one installment to sync (the one with the IUD passed in input)
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
     String iud = installmentToSync.getIud();
+    if(StringUtils.isBlank(iud)) {
+      throw new SilFaultException(SilFaults.PAA_IUD_NON_VALIDO, "Errore, è obbligatorio specificare identificativoUnivocoDovuto.");
+    }
 
     //find the existing debt position on db
     Pair<DebtPositionDTO, InstallmentDTO> debtPositionWithInstallment = findSyncableDebtPositionByIud(organization.getOrganizationId(), iud, accessToken);
