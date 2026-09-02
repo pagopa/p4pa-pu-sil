@@ -1,9 +1,10 @@
 package it.gov.pagopa.pu.sil.connector.send_notification.client;
 
-import it.gov.pagopa.pu.sendnotification.controller.generated.SendApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.SendApi;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDownloadMetadataDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactListElementDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.config.SendNotificationApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +14,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -92,8 +92,8 @@ class SendClientTest {
 
     when(sendNotificationApisHolderMock.getSendApi(accessToken))
       .thenReturn(sendApiMock);
-    when(sendApiMock.retrieveLegalFactDownloadMetadata(sendNotificationId, legalFactId)).thenThrow(
-      HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+    when(sendApiMock.retrieveLegalFactDownloadMetadata(sendNotificationId, legalFactId))
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     // when
     LegalFactDownloadMetadataDTO actualResult = sendClient.getLegalFactDownloadMetadata(sendNotificationId, legalFactId, accessToken);

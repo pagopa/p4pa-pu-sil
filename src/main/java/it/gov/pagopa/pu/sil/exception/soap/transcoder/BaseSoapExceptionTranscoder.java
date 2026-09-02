@@ -50,7 +50,7 @@ public abstract class BaseSoapExceptionTranscoder {
       if(exception instanceof BaseBusinessException bbe) {
         getLogger().warn("Error code not mapped: {}", bbe.getCode());
       } else {
-        getLogger().error("System error occurred", exception);
+        getLogger().error("System error occurred: [{}] {}", exception.getClass().getSimpleName(), exception.getMessage(), exception);
       }
 
       out = new SoapFaultTranscoded(

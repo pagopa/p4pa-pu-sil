@@ -1,9 +1,11 @@
 package it.gov.pagopa.pu.sil.connector;
 
 import it.gov.pagopa.pu.sil.config.rest.ApiClientConfig;
+import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.core.ParameterizedTypeReference;
@@ -38,6 +40,36 @@ public abstract class BaseApiHolderTest {
   protected RestTemplate restTemplateMock;
   @Mock
   protected Void voidMock;
+
+  protected void verifyHttpClientErrorJsonBodyHandlerConfiguration(Object api) {
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<HttpClientErrorJsonBodyHandler> captor = ArgumentCaptor.forClass(HttpClientErrorJsonBodyHandler.class);
+    verify(restTemplateMock)
+      .setErrorHandler(captor.capture());
+
+    HttpClientErrorJsonBodyHandler<?> errorHandler = captor.getValue();
+    String apiPackage = api
+      .getClass().getPackageName()
+      .replace(".client", "")
+      .replace(".generated", "");
+
+    Assertions.assertEquals(
+      apiPackage,
+      errorHandler.getErrorDtoClass().getPackageName()
+        .replace(".dto", "")
+        .replace(".generated", "")
+    );
+
+    Assertions.assertEquals(
+      apiPackage
+        .replaceFirst("it\\.gov\\.pagopa\\.(pu\\.)?", "")
+        .replace(".", ""),
+      errorHandler.getApplicationName()
+        .toLowerCase()
+        .replace("_","")
+        .replace("-", "")
+    );
+  }
 
   protected <T> void assertAuthenticationShouldBeSetInThreadSafeMode(Function<String, T> apiInvoke, ParameterizedTypeReference<T> apiReturnedType, Runnable apiUnloader) throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(apiInvoke, apiReturnedType, apiUnloader, AUTH_TYPE.BEARER);

@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.classification.config;
 
-import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.config.json.JsonConfig;
 import it.gov.pagopa.pu.sil.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,9 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-import tools.jackson.databind.json.JsonMapper;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,10 +32,9 @@ class ClassificationApisHolderTest extends BaseApiHolderTest {
       .baseUrl("http://example.com")
       .maxAttempts(3)
       .build();
-    apisHolder = new ClassificationApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonMapper());
+    apisHolder = new ClassificationApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonConfig().objectMapperJackson3());
 
-    verify(restTemplateMock)
-      .setErrorHandler(Mockito.any(HttpClientErrorJsonBodyHandler.class));
+    verifyHttpClientErrorJsonBodyHandlerConfiguration(apisHolder.getAssessmentsBalanceViewSearchControllerApi(null));
   }
 
   @AfterEach

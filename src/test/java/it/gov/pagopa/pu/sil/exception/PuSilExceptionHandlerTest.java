@@ -4,11 +4,9 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDT
 import it.gov.pagopa.pu.sil.exception.common.CommonExceptionHandlerTest;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
-import org.apache.hc.client5.http.HttpHostConnectException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -38,19 +36,6 @@ class PuSilExceptionHandlerTest extends CommonExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
-  }
-
-  @Test
-  void handleHttpHostConnectionExceptionException() throws Exception {
-    doThrow(new RuntimeException("connection refused", new HttpHostConnectException("error"))).when(testControllerSpy).testEndpoint(DATA, BODY);
-
-    performRequest(DATA, MediaType.APPLICATION_JSON)
-      .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("PU_SIL_CONNECTION_ERROR"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("connection refused"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
@@ -88,19 +73,6 @@ class PuSilExceptionHandlerTest extends CommonExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isConflict())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("BAD_REQUEST"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("INVALID_PAYMENT_STATUS"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
-  }
-
-  @Test
-  void handleAuthorizationDeniedException() throws Exception {
-    doThrow(new AuthorizationDeniedException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
-
-    performRequest(DATA, MediaType.APPLICATION_JSON)
-      .andExpect(MockMvcResultMatchers.status().isForbidden())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("UNAUTHORIZED"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("UNAUTHORIZED"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));

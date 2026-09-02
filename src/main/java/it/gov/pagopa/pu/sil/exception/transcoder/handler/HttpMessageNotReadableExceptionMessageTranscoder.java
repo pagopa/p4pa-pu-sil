@@ -36,6 +36,6 @@ public class HttpMessageNotReadableExceptionMessageTranscoder implements Excepti
     } else if (httpMessageNotReadableException.getCause() instanceof JacksonException jacksonException) {
       errorMsg = "Cannot parse body. " + jacksonException.getOriginalMessage();
     }
-    return new ExceptionMessageTranscoded(PuSilErrorDTO.CategoryEnum.BAD_REQUEST.name(), errorMsg, fields);
+    return new ExceptionMessageTranscoded(PuSilErrorDTO.CategoryEnum.BAD_REQUEST.getValue(), errorMsg, fields);
   }
 }

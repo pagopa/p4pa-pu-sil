@@ -13,7 +13,7 @@ public class MissingServletRequestParameterExceptionMessageTranscoder implements
   @Override
   public ExceptionMessageTranscoded transcode(MissingServletRequestParameterException missingServletRequestParameterException) {
     return new ExceptionMessageTranscoded(
-      PuSilErrorDTO.CategoryEnum.BAD_REQUEST.name(),
+      PuSilErrorDTO.CategoryEnum.BAD_REQUEST.getValue(),
       missingServletRequestParameterException.getMessage(),
       List.of(new ErrorFieldDTO(missingServletRequestParameterException.getParameterName(), "NotNull", missingServletRequestParameterException.getMessage())));
   }

@@ -1,11 +1,12 @@
 package it.gov.pagopa.pu.sil.connector.send_notification.config;
 
-import it.gov.pagopa.pu.sendnotification.controller.ApiClient;
-import it.gov.pagopa.pu.sendnotification.controller.BaseApi;
-import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
-import it.gov.pagopa.pu.sendnotification.controller.generated.SendApi;
+import it.gov.pagopa.pu.sendnotification.generated.ApiClient;
+import it.gov.pagopa.pu.sendnotification.generated.BaseApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.NotificationApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.SendApi;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.connector.send_notification.mapper.SendNotificationErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class SendNotificationApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "SEND_NOTIFICATION", clientConfig.isPrintBodyWhenError(),
-      SendNotificationErrorDTO.class, SendNotificationErrorDTO::getCode, SendNotificationErrorDTO::getMessage));
+      SendNotificationErrorDTO.class, SendNotificationErrorDTOMapper::map));
 
     this.notificationApi = new NotificationApi(apiClient);
     this.sendApi = new SendApi(apiClient);

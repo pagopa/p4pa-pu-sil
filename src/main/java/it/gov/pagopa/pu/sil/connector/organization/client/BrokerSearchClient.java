@@ -2,9 +2,9 @@ package it.gov.pagopa.pu.sil.connector.organization.client;
 
 import it.gov.pagopa.pu.organization.dto.generated.Broker;
 import it.gov.pagopa.pu.sil.connector.organization.config.OrganizationApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @Service
@@ -20,7 +20,7 @@ public class BrokerSearchClient {
     try {
       return organizationApisHolder.getBrokerSearchControllerApi(accessToken)
         .crudBrokersFindByBrokeredOrganizationId(String.valueOf(organizationId));
-    } catch (HttpClientErrorException.NotFound e){
+    } catch (RestInvokeNotFoundException e){
       log.info("Cannot find Broker associated to organizationId {}", organizationId);
       return null;
     }

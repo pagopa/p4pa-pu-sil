@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.sil.connector.pagopa.checkout.client;
 
-import it.gov.pagopa.nodo.checkout.controller.ApiClient;
-import it.gov.pagopa.nodo.checkout.controller.generated.DefaultApi;
+import it.gov.pagopa.nodo.checkout.generated.ApiClient;
+import it.gov.pagopa.nodo.checkout.client.generated.DefaultApi;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.sil.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.config.CheckoutApiClientConfig;

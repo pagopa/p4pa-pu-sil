@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
-import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
+import it.gov.pagopa.sil.actualization.dto.generated.UpdatedPayment;
+import it.gov.pagopa.sil.actualizationlegacy.dto.generated.PagamentoAggiornato;
 import org.springframework.stereotype.Component;
 
 @Component

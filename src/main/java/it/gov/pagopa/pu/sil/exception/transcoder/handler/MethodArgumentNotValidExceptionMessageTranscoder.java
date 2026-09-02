@@ -32,7 +32,7 @@ public class MethodArgumentNotValidExceptionMessageTranscoder implements Excepti
       .collect(Collectors.joining(";"));
 
     return new ExceptionMessageTranscoded(
-      PuSilErrorDTO.CategoryEnum.BAD_REQUEST.name(),
+      PuSilErrorDTO.CategoryEnum.BAD_REQUEST.getValue(),
       "Invalid request content." + errorDescription,
       errorFields
     );

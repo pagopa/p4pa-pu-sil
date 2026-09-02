@@ -17,6 +17,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.HttpHostConnectException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +26,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -85,6 +87,11 @@ public abstract class CommonExceptionHandlerTest {
   void init() {
     TestUtils.clearDefaultTimezone();
     UtilitiesTest.setTraceId(traceId);
+  }
+
+  @AfterEach
+  void clear() {
+    UtilitiesTest.clearTraceIdContext();
   }
 
   @Data
@@ -160,6 +167,19 @@ public abstract class CommonExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
 
+  }
+
+  @Test
+  void handleAuthorizationDeniedException() throws Exception {
+    doThrow(new AuthorizationDeniedException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isForbidden())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("FORBIDDEN"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("FORBIDDEN"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
   }
 
   @Test
@@ -329,7 +349,7 @@ public abstract class CommonExceptionHandlerTest {
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isTooManyRequests())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("GENERIC_ERROR"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("TOO_MANY_REQUESTS"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("TOO_MANY_REQUESTS"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("429 TooManyRequests"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())

@@ -5,9 +5,9 @@ import it.gov.pagopa.pu.sendnotification.dto.generated.CreateNotificationRespons
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.config.SendNotificationApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class NotificationClient {
     try {
       sendNotificationApisHolder.getNotificationApi(accessToken)
         .deleteSendNotification(sendNotificationId);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       throw new IllegalArgumentException(
         "notification with sendNotificationId %s not found".formatted(
           sendNotificationId));
@@ -41,7 +41,7 @@ public class NotificationClient {
     try{
       return sendNotificationApisHolder.getNotificationApi(accessToken)
         .getSendNotification(sendNotificationId);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.warn("notification with sendNotificationId {} not found", sendNotificationId);
       return null;
     }

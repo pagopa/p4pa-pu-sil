@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.processexecutions.client;
 
-import it.gov.pagopa.pu.processexecutions.controller.generated.ExportFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.ExportFileControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ClassificationsExportFileRequestDTO;
 import it.gov.pagopa.pu.processexecutions.dto.generated.PaidExportFileRequestDTO;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;

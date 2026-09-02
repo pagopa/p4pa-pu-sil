@@ -1,10 +1,9 @@
 package it.gov.pagopa.pu.sil.config.rest;
 
-import it.gov.pagopa.pu.debtpositions.dto.generated.CategoryEnum;
-import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
-import it.gov.pagopa.pu.debtpositions.dto.generated.ErrorFieldDTO;
 import it.gov.pagopa.pu.sil.config.json.JsonConfig;
-import it.gov.pagopa.pu.sil.connector.debtpositions.mapper.DebtPositionErrorDTOMapper;
+import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
+import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO;
+import it.gov.pagopa.pu.sil.dto.generated.PuSilErrorDTO.CategoryEnum;
 import it.gov.pagopa.pu.sil.exception.common.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -31,19 +30,20 @@ class HttpClientErrorJsonBodyHandlerTest {
   HttpClientErrorJsonBodyHandlerTest() throws URISyntaxException {
   }
 
-  private HttpClientErrorJsonBodyHandler<DebtPositionErrorDTO> buildHttpClientErrorHandler(boolean bodyPrinterWhenError) {
+  private HttpClientErrorJsonBodyHandler<PuSilErrorDTO> buildHttpClientErrorHandler(boolean bodyPrinterWhenError) {
     return new HttpClientErrorJsonBodyHandler<>(jsonMapper, "APPNAME", bodyPrinterWhenError,
-      DebtPositionErrorDTO.class, DebtPositionErrorDTOMapper::map);
+      PuSilErrorDTO.class, e -> new PuErrorDTO(e.getCategory().getValue(), e.getCode(), e.getMessage(), e.getFields()));
   }
 
   private final URI url = new URI("http://www.sample.com");
-  private final DebtPositionErrorDTO expectedErrorDTO = new DebtPositionErrorDTO(CategoryEnum.DEBT_POSITION_BAD_REQUEST, "BADREQUEST", "MESSAGE", List.of(new ErrorFieldDTO("FIELD", "FIELDERRORCODE", "FIELDERRORMESSAGE")), "TRACEID");
+  private final PuSilErrorDTO expectedErrorDTO = new PuSilErrorDTO(CategoryEnum.BAD_REQUEST, "BADREQUEST", "MESSAGE", List.of(new ErrorFieldDTO("FIELD", "FIELDERRORCODE", "FIELDERRORMESSAGE")), "TRACEID");
+  private final byte[] expectedErrorBytes = jsonMapper.writeValueAsBytes(expectedErrorDTO);
 
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testNo4xxException(boolean bodyPrinterWhenError) {
     // Given
-    HttpClientErrorJsonBodyHandler<DebtPositionErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
+    HttpClientErrorJsonBodyHandler<PuSilErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
     try (MockClientHttpResponse response = new MockClientHttpResponse(new byte[0], HttpStatus.SERVICE_UNAVAILABLE)) {
 
       // When
@@ -58,38 +58,29 @@ class HttpClientErrorJsonBodyHandlerTest {
   @ValueSource(booleans = {true, false})
   void testNoBodyException(boolean bodyPrinterWhenError) {
     // Given
-    HttpClientErrorJsonBodyHandler<DebtPositionErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
+    HttpClientErrorJsonBodyHandler<PuSilErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
     try (MockClientHttpResponse response = new MockClientHttpResponse(new byte[0], HttpStatus.BAD_REQUEST)) {
 
       // When
-      HttpClientErrorException.BadRequest result = Assertions.assertThrows(HttpClientErrorException.BadRequest.class, () -> httpClientHandler.handleError(url, HttpMethod.GET, response));
+      RestInvokeInvalidValueException result = Assertions.assertThrows(RestInvokeInvalidValueException.class, () -> httpClientHandler.handleError(url, HttpMethod.GET, response));
 
       // Then
+      Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getHttpStatus());
+      Assertions.assertEquals("APPNAME", result.getApplicationName());
+      Assertions.assertNull(result.getCategory());
+      Assertions.assertEquals("APPNAME_BAD_REQUEST", result.getCode());
       Assertions.assertEquals("400 Bad Request on GET request for \"http://www.sample.com\": [no body]", result.getMessage());
+      Assertions.assertNull(result.getFields());
     }
   }
 
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  void testNotFoundException(boolean bodyPrinterWhenError) {
-    // Given
-    HttpClientErrorJsonBodyHandler<DebtPositionErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
-    try (MockClientHttpResponse response = new MockClientHttpResponse(new byte[0], HttpStatus.NOT_FOUND)) {
-
-      // When
-      HttpClientErrorException.NotFound result = Assertions.assertThrows(HttpClientErrorException.NotFound.class, () -> httpClientHandler.handleError(url, HttpMethod.GET, response));
-
-      // Then
-      Assertions.assertEquals("404 Not Found on GET request for \"http://www.sample.com\": [no body]", result.getMessage());
-    }
-  }
 
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void testBodyException(boolean bodyPrinterWhenError) {
     // Given
-    HttpClientErrorJsonBodyHandler<DebtPositionErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
-    try (MockClientHttpResponse response = new MockClientHttpResponse(jsonMapper.writeValueAsBytes(expectedErrorDTO), HttpStatus.BAD_REQUEST)) {
+    HttpClientErrorJsonBodyHandler<PuSilErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
+    try (MockClientHttpResponse response = new MockClientHttpResponse(expectedErrorBytes, HttpStatus.BAD_REQUEST)) {
 
       // When
       RestInvokeInvalidValueException result = Assertions.assertThrows(RestInvokeInvalidValueException.class, () -> httpClientHandler.handleError(url, HttpMethod.GET, response));
@@ -99,7 +90,7 @@ class HttpClientErrorJsonBodyHandlerTest {
       Assertions.assertEquals(expectedErrorDTO.getCategory().getValue(), result.getCategory());
       Assertions.assertEquals(expectedErrorDTO.getCode(), result.getCode());
       Assertions.assertEquals(expectedErrorDTO.getMessage(), result.getMessage());
-      Assertions.assertEquals(DebtPositionErrorDTOMapper.map(expectedErrorDTO).fields(), result.getFields());
+      Assertions.assertEquals(expectedErrorDTO.getFields(), result.getFields());
     }
   }
 
@@ -107,7 +98,7 @@ class HttpClientErrorJsonBodyHandlerTest {
   @ValueSource(booleans = {true, false})
   void testNoJsonBodyException(boolean bodyPrinterWhenError) {
     // Given
-    HttpClientErrorJsonBodyHandler<DebtPositionErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
+    HttpClientErrorJsonBodyHandler<PuSilErrorDTO> httpClientHandler = buildHttpClientErrorHandler(bodyPrinterWhenError);
     try (MockClientHttpResponse response = new MockClientHttpResponse("INVALIDJSON".getBytes(), HttpStatus.BAD_REQUEST)) {
 
       // When
@@ -122,13 +113,14 @@ class HttpClientErrorJsonBodyHandlerTest {
   private final Map<HttpStatus, Class<? extends BaseBusinessException>> httpStatus2ExpectedException = Map.of(
     HttpStatus.CONFLICT, RestInvokeConflictException.class,
     HttpStatus.FORBIDDEN, RestInvokeForbiddenException.class,
-    HttpStatus.UNAUTHORIZED, RestInvokeNotAuthorizedException.class
+    HttpStatus.UNAUTHORIZED, RestInvokeNotAuthorizedException.class,
+    HttpStatus.NOT_FOUND, RestInvokeNotFoundException.class
   );
 
   @Test
   void testBuildDefaultHttpClientExceptionTranscoder(){
-    BiFunction<HttpStatusCodeException, DebtPositionErrorDTO, RuntimeException> httpErrorTranscoder = HttpClientErrorJsonBodyHandler.buildDefaultHttpClientExceptionTranscoder("TEST", DebtPositionErrorDTO::getCode, DebtPositionErrorDTO::getMessage);
-    DebtPositionErrorDTO errorDTO = new DebtPositionErrorDTO(null, "BAD_REQUEST", "MESSAGE", null, null);
+    BiFunction<HttpStatusCodeException, PuSilErrorDTO, RuntimeException> httpErrorTranscoder = HttpClientErrorJsonBodyHandler.buildDefaultHttpClientExceptionTranscoder("TEST", PuSilErrorDTO::getCode, PuSilErrorDTO::getMessage);
+    PuSilErrorDTO errorDTO = new PuSilErrorDTO(null, "BAD_REQUEST", "MESSAGE", null, null);
 
     for (HttpStatus httpStatus : HttpStatus.values()) {
       RuntimeException result = httpErrorTranscoder
@@ -138,6 +130,12 @@ class HttpClientErrorJsonBodyHandlerTest {
       Assertions.assertSame(errorDTO.getCode(), ((BaseBusinessException)result).getCode());
       Assertions.assertSame(errorDTO.getMessage(), result.getMessage());
 
+      Assertions.assertInstanceOf(RestInvokeException.class, result);
+      RestInvokeException resultRestInvokeException = (RestInvokeException)result;
+      Assertions.assertEquals("TEST", resultRestInvokeException.getApplicationName());
+      Assertions.assertEquals(httpStatus, resultRestInvokeException.getHttpStatus());
+      Assertions.assertNull(resultRestInvokeException.getCategory());
+
       Class<? extends BaseBusinessException> expectedException = httpStatus2ExpectedException.getOrDefault(httpStatus, InvalidValueException.class);
       Assertions.assertInstanceOf(expectedException, result);
     }
@@ -145,8 +143,8 @@ class HttpClientErrorJsonBodyHandlerTest {
 
   @Test
   void testBuildDefaultHttpClientExceptionTranscoder_noErrorCodeFunction(){
-    BiFunction<HttpStatusCodeException, DebtPositionErrorDTO, RuntimeException> httpErrorTranscoder = HttpClientErrorJsonBodyHandler.buildDefaultHttpClientExceptionTranscoder("TEST", null, DebtPositionErrorDTO::getMessage);
-    DebtPositionErrorDTO errorDTO = new DebtPositionErrorDTO(null, "BAD_REQUEST", "MESSAGE", null, null);
+    BiFunction<HttpStatusCodeException, PuSilErrorDTO, RuntimeException> httpErrorTranscoder = HttpClientErrorJsonBodyHandler.buildDefaultHttpClientExceptionTranscoder("TEST", null, PuSilErrorDTO::getMessage);
+    PuSilErrorDTO errorDTO = new PuSilErrorDTO(null, "BAD_REQUEST", "MESSAGE", null, null);
 
     for (HttpStatus httpStatus : HttpStatus.values()) {
       RuntimeException result = httpErrorTranscoder

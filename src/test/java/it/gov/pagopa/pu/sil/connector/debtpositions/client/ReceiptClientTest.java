@@ -1,8 +1,9 @@
 package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.controller.generated.ReceiptApi;
+import it.gov.pagopa.pu.debtpositions.client.generated.ReceiptApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.http.HttpStatus;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptClientTest {
@@ -45,15 +48,15 @@ class ReceiptClientTest {
     String accessToken = "ACCESSTOKEN";
     ReceiptDTO expectedResult;
 
-    Mockito.when(apisHolderMock.getReceiptApi(accessToken))
+    when(apisHolderMock.getReceiptApi(accessToken))
       .thenReturn(receiptApiMock);
     if(receiptId == 2L) {
-      Mockito.when(receiptApiMock.getReceipt(receiptId))
-        .thenThrow(HttpClientErrorException.NotFound.class);
+      when(receiptApiMock.getReceipt(receiptId))
+        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
       expectedResult = null;
     } else {
       expectedResult = new ReceiptDTO();
-      Mockito.when(receiptApiMock.getReceipt(receiptId)).thenReturn(expectedResult);
+      when(receiptApiMock.getReceipt(receiptId)).thenReturn(expectedResult);
     }
 
     // When

@@ -1,13 +1,14 @@
 package it.gov.pagopa.pu.sil.connector.processexecutions.config;
 
-import it.gov.pagopa.pu.processexecutions.controller.ApiClient;
-import it.gov.pagopa.pu.processexecutions.controller.BaseApi;
-import it.gov.pagopa.pu.processexecutions.controller.generated.ExportFileControllerApi;
-import it.gov.pagopa.pu.processexecutions.controller.generated.ExportFileEntityControllerApi;
-import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileControllerApi;
-import it.gov.pagopa.pu.processexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
+import it.gov.pagopa.pu.processexecutions.generated.ApiClient;
+import it.gov.pagopa.pu.processexecutions.generated.BaseApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.ExportFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.ExportFileEntityControllerApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
 import it.gov.pagopa.pu.sil.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sil.connector.processexecutions.mapper.ProcessExecutionsErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,7 @@ public class ProcessExecutionsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "PROCESS-EXECUTIONS", clientConfig.isPrintBodyWhenError(),
-      ProcessExecutionsErrorDTO.class, ProcessExecutionsErrorDTO::getCode, ProcessExecutionsErrorDTO::getMessage));
+      ProcessExecutionsErrorDTO.class, ProcessExecutionsErrorDTOMapper::map));
 
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
     this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);

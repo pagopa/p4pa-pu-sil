@@ -1,14 +1,14 @@
 package it.gov.pagopa.pu.sil.service.outbound.actualization;
 
-import it.gov.pagopa.actualization.dto.generated.Error;
-import it.gov.pagopa.actualization.dto.generated.Payment;
-import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
-import it.gov.pagopa.actualization.legacy.dto.generated.Pagamento;
-import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
+import it.gov.pagopa.sil.actualization.dto.generated.Error;
+import it.gov.pagopa.sil.actualization.dto.generated.Payment;
+import it.gov.pagopa.sil.actualization.dto.generated.UpdatedPayment;
+import it.gov.pagopa.sil.actualizationlegacy.dto.generated.Pagamento;
+import it.gov.pagopa.sil.actualizationlegacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.organization.dto.generated.OrgSilServiceDTO;
-import it.gov.pagopa.pu.sil.connector.actualization.ActualizationService;
-import it.gov.pagopa.pu.sil.connector.actualization.LegacyActualizationService;
+import it.gov.pagopa.pu.sil.connector.sil.actualization.ActualizationService;
+import it.gov.pagopa.pu.sil.connector.sil.actualization.LegacyActualizationService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrgSilServiceComponent;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;

@@ -174,7 +174,7 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
         org.setStatus(OrganizationStatus.DRAFT);
         break;
       case "emptyDebtPositionList":
-        request.setIdSessionCarrello(null);
+        request.setIdSessionCarrello("UNKNOWN");
         installmentIds = List.of();
         break;
       case "invalidOrgDebtPosition":

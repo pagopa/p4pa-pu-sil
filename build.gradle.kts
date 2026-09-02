@@ -6,12 +6,12 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
   java
-  id("org.springframework.boot") version "4.1.0"
+  id("org.springframework.boot") version "4.1.1"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "7.3.1.8318"
+  id("org.sonarqube") version "7.4.0.8496"
   id("com.github.ben-manes.versions") version "0.54.0"
-  id("org.openapi.generator") version "7.23.0"
+  id("org.openapi.generator") version "7.25.0"
   id("org.ajoberstar.grgit") version "5.3.2"
   id("com.gorylenko.gradle-git-properties") version "4.0.1"
   //code generation for soap webservices classes (via  jaxb)
@@ -44,7 +44,7 @@ licenseReport {
   outputDir = "$projectDir/dependency-licenses"
   filters = arrayOf(SpdxLicenseBundleNormalizer())
 }
-tasks.classes {
+tasks.dependencies {
   finalizedBy(tasks.generateLicenseReport)
 }
 
@@ -52,28 +52,30 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "3.0.3"
-val openApiToolsVersion = "0.2.10"
-val micrometerVersion = "1.7.0"
-val httpClientVersion = "5.6.1"
-val httpCoreVersion = "5.4.2"
+val springDocOpenApiVersion = "3.1.0"
+val openApiToolsVersion = "0.2.11"
+val micrometerVersion = "1.7.1"
+val httpClientVersion = "5.6.4"
+val httpCoreVersion = "5.4.3"
 val kafkaAppender = "0.2.0-RC2"
-val lz4JavaVersion = "1.11.0"
+val lz4JavaVersion = "1.11.2"
 val springWolfAsyncApiVersion = "1.21.0"
 val springWolfUiAsyncApiVersion = "1.21.0"
 val podamVersion = "8.0.2.RELEASE"
 val jaxbVersion = "4.0.9"
 val jaxbApiVersion = "4.0.5"
+val jaxbXewPluginVersion = "2.1"
+val jaxbPluginVersion = "4.0.16"
 val activationVersion = "2.1.4"
 val xmlSchemaVersion = "2.3.2"
 val caffeineVersion = "3.2.4"
-val javaJwtVersion = "4.5.2"
+val javaJwtVersion = "4.6.0"
 val jwksRsaVersion = "0.24.1"
-val bouncycastleVersion = "1.84"
+val bouncycastleVersion = "1.85.2"
 val nimbusJoseJwtVersion = "10.9.1"
 val commonsLang3Version = "3.20.0"
 
-val springCloudDepsVersion = "2025.1.2"
+val springCloudDepsVersion = "2025.1.3"
 
 dependencyManagement {
   imports {
@@ -103,22 +105,23 @@ dependencies {
     exclude(group = "org.apache.commons", module = "commons-lang3")
   }
   implementation("org.apache.commons:commons-lang3:$commonsLang3Version")
-  implementation("io.github.springwolf:springwolf-kafka:${springWolfAsyncApiVersion}") {
+  implementation("io.github.springwolf:springwolf-kafka:$springWolfAsyncApiVersion") {
     exclude(group = "org.lz4", module = "lz4-java")
   }
-  implementation("io.github.springwolf:springwolf-ui:${springWolfUiAsyncApiVersion}")
-  implementation("io.github.springwolf:springwolf-cloud-stream:${springWolfAsyncApiVersion}")
+  implementation("io.github.springwolf:springwolf-ui:$springWolfUiAsyncApiVersion")
+  implementation("io.github.springwolf:springwolf-cloud-stream:$springWolfAsyncApiVersion")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+  implementation("org.apache.httpcomponents.core5:httpcore5-h2:$httpCoreVersion")
   implementation("org.apache.httpcomponents.core5:httpcore5:$httpCoreVersion")
   implementation("com.github.danielwegener:logback-kafka-appender:$kafkaAppender") {
     exclude(group = "org.lz4", module = "lz4-java")
   }
 
   // validation token jwt
-  implementation("com.auth0:java-jwt:${javaJwtVersion}")
-  implementation("com.auth0:jwks-rsa:${jwksRsaVersion}")
-  implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
+  implementation("com.auth0:java-jwt:$javaJwtVersion")
+  implementation("com.auth0:jwks-rsa:$jwksRsaVersion")
+  implementation("org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion")
 
   //webservice soap
   implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
@@ -130,8 +133,8 @@ dependencies {
   jaxb("com.sun.xml.bind:jaxb-core:$jaxbVersion")
   jaxb("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
   jaxb("jakarta.activation:jakarta.activation-api:$activationVersion")
-  jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:2.1")
-  jaxbext("org.jvnet.jaxb:jaxb-plugins:4.0.0")
+  jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:$jaxbXewPluginVersion")
+  jaxbext("org.jvnet.jaxb:jaxb-plugins:$jaxbPluginVersion")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -142,7 +145,7 @@ dependencies {
   testImplementation("org.springframework.boot:spring-boot-starter-security-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
-  testImplementation("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("uk.co.jemos.podam:podam:$podamVersion")
 }
 
 tasks.withType<Test> {
@@ -295,7 +298,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-auth.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.auth.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.auth.generated")
+  apiPackage.set("it.gov.pagopa.pu.auth.client.generated")
   modelPackage.set("it.gov.pagopa.pu.auth.dto.generated")
   configOptions.set(
     mapOf(
@@ -328,7 +332,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-send-notification.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.sendnotification.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.sendnotification.generated")
+  apiPackage.set("it.gov.pagopa.pu.sendnotification.client.generated")
   modelPackage.set("it.gov.pagopa.pu.sendnotification.dto.generated")
   configOptions.set(
     mapOf(
@@ -361,7 +366,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-process-executions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.processexecutions.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.processexecutions.generated")
+  apiPackage.set("it.gov.pagopa.pu.processexecutions.client.generated")
   modelPackage.set("it.gov.pagopa.pu.processexecutions.dto.generated")
   typeMappings.set(
     mapOf(
@@ -398,7 +404,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-debt-positions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.debtpositions.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.debtpositions.generated")
+  apiPackage.set("it.gov.pagopa.pu.debtpositions.client.generated")
   modelPackage.set("it.gov.pagopa.pu.debtpositions.dto.generated")
   typeMappings.set(
     mapOf(
@@ -436,7 +443,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/node_checkout.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.nodo.checkout.controller.generated")
+  invokerPackage.set("it.gov.pagopa.nodo.checkout.generated")
+  apiPackage.set("it.gov.pagopa.nodo.checkout.client.generated")
   modelPackage.set("it.gov.pagopa.nodo.checkout.dto.generated")
   configOptions.set(
     mapOf(
@@ -501,8 +509,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/amount-updates-legacy.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
-  modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
+  invokerPackage.set("it.gov.pagopa.sil.actualizationlegacy.generated")
+  apiPackage.set("it.gov.pagopa.sil.actualizationlegacy.client.generated")
+  modelPackage.set("it.gov.pagopa.sil.actualizationlegacy.dto.generated")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
@@ -533,8 +542,9 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/amount-updates.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.actualization.controller.generated")
-  modelPackage.set("it.gov.pagopa.actualization.dto.generated")
+  invokerPackage.set("it.gov.pagopa.sil.actualization.generated")
+  apiPackage.set("it.gov.pagopa.sil.actualization.client.generated")
+  modelPackage.set("it.gov.pagopa.sil.actualization.dto.generated")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
@@ -565,7 +575,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-workflow-hub.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   invokerPackage.set("it.gov.pagopa.pu.workflowhub.generated")
-  apiPackage.set("it.gov.pagopa.pu.workflowhub.controller.generated")
+  apiPackage.set("it.gov.pagopa.pu.workflowhub.client.generated")
   modelPackage.set("it.gov.pagopa.pu.workflowhub.dto.generated")
   typeMappings.set(
     mapOf(
@@ -631,7 +641,8 @@ jaxb {
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-registries.generated.openapi.json")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.pu.registries.controller.generated")
+    invokerPackage.set("it.gov.pagopa.pu.registries.generated")
+    apiPackage.set("it.gov.pagopa.pu.registries.client.generated")
     modelPackage.set("it.gov.pagopa.pu.registries.dto.generated")
     configOptions.set(
       mapOf(
@@ -664,7 +675,8 @@ jaxb {
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-fileshare.openapi.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
+    invokerPackage.set("it.gov.pagopa.pu.fileshare.generated")
+    apiPackage.set("it.gov.pagopa.pu.fileshare.client.generated")
     modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
     typeMappings.set(
       mapOf(
@@ -703,8 +715,9 @@ jaxb {
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/external/payment-notification.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.paymentnotification.controller.generated")
-    modelPackage.set("it.gov.pagopa.paymentnotification.dto.generated")
+    invokerPackage.set("it.gov.pagopa.sil.paymentnotification.generated")
+    apiPackage.set("it.gov.pagopa.sil.paymentnotification.client.generated")
+    modelPackage.set("it.gov.pagopa.sil.paymentnotification.dto.generated")
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
@@ -734,8 +747,9 @@ jaxb {
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/external/payment-notification-legacy.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.paymentnotification.legacy.controller.generated")
-    modelPackage.set("it.gov.pagopa.paymentnotification.legacy.dto.generated")
+    invokerPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.generated")
+    apiPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.client.generated")
+    modelPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.dto.generated")
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
