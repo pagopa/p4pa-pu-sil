@@ -77,6 +77,9 @@ val commonsLang3Version = "3.20.0"
 
 val springCloudDepsVersion = "2025.1.3"
 
+// CVE Security dependencies
+val tomcatEmbedCoreVersion = "11.0.25"
+
 dependencyManagement {
   imports {
     mavenBom("org.springframework.cloud:spring-cloud-dependencies:$springCloudDepsVersion")
@@ -122,6 +125,9 @@ dependencies {
   implementation("com.auth0:java-jwt:$javaJwtVersion")
   implementation("com.auth0:jwks-rsa:$jwksRsaVersion")
   implementation("org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion")
+
+  // CVE Security dependencies
+  implementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatEmbedCoreVersion")
 
   //webservice soap
   implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
