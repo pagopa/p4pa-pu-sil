@@ -1965,7 +1965,7 @@
         }
       },
       "CreateNotificationRequest" : {
-        "required" : [ "externalCampaignId", "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ],
+        "required" : [ "externalCampaignId", "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients", "subject" ],
         "type" : "object",
         "properties" : {
           "organizationId" : {
@@ -1993,6 +1993,9 @@
           },
           "physicalCommunicationType" : {
             "$ref" : "#/components/schemas/PhysicalCommunicationTypeEnum"
+          },
+          "subject" : {
+            "type" : "string"
           },
           "senderDenomination" : {
             "type" : "string",
@@ -2477,7 +2480,7 @@
         "enum" : [ "WAITING_FILE", "SENDING", "REGISTERED", "UPLOADED", "IN_VALIDATION", "ACCEPTED", "REFUSED", "DELIVERING", "DELIVERED", "VIEWED", "EFFECTIVE_DATE", "PAID", "UNREACHABLE", "CANCELLED", "RETURNED_TO_SENDER" ]
       },
       "SendNotificationDTO" : {
-        "required" : [ "campaignId", "organizationId", "payments", "sendNotificationId", "status" ],
+        "required" : [ "campaignId", "organizationId", "payments", "sendNotificationId", "status", "subject" ],
         "type" : "object",
         "properties" : {
           "sendNotificationId" : {
@@ -2499,6 +2502,9 @@
             "items" : {
               "$ref" : "#/components/schemas/SendNotificationPaymentsDTO"
             }
+          },
+          "subject" : {
+            "type" : "string"
           },
           "status" : {
             "$ref" : "#/components/schemas/NotificationStatus"
