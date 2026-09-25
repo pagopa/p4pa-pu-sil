@@ -96,7 +96,7 @@ class PaaSILInviaDovutiMapperTest {
 
     assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, exception.getCode());
     assertEquals("IUV field insertion is deprecated", exception.getMessage());
-    assertEquals("L'inserimento dello IUV è deprecato", exception.getSilFaultsCustomMessage());
+    assertEquals("L'inserimento dello IUV è deprecato", exception.getSilFaultCustomMessage());
   }
 
   @Test

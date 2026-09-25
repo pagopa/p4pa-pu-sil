@@ -10,7 +10,7 @@ public abstract class BaseBusinessException extends RuntimeException {
 
   protected final String code;
   protected final List<ErrorFieldDTO> fields;
-  protected final String silFaultsCustomMessage;
+  protected final String silFaultCustomMessage;
 
   protected BaseBusinessException(String code, String message) {
     this(code, message, null, null, null);
@@ -24,14 +24,14 @@ public abstract class BaseBusinessException extends RuntimeException {
     this(code, message, null, fields, cause);
   }
 
-  protected BaseBusinessException(String code, String message, String silFaultsCustomMessage) {
-    this(code, message, silFaultsCustomMessage, null, null);
+  protected BaseBusinessException(String code, String message, String silFaultCustomMessage) {
+    this(code, message, silFaultCustomMessage, null, null);
   }
 
-  protected BaseBusinessException(String code, String message, String silFaultsCustomMessage, List<ErrorFieldDTO> fields, Throwable cause) {
+  protected BaseBusinessException(String code, String message, String silFaultCustomMessage, List<ErrorFieldDTO> fields, Throwable cause) {
     super(message, cause);
     this.code = code;
     this.fields = fields;
-    this.silFaultsCustomMessage = silFaultsCustomMessage;
+    this.silFaultCustomMessage = silFaultCustomMessage;
   }
 }

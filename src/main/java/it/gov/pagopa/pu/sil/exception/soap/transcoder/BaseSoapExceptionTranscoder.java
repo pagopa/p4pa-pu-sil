@@ -42,10 +42,10 @@ public abstract class BaseSoapExceptionTranscoder {
       );
     } else if ((out = transcodeSoapServiceExceptions(exception)) == null && exception instanceof BaseBusinessException bbe) {
       SilFaults fault = errorCode2SilFault.get(bbe.getCode());
-      String silFaultsCustomMessage = bbe.getSilFaultsCustomMessage();
+      String silFaultCustomMessage = bbe.getSilFaultCustomMessage();
 
       if (fault != null) {
-        out = new SoapFaultTranscoded(fault, ObjectUtils.firstNonNull(silFaultsCustomMessage, fault.description()));
+        out = new SoapFaultTranscoded(fault, ObjectUtils.firstNonNull(silFaultCustomMessage, fault.description()));
       }
     }
 

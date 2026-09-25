@@ -18,11 +18,11 @@ public class InvalidValueException extends BaseBusinessException {
     this(code, message, null, null, cause);
   }
 
-  public InvalidValueException(String code, String message, String silFaultsCustomMessage) {
-    this(code, message, silFaultsCustomMessage, null, null);
+  public InvalidValueException(String code, String message, String silFaultCustomMessage) {
+    this(code, message, silFaultCustomMessage, null, null);
   }
 
-  public InvalidValueException(String code, String message, String silFaultsCustomMessage, List<ErrorFieldDTO> fieldErrors, Throwable cause) {
-    super(code, message, silFaultsCustomMessage, fieldErrors, cause);
+  public InvalidValueException(String code, String message, String silFaultCustomMessage, List<ErrorFieldDTO> fieldErrors, Throwable cause) {
+    super(code, message, silFaultCustomMessage, fieldErrors, cause);
   }
 }
