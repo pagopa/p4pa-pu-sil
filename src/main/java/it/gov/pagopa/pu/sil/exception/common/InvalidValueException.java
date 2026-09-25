@@ -7,18 +7,22 @@ import java.util.List;
 public class InvalidValueException extends BaseBusinessException {
 
   public InvalidValueException(String code, String message) {
-    this(code, message, null, null);
+    this(code, message, null, null, null);
   }
 
   public InvalidValueException(String code, String message, List<ErrorFieldDTO> fieldErrors) {
-    this(code, message, fieldErrors, null);
+    this(code, message, null, fieldErrors, null);
   }
 
   public InvalidValueException(String code, String message, Throwable cause) {
-    this(code, message, null, cause);
+    this(code, message, null, null, cause);
   }
 
-  public InvalidValueException(String code, String message, List<ErrorFieldDTO> fieldErrors, Throwable cause) {
-    super(code, message, fieldErrors, cause);
+  public InvalidValueException(String code, String message, String silFaultsCustomMessage) {
+    this(code, message, silFaultsCustomMessage, null, null);
+  }
+
+  public InvalidValueException(String code, String message, String silFaultsCustomMessage, List<ErrorFieldDTO> fieldErrors, Throwable cause) {
+    super(code, message, silFaultsCustomMessage, fieldErrors, cause);
   }
 }
