@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
@@ -52,7 +53,7 @@ abstract class AbstractImmediatePaymentsMapper {
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
 
     if (debtPositionTypeOrg == null) {
-      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+      throw new NotFoundException("INVALID_DEBT_POSITION_TYPE_ORG", "DebtPositionTypeOrg not found");
     }
 
     validationService.validateStamp(versamento);
