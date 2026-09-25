@@ -16,9 +16,9 @@ import java.util.Map;
 public class PuForOrganizationReconciliationExceptionTranscoder extends BaseSoapExceptionTranscoder {
 
   protected static final Map<String, SilFaults> errorCode2SilFault = Map.of(
-    "INVALID_FILE_VERSION", SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA,
-    "INVALID_DATE_FILTER_INTERVAL", SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO,
-    "INVALID_DATE_FILTER_COMBINATION", SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO
+    ErrorCodeConstants.ERROR_CODE_INVALID_FILE_VERSION, SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA,
+    ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_INTERVAL, SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO,
+    ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_COMBINATION, SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO
   );
 
   public PuForOrganizationReconciliationExceptionTranscoder() {
