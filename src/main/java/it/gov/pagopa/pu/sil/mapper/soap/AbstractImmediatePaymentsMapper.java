@@ -3,9 +3,7 @@ package it.gov.pagopa.pu.sil.mapper.soap;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
@@ -145,7 +143,7 @@ abstract class AbstractImmediatePaymentsMapper {
         org.getOrganizationId(), singleTransfer.getIdentificativoTipoDovuto(), accessToken);
 
       if (debtPositionTypeOrg == null) {
-        throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+        throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, "Invalid DebtPositionTypeOrg");
       }
 
       MixedTransferDTO mixedTransferDTO = MixedTransferDTO.builder()

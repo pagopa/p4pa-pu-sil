@@ -7,11 +7,11 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -54,18 +54,22 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
       log.error("ClientId [{}] not authorized to call {} for organization {}", request.getClass().getSimpleName(), clientId, orgIpaCode);
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "Utente non autorizzato");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, "User not authorized", "Utente non autorizzato");
     }
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        "Invalid or not authorized organization",
+        "L'ente non è valido o non è abilitato"
+      );
     }
 
     //validate callback URL
     if (StringUtils.isNotBlank(getCallbackUrl(request)) && !ValidationUtils.isValidUri(getCallbackUrl(request))) {
-      throw new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "URL di callback non valida");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, "Invalid callback URL", "URL di callback non valida");
     }
 
     String cartId = UUID.randomUUID().toString();

@@ -9,9 +9,10 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -53,7 +54,11 @@ public abstract class AbstractQueryPaymentsService<I, O> {
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        "Invalid or not authorized organization",
+        "L'ente non è valido o non è abilitato"
+      );
     }
 
     //validate and transform the request

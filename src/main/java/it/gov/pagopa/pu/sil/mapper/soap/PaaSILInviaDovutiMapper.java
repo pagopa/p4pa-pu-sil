@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.MixedDebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.PaymentRequestMappingResult;

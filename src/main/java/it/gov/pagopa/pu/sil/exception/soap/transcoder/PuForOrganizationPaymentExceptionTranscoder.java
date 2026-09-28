@@ -30,6 +30,8 @@ public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExcepti
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, SilFaults.PAA_IUV_NON_VALIDO),
     Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_IUV, SilFaults.PAA_IUV_NON_VALIDO),
 
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_IUD , SilFaults.PAA_IUD_NON_VALIDO),
+
     Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_DEBT_POSITION_TYPE_ORG, SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO),
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO),
 
@@ -60,7 +62,11 @@ public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExcepti
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_DUE_DATE, SilFaults.PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA),
 
     Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_ALREADY_EXISTS, SilFaults.PAA_DOVUTO_DUPLICATO),
-    Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_ALREADY_EXISTS, SilFaults.PAA_DOVUTO_DUPLICATO)
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_ALREADY_EXISTS, SilFaults.PAA_DOVUTO_DUPLICATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, SilFaults.PAA_ID_SESSION_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, SilFaults.PAA_URL_NON_VALIDA)
   );
 
   private static final Map<String, String> fieldNameTranscoding = Map.ofEntries(

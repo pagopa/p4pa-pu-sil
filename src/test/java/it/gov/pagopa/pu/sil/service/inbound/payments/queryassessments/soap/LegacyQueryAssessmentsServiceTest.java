@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments.soap;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.soap.LegacyAssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;

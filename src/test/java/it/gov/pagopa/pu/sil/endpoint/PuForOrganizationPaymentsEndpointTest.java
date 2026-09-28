@@ -16,7 +16,6 @@ import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.soap.PuForOrganizationPaymentsExceptionHandler;
 import it.gov.pagopa.pu.sil.exception.soap.transcoder.PuForOrganizationPaymentExceptionTranscoder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;

@@ -12,10 +12,10 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.OffsetDateTimeIntervalFi
 import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -103,7 +103,11 @@ public abstract class AbstractDebtorQueryPaymentService<I, O> {
       Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, ipaCode);
       Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
         .filter(o -> OrganizationStatus.ACTIVE.equals(o.getStatus()))
-        .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato"));
+        .orElseThrow(() -> new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+          "Invalid or not authorized organization",
+          "L'ente non è valido o non è abilitato"
+        ));
       AuthorizationService.validateOrganizationBrokered(organization.getBrokerId(), userInfo);
       return List.of(organization);
     } else {

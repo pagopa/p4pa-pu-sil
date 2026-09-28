@@ -9,7 +9,6 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;

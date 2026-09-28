@@ -7,7 +7,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ManageInstallmentDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
@@ -42,8 +42,10 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
     //search installment to sync based on IUD
     List<ManageInstallmentDTO> manageInstallmentDTOList = request.getInstallments().stream().filter(i -> request.getIud().equals(i.getInstallment().getIud())).toList();
     if(manageInstallmentDTOList.size()>1) {
+      throw new InvalidValueException();
       throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "Dovuto con IUD " + request.getIud() + " non univoco nei dati di input");
     } else if(manageInstallmentDTOList.isEmpty()) {
+      throw new InvalidValueException();
       throw new SilFaultException(SilFaults.PAA_IUD_NON_VALIDO, "Nessun dovuto passato con IUD " + request.getIud());
     }
 

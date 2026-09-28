@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Constants;

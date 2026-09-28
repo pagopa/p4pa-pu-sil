@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.PaymentRequestMappingResult;
@@ -361,12 +360,12 @@ class PaaSILInviaDovutiMapperTest {
       .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), invalidTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
 
     // when
-    SilFaultException exception = assertThrows(SilFaultException.class,
+    InvalidValueException exception = assertThrows(InvalidValueException.class,
       () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     // then
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
-    assertEquals("Identificativo tipo dovuto non valido", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, exception.getCode());
+    assertEquals("Invalid DebtPositionTypeOrg", exception.getMessage());
   }
 }
 

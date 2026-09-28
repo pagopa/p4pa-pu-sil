@@ -4,7 +4,6 @@ package it.gov.pagopa.pu.sil.mapper.soap;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;

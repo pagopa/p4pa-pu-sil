@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.mapper.soap.LegacyAssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments.BaseQueryAssessmentsService;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;

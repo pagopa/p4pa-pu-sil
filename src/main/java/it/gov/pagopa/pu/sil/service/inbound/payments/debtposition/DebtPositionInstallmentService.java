@@ -5,10 +5,11 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class DebtPositionInstallmentService {
     DebtPositionDTO debtPosition = debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
 
     if (debtPosition == null) {
-      throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "id session non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Invalid id session");
     }
 
     InstallmentDTO installment = findInstallment(debtPosition, inst -> Objects.equals(inst.getInstallmentId(), installmentId), SilFaults.PAA_ID_SESSION_NON_VALIDO);
@@ -99,7 +100,11 @@ public class DebtPositionInstallmentService {
       DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
         organizationId, debtPositionTypeOrgCode, accessToken);
       if (debtPositionTypeOrg == null) {
-        throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG,
+          "Invalid DebtPositionTypeOrg",
+          "Tipo dovuto non valido: " + debtPositionTypeOrgCode
+        );
       }
       DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
       category = debtPositionType.getTaxonomyCode();

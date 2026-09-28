@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.mapper.soap;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.util.PersonValidationUtils;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;

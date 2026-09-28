@@ -9,7 +9,6 @@ import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.AfterEach;

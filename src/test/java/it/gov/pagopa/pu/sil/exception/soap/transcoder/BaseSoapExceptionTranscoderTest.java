@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.sil.exception.soap.transcoder;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.soap.SoapFaultTranscoded;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,25 +37,6 @@ abstract class BaseSoapExceptionTranscoderTest {
       new SoapFaultTranscoded(
         unauthorizedFault,
         "Utente non autorizzato"
-      ),
-      result
-    );
-  }
-
-  @Test
-  void givenSilFaultExceptionWhenTranscodeExceptionThenHandleIt(){
-    // Given
-    SilFaults silFault = SilFaults.PAA_ENTE_NON_VALIDO;
-    SilFaultException exception = new SilFaultException(silFault, "Test Exception");
-
-    // When
-    SoapFaultTranscoded result = getExceptionTranscoder().transcodeException(exception);
-
-    // Then
-    Assertions.assertEquals(
-      new SoapFaultTranscoded(
-        silFault,
-        "Test Exception"
       ),
       result
     );

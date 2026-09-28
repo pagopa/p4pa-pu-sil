@@ -21,6 +21,7 @@ public class ErrorCodeConstants {
   public static final String ERROR_CODE_INVALID_INGESTION_FLOW_FILE_LEGACY_TYPE = "INVALID_INGESTION_FLOW_FILE_LEGACY_TYPE";
   public static final String ERROR_CODE_INVALID_CALLBACK_URL = "INVALID_CALLBACK_URL";
   public static final String ERROR_CODE_INVALID_IUV = "INVALID_IUV";
+  public static final String ERROR_CODE_INVALID_IUD = "INVALID_IUD";
   public static final String ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG = "INVALID_DEBT_POSITION_TYPE_ORG";
   public static final String ERROR_CODE_INVALID_FILE_VERSION = "INVALID_FILE_VERSION";
   public static final String ERROR_CODE_INVALID_DATE_FILTER_COMBINATION = "INVALID_DATE_FILTER_COMBINATION";
@@ -36,6 +37,7 @@ public class ErrorCodeConstants {
   public static final String ERROR_CODE_INVALID_EMAIL = "INVALID_EMAIL";
   public static final String ERROR_CODE_INVALID_VAT_CODE = "INVALID_VAT_CODE";
   public static final String ERROR_CODE_INVALID_DUE_DATE = "INVALID_DUE_DATE";
+  public static final String ERROR_CODE_INVALID_ID_SESSION = "INVALID_ID_SESSION";
 
   public static final String ERROR_CODE_XML_MARSHALLING_ERROR = "XML_MARSHALLING_ERROR";
   public static final String ERROR_CODE_XML_UNMARSHALLING_ERROR = "XML_UNMARSHALLING_ERROR";

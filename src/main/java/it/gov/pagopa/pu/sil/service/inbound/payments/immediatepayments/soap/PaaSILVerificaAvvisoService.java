@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.BaseVerifyNoticeService;

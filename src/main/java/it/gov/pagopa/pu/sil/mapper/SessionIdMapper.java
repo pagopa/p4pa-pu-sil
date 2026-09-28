@@ -2,9 +2,9 @@ package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +32,7 @@ public class SessionIdMapper {
         .toList();
     } catch (NullPointerException | NumberFormatException e) {
       log.error("Invalid sessionId: {}", sessionId, e);
-      throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "ID session non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Invalid id session");
     }
 
   }

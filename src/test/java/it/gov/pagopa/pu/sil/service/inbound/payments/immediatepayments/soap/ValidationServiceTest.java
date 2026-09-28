@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap;
 
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
