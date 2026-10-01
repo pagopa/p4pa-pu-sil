@@ -4,12 +4,13 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.MixedDebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.veneto.regione.pagamenti.ente.ElementoListaDovuti;
 import it.veneto.regione.pagamenti.ente.ListaDovutiEntiSecondari;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
@@ -50,10 +51,13 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
         dovutiList.add(jaxbTransformService.unmarshalling(elem.getDovuti(), Dovuti.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd"));
         idx++;
       } catch (Exception unmarshallingException) {
-        String errorMessage = "XML dovuti [" + idx + "] non conforme: \n" +
-          jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, elem.getDovuti());
-        log.error("error unmarshalling PaaSILInviaCarrelloDovuti [dovuti {}]: [{}]", idx, errorMessage, unmarshallingException);
-        throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
+        String detailUnmarshalExceptionMessage = jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, elem.getDovuti());
+        String silFaultCustomMessage = "XML dovuti [" + idx + "] non conforme: \n" + detailUnmarshalExceptionMessage;
+        String message = String.format("error unmarshalling PaaSILInviaCarrelloDovuti [dovuti %s]: [%s]", idx, detailUnmarshalExceptionMessage);
+
+        log.error(message, unmarshallingException);
+
+        throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, message, silFaultCustomMessage);
       }
     }
 

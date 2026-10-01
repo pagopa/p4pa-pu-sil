@@ -7,7 +7,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
@@ -78,10 +77,10 @@ class PaaSILImportaDovutoMapperTest {
     PaaSILImportaDovuto request = new PaaSILImportaDovuto();
     when(jaxbTransformServiceMock.unmarshalling(eq(request.getDovuto()), eq(Versamento.class), any())).thenThrow(new RuntimeException("Error"));
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
 
-    assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
-    assertTrue(exception.getDescription().contains("XML non conforme"));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, exception.getCode());
+    assertTrue(exception.getSilFaultCustomMessage().contains("XML non conforme"));
   }
 
   @Test
@@ -147,7 +146,7 @@ class PaaSILImportaDovutoMapperTest {
   }
 
   @Test
-  void givenDovutoWithNullDptoWhenMapRequestToDebtPositionThenThrowSilFaultException() {
+  void givenDovutoWithNullDptoWhenMapRequestToDebtPositionThenThrowInvalidValueException() {
     PaaSILImportaDovuto request = new PaaSILImportaDovuto();
     Versamento versamento = podamFactory.manufacturePojo(Versamento.class);
 
@@ -159,11 +158,11 @@ class PaaSILImportaDovutoMapperTest {
       ACCESS_TOKEN))
       .thenReturn(null);
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class,
       () -> mapper.mapRequestToDebtPosition(request, org, ACCESS_TOKEN));
 
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
-    assertTrue(exception.getMessage().contains("Identificativo tipo dovuto non valido"));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, exception.getCode());
+    assertEquals("Invalid debtPositionTypeOrg", exception.getMessage());
   }
   //endregion
 

@@ -8,10 +8,11 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse.OutcomeEnum;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.InstallmentFacadeService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -96,17 +97,17 @@ class VerifyNoticeServiceTest {
       org.setStatus(OrganizationStatus.DRAFT);
     }
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
+    InvalidValueException response = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, response.getCode());
   }
 
   @Test
   void givenInvalidUrlWhenVerifyNoticeServiceThenFault() {
     request = Pair.of(request.getLeft(), "http://");
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException response = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
     //verify
-    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, response.getFault());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, response.getCode());
   }
 
   @ParameterizedTest
@@ -114,10 +115,10 @@ class VerifyNoticeServiceTest {
   void givenNullIUVWhenVerifyNoticeServiceThenFault(String nav) {
     request = Pair.of(nav, request.getRight());
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
     //verify
-    Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Identificativo univoco del versamento non indicato", exception.getDescription());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_MISSING_IUV, exception.getCode());
+    Assertions.assertEquals("Identificativo univoco del versamento non indicato", exception.getSilFaultCustomMessage());
   }
 
   @Test
@@ -128,11 +129,11 @@ class VerifyNoticeServiceTest {
       .thenReturn(List.of());
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato", exception.getDescription());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, exception.getCode());
+    Assertions.assertEquals("Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato", exception.getSilFaultCustomMessage());
   }
 
   @Test
@@ -155,13 +156,13 @@ class VerifyNoticeServiceTest {
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(installmentFacadeServiceMock.getInstallmentsByOrganizationIdAndNav(orgId, request.getLeft(), TOKEN)).thenReturn(List.of(installmentDTO));
     when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
-      .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, "invalid url"));
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, exception.getFault());
-    Assertions.assertEquals("invalid url", exception.getDescription());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, exception.getCode());
+    Assertions.assertEquals("invalid url", exception.getMessage());
   }
 
   @Test

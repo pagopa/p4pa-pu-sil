@@ -10,10 +10,11 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -57,13 +58,15 @@ public class DebtPositionCheckoutService {
     UserInfoLimitedScope loggedUserLimitedScope = checkUserInfoLimitedScope(
         loggedUser);
 
-    Optional<Organization> optionalOrganization = organizationService.getOrganizationById(
-        loggedUserLimitedScope.getResource().getOrganization()
-            .getOrganizationId(),
-        accessToken);
+    Long organizationId = loggedUserLimitedScope.getResource().getOrganization().getOrganizationId();
+
+    Optional<Organization> optionalOrganization = organizationService.getOrganizationById(organizationId, accessToken);
 
     if (optionalOrganization.isEmpty()) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO);
+      throw new IllegalStateBusinessException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        String.format("Organization with id '%s' associated with user was not found", organizationId)
+      );
     }
 
     Organization organization = optionalOrganization.get();
@@ -91,8 +94,11 @@ public class DebtPositionCheckoutService {
     String checkoutUrl = checkoutService.checkoutCart(
         cartRequest);
     if (StringUtils.isBlank(checkoutUrl)) {
-      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR,
-          "Errore durante la creazione del carrello di pagamento");
+      throw new IllegalStateBusinessException(
+        ErrorCodeConstants.ERROR_CODE_CHECKOUT_URL_ERROR,
+        "Error during payment cart creation",
+        "Errore durante la creazione del carrello di pagamento"
+      );
     }
 
     return checkoutUrl;

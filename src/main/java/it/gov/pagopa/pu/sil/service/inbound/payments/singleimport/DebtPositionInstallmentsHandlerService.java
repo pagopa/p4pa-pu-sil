@@ -6,12 +6,12 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ManageInstallmentDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.notice.NoticeService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.activation.DataHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,18 +42,28 @@ public class DebtPositionInstallmentsHandlerService extends BaseDebtPositionHand
     //search installment to sync based on IUD
     List<ManageInstallmentDTO> manageInstallmentDTOList = request.getInstallments().stream().filter(i -> request.getIud().equals(i.getInstallment().getIud())).toList();
     if(manageInstallmentDTOList.size()>1) {
-      throw new InvalidValueException();
-      throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "Dovuto con IUD " + request.getIud() + " non univoco nei dati di input");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_DUPLICATED_IUD,
+        "Installment with IUD " + request.getIud() + " is not unique in the input data",
+        "Dovuto con IUD " + request.getIud() + " non univoco nei dati di input"
+      );
     } else if(manageInstallmentDTOList.isEmpty()) {
-      throw new InvalidValueException();
-      throw new SilFaultException(SilFaults.PAA_IUD_NON_VALIDO, "Nessun dovuto passato con IUD " + request.getIud());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_IUD,
+        "No installment provided with IUD " + request.getIud(),
+        "Nessun dovuto passato con IUD " + request.getIud()
+      );
     }
 
     ManageInstallmentDTO manageInstallmentDTO = manageInstallmentDTOList.getFirst();
 
     //validate action
     if(!manageInstallmentDTO.getAction().equals(Action.M) && !manageInstallmentDTO.getAction().equals(Action.A)){
-      throw new SilFaultException(SilFaults.PAA_AZIONE_NON_VALIDA, "Azione non supportata: " + manageInstallmentDTO.getAction());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ACTION,
+        "Not supported action: " + manageInstallmentDTO.getAction(),
+        "Azione non supportata: " + manageInstallmentDTO.getAction()
+      );
     }
 
     InstallmentDTO installmentToSync = debtPositionMapper

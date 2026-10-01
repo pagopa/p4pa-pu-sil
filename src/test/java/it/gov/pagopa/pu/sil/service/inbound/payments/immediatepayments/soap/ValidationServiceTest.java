@@ -1,7 +1,8 @@
 package it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap;
 
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiSingoloVersamentoDovuti;
@@ -69,9 +70,9 @@ class ValidationServiceTest {
     stamp.setTipoBollo("01");
     versamento.setDatiMarcaBolloDigitale(stamp);
 
-    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
-    Assertions.assertTrue(ex.getDescription().contains("hash documento"));
+    InvalidValueException ex = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_STAMP, ex.getCode());
+    Assertions.assertTrue(ex.getSilFaultCustomMessage().contains("hash documento"));
   }
 
   @Test
@@ -83,9 +84,9 @@ class ValidationServiceTest {
     stamp.setTipoBollo("01");
     versamento.setDatiMarcaBolloDigitale(stamp);
 
-    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
-    Assertions.assertTrue(ex.getDescription().contains("hash documento"));
+    InvalidValueException ex = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_STAMP, ex.getCode());
+    Assertions.assertTrue(ex.getSilFaultCustomMessage().contains("hash documento"));
   }
 
   @Test
@@ -97,9 +98,9 @@ class ValidationServiceTest {
     stamp.setTipoBollo("01");
     versamento.setDatiMarcaBolloDigitale(stamp);
 
-    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
-    Assertions.assertTrue(ex.getDescription().contains("provincia residenza"));
+    InvalidValueException ex = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_STAMP, ex.getCode());
+    Assertions.assertTrue(ex.getSilFaultCustomMessage().contains("provincia residenza"));
   }
 
   @Test
@@ -111,9 +112,9 @@ class ValidationServiceTest {
     stamp.setTipoBollo("1"); // too short
     versamento.setDatiMarcaBolloDigitale(stamp);
 
-    SilFaultException ex = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateStamp(versamento));
-    assertEquals(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, ex.getFault());
-    Assertions.assertTrue(ex.getDescription().contains("tipo bollo"));
+    InvalidValueException ex = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateStamp(versamento));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_STAMP, ex.getCode());
+    Assertions.assertTrue(ex.getSilFaultCustomMessage().contains("tipo bollo"));
   }
 
   @Test
@@ -139,10 +140,10 @@ class ValidationServiceTest {
 
     when(installmentServiceMock.isInstallmentExistsByIudIuvNav(orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken)).thenReturn(Boolean.TRUE);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateIud(orgId, iud, accessToken));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateIud(orgId, iud, accessToken));
 
-    assertEquals(SilFaults.PAA_IUD_DUPLICATO, result.getFault());
-    assertEquals("IUD duplicato: DUPLICATE_IUD", result.getDescription());
+    assertEquals( ErrorCodeConstants.ERROR_CODE_DUPLICATED_IUD, result.getCode());
+    assertEquals("IUD duplicato: DUPLICATE_IUD", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -163,10 +164,10 @@ class ValidationServiceTest {
     PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
     request.setListaDovuti(null);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE"));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE"));
 
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, result.getFault());
-    assertEquals("Dovuti non presenti", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR, result.getCode());
+    assertEquals("Dovuti non presenti", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -174,10 +175,10 @@ class ValidationServiceTest {
     PaaSILInviaCarrelloDovuti request = new PaaSILInviaCarrelloDovuti();
     request.setListaDovuti(new ListaDovuti());
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE"));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE"));
 
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, result.getFault());
-    assertEquals("Dovuti non presenti", result.getDescription());
+    assertEquals(  ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR, result.getCode());
+    assertEquals("Dovuti non presenti", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -188,10 +189,10 @@ class ValidationServiceTest {
     elementoListaDovuti.setCodIpaEnte("INVALID_ORG_CODE");
     request.getListaDovuti().getElementoListaDovutis().add(elementoListaDovuti);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE"));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validatePrimaryDebtPositionOrganization(request, "ORG_CODE"));
 
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, result.getFault());
-    assertEquals("L'inserimento di dovuti per enti diversi dal chiamante è deprecato", result.getDescription());
+    assertEquals( ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, result.getCode());
+    assertEquals("L'inserimento di dovuti per enti diversi dal chiamante è deprecato", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -222,10 +223,10 @@ class ValidationServiceTest {
     listaDovutiEntiSecondari.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
     request.setListaDovutiEntiSecondari(listaDovutiEntiSecondari);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionCount(request, 2));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateSecondaryDebtPositionCount(request, 2));
 
-    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, result.getFault());
-    assertEquals("Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD, result.getCode());
+    assertEquals("Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -236,10 +237,10 @@ class ValidationServiceTest {
     listaDovutiEntiSecondari.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
     request.setListaDovutiEntiSecondari(listaDovutiEntiSecondari);
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionCount(request, 1));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateSecondaryDebtPositionCount(request, 1));
 
-    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, result.getFault());
-    assertEquals("Non è possibile inserire pagamenti multibeneficiario con più di un dovuto secondario", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD, result.getCode());
+    assertEquals("Non è possibile inserire pagamenti multibeneficiario con più di un dovuto secondario", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -262,10 +263,10 @@ class ValidationServiceTest {
     secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 2));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 2));
 
-    assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, result.getFault());
-    assertEquals("Non è possibile inserire pagamenti multibeneficiario con più di un dovuto", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD, result.getCode());
+    assertEquals("Non è possibile inserire pagamenti multibeneficiario con più di un dovuto", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -276,10 +277,10 @@ class ValidationServiceTest {
     secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
 
-    assertEquals(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, result.getFault());
-    assertEquals("Codice fiscale ente secondario non valido: INVALID_CF", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, result.getCode());
+    assertEquals("Codice fiscale ente secondario non valido: INVALID_CF", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -290,10 +291,10 @@ class ValidationServiceTest {
     secondaryTransferData.setImportoSingoloVersamento(BigDecimal.TEN);
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
 
-    assertEquals(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, result.getFault());
-    assertEquals("IBAN accredito Ente secondario non valido [INVALID_IBAN]", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_IBAN, result.getCode());
+    assertEquals("IBAN accredito Ente secondario non valido [INVALID_IBAN]", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -304,10 +305,10 @@ class ValidationServiceTest {
     secondaryTransferData.setImportoSingoloVersamento(BigDecimal.ZERO);
     secondaryTransferData.setDatiSpecificiRiscossione("9/1234567IM/ValidData");
 
-    SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
+    InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateSecondaryDebtPositionData(secondaryTransferData, 1));
 
-    assertEquals(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, result.getFault());
-    assertEquals("Importo singolo versamento non valido: 0", result.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_AMOUNT, result.getCode());
+    assertEquals("Importo singolo versamento non valido: 0", result.getSilFaultCustomMessage());
   }
 
   @Test
@@ -325,15 +326,14 @@ class ValidationServiceTest {
   //region: validateCartSize
   @ParameterizedTest
   @CsvSource({
-    "10, PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, 'Numero massimo dovuti nel carrello superato: 10/5'",
-    "0, PAA_XML_NON_VALIDO, 'Nessun dovuto presente'",
-    "1, , " // valid case, should not throw
+    "10, 'Numero massimo dovuti nel carrello superato: 10/5'",
+    "0, 'Nessun dovuto presente'",
+    "1, " // valid case, should not throw
   })
-  void validateCartSize_Parametrized(int size, String expectedFault, String expectedDescription) {
-    if (expectedFault != null) {
-      SilFaultException result = Assertions.assertThrows(SilFaultException.class, () -> validationService.validateCartSize(size));
-      assertEquals(SilFaults.valueOf(expectedFault), result.getFault());
-      assertEquals(expectedDescription, result.getDescription());
+  void validateCartSize_Parametrized(int size, String expectedDescription) {
+    if (expectedDescription != null) {
+      InvalidValueException result = Assertions.assertThrows(InvalidValueException.class, () -> validationService.validateCartSize(size));
+      assertEquals(expectedDescription, result.getSilFaultCustomMessage());
     } else {
       Assertions.assertDoesNotThrow(() -> validationService.validateCartSize(size));
     }

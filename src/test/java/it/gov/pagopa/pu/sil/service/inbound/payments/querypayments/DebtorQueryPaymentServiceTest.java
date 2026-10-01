@@ -13,6 +13,7 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryDTO;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentHistoryResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
@@ -237,7 +238,7 @@ class DebtorQueryPaymentServiceTest {
   }
 
   @Test
-  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() {
+  void givenInactiveOrganizationWhenProcessRequestThenThrowsInvalidValueException() {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
@@ -266,7 +267,7 @@ class DebtorQueryPaymentServiceTest {
       mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
         .thenReturn(orgId);
 
-      Assertions.assertThrows(SilFaultException.class, () ->
+      Assertions.assertThrows(InvalidValueException.class, () ->
         service.processRequest(request, userInfo, accessToken)
       );
     }

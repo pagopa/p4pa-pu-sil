@@ -51,10 +51,17 @@ public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExcepti
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_FULLNAME, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_EMAIL, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
     Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ADDRESS, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_COUNTRY, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_PROVINCE, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_POSTAL_CODE, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_STREET_NUMBER, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
 
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, SilFaults.PAA_CODICE_FISCALE_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_ANONYMOUS_DEBTOR_NOT_SUPPORTED, SilFaults.PAA_CODICE_FISCALE_NON_VALIDO),
 
     Map.entry(ErrorCodeConstants.ERROR_CODE_TOO_MANY_TRANSFERS_FOR_INSTALLMENT, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI),
 
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_IBAN, SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO),
 
@@ -65,8 +72,40 @@ public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExcepti
     Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_ALREADY_EXISTS, SilFaults.PAA_DOVUTO_DUPLICATO),
 
     Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, SilFaults.PAA_ID_SESSION_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_ID_SESSION, SilFaults.PAA_ID_SESSION_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_ID_SESSION_CARRELLO, SilFaults.PAA_ID_SESSION_NON_VALIDO),
 
-    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, SilFaults.PAA_URL_NON_VALIDA)
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, SilFaults.PAA_URL_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_CHECKOUT_URL_ERROR, SilFaults.PAA_SYSTEM_ERROR),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_SYNC_ERROR, SilFaults.PAA_SYSTEM_ERROR),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_PARAMETER_COMBINATION, SilFaults.PAA_SYSTEM_ERROR),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR, SilFaults.PAA_SYSTEM_ERROR),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_REQUEST_TOKEN, SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ACTION, SilFaults.PAA_AZIONE_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_NOT_FOUND, SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DUPLICATED_IUD, SilFaults.PAA_IUD_DUPLICATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_XML_MARSHALLING_ERROR, SilFaults.PAA_XML_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, SilFaults.PAA_XML_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_XML, SilFaults.PAA_XML_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_STAMP, SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_PAID, SilFaults.PAA_PAGAMENTO_NON_INIZIATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_EXPIRED, SilFaults.PAA_PAGAMENTO_SCADUTO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_PAYABLE, SilFaults.PAA_DOVUTO_NON_PAGABILE),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CART_SIZE, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED, SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI)
   );
 
   private static final Map<String, String> fieldNameTranscoding = Map.ofEntries(

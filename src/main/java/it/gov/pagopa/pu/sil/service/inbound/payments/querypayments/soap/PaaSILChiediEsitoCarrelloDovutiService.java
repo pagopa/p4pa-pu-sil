@@ -6,14 +6,15 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.enums.legacy.CartStatus;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.AbstractQueryPaymentsService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.veneto.regione.pagamenti.ente.ListaCarrelli;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediEsitoCarrelloDovuti;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediEsitoCarrelloDovutiRisposta;
@@ -93,7 +94,11 @@ public class PaaSILChiediEsitoCarrelloDovutiService extends AbstractQueryPayment
   @Override
   protected PaymentStatusRequest validateAndTransformRequest(PaaSILChiediEsitoCarrelloDovuti request, String orgIpaCode) {
     if(StringUtils.isBlank(request.getIdSessionCarrello())) {
-      throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Errore, è obbligatorio specificare un idSessionCarrello.");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_MISSING_ID_SESSION_CARRELLO,
+        "idSessionCarrello is mandatory",
+        "Errore, è obbligatorio specificare un idSessionCarrello."
+      );
     }
     return new PaymentStatusRequest(orgIpaCode, QueryPaymentStatusType.INSTALLMENT_ID, request.getIdSessionCarrello(), false);
   }

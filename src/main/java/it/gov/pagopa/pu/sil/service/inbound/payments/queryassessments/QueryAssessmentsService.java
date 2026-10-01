@@ -3,8 +3,6 @@ package it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
 import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,11 +18,6 @@ public class QueryAssessmentsService extends BaseQueryAssessmentsService<GetAsse
                                  AssessmentsBalanceMapper assessmentsBalanceMapper) {
     super(assessmentService);
     this.assessmentsBalanceMapper = assessmentsBalanceMapper;
-  }
-
-  @Override
-  protected RuntimeException handleException(SilFaults fault, String message) {
-    return new AssessmentNotFoundException(fault.description());
   }
 
   @Override

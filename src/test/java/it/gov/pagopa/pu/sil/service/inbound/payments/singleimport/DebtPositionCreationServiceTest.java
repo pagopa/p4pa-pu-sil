@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
@@ -78,7 +79,7 @@ class DebtPositionCreationServiceTest {
       org.setStatus(OrganizationStatus.DRAFT);
     }
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-    Assertions.assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    Assertions.assertThrows(InvalidValueException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
   }
 
   @Test

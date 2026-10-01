@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.auth.AuthnService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
@@ -234,7 +235,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
   }
 
   @Test
-  void givenInactiveOrganizationWhenProcessRequestThenThrowsSilFaultException() throws Exception {
+  void givenInactiveOrganizationWhenProcessRequestThenThrowsInvalidValueException() throws Exception {
     // Given
     String accessToken = "token";
     String orgIpaCode = "IPA123";
@@ -263,7 +264,7 @@ class PaaSILChiediStoricoPagamentiServiceTest {
       mockedAuth.when(() -> AuthorizationService.getOrganizationIdFromUserInfo(eq(userInfo), eq(orgIpaCode)))
         .thenReturn(orgId);
 
-      Assertions.assertThrows(SilFaultException.class, () ->
+      Assertions.assertThrows(InvalidValueException.class, () ->
         service.processRequest(request, userInfo, accessToken)
       );
     }

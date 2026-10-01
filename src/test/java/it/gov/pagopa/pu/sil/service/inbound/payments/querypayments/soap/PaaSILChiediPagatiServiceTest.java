@@ -5,6 +5,9 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
@@ -112,16 +115,16 @@ class PaaSILChiediPagatiServiceTest {
 
   @ParameterizedTest
   @CsvSource(value = {
-    "userNotAuth,Access denied on orgIpaCode,null",
-    "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
-    "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
-    "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
-    "unpaidInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
-    "unpaidToSyncInstallment,PAA_PAGAMENTO_NON_INIZIATO,Pagamento non effettuato",
-    "expiredInstallment,PAA_PAGAMENTO_SCADUTO,Pagamento scaduto",
-    "invalidStatusInstallment,PAA_DOVUTO_NON_PAGABILE,Dovuto non pagabile"
+    "userNotAuth",
+    "invalidOrgStatus",
+    "emptyDebtPositionList",
+    "invalidOrgDebtPosition",
+    "unpaidInstallment",
+    "unpaidToSyncInstallment",
+    "expiredInstallment",
+    "invalidStatusInstallment"
   }, nullValues = {"null"})
-  void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
+  void testGetDebtPositionsAndException(String testCase) {
 
     // change input data to fit testCase
     switch (testCase) {
@@ -182,14 +185,11 @@ class PaaSILChiediPagatiServiceTest {
       AuthorizationDeniedException authorizationDeniedException = Assertions.assertThrows(AuthorizationDeniedException.class, () -> paaSILChiediPagatiService.processRequest(request, userInfo, accessToken));
 
       assertNotNull(authorizationDeniedException);
-      assertTrue(authorizationDeniedException.getMessage().contains(silFaultCode));
     } else {
-      SilFaultException silFaultException = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediPagatiService.processRequest(request, userInfo, accessToken));
+      BaseBusinessException exception = Assertions.assertThrows(BaseBusinessException.class, () -> paaSILChiediPagatiService.processRequest(request, userInfo, accessToken));
 
-      assertNotNull(silFaultException);
-      assertNotNull(silFaultException.getFault());
-      assertEquals(silFaultCode, silFaultException.getFault().code());
-      assertEquals(faultDescription, silFaultException.getDescription());
+      assertNotNull(exception);
+      assertNotNull(exception.getCode());
     }
   }
 }

@@ -9,10 +9,12 @@ import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.InstantPaymentRequest;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentResponse;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.NotAuthorizedException;
 import it.gov.pagopa.pu.sil.mapper.InstantPaymentMapper;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import org.apache.commons.lang3.tuple.Triple;
@@ -89,10 +91,10 @@ class InstantPaymentServiceTest {
     userInfo.getOrganizations().getFirst().setOrganizationIpaCode("INVALID_IPA_CODE");
 
     //when
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    NotAuthorizedException response = Assertions.assertThrows(NotAuthorizedException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
+    Assertions.assertEquals( ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, response.getCode());
   }
 
   @ParameterizedTest
@@ -107,9 +109,9 @@ class InstantPaymentServiceTest {
 
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException response = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, response.getCode());
   }
 
   @Test
@@ -119,10 +121,10 @@ class InstantPaymentServiceTest {
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
 
     //when
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException response = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, response.getFault());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, response.getCode());
   }
 
   @Test
@@ -130,14 +132,14 @@ class InstantPaymentServiceTest {
     //given
     when(organizationServiceMock.getOrganizationById(orgId, TOKEN)).thenReturn(Optional.of(org));
     when(instantPaymentMapperMock.mapRequestToDebtPositions(eq(request), eq(org), any(), eq(TOKEN)))
-      .thenThrow(new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "mapper error"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, "mapper error"));
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, exception.getFault());
-    Assertions.assertEquals("mapper error", exception.getDescription());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, exception.getCode());
+    Assertions.assertEquals("mapper error", exception.getMessage());
   }
 
   @Test
@@ -151,14 +153,14 @@ class InstantPaymentServiceTest {
     when(instantPaymentMapperMock.mapRequestToDebtPositions(eq(request), eq(org), any(), eq(TOKEN)))
       .thenReturn(debtPositionDTOList);
     when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
-      .thenThrow(new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "system error"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR, "system error"));
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
-    Assertions.assertEquals("system error", exception.getDescription());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR, exception.getCode());
+    Assertions.assertEquals("system error", exception.getMessage());
   }
 
   @Test
@@ -176,14 +178,14 @@ class InstantPaymentServiceTest {
     when(instantPaymentsFacadeMock.createDebtPositionsFromMapping(paymentRequestMappingResult, TOKEN))
       .thenReturn(debtPositionDTOList);
     when(debtPositionCheckoutServiceMock.composeDebtPositionsCheckoutUrl(anyLong(), anyString(), anyString(), anyString(), anyString()))
-      .thenThrow(new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "invalid url"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, "invalid url"));
 
     //when
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> service.processRequest(request, orgIpaCode, userInfo, TOKEN));
 
     //verify
-    Assertions.assertEquals(SilFaults.PAA_URL_NON_VALIDA, exception.getFault());
-    Assertions.assertEquals("invalid url", exception.getDescription());
+    Assertions.assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, exception.getCode());
+    Assertions.assertEquals("invalid url", exception.getMessage());
   }
 
   @Test

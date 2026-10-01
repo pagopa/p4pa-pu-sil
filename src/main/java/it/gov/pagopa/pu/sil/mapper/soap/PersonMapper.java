@@ -2,7 +2,8 @@ package it.gov.pagopa.pu.sil.mapper.soap;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonEntityType;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.PersonValidationUtils;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
@@ -14,10 +15,14 @@ public class PersonMapper {
 
   public PersonDTO getAndValidateDebtor(CtSoggettoPagatore soggettoPagatore) {
     if (soggettoPagatore == null) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Soggetto pagatore non presente");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, "Missing debtor", "Soggetto pagatore non presente");
     }
     if (StringUtils.isNotBlank(soggettoPagatore.getEMailPagatore()) && !ValidationUtils.isValidEmail(soggettoPagatore.getEMailPagatore())) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Email pagatore non valida: " + soggettoPagatore.getEMailPagatore());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_EMAIL,
+        "Email is not valid",
+        "Email pagatore non valida: " + soggettoPagatore.getEMailPagatore()
+      );
     }
     PersonValidationUtils.validateFiscalCodeDebtor(soggettoPagatore.getIdentificativoUnivocoPagatore());
 

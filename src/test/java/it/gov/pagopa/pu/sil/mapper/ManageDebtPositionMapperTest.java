@@ -6,9 +6,10 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.mapper.soap.SecondaryTransferMapper;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,10 +85,11 @@ class ManageDebtPositionMapperTest {
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().getLast().getInstallments().getLast();
     installmentOnDb.setIud(installmentToSync.getIud()+"invalid");
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, Constants.LEGACY_IMPORT_ACTION_MODIFY, false));
+    NotFoundException exception = Assertions.assertThrows(NotFoundException.class, () -> mapper.mapToManageDebtPositionDTO(debtPositionOnDb, debtPositionToSync, installmentToSync, Constants.LEGACY_IMPORT_ACTION_MODIFY, false));
 
-    assertEquals(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, exception.getFault());
-    assertTrue(exception.getDescription().contains("Dovuto non trovato"));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, exception.getCode());
+    assertEquals("Installment not found", exception.getMessage());
+    assertEquals("Dovuto non trovato", exception.getSilFaultCustomMessage());
   }
   //endregion
 

@@ -8,12 +8,14 @@ import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.ManageDebtPositionWithIudDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.mapper.DebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.Assertions;
@@ -88,7 +90,7 @@ class DebtPositionInstallmentsHandlerServiceTest {
       org.setStatus(OrganizationStatus.DRAFT);
     }
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
-    Assertions.assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    Assertions.assertThrows(InvalidValueException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
   }
 
 
@@ -117,7 +119,7 @@ class DebtPositionInstallmentsHandlerServiceTest {
       .thenReturn(List.of());
 
     // Act &Assert
-    assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertThrows(NotFoundException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
   }
 
   @Test
@@ -130,8 +132,8 @@ class DebtPositionInstallmentsHandlerServiceTest {
 
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), TOKEN)).thenReturn(Optional.ofNullable(org));
     // Act &Assert
-    SilFaultException response = assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
-    assertEquals(SilFaults.PAA_IUD_NON_VALIDO, response.getFault());
+    InvalidValueException response = assertThrows(InvalidValueException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_IUD, response.getCode());
   }
 
   @Test
@@ -147,8 +149,8 @@ class DebtPositionInstallmentsHandlerServiceTest {
 
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), TOKEN)).thenReturn(Optional.ofNullable(org));
     // Act &Assert
-    SilFaultException response = assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
-    assertEquals(SilFaults.PAA_IUD_DUPLICATO, response.getFault());
+    InvalidValueException response = assertThrows(InvalidValueException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_DUPLICATED_IUD, response.getCode());
   }
 
   @Test
@@ -162,8 +164,8 @@ class DebtPositionInstallmentsHandlerServiceTest {
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), TOKEN)).thenReturn(Optional.ofNullable(org));
 
     // Act &Assert
-    SilFaultException response = assertThrows(SilFaultException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
-    assertEquals(SilFaults.PAA_AZIONE_NON_VALIDA, response.getFault());
+    InvalidValueException response = assertThrows(InvalidValueException.class, () -> service.handleAction(request, IPA_CODE, userInfo, TOKEN));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ACTION, response.getCode());
   }
 
   @ParameterizedTest

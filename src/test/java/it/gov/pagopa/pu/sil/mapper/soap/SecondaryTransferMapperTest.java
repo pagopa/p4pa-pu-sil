@@ -4,6 +4,7 @@ package it.gov.pagopa.pu.sil.mapper.soap;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -73,7 +74,7 @@ class SecondaryTransferMapperTest {
     ListaDovutiEntiSecondari list = new ListaDovutiEntiSecondari();
     list.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
     list.getElementoListaDovutiEntiSecondaris().add(new ElementoListaDovutiEntiSecondari());
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       secondaryTransferMapper.mapToCtDatiVersamentoDovutiEntiSecondari(list));
   }
 
@@ -109,7 +110,7 @@ class SecondaryTransferMapperTest {
     when(jaxbTransformServiceMock.getDetailUnmarshalExceptionMessage(any(), any()))
       .thenReturn("details");
 
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       secondaryTransferMapper.mapToCtDatiVersamentoDovutiEntiSecondari(list));
   }
   //endregion
@@ -165,7 +166,7 @@ class SecondaryTransferMapperTest {
     InstallmentDTO installmentToSync = installmentOnDb.toBuilder().build();
     installmentToSync.setTransfers(Stream.of(1).map(i -> podamFactory.manufacturePojo(TransferDTO.class).transferIndex(i)).toList());
 
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode));
   }
 
@@ -259,7 +260,7 @@ class SecondaryTransferMapperTest {
       installmentToSync.setTransfers(List.of(t1Sync, t2Sync));
     }
 
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       secondaryTransferMapper.checkAndFillSupportedTransfersConfigurationForModify(installmentOnDb, installmentToSync, legacyMode));
   }
   //endregion

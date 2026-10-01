@@ -11,11 +11,12 @@ import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.PaymentStatusResponseDTO;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
 import it.gov.pagopa.pu.sil.dto.generated.ReceiptWithAdditionalNodeDataDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.ReceiptMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.receipt.ReceiptService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -106,16 +107,16 @@ class QueryPaymentsServiceTest {
   }
 
   @Test
-  void testProcessRequestFaults() {
+  void testProcessRequestException() {
     // Given
     request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, "invalidSessionId", true);
 
     when(organizationServiceMock.getOrganizationById(org.getOrganizationId(), accessToken)).thenReturn(Optional.of(org));
     when(debtPositionInstallmentFacadeServiceMock.fetch(request, org, accessToken)).thenReturn(List.of());
     // When
-    SilFaultException ex = assertThrows(SilFaultException.class, () -> service.processRequest(request, userInfo, accessToken));
+    InvalidValueException ex = assertThrows(InvalidValueException.class, () -> service.processRequest(request, userInfo, accessToken));
     // Then
-    assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO, ex.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, ex.getCode());
   }
 
   @Test

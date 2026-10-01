@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.connector.pagopa.checkout.CheckoutService;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.mapper.CartRequestMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
@@ -208,7 +209,7 @@ class DebtPositionCheckoutServiceTest {
     when(organizationServiceMock.getOrganizationById(anyLong(), eq(accessToken))).thenReturn(
         Optional.empty());
 
-    assertThrows(SilFaultException.class,
+    assertThrows(IllegalStateBusinessException.class,
         () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, accessToken));
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
@@ -245,7 +246,7 @@ class DebtPositionCheckoutServiceTest {
         .thenReturn(cartRequest);
     when(checkoutServiceMock.checkoutCart(cartRequest)).thenReturn("");
 
-    assertThrows(SilFaultException.class,
+    assertThrows(IllegalStateBusinessException.class,
         () -> debtPositionCheckoutService.redirectToCheckout(loggedUser, accessToken));
 
     verify(organizationServiceMock).getOrganizationById(anyLong(), eq(accessToken));
