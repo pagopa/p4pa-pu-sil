@@ -111,7 +111,7 @@ class PaaSILInviaDovutiMapperTest {
     InvalidValueException exception = assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     assertEquals(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, exception.getCode());
-    assertEquals("error unmarshalling PaaSILInviaDovuti: error", exception.getMessage());
+    assertEquals("error", exception.getMessage());
     assertEquals("XML non conforme", exception.getSilFaultCustomMessage());
   }
 
