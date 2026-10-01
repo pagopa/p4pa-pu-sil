@@ -49,7 +49,7 @@ public class SecondaryTransferMapper {
         String silFaultCustomMessage = "XML dovuti enti secondari non conforme: \n" + detailUnmarshalExceptionMessage;
         String message = String.format("error unmarshalling PaaSILInviaCarrelloDovuti dovutEntiSecondari: [%s]", detailUnmarshalExceptionMessage);
 
-        log.error(message, unmarshallingException);
+        log.debug(message, unmarshallingException);
 
         throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, message, silFaultCustomMessage);
       }
@@ -95,11 +95,9 @@ public class SecondaryTransferMapper {
        */
       numTransfersToSync = ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1;
       if(numTransfersToSync>2){
-        String message = String.format("more than 2 transfers to sync in legacy mode [%s] for installment: %s", numTransfersToSync, installmentOnDb.getInstallmentId());
-        log.error(message);
         throw new InvalidValueException(
           ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED,
-          message,
+          String.format("more than 2 transfers to sync in legacy mode [%s] for installment: %s", numTransfersToSync, installmentOnDb.getInstallmentId()),
           "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId()
         );
       }
@@ -122,8 +120,6 @@ public class SecondaryTransferMapper {
         "installmentOnDb transfers: %s, installmentToSync transfers: %s", installmentOnDb.getTransfers().size(),
         ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1
       );
-
-      log.error(message);
 
       throw new InvalidValueException(
         ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED,

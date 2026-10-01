@@ -63,7 +63,7 @@ public class PaaSILImportaDovutoMapper {
       String silFaultCustomMessage = "XML non conforme: \n" + detailUnmarshalExceptionMessage;
       String message = String.format("error unmarshalling PaaSILImportaDovuto: [%s]", detailUnmarshalExceptionMessage);
 
-      log.error(message, unmarshallingException);
+      log.debug(message, unmarshallingException);
 
       throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, message, silFaultCustomMessage);
     }

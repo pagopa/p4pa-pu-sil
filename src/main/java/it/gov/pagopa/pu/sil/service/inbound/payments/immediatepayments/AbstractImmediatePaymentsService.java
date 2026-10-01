@@ -54,7 +54,7 @@ public abstract class AbstractImmediatePaymentsService<I, O> {
     String clientId = Optional.ofNullable(userInfo).map(UserInfo::getUserId).orElse(null);
     //check if the logged user has the right to call this endpoint
     if (!AuthorizationService.isAdminRole(orgIpaCode, userInfo)) {
-      log.error("ClientId [{}] not authorized to call {} for organization {}", request.getClass().getSimpleName(), clientId, orgIpaCode);
+      log.debug("ClientId [{}] not authorized to call {} for organization {}", request.getClass().getSimpleName(), clientId, orgIpaCode);
       throw new NotAuthorizedException(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, "User not authorized", "Utente non autorizzato");
     }
     Long organizationId = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, orgIpaCode);

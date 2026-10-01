@@ -25,7 +25,7 @@ public class ManageDebtPositionMapper {
       .filter(i -> Objects.equals(i.getIud(), installmentToSync.getIud()))
       .findFirst()
       .orElseThrow(() -> {
-        log.error("Installment not found on debtPosition[{}] for organizationId[{}] and iud[{}]", debtPositionOnDb.getDebtPositionId(),
+        log.debug("Installment not found on debtPosition[{}] for organizationId[{}] and iud[{}]", debtPositionOnDb.getDebtPositionId(),
           debtPositionOnDb.getOrganizationId(), installmentToSync.getIud());
         return new NotFoundException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, "Installment not found", "Dovuto non trovato");
       });

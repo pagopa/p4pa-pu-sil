@@ -55,7 +55,7 @@ public class PaaSILInviaCarrelloDovutiMapper extends AbstractImmediatePaymentsMa
         String silFaultCustomMessage = "XML dovuti [" + idx + "] non conforme: \n" + detailUnmarshalExceptionMessage;
         String message = String.format("error unmarshalling PaaSILInviaCarrelloDovuti [dovuti %s]: [%s]", idx, detailUnmarshalExceptionMessage);
 
-        log.error(message, unmarshallingException);
+        log.debug(message, unmarshallingException);
 
         throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, message, silFaultCustomMessage);
       }

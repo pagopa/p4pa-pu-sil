@@ -163,7 +163,7 @@ public abstract class BaseDebtPositionHandler<I, O> {
       .filter(dp -> Constants.SYNCABLE_DEBT_POSITION_STATUSES.contains(dp.getStatus()))
       .findFirst()
       .orElseThrow(() -> {
-        log.error("Debt position not found for organizationId[{}] and iud[{}]", organizationId, iud);
+        log.debug("Debt position not found for organizationId[{}] and iud[{}]", organizationId, iud);
         return new NotFoundException(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_NOT_FOUND, "Debt position not found");
       });
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().stream()
@@ -171,7 +171,7 @@ public abstract class BaseDebtPositionHandler<I, O> {
       .filter(i -> Objects.equals(i.getIud(), iud))
       .findFirst()
       .orElseThrow(() -> {
-        log.error("Installment not found for organizationId[{}] and iud[{}]", organizationId, iud);
+        log.debug("Installment not found for organizationId[{}] and iud[{}]", organizationId, iud);
         return new NotFoundException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, "Installment not found");
       });
     return Pair.of(debtPositionOnDb, installmentOnDb);

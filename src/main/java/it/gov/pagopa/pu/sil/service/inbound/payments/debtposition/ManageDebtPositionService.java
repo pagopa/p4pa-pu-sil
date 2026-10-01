@@ -57,7 +57,7 @@ public class ManageDebtPositionService {
 
     //if any of the debt positions failed to sync, return a fault response
     if (!Constants.WORKFLOW_STATUS_COMPLETED_VALUE.equals(result)) {
-      log.error("error syncing manageDebtPositionInstallments[{}] with workflowId[{}] - result[{}]", debtPositionId, workflowId, result);
+      log.debug("error syncing manageDebtPositionInstallments[{}] with workflowId[{}] - result[{}]", debtPositionId, workflowId, result);
       throw new WorkflowErrorException(ErrorCodeConstants.ERROR_CODE_SYNC_ERROR, "Error synchronizing debt positions", "errore sincronizzando le posizioni debitorie");
     }
 
@@ -81,7 +81,7 @@ public class ManageDebtPositionService {
 
     //if any of the debt positions failed to sync, return a fault response
     if (!debtPositionsNotSync.isEmpty()) {
-      log.error("error syncing debt positions: {}",
+      log.debug("error syncing debt positions: {}",
         debtPositionsNotSync.stream()
           .map(triple -> String.format("DebtPositionId: %s, WorkflowId: %s, Result: %s",
             triple.getLeft().getDebtPositionId(), triple.getMiddle(), triple.getRight()))

@@ -31,7 +31,7 @@ public class SessionIdMapper {
         .map(Long::parseLong)
         .toList();
     } catch (NullPointerException | NumberFormatException e) {
-      log.error("Invalid sessionId: {}", sessionId, e);
+      log.debug("Invalid sessionId: {}", sessionId, e);
       throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Invalid id session");
     }
 

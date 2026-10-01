@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
-import it.gov.pagopa.pu.sil.exception.common.ConflictException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.soap.PaaSILImportaDovutoMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
@@ -70,7 +70,7 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
   protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action) {
     //validate data consistency between installment to sync and the one on db
     if (!Objects.equals(debtPositionToSync.getDebtPositionTypeOrgId(), debtPositionOnDb.getDebtPositionTypeOrgId())) {
-      throw new ConflictException(
+      throw new InvalidValueException(
         ErrorCodeConstants.ERROR_CODE_IMMUTABLE_FIELD,
         "debtPositionTypeOrgId cannot be updated",
         List.of(
