@@ -51,7 +51,7 @@ public class DebtPositionInstallmentService {
     return findFirstValidPair(
       debtPositions,
       inst -> Objects.equals(inst.getIud(), request.id()),
-      () -> new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_IUD, "Installment not found", "Avviso non trovato")
+      getInstallmentNotFoundSupplier(ErrorCodeConstants.ERROR_CODE_INVALID_IUD)
     );
   }
 
@@ -64,7 +64,7 @@ public class DebtPositionInstallmentService {
     return findFirstValidPair(
       debtPositions,
       inst -> Objects.equals(inst.getIuv(), request.id()),
-      () -> new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, "Installment not found", "Avviso non trovato")
+      getInstallmentNotFoundSupplier(ErrorCodeConstants.ERROR_CODE_INVALID_IUV)
     );
   }
 
@@ -78,7 +78,7 @@ public class DebtPositionInstallmentService {
     InstallmentDTO installment = findInstallment(
       debtPosition,
       inst -> Objects.equals(inst.getInstallmentId(), installmentId),
-      () -> new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Installment not found", "Avviso non trovato")
+      getInstallmentNotFoundSupplier(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION)
     );
 
     return Pair.of(debtPosition, installment);
@@ -128,5 +128,9 @@ public class DebtPositionInstallmentService {
       category = category.replace(prefix.get(), "");
     }
     return category.replace("/", "");
+  }
+
+  private Supplier<InvalidValueException> getInstallmentNotFoundSupplier(String code) {
+    return () -> new InvalidValueException(code, "Installment not found", "Avviso non trovato");
   }
 }
