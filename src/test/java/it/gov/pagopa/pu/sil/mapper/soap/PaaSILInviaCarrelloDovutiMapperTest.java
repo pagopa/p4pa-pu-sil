@@ -7,10 +7,12 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.PaymentRequestMappingResult;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.*;
 import it.veneto.regione.schemas._2012.pagamenti.ente.*;
@@ -147,10 +149,11 @@ class PaaSILInviaCarrelloDovutiMapperTest {
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
     doNothing().when(validationServiceMock).validateCartSize(request.getListaDovuti().getElementoListaDovutis().size());
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
-    assertEquals(SilFaults.PAA_IUV_NON_VALIDO, exception.getFault());
-    assertEquals("L'inserimento dello IUV è deprecato", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, exception.getCode());
+    assertEquals("IUV field insertion is deprecated", exception.getMessage());
+    assertEquals("L'inserimento dello IUV è deprecato", exception.getSilFaultCustomMessage());
   }
 
   @Test

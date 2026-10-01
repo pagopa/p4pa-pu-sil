@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
 import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.registry.RegistryEventType;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
@@ -39,8 +40,9 @@ abstract class AbstractImmediatePaymentsMapper {
       !RegistryEventType.PTDP_paaSILInviaCarrelloDovuti.equals(operationType)) {
       throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_UNSUPPORTED_REGISTRY_EVENT_TYPE, "invalid operation type: " + operationType);
     }
+
     if (StringUtils.isNotBlank(dovutiObj.getDatiVersamento().getIdentificativoUnivocoVersamento())) {
-      throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "L'inserimento dello IUV è deprecato");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, "IUV field insertion is deprecated", "L'inserimento dello IUV è deprecato");
     }
 
     PersonDTO debtor = personMapper.getAndValidateDebtor(dovutiObj.getSoggettoPagatore());
@@ -52,7 +54,7 @@ abstract class AbstractImmediatePaymentsMapper {
       org.getOrganizationId(), versamento.getIdentificativoTipoDovuto(), accessToken);
 
     if (debtPositionTypeOrg == null) {
-      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, "Invalid DebtPositionTypeOrg");
     }
 
     validationService.validateStamp(versamento);
