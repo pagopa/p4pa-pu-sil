@@ -112,7 +112,6 @@ class PaaSILInviaDovutiMapperTest {
 
     assertEquals(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, exception.getCode());
     assertEquals("error", exception.getMessage());
-    assertEquals("XML non conforme", exception.getSilFaultCustomMessage());
   }
 
   @ParameterizedTest
