@@ -7,14 +7,15 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.soap.PaaSILImportaDovutoMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.notice.NoticeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.singleimport.BaseDebtPositionHandler;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
 import jakarta.activation.DataHandler;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -68,7 +70,17 @@ public class PaaSILImportaDovutoService extends BaseDebtPositionHandler<PaaSILIm
   protected ManageDebtPositionDTO mapToManageDebtPositionDTO(DebtPositionDTO debtPositionOnDb, DebtPositionDTO debtPositionToSync, String action) {
     //validate data consistency between installment to sync and the one on db
     if (!Objects.equals(debtPositionToSync.getDebtPositionTypeOrgId(), debtPositionOnDb.getDebtPositionTypeOrgId())) {
-      throw new SilFaultException(SilFaults.PAA_CAMPO_NON_MODIFICABILE, "Il campo tipo dovuto non può essere modificato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_IMMUTABLE_FIELD,
+        "debtPositionTypeOrgId cannot be updated",
+        List.of(
+          new ErrorFieldDTO(
+            "debtPositionTypeOrgId",
+            ErrorCodeConstants.ERROR_CODE_IMMUTABLE_FIELD,
+            "Cannot be updated"
+          )
+        )
+      );
     }
 
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();

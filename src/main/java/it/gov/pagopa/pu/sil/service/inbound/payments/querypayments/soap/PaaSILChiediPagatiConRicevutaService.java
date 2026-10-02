@@ -5,14 +5,14 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.AbstractQueryPaymentsService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.receipt.ReceiptService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiConRicevuta;
 import it.veneto.regione.pagamenti.ente.PaaSILChiediPagatiConRicevutaRisposta;
 import jakarta.activation.DataHandler;
@@ -74,7 +74,11 @@ public class PaaSILChiediPagatiConRicevutaService extends AbstractQueryPaymentsS
     if(Stream.of(request.getIdSession(), request.getIdentificativoUnivocoDovuto(), request.getIdentificativoUnivocoVersamento())
       .filter(StringUtils::isNotBlank)
       .count() != 1) {
-      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Errore, è obbligatorio specificare esattamente un parametro tra idSession, identificativoUnivocoVersamento e identificativoUnivocoDovuto.");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_PARAMETER_COMBINATION,
+        "It's mandatory to specify exactly one parameter among idSession, identificativoUnivocoVersamento, and identificativoUnivocoDovuto.",
+        "Errore, è obbligatorio specificare esattamente un parametro tra idSession, identificativoUnivocoVersamento e identificativoUnivocoDovuto."
+        );
     }
     if (StringUtils.isNotBlank(request.getIdSession())) {
       id = request.getIdSession();

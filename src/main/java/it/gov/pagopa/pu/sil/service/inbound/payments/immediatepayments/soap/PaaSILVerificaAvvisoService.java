@@ -4,11 +4,11 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentStatus;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.InstallmentFacadeService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.BaseVerifyNoticeService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.Utilities;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvviso;
 import it.veneto.regione.pagamenti.ente.PaaSILVerificaAvvisoRisposta;
@@ -55,7 +55,11 @@ public class PaaSILVerificaAvvisoService extends BaseVerifyNoticeService<PaaSILV
     if(InstallmentStatus.UNPAID.equals(installment.getStatus())) {
       return doCheckOut(installment, organization, callbackUrl, accessToken);
     } else {
-      throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO,"Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_IUV,
+        "No payable installment found for the specified iuv",
+        "Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato"
+      );
     }
   }
 }

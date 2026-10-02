@@ -5,11 +5,11 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
@@ -95,7 +95,7 @@ class DebtPositionInstallmentServiceTest {
   }
 
   @Test
-  void whenGetDebtPositionsAndInstallmentsByInstallmentIdThenSilFaultException() {
+  void whenGetDebtPositionsAndInstallmentsByInstallmentIdThenInvalidValueException() {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, Objects.requireNonNull(inst.getInstallmentId()).toString(), false);
 
@@ -103,7 +103,7 @@ class DebtPositionInstallmentServiceTest {
     when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(Long.valueOf(request.id()), accessToken)).thenReturn(otherDp);
 
     // Act & Assert
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       installmentService.getDebtPositionsAndInstallmentsByInstallmentId(request, accessToken)
     );
   }
@@ -143,7 +143,7 @@ class DebtPositionInstallmentServiceTest {
   }
 
   @Test
-  void whenGetDebtPositionsAndInstallmentsByMultipleInstallmentIdsWithMismatchThenSilFaultException() {
+  void whenGetDebtPositionsAndInstallmentsByMultipleInstallmentIdsWithMismatchThenInvalidValueException() {
     // Arrange
     String sessionId = "1-2-3";
     installmentIds.add(2L);
@@ -161,7 +161,7 @@ class DebtPositionInstallmentServiceTest {
     when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(2L, accessToken)).thenReturn(dp2);
 
     // Act & Assert
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       installmentService.getDebtPositionsAndInstallmentsByInstallmentId(request, accessToken)
     );
   }
@@ -182,7 +182,7 @@ class DebtPositionInstallmentServiceTest {
   }
 
   @Test
-  void whenGetDebtPositionsAndInstallmentsByIudThenSilFaultException() {
+  void whenGetDebtPositionsAndInstallmentsByIudThenInvalidValueException() {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), IUD, inst.getIud(), false);
 
@@ -191,7 +191,7 @@ class DebtPositionInstallmentServiceTest {
       .thenReturn(List.of(otherDp));
 
     // Act & Assert
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       installmentService.getDebtPositionsAndInstallmentsByIud(
         request, org, accessToken
       )
@@ -213,7 +213,7 @@ class DebtPositionInstallmentServiceTest {
   }
 
   @Test
-  void whenGetDebtPositionsAndInstallmentsByIuvThenSilFaultException() {
+  void whenGetDebtPositionsAndInstallmentsByIuvThenInvalidValueException() {
     // Arrange
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), NOTICE_NUMBER, inst.getIuv(), false);
 
@@ -221,7 +221,7 @@ class DebtPositionInstallmentServiceTest {
       .thenReturn(List.of(otherDp));
 
     // Act & Assert
-    assertThrows(SilFaultException.class, () ->
+    assertThrows(InvalidValueException.class, () ->
       installmentService.getDebtPositionsAndInstallmentsByIuv(
         request, org, accessToken)
     );
@@ -283,24 +283,25 @@ class DebtPositionInstallmentServiceTest {
     when(debtPositionTypeServiceMock.getDebtPositionTypeOrgByOrgIdAndType(orgId, debtPositionTypeOrgCode, accessToken))
       .thenReturn(null);
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () ->  installmentService.getCategory(legacyPaymentMetadata, debtPositionTypeOrgCode, orgId, accessToken));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () ->  installmentService.getCategory(legacyPaymentMetadata, debtPositionTypeOrgCode, orgId, accessToken));
 
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
-    assertTrue(exception.getDescription().contains("Tipo dovuto non valido: " + debtPositionTypeOrgCode));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, exception.getCode());
+    assertEquals("Invalid DebtPositionTypeOrg: " + debtPositionTypeOrgCode, exception.getMessage());
+    assertEquals("Tipo dovuto non valido: " + debtPositionTypeOrgCode, exception.getSilFaultCustomMessage());
   }
 
   @Test
-  void givenNullDpWhenGetDebtPositionsAndInstallmentsByInstallmentIdThenThrowSilFaultException() {
+  void givenNullDpWhenGetDebtPositionsAndInstallmentsByInstallmentIdThenThrowInvalidValueException() {
     PaymentStatusRequest request = new PaymentStatusRequest(org.getIpaCode(), INSTALLMENT_ID, inst.getIuv(), false);
 
     when(sessionIdMapperMock.mapSessionIdToInstallmentIds(request.id())).thenReturn(installmentIds);
     when(debtPositionServiceMock.getDebtPositionDTOByInstallmentId(inst.getInstallmentId(), accessToken)).thenReturn(null);
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () ->
       installmentService.getDebtPositionsAndInstallmentsByInstallmentId(request, accessToken)
     );
 
-    assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO, exception.getFault());
-    assertEquals("id session non valido", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, exception.getCode());
+    assertEquals("Invalid id session", exception.getMessage());
   }
 }

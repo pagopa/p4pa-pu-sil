@@ -8,10 +8,12 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
 import it.gov.pagopa.pu.sil.dto.generated.QueryPaymentStatusType;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -36,11 +38,11 @@ public abstract class AbstractQueryPaymentsService<I, O> {
 
   protected abstract PaymentStatusRequest validateAndTransformRequest(I request, String orgIpaCode);
 
-  private SilFaults getFaultForDebtPositionNotFound(QueryPaymentStatusType idType) {
+  private BaseBusinessException getExceptionForDebtPositionNotFound(QueryPaymentStatusType idType, String message, String silFaultCustomMessage) {
     return switch (idType) {
-      case INSTALLMENT_ID -> SilFaults.PAA_ID_SESSION_NON_VALIDO;
-      case IUD -> SilFaults.PAA_IUD_NON_VALIDO;
-      case NOTICE_NUMBER -> SilFaults.PAA_IUV_NON_VALIDO;
+      case INSTALLMENT_ID -> new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, message, silFaultCustomMessage);
+      case IUD -> new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_IUD, message, silFaultCustomMessage);
+      case NOTICE_NUMBER -> new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, message, silFaultCustomMessage);
     };
   }
 
@@ -53,7 +55,11 @@ public abstract class AbstractQueryPaymentsService<I, O> {
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        "Invalid or not authorized organization",
+        "L'ente non è valido o non è abilitato"
+      );
     }
 
     //validate and transform the request
@@ -64,14 +70,14 @@ public abstract class AbstractQueryPaymentsService<I, O> {
       debtPositionInstallmentFacadeService.fetch(transformedRequest, organization, accessToken);
 
     if(debtPositionWithInstallmentList.isEmpty()){
-      throw new SilFaultException(getFaultForDebtPositionNotFound(transformedRequest.idType()), "Nessuna posizione debitoria trovata");
+      throw getExceptionForDebtPositionNotFound(transformedRequest.idType(), "No debt position found", "Nessuna posizione debitoria trovata");
     }
 
     //debt positions and installments validations
     debtPositionWithInstallmentList.forEach(debtPositionWithInstallment -> {
       //verify debt position is of the expected organization
       if (!debtPositionWithInstallment.getLeft().getOrganizationId().equals(organizationId)) {
-        throw new SilFaultException(getFaultForDebtPositionNotFound(transformedRequest.idType()), "Posizione debitoria non trovata");
+        throw getExceptionForDebtPositionNotFound(transformedRequest.idType(), "Debt position not found", "Posizione debitoria non trovata");
       }
       //validate installment is paid
       validateInstallmentStatus(debtPositionWithInstallment.getRight());
@@ -86,14 +92,14 @@ public abstract class AbstractQueryPaymentsService<I, O> {
     //throw fault if installment is not paid
     if(Objects.equals(status, InstallmentStatus.UNPAID)){
       //unpaid
-      throw new SilFaultException(SilFaults.PAA_PAGAMENTO_NON_INIZIATO, "Pagamento non effettuato");
+      throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_PAID, "Payment not initiated");
     } else if(Objects.equals(status, InstallmentStatus.EXPIRED)){
       //unpaid
-      throw new SilFaultException(SilFaults.PAA_PAGAMENTO_SCADUTO, "Pagamento scaduto");
+      throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_EXPIRED, "Payment expired");
     } else if(!Objects.equals(status, InstallmentStatus.PAID) && !Objects.equals(status, InstallmentStatus.REPORTED)) {
       //any other state
       log.error("Installment with id[{}] has invalid status[{}]", installment.getInstallmentId(), status);
-      throw new SilFaultException(SilFaults.PAA_DOVUTO_NON_PAGABILE, "Dovuto non pagabile");
+      throw new IllegalStateBusinessException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_PAYABLE, "Installment not payable");
     }
   }
 }

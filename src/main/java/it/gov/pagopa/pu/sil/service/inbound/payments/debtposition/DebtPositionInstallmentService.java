@@ -4,11 +4,12 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.SessionIdMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.querypayments.PaymentStatusRequest;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static it.gov.pagopa.pu.sil.util.ValidationUtils.getTransferCategoryFromLegacyPaymentMetadataSecondary;
 
@@ -46,7 +48,11 @@ public class DebtPositionInstallmentService {
     String accessToken) {
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByOrganizationIdAndIud(
       organization.getOrganizationId(), request.id(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
-    return findFirstValidPair(debtPositions, inst -> Objects.equals(inst.getIud(), request.id()), SilFaults.PAA_IUD_NON_VALIDO);
+    return findFirstValidPair(
+      debtPositions,
+      inst -> Objects.equals(inst.getIud(), request.id()),
+      getInstallmentNotFoundSupplier(ErrorCodeConstants.ERROR_CODE_INVALID_IUD)
+    );
   }
 
   public List<Pair<DebtPositionDTO, InstallmentDTO>> getDebtPositionsAndInstallmentsByIuv(
@@ -55,28 +61,37 @@ public class DebtPositionInstallmentService {
     String accessToken) {
     List<DebtPositionDTO> debtPositions = debtPositionService.getDebtPositionsByOrganizationIdAndIuv(
       organization.getOrganizationId(), request.id(), Constants.ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
-    return findFirstValidPair(debtPositions, inst -> Objects.equals(inst.getIuv(), request.id()), SilFaults.PAA_IUV_NON_VALIDO);
+    return findFirstValidPair(
+      debtPositions,
+      inst -> Objects.equals(inst.getIuv(), request.id()),
+      getInstallmentNotFoundSupplier(ErrorCodeConstants.ERROR_CODE_INVALID_IUV)
+    );
   }
 
   private Pair<DebtPositionDTO, InstallmentDTO> createPairFromInstallmentId(Long installmentId, String accessToken) {
     DebtPositionDTO debtPosition = debtPositionService.getDebtPositionDTOByInstallmentId(installmentId, accessToken);
 
     if (debtPosition == null) {
-      throw new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "id session non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Invalid id session");
     }
 
-    InstallmentDTO installment = findInstallment(debtPosition, inst -> Objects.equals(inst.getInstallmentId(), installmentId), SilFaults.PAA_ID_SESSION_NON_VALIDO);
+    InstallmentDTO installment = findInstallment(
+      debtPosition,
+      inst -> Objects.equals(inst.getInstallmentId(), installmentId),
+      getInstallmentNotFoundSupplier(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION)
+    );
+
     return Pair.of(debtPosition, installment);
   }
 
   private List<Pair<DebtPositionDTO, InstallmentDTO>> findFirstValidPair(
     List<DebtPositionDTO> debtPositions,
     Predicate<InstallmentDTO> predicate,
-    SilFaults fault) {
+    Supplier<? extends BaseBusinessException> exceptionSupplier) {
     return debtPositions.stream()
       .filter(this::isNotCancelled)
       .findFirst()
-      .map(dp -> Pair.of(dp, findInstallment(dp, predicate, fault)))
+      .map(dp -> Pair.of(dp, findInstallment(dp, predicate, exceptionSupplier)))
       .map(List::of)
       .orElse(List.of());
   }
@@ -85,12 +100,12 @@ public class DebtPositionInstallmentService {
     return !Objects.equals(debtPosition.getStatus(), DebtPositionStatus.CANCELLED);
   }
 
-  private InstallmentDTO findInstallment(DebtPositionDTO debtPosition, Predicate<InstallmentDTO> predicate, SilFaults fault) {
+  private InstallmentDTO findInstallment(DebtPositionDTO debtPosition, Predicate<InstallmentDTO> predicate, Supplier<? extends BaseBusinessException> exceptionSupplier) {
     return debtPosition.getPaymentOptions().stream()
       .flatMap(po -> po.getInstallments().stream())
       .filter(predicate)
       .findFirst()
-      .orElseThrow(() -> new SilFaultException(fault, "Avviso non trovato"));
+      .orElseThrow(exceptionSupplier);
   }
 
   public String getCategory(String legacyPaymentMetadata, String debtPositionTypeOrgCode, Long organizationId, String accessToken) {
@@ -99,7 +114,11 @@ public class DebtPositionInstallmentService {
       DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByOrgIdAndType(
         organizationId, debtPositionTypeOrgCode, accessToken);
       if (debtPositionTypeOrg == null) {
-        throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Tipo dovuto non valido: " + debtPositionTypeOrgCode);
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG,
+          "Invalid DebtPositionTypeOrg: " + debtPositionTypeOrgCode,
+          "Tipo dovuto non valido: " + debtPositionTypeOrgCode
+        );
       }
       DebtPositionType debtPositionType = debtPositionTypeService.getDebtPositionTypeById(debtPositionTypeOrg.getDebtPositionTypeId(), accessToken);
       category = debtPositionType.getTaxonomyCode();
@@ -109,5 +128,9 @@ public class DebtPositionInstallmentService {
       category = category.replace(prefix.get(), "");
     }
     return category.replace("/", "");
+  }
+
+  private Supplier<InvalidValueException> getInstallmentNotFoundSupplier(String code) {
+    return () -> new InvalidValueException(code, "Installment not found", "Avviso non trovato");
   }
 }

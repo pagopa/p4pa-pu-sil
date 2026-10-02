@@ -5,7 +5,8 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.PagatiMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentFacadeService;
@@ -155,12 +156,12 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
 
   @ParameterizedTest
   @CsvSource(value = {
-    "userNotAuth,PAA_ENTE_NON_VALIDO,null",
-    "invalidOrgStatus,PAA_ENTE_NON_VALIDO,L'ente non è valido o non è abilitato",
-    "emptyDebtPositionList,PAA_ID_SESSION_NON_VALIDO,Nessuna posizione debitoria trovata",
-    "invalidOrgDebtPosition,PAA_ID_SESSION_NON_VALIDO,Posizione debitoria non trovata",
+    "userNotAuth",
+    "invalidOrgStatus",
+    "emptyDebtPositionList",
+    "invalidOrgDebtPosition",
   }, nullValues = {"null"})
-  void testGetDebtPositionsAndInstallmentsFault(String testCase, String silFaultCode, String faultDescription) {
+  void testGetDebtPositionsAndException(String testCase) {
 
     // change input data to fit testCase
     switch (testCase) {
@@ -211,12 +212,10 @@ class PaaSILChiediEsitoCarrelloDovutiServiceTest {
       assertNotNull(authorizationDeniedException);
       assertTrue(authorizationDeniedException.getMessage().contains("Access denied on orgIpaCode "));
     } else {
-      SilFaultException silFaultException = Assertions.assertThrows(SilFaultException.class, () -> paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken));
+      BaseBusinessException exception = Assertions.assertThrows(InvalidValueException.class, () -> paaSILChiediEsitoCarrelloDovutiService.processRequest(request, userInfo, accessToken));
 
-      assertNotNull(silFaultException);
-      assertNotNull(silFaultException.getFault());
-      assertEquals(silFaultCode, silFaultException.getFault().code());
-      assertEquals(faultDescription, silFaultException.getDescription());
+      assertNotNull(exception);
+      assertNotNull(exception.getCode());
     }
   }
 

@@ -4,11 +4,11 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.TransferDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.ConversionUtils;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.veneto.regione.pagamenti.ente.ListaDovutiEntiSecondari;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiVersamentoDovutiEntiSecondari;
 import it.veneto.regione.schemas._2012.pagamenti.ente.DovutiEntiSecondari;
@@ -34,17 +34,24 @@ public class SecondaryTransferMapper {
     //unmarshall "dovuti secondari" (if present)
     if (dovutiSecondariList != null && !CollectionUtils.isEmpty(dovutiSecondariList.getElementoListaDovutiEntiSecondaris())) {
       if (dovutiSecondariList.getElementoListaDovutiEntiSecondaris().size() > 1) {
-        throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto");
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD,
+          "It is not possible to insert a multi-beneficiary payment with more than one element in elementoListaDovutiEntiSecondaris",
+          "Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto"
+        );
       }
       byte[] xmlDovutiSecondari = dovutiSecondariList.getElementoListaDovutiEntiSecondaris().getFirst().getDovutiEntiSecondari();
       try {
         return Optional.of(jaxbTransformService.unmarshalling(xmlDovutiSecondari, DovutiEntiSecondari.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd")
           .getDatiVersamentoEntiSecondari());
       } catch (Exception unmarshallingException) {
-        String errorMessage = "XML dovuti enti secondari non conforme: \n" +
-          jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, xmlDovutiSecondari);
-        log.error("error unmarshalling PaaSILInviaCarrelloDovuti dovutEntiSecondari: [{}]", errorMessage, unmarshallingException);
-        throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
+        String detailUnmarshalExceptionMessage =  jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, xmlDovutiSecondari);
+        String silFaultCustomMessage = "XML dovuti enti secondari non conforme: \n" + detailUnmarshalExceptionMessage;
+        String message = String.format("error unmarshalling PaaSILInviaCarrelloDovuti dovutEntiSecondari: [%s]", detailUnmarshalExceptionMessage);
+
+        log.debug(message, unmarshallingException);
+
+        throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, message, silFaultCustomMessage);
       }
     }
     return Optional.empty();
@@ -53,7 +60,7 @@ public class SecondaryTransferMapper {
   public void fillSecondaryTransferData(DebtPositionDTO debtPosition, CtDatiVersamentoDovutiEntiSecondari secondaryTransferData, String debtPositionTypeOrgCode, String accessToken) {
     Long secondaryAmount = ConversionUtils.bigDecimalEuroAmountToCentsAmount(secondaryTransferData.getImportoSingoloVersamento());
     if(secondaryAmount == null) {
-      throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_AMOUNT, "Invalid importoSingoloVersamento", "Importo singolo versamento non valido");
     }
 
     TransferDTO secondaryTransfer = TransferDTO.builder()
@@ -88,9 +95,11 @@ public class SecondaryTransferMapper {
        */
       numTransfersToSync = ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1;
       if(numTransfersToSync>2){
-        log.error("more than 2 transfers to sync in legacy mode [{}] for installment: {}", numTransfersToSync, installmentOnDb.getInstallmentId());
-        throw new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
-          "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId());
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED,
+          String.format("more than 2 transfers to sync in legacy mode [%s] for installment: %s", numTransfersToSync, installmentOnDb.getInstallmentId()),
+          "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId()
+        );
       }
 
       //populate first transfer data from installmentToSync
@@ -107,10 +116,17 @@ public class SecondaryTransferMapper {
     }
 
     if(numTransfersOnDb != numTransfersToSync) {
-      log.error("installmentOnDb transfers: {}, installmentToSync transfers: {}", installmentOnDb.getTransfers().size(),
-        ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1);
-      throw new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
-        "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId());
+      String message = String.format(
+        "installmentOnDb transfers: %s, installmentToSync transfers: %s", installmentOnDb.getTransfers().size(),
+        ObjectUtils.firstNonNull(installmentToSync.getTransfers(), List.of()).size() + 1
+      );
+
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED,
+        message,
+        "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId()
+      );
+
     }
 
     //check that only modifiable fields of transfers are different
@@ -124,8 +140,11 @@ public class SecondaryTransferMapper {
           .flatMap(Collection::stream)
           .filter(t -> t.getTransferIndex().equals(transferOnDb.getTransferIndex()))
           .findFirst()
-          .orElseThrow(() -> new SilFaultException(SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI,
-            "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId()));
+          .orElseThrow(() -> new InvalidValueException(
+            ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED,
+            "Transfer index " + transferOnDb.getTransferIndex() + " not found for installment " + installmentOnDb.getInstallmentId(),
+            "Configurazione dovuti secondari non supportata per dovuto: " + installmentOnDb.getInstallmentId()
+          ));
         if (Objects.equals(transferOnDb.getOrgFiscalCode(), transferToSync.getOrgFiscalCode()) &&
           Objects.equals(transferOnDb.getCategory(), transferToSync.getCategory()) &&
           Objects.equals(transferOnDb.getStampHashDocument(), transferToSync.getStampHashDocument()) &&
@@ -137,8 +156,11 @@ public class SecondaryTransferMapper {
           transferOnDb.setAmountCents(transferToSync.getAmountCents());
           transferOnDb.setRemittanceInformation(transferToSync.getRemittanceInformation());
         } else {
-          throw new SilFaultException(SilFaults.PAA_CAMPO_NON_MODIFICABILE,
-            "Sono stati modificati campi non modificabili per il dovuto: " + installmentOnDb.getInstallmentId());
+          throw new InvalidValueException(
+            ErrorCodeConstants.ERROR_CODE_IMMUTABLE_FIELD,
+            "Immutable fields have been modified for installment: " + installmentOnDb.getInstallmentId(),
+            "Sono stati modificati campi non modificabili per il dovuto: " + installmentOnDb.getInstallmentId()
+          );
         }
       }
     });

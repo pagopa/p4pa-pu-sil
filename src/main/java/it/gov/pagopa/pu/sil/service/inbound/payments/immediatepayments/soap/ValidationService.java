@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap;
 import static it.gov.pagopa.pu.sil.util.Constants.ORDINARY_DEBT_POSITION_ORIGINS;
 
 import it.gov.pagopa.pu.sil.connector.debtpositions.InstallmentService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILInviaCarrelloDovuti;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtDatiMarcaBolloDigitale;
@@ -39,11 +39,23 @@ public class ValidationService {
 
     //invalid stamp data
     if (StringUtils.length(stamp.getHashDocumento()) < 4 || StringUtils.length(stamp.getHashDocumento()) > 72) {
-      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Lunghezza errata campo hash documento marca da bollo digitale [4-72]");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_STAMP,
+        "Invalid length for stampDocumentHash field [4-72]",
+        "Lunghezza errata campo hash documento marca da bollo digitale [4-72]"
+      );
     } else if (StringUtils.length(stamp.getProvinciaResidenza()) != 2) {
-      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Lunghezza errata campo provincia residenza marca da bollo digitale [2]");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_STAMP,
+        "Invalid length for stampProvincialResidence field [2]",
+        "Lunghezza errata campo provincia residenza marca da bollo digitale [2]"
+      );
     } else if (StringUtils.length(stamp.getTipoBollo()) != 2) {
-      throw new SilFaultException(SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA, "Lunghezza errata campo tipo bollo marca da bollo digitale [2]");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_STAMP,
+        "Invalid length for stamptype field [2]",
+        "Lunghezza errata campo tipo bollo marca da bollo digitale [2]"
+        );
     }
   }
 
@@ -51,50 +63,93 @@ public class ValidationService {
     Boolean isInstallmentExistsByIudIuvNav = installmentService.isInstallmentExistsByIudIuvNav(
       orgId, iud, null, null, ORDINARY_DEBT_POSITION_ORIGINS, accessToken);
     if (Boolean.TRUE.equals(isInstallmentExistsByIudIuvNav)) {
-      throw new SilFaultException(SilFaults.PAA_IUD_DUPLICATO, "IUD duplicato: " + iud);
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_DUPLICATED_IUD,
+        "Installment with iud " + iud + " already exists",
+        "IUD duplicato: " + iud
+      );
     }
   }
 
   public void validatePrimaryDebtPositionOrganization(PaaSILInviaCarrelloDovuti request, String orgIpaCode) {
     if (request.getListaDovuti() == null || CollectionUtils.isEmpty(request.getListaDovuti().getElementoListaDovutis())) {
-      throw new SilFaultException(SilFaults.PAA_SYSTEM_ERROR, "Dovuti non presenti");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR,
+        "ListaDovuti is null or elementoListaDovutis is empty",
+        "Dovuti non presenti"
+      );
     } else if (request.getListaDovuti().getElementoListaDovutis().stream()
       .anyMatch(x -> !StringUtils.equals(x.getCodIpaEnte(), orgIpaCode))) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'inserimento di dovuti per enti diversi dal chiamante è deprecato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        "codIpaEnte doesn't match with orgIpaCode",
+        "L'inserimento di dovuti per enti diversi dal chiamante è deprecato"
+      );
     }
   }
 
   public void validateSecondaryDebtPositionCount(PaaSILInviaCarrelloDovuti request, int numDebtPositions) {
     if (request.getListaDovutiEntiSecondari() != null && !CollectionUtils.isEmpty(request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris())) {
       if (numDebtPositions > 1) {
-        throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto");
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD,
+          "It is not possible to insert a multi-beneficiary payment if there is more than one debt position",
+          "Non è possibile inserire un pagamento multibeneficiario se sono presenti più di un dovuto"
+        );
       } else if (request.getListaDovutiEntiSecondari().getElementoListaDovutiEntiSecondaris().size() > 1) {
-        throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire pagamenti multibeneficiario con più di un dovuto secondario");
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD,
+          "It is not possible to insert a multi-beneficiary payment with more than one element in elementoListaDovutiEntiSecondaris",
+          "Non è possibile inserire pagamenti multibeneficiario con più di un dovuto secondario"
+        );
       }
     }
   }
 
   public void validateSecondaryDebtPositionData(CtDatiVersamentoDovutiEntiSecondari secondaryTransferData, int primaryDebtPositionCount) {
     if (primaryDebtPositionCount != 1) {
-      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI, "Non è possibile inserire pagamenti multibeneficiario con più di un dovuto");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD,
+        "It is not possible to insert a multi-beneficiary payment with more than one debt position",
+        "Non è possibile inserire pagamenti multibeneficiario con più di un dovuto"
+      );
     }
     if (!ValidationUtils.isValidFiscalCodeLegalEntity(secondaryTransferData.getCodiceFiscaleBeneficiario())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale ente secondario non valido: " + secondaryTransferData.getCodiceFiscaleBeneficiario());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE,
+        "Invalid secondary org vat cod: " + secondaryTransferData.getCodiceFiscaleBeneficiario(),
+        "Codice fiscale ente secondario non valido: " + secondaryTransferData.getCodiceFiscaleBeneficiario()
+      );
     } else if (StringUtils.isBlank(secondaryTransferData.getIbanAccreditoBeneficiario()) ||
       !ValidationUtils.isValidIban(secondaryTransferData.getIbanAccreditoBeneficiario())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO, "IBAN accredito Ente secondario non valido [" + secondaryTransferData.getIbanAccreditoBeneficiario() + "]");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_IBAN,
+        "Invalid secondary org iban: " + secondaryTransferData.getIbanAccreditoBeneficiario(),
+        "IBAN accredito Ente secondario non valido [" + secondaryTransferData.getIbanAccreditoBeneficiario() + "]"
+      );
     }
     if (secondaryTransferData.getImportoSingoloVersamento() == null || BigDecimal.ZERO.compareTo(secondaryTransferData.getImportoSingoloVersamento()) >= 0) {
-      throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido: " + secondaryTransferData.getImportoSingoloVersamento());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_AMOUNT,
+        "Invalid importoSingoloVersamento: " + secondaryTransferData.getImportoSingoloVersamento(),
+        "Importo singolo versamento non valido: " + secondaryTransferData.getImportoSingoloVersamento()
+      );
     }
   }
 
   public void validateCartSize(int size) {
     if (size > Constants.MAX_CART_SIZE) {
-      throw new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: " +
-        size + "/" + Constants.MAX_CART_SIZE);
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_CART_SIZE,
+        "Invalid cart size: " + size + "/" + Constants.MAX_CART_SIZE,
+        "Numero massimo dovuti nel carrello superato: " + size + "/" + Constants.MAX_CART_SIZE
+      );
     } else if (size == 0) {
-      throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_XML,
+        "Invalid cart size",
+        "Nessun dovuto presente"
+      );
     }
   }
 }

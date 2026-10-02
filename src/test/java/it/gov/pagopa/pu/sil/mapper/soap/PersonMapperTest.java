@@ -1,9 +1,9 @@
 package it.gov.pagopa.pu.sil.mapper.soap;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
@@ -51,20 +51,22 @@ class PersonMapperTest {
   //region: getAndValidateDebtor
   @Test
   void getAndValidateDebtor_NullSoggettoPagatore_ReturnsError() {
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(null));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> personMapper.getAndValidateDebtor(null));
 
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
-    assertEquals("Soggetto pagatore non presente", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, exception.getCode());
+    assertEquals("Missing debtor", exception.getMessage());
+    assertEquals("Soggetto pagatore non presente", exception.getSilFaultCustomMessage());
   }
 
   @Test
   void getAndValidateDebtor_InvalidEmail_ReturnsError() {
     soggettoPagatore.setEMailPagatore("invalid-email");
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
+    InvalidValueException exception = Assertions.assertThrows(InvalidValueException.class, () -> personMapper.getAndValidateDebtor(soggettoPagatore));
 
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
-    assertEquals("Email pagatore non valida: invalid-email", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_EMAIL, exception.getCode());
+    assertEquals("Email is not valid", exception.getMessage());
+    assertEquals("Email pagatore non valida: invalid-email", exception.getSilFaultCustomMessage());
   }
 
   @Test

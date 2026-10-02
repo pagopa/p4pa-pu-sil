@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
 import it.gov.pagopa.pu.sil.dto.generated.BalanceDTO;
 import it.gov.pagopa.pu.sil.dto.generated.GetAssessmentResponseDTO;
-import it.gov.pagopa.pu.sil.exception.AssessmentNotFoundException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.mapper.AssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +55,7 @@ class QueryAssessmentsServiceTest {
   }
 
   @Test
-  void givenIufWhenGetAssessmentThenNoPaymentsReportingThenThrowAssessmentNotFoundException() {
+  void givenIufWhenGetAssessmentThenNoPaymentsReportingThenThrowNotFoundException() {
     // Given
     String iuf = "IUF123";
 
@@ -63,7 +63,7 @@ class QueryAssessmentsServiceTest {
       .thenReturn(Collections.emptyList());
 
     // When Then
-    assertThrows(AssessmentNotFoundException.class, () ->
+    assertThrows(NotFoundException.class, () ->
       service.getAssessment(userInfo, "token", orgIpaCode, iuf, null, null)
     );
   }

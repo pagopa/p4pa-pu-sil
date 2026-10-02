@@ -10,14 +10,14 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.ManageDebtPositionMapper;
 import it.gov.pagopa.pu.sil.mapper.soap.PaaSILImportaDovutoMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.notice.NoticeService;
 import it.gov.pagopa.pu.sil.util.ByteArrayDataSource;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovutoRisposta;
@@ -191,9 +191,9 @@ class PaaSILImportaDovutoServiceTest {
 
     when(organizationServiceMock.getOrganizationById(anyLong(), anyString())).thenReturn(Optional.ofNullable(org));
 
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException response = Assertions.assertThrows(InvalidValueException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
 
-    assertEquals(SilFaults.PAA_ENTE_NON_VALIDO, response.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, response.getCode());
   }
 
   @ParameterizedTest
@@ -232,15 +232,15 @@ class PaaSILImportaDovutoServiceTest {
     }
 
     // When
-    SilFaultException response = Assertions.assertThrows(SilFaultException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
+    InvalidValueException response = Assertions.assertThrows(InvalidValueException.class, () -> paaSILImportaDovutoService.handleAction(request, orgIpaCode, userInfo, TOKEN));
 
     // Then
     switch (testCase) {
       case "invalidAction":
-        assertEquals(SilFaults.PAA_AZIONE_NON_VALIDA, response.getFault());
+        assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ACTION, response.getCode());
         break;
       case "invalidDpStatus", "installmentNotFound":
-        assertEquals(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, response.getFault());
+        assertEquals(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, response.getCode());
         break;
       default:
         Assertions.fail("Unexpected testCase: " + testCase);
