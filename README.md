@@ -274,6 +274,12 @@ Ensure the following tools are installed on your machine:
 ./gradlew dependencies --write-locks
 ```
 
+### ❇️ Check for updates
+
+```sh
+./gradlew dependencyUpdates
+```
+
 ### ⚙️ Build
 
 ```sh
