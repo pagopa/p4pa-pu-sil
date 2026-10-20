@@ -1989,7 +1989,7 @@
             }
           },
           "notificationFeePolicy" : {
-            "$ref" : "#/components/schemas/NotificationFeePolicyEnum"
+            "$ref" : "#/components/schemas/NotificationFeePolicyDTO"
           },
           "physicalCommunicationType" : {
             "$ref" : "#/components/schemas/PhysicalCommunicationTypeEnum"
@@ -2097,7 +2097,7 @@
           }
         }
       },
-      "NotificationFeePolicyEnum" : {
+      "NotificationFeePolicyDTO" : {
         "type" : "string",
         "enum" : [ "FLAT_RATE", "DELIVERY_MODE" ]
       },
@@ -2479,6 +2479,11 @@
         "type" : "string",
         "enum" : [ "WAITING_FILE", "SENDING", "REGISTERED", "UPLOADED", "IN_VALIDATION", "ACCEPTED", "REFUSED", "DELIVERING", "DELIVERED", "VIEWED", "EFFECTIVE_DATE", "PAID", "UNREACHABLE", "CANCELLED", "RETURNED_TO_SENDER" ]
       },
+      "NotificationStatusV26DTO" : {
+        "type" : "string",
+        "nullable" : true,
+        "enum" : [ "IN_VALIDATION", "ACCEPTED", "REFUSED", "DELIVERING", "DELIVERED", "VIEWED", "EFFECTIVE_DATE", "PAID", "UNREACHABLE", "CANCELLED", "RETURNED_TO_SENDER", "PU_PAID" ]
+      },
       "SendNotificationDTO" : {
         "required" : [ "campaignId", "organizationId", "payments", "sendNotificationId", "status", "subject" ],
         "type" : "object",
@@ -2508,6 +2513,17 @@
           },
           "status" : {
             "$ref" : "#/components/schemas/NotificationStatus"
+          },
+          "history" : {
+            "type" : "array",
+            "nullable" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/StreamEventSummaryDTO"
+            }
+          },
+          "notificationRequestId" : {
+            "type" : "string",
+            "nullable" : true
           },
           "errors" : {
             "type" : "array",
@@ -2539,6 +2555,22 @@
             "nullable" : true
           }
         }
+      },
+      "StreamEventSummaryDTO" : {
+        "type" : "object",
+        "properties" : {
+          "newNotificationStatus" : {
+            "$ref" : "#/components/schemas/NotificationStatusV26DTO"
+          },
+          "timelineElementCategory" : {
+            "$ref" : "#/components/schemas/TimelineElementCategoryV27DTO"
+          }
+        }
+      },
+      "TimelineElementCategoryV27DTO" : {
+        "type" : "string",
+        "nullable" : true,
+        "enum" : [ "SENDER_ACK_CREATION_REQUEST", "VALIDATE_NORMALIZE_ADDRESSES_REQUEST", "NORMALIZED_ADDRESS", "REQUEST_ACCEPTED", "SEND_COURTESY_MESSAGE", "GET_ADDRESS", "PUBLIC_REGISTRY_CALL", "PUBLIC_REGISTRY_RESPONSE", "SCHEDULE_ANALOG_WORKFLOW", "SCHEDULE_DIGITAL_WORKFLOW", "PREPARE_DIGITAL_DOMICILE", "SEND_DIGITAL_DOMICILE", "SEND_DIGITAL_PROGRESS", "SEND_DIGITAL_FEEDBACK", "REFINEMENT", "SCHEDULE_REFINEMENT", "DIGITAL_DELIVERY_CREATION_REQUEST", "DIGITAL_SUCCESS_WORKFLOW", "DIGITAL_FAILURE_WORKFLOW", "ANALOG_SUCCESS_WORKFLOW", "ANALOG_FAILURE_WORKFLOW", "PREPARE_SIMPLE_REGISTERED_LETTER", "SEND_SIMPLE_REGISTERED_LETTER", "SEND_SIMPLE_REGISTERED_LETTER_PROGRESS", "NOTIFICATION_VIEWED_CREATION_REQUEST", "NOTIFICATION_VIEWED", "PREPARE_ANALOG_DOMICILE", "SEND_ANALOG_DOMICILE", "SEND_ANALOG_PROGRESS", "SEND_ANALOG_FEEDBACK", "PAYMENT", "COMPLETELY_UNREACHABLE", "COMPLETELY_UNREACHABLE_CREATION_REQUEST", "REQUEST_REFUSED", "AAR_CREATION_REQUEST", "AAR_GENERATION", "NOT_HANDLED", "PROBABLE_SCHEDULING_ANALOG_DATE", "NOTIFICATION_CANCELLATION_REQUEST", "NOTIFICATION_CANCELLED", "PREPARE_ANALOG_DOMICILE_FAILURE", "NOTIFICATION_RADD_RETRIEVED", "ANALOG_WORKFLOW_RECIPIENT_DECEASED", "PUBLIC_REGISTRY_VALIDATION_CALL", "PUBLIC_REGISTRY_VALIDATION_RESPONSE", "PU_PAYMENT" ]
       },
       "FileStatus" : {
         "type" : "string",
