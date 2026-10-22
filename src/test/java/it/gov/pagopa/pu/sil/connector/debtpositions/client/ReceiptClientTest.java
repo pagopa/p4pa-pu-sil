@@ -52,7 +52,7 @@ class ReceiptClientTest {
       .thenReturn(receiptApiMock);
     if(receiptId == 2L) {
       when(receiptApiMock.getReceipt(receiptId))
-        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
       expectedResult = null;
     } else {
       expectedResult = new ReceiptDTO();

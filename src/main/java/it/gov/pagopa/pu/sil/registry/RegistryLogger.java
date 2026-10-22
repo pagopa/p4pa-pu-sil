@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeException;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import jakarta.xml.bind.annotation.XmlType;
 import lombok.extern.slf4j.Slf4j;
@@ -133,12 +134,17 @@ public class RegistryLogger {
         Map<String, Object> bodyMap = new HashMap<>(registryBodyResponseExtraInfoExtractor.apply(response));
         body = bodyMap2Body(response, bodyMap);
       } else if (blException != null) {
-        if (blException instanceof RestClientResponseException httpStatusCodeException) {
-          body = Map.of(
+        switch (blException) {
+          case RestClientResponseException httpStatusCodeException -> body = Map.of(
             "status", httpStatusCodeException.getStatusCode().value(),
             "body", httpStatusCodeException.getResponseBodyAsString());
-        } else {
-          body = Map.of("exceptionMessage", blException.getMessage());
+          case RestInvokeException restInvokeHttpClientException -> body = Map.of(
+            "status", restInvokeHttpClientException.getHttpStatus().value(),
+            "body", Objects.requireNonNullElse(restInvokeHttpClientException.getBody(), "Not Available"));
+          default -> body = Map.of(
+            "exceptionClass", blException.getClass().getName(),
+            "exceptionMessage", Objects.requireNonNullElse(blException.getMessage(), "Not Available")
+          );
         }
       } else {
         body = serializePayload(response);

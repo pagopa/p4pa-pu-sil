@@ -68,7 +68,7 @@ class AuthnClientTest {
     when(authApisHolderMock.getAuthnApi(accessToken))
       .thenReturn(authnApiMock);
     when(authnApiMock.getUserInfo())
-      .thenThrow(new RestInvokeNotAuthorizedException("APPNAME", HttpStatus.UNAUTHORIZED, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotAuthorizedException("APPNAME", HttpStatus.UNAUTHORIZED, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     InvalidAccessTokenException exception = Assertions.assertThrows(InvalidAccessTokenException.class, () -> authnClient.getUserInfo(accessToken));
 

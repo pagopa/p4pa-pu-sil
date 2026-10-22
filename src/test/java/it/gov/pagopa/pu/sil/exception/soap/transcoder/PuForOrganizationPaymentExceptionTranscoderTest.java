@@ -101,7 +101,8 @@ class PuForOrganizationPaymentExceptionTranscoderTest extends BaseSoapExceptionT
         new ErrorFieldDTO("debtor.entityType", "ERROR_CODE", "ERROR_MESSAGE"),
         new ErrorFieldDTO("debtor.fiscalCode", "ERROR_CODE", "ERROR_MESSAGE"),
         new ErrorFieldDTO("NOTMAPPED", "ERROR_CODE", "ERROR_MESSAGE")
-      ));
+      ),
+      "BODY");
 
     // When
     SoapFaultTranscoded result = getExceptionTranscoder().transcodeException(exception);

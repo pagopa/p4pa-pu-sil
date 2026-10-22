@@ -80,7 +80,7 @@ class DebtPositionClientTest {
       .thenReturn(debtPositionApiMock);
     if(installmentId == 2L) {
       when(debtPositionApiMock.getDebtPositionByInstallmentId(installmentId))
-        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
       expectedResult = null;
     } else {
       expectedResult = new DebtPositionDTO();
@@ -168,7 +168,7 @@ class DebtPositionClientTest {
       .thenReturn(debtPositionSearchControllerApiMock);
     if(installmentId == 2L) {
       when(debtPositionSearchControllerApiMock.crudDebtPositionsFindByInstallmentId(installmentId))
-        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+        .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
       expectedResult = null;
     } else {
       expectedResult = new DebtPosition();

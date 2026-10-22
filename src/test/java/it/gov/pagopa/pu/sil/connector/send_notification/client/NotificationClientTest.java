@@ -81,7 +81,7 @@ class NotificationClientTest {
 
     when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
-    doThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"))
+    doThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"))
       .when(notificationApiMock).deleteSendNotification(sendNotificationId);
 
     Assertions.assertThrows(IllegalArgumentException.class,() -> notificationClient.deleteSendNotification(sendNotificationId,accessToken));
@@ -112,7 +112,7 @@ class NotificationClientTest {
     when(sendNotificationApisHolderMock.getNotificationApi(accessToken))
       .thenReturn(notificationApiMock);
     when(notificationApiMock.getSendNotification(sendNotificationId))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     SendNotificationDTO result = notificationClient.getSendNotification(
       sendNotificationId, accessToken);
