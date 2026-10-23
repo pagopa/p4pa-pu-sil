@@ -133,6 +133,10 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind:$jackson2DatabindVersion")
   implementation("tools.jackson.core:jackson-databind:$jackson3DatabindVersion")
 
+  compileOnly("org.projectlombok:lombok")
+  annotationProcessor("org.projectlombok:lombok")
+  testAnnotationProcessor("org.projectlombok:lombok")
+
   //webservice soap
   implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
   runtimeOnly("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
@@ -145,10 +149,6 @@ dependencies {
   jaxb("jakarta.activation:jakarta.activation-api:$activationVersion")
   jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:$jaxbXewPluginVersion")
   jaxbext("org.jvnet.jaxb:jaxb-plugins:$jaxbPluginVersion")
-
-  compileOnly("org.projectlombok:lombok")
-  annotationProcessor("org.projectlombok:lombok")
-  testAnnotationProcessor("org.projectlombok:lombok")
 
   //	Testing
   testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
