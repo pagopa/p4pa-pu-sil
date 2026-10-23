@@ -122,6 +122,7 @@ dependencies {
   implementation("com.github.danielwegener:logback-kafka-appender:$kafkaAppender") {
     exclude(group = "org.lz4", module = "lz4-java")
   }
+  implementation ("org.apache.ws.xmlschema:xmlschema-core:${xmlSchemaVersion}")
 
   // validation token jwt
   implementation("com.auth0:java-jwt:$javaJwtVersion")
@@ -138,7 +139,6 @@ dependencies {
   testAnnotationProcessor("org.projectlombok:lombok")
 
   //webservice soap
-  implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
   runtimeOnly("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
   //jaxb
   jaxb("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
