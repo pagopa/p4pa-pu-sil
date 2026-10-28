@@ -21,8 +21,8 @@ public class LegacyAssessmentsBalanceMapper {
     grouped
       .computeIfAbsent(balance.getOfficeCode(), k -> new HashMap<>())
       .computeIfAbsent(balance.getDebtPositionTypeOrgCode(), k -> new HashMap<>())
-      .computeIfAbsent(balance.getAssessmentCode(), k -> new HashMap<>())
-      .merge(balance.getSectionCode(),
+      .computeIfAbsent(balance.getSectionCode(), k -> new HashMap<>())
+      .merge(balance.getAssessmentCode(),
         ConversionUtils.centsAmountToBigDecimalEuroAmount(balance.getAmountCents()),
         BigDecimal::add
       );
