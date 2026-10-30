@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PaymentOptionDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -57,20 +57,20 @@ class SessionIdMapperTest {
   @Test
   void mapSessionIdToInstallmentIdsThrowsExceptionForInvalidSessionId() {
     String ids = String.join(Constants.SESSION_ID_SEPARATOR, "invalid","session", "id");
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () ->
       sessionIdMapper.mapSessionIdToInstallmentIds(ids));
 
-    assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO, exception.getFault());
-    assertEquals("ID session non valido", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, exception.getCode());
+    assertEquals("Invalid id session", exception.getMessage());
   }
 
   @Test
   void mapSessionIdToInstallmentIdsHandlesEmptySessionId() {
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () ->
       sessionIdMapper.mapSessionIdToInstallmentIds("")
     );
 
-    assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO, exception.getFault());
-    assertEquals("ID session non valido", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, exception.getCode());
+    assertEquals("Invalid id session", exception.getMessage());
   }
 }

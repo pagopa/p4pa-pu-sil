@@ -3,9 +3,11 @@ package it.gov.pagopa.pu.sil.registry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.registries.dto.generated.RegistryEventCategory;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryEventSubType;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.event.producer.RegistryProducerService;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeForbiddenException;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.ente.PaaSILImportaDovuto;
@@ -21,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestClientResponseException;
 import uk.co.jemos.podam.api.PodamFactory;
 
@@ -656,7 +659,7 @@ public class RegistryLoggerTest {
       RegistryLogger.PU_ID,
       "mockUserId",
       RegistryOutcome.KO,
-      Map.of("exceptionMessage", exceptionMessage));
+      Map.of("exceptionMessage", exceptionMessage, "exceptionClass", expectedException.getClass().getName()));
   }
 
   @Test
@@ -696,7 +699,7 @@ public class RegistryLoggerTest {
       RegistryLogger.PU_ID,
       "mockUserId",
       RegistryOutcome.KO,
-      Map.of("exceptionMessage", exceptionMessage));
+      Map.of("exceptionMessage", exceptionMessage,"exceptionClass", expectedException.getClass().getName()));
   }
 
   @Test
@@ -739,6 +742,49 @@ public class RegistryLoggerTest {
       RegistryOutcome.KO,
       Map.of(
         "status", 500,
+        "body", body
+      ));
+  }
+
+  @Test
+  void testExecuteWithException_noExceptionHandler_RestInvokeException() throws JsonProcessingException {
+    // Given
+    RegistryContextData contextData = buildRegistryContextData(RegistryEventType.PTDP_paaSILImportaDovuto);
+
+    String requestPayload = "REQUESTPAYLOAD";
+    Object request = new Object();
+
+    when(objectMapperMock.writeValueAsString(same(request))).thenReturn(requestPayload);
+
+    String body = "BODY";
+    RestInvokeForbiddenException expectedException = new RestInvokeForbiddenException("APPNAME", HttpStatus.FORBIDDEN, null, null, null, body);
+    // When
+    RestInvokeForbiddenException exception = Assertions.assertThrows(RestInvokeForbiddenException.class, () -> registryLogger.execute(
+      contextData, request,
+      () -> {
+        throw expectedException;
+      },
+      null));
+
+    // Then
+    assertSame(expectedException, exception);
+
+    verify(registryProducerServiceMock).notifySilEvent(
+      contextData,
+      RegistryEventSubType.REQ,
+      "mockUserId",
+      RegistryLogger.PU_ID,
+      RegistryOutcome.OK,
+      requestPayload);
+
+    verify(registryProducerServiceMock).notifySilEvent(
+      contextData,
+      RegistryEventSubType.RESP,
+      RegistryLogger.PU_ID,
+      "mockUserId",
+      RegistryOutcome.KO,
+      Map.of(
+        "status", 403,
         "body", body
       ));
   }

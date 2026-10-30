@@ -9,9 +9,9 @@ import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.IllegalStateBusinessException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.ManageDebtPositionService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.notice.NoticeService;
@@ -59,7 +59,11 @@ public abstract class BaseDebtPositionHandler<I, O> {
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken)
       .orElse(null);
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        "Invalid organization or not enabled",
+        "L'ente non è valido o non è abilitato"
+      );
     }
 
     Pair<DebtPositionDTO, String> debtPositionWithAction = mapRequestToDebtPosition(request, organization, accessToken);
@@ -72,7 +76,11 @@ public abstract class BaseDebtPositionHandler<I, O> {
       case Constants.LEGACY_IMPORT_ACTION_PRINT ->
         handlePrintNotice(debtPositionWithAction.getRight(), debtPositionWithAction.getLeft(), organization, accessToken);
       default ->
-        throw new SilFaultException(SilFaults.PAA_AZIONE_NON_VALIDA, "Azione non valida: " + debtPositionWithAction.getRight());
+        throw new InvalidValueException(
+          ErrorCodeConstants.ERROR_CODE_INVALID_ACTION,
+          "Invalid action: " + debtPositionWithAction.getRight(),
+          "Azione non valida: " + debtPositionWithAction.getRight()
+        );
     };
   }
 
@@ -93,7 +101,11 @@ public abstract class BaseDebtPositionHandler<I, O> {
     InstallmentDTO installmentToSync = debtPositionToSync.getPaymentOptions().getFirst().getInstallments().getFirst();
     String iud = installmentToSync.getIud();
     if(StringUtils.isBlank(iud)) {
-      throw new SilFaultException(SilFaults.PAA_IUD_NON_VALIDO, "Errore, è obbligatorio specificare identificativoUnivocoDovuto.");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_IUD,
+        "Error, identificativoUnivocoDovuto is mandatory.",
+        "Errore, è obbligatorio specificare identificativoUnivocoDovuto."
+      );
     }
 
     //find the existing debt position on db
@@ -151,16 +163,16 @@ public abstract class BaseDebtPositionHandler<I, O> {
       .filter(dp -> Constants.SYNCABLE_DEBT_POSITION_STATUSES.contains(dp.getStatus()))
       .findFirst()
       .orElseThrow(() -> {
-        log.error("Debt position not found for organizationId[{}] and iud[{}]", organizationId, iud);
-        return new SilFaultException(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, "Dovuto non trovato");
+        log.debug("Debt position not found for organizationId[{}] and iud[{}]", organizationId, iud);
+        return new NotFoundException(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_NOT_FOUND, "Debt position not found");
       });
     InstallmentDTO installmentOnDb = debtPositionOnDb.getPaymentOptions().stream()
       .flatMap(po -> po.getInstallments().stream())
       .filter(i -> Objects.equals(i.getIud(), iud))
       .findFirst()
       .orElseThrow(() -> {
-        log.error("Installment not found for organizationId[{}] and iud[{}]", organizationId, iud);
-        return new SilFaultException(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, "Dovuto non trovato");
+        log.debug("Installment not found for organizationId[{}] and iud[{}]", organizationId, iud);
+        return new NotFoundException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, "Installment not found");
       });
     return Pair.of(debtPositionOnDb, installmentOnDb);
   }

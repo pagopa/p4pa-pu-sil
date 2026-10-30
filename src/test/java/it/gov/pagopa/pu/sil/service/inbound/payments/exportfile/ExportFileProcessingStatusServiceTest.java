@@ -6,9 +6,9 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTyp
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,11 +86,11 @@ class ExportFileProcessingStatusServiceTest {
 
     when(exportFileServiceMock.getExportFile(1L, accessToken)).thenReturn(null);
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () ->
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () ->
       service.getProcessingStatus(userInfo, accessToken, orgIpaCode, 1L, ExportFileTypeEnum.PAID)
     );
 
-    assertEquals(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, exception.getFault());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_REQUEST_TOKEN, exception.getCode());
   }
 
   @Test

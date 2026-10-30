@@ -16,7 +16,6 @@ import it.gov.pagopa.pu.sil.enums.legacy.IngestionFlowFileLegacyStatus;
 import it.gov.pagopa.pu.sil.exception.ExportFileClientException;
 import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.soap.PuForOrganizationPaymentsExceptionHandler;
 import it.gov.pagopa.pu.sil.exception.soap.transcoder.PuForOrganizationPaymentExceptionTranscoder;
 import it.gov.pagopa.pu.sil.registry.RegistryContextData;
@@ -485,7 +484,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     when(paaSILVerificaAvvisoServiceMock.processRequest(request, VALID_ORG_IPA_CODE, userInfo, accessToken))
-      .thenThrow(new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Description"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, "Description"));
 
     RegistryContextData expectedRegistryContextData = RegistryContextData.builder()
       .loggedUser(userInfo)
@@ -502,7 +501,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_IUV_NON_VALIDO.code(), result.getFault().getFaultCode());
-    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 
@@ -530,7 +528,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediPagati request = podamFactory.manufacturePojo(PaaSILChiediPagati.class);
 
     when(paaSILChiediPagatiServiceMock.processRequest(request, userInfo, accessToken))
-      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Description"));
 
     // When
     PaaSILChiediPagatiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagati(request);
@@ -539,7 +537,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
-    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 
@@ -567,7 +564,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediPagatiConRicevuta request = podamFactory.manufacturePojo(PaaSILChiediPagatiConRicevuta.class);
 
     when(paaSILChiediPagatiConRicevutaServiceMock.processRequest(request, userInfo, accessToken))
-      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Description"));
 
     // When
     PaaSILChiediPagatiConRicevutaRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPagatiConRicevuta(request);
@@ -576,7 +573,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
-    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 
@@ -604,7 +600,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediEsitoCarrelloDovuti request = podamFactory.manufacturePojo(PaaSILChiediEsitoCarrelloDovuti.class);
 
     when(paaSILChiediEsitoCarrelloDovutiServiceMock.processRequest(request, userInfo, accessToken))
-      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Description"));
 
     // When
     PaaSILChiediEsitoCarrelloDovutiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediEsitoCarrelloDovuti(request);
@@ -613,7 +609,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
-    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 
@@ -647,7 +642,7 @@ class PuForOrganizationPaymentsEndpointTest {
     SoapHeaderElement header = TestUtils.createSoapHeaderElement(intestazionePPT, IntestazionePPT.class);
 
     when(paaSILChiediStoricoPagamentiServiceMock.processRequest(request, userInfo, accessToken))
-      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Description"));
 
     // When
     PaaSILChiediStoricoPagamentiRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediStoricoPagamenti(request, header);
@@ -656,7 +651,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
-    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 
@@ -693,7 +687,7 @@ class PuForOrganizationPaymentsEndpointTest {
     PaaSILChiediPosizioniAperte request = podamFactory.manufacturePojo(PaaSILChiediPosizioniAperte.class);
 
     when(paaSILChiediPosizioniAperteServiceMock.processRequest(request, userInfo, accessToken))
-      .thenThrow(new SilFaultException(SilFaults.PAA_ID_SESSION_NON_VALIDO, "Description"));
+      .thenThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, "Description"));
 
     // When
     PaaSILChiediPosizioniAperteRisposta result = puForOrganizationPaymentsEndpoint.paaSILChiediPosizioniAperte(request, null);
@@ -702,7 +696,6 @@ class PuForOrganizationPaymentsEndpointTest {
     Assertions.assertNotNull(result);
     Assertions.assertNotNull(result.getFault());
     Assertions.assertEquals(SilFaults.PAA_ID_SESSION_NON_VALIDO.code(), result.getFault().getFaultCode());
-    Assertions.assertEquals("Description", result.getFault().getDescription());
   }
   // endregion
 

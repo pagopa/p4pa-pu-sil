@@ -3,7 +3,8 @@ package it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments.soap;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.mapper.soap.LegacyAssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.AuthorizationServiceTest;
 import it.gov.pagopa.pu.sil.util.TestUtils;
@@ -62,7 +63,7 @@ class LegacyQueryAssessmentsServiceTest {
   }
 
   @Test
-  void givenFullRequestWhenHandlePivotSILChiediAccertamentoThenIllegalArgumentException() {
+  void givenFullRequestWhenHandlePivotSILChiediAccertamentoThenInvalidValueException() {
     // Given
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
     RichiestaPerBolletta richiestaPerBolletta = podamFactory.manufacturePojo(RichiestaPerBolletta.class);
@@ -74,14 +75,14 @@ class LegacyQueryAssessmentsServiceTest {
         .thenReturn(false);
 
       // When, Then
-      assertThrows(SilFaultException.class, () ->
+      assertThrows(InvalidValueException.class, () ->
         service.handlePivotSILChiediAccertamento(userInfo, "token", orgIpaCode, request)
       );
     }
   }
 
   @Test
-  void givenRichiestaPerIUFWhenHandlePivotSILChiediAccertamentoThenSilFaultException() {
+  void givenRichiestaPerIUFWhenHandlePivotSILChiediAccertamentoThenInvalidValueException() {
     // Given
     PivotSILChiediAccertamento request = new PivotSILChiediAccertamento();
     RichiestaPerIUF richiestaPerIUF = podamFactory.manufacturePojo(RichiestaPerIUF.class);
@@ -94,7 +95,7 @@ class LegacyQueryAssessmentsServiceTest {
         .thenReturn(Collections.emptyList());
 
       // When, Then
-      assertThrows(SilFaultException.class, () ->
+      assertThrows(NotFoundException.class, () ->
         service.handlePivotSILChiediAccertamento(userInfo, "token", orgIpaCode, request)
       );
     }

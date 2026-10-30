@@ -17,25 +17,25 @@ class LegacyAssessmentsBalanceMapperTest {
   @Test
   void whenMap2CtBilancioThenReturnCtBilancio() {
     AssessmentsBalanceView view = new AssessmentsBalanceView();
-    view.setOfficeCode("OFF1");
+    view.setOfficeCode("UFF1");
     view.setDebtPositionTypeOrgCode("TYP1");
-    view.setAssessmentCode("CAP1");
-    view.setSectionCode("SEC1");
+    view.setAssessmentCode("ACC1");
+    view.setSectionCode("CAP1");
     view.setAmountCents(12345L);
 
     CtBilancio result = mapper.map2CtBilancio(view);
 
     assertNotNull(result);
-    assertEquals("OFF1", result.getUfficio());
+    assertEquals("UFF1", result.getUfficio());
     assertEquals(1, result.getTipoDovutos().size());
-    CtTipoDovuto tipoDovuto = result.getTipoDovutos().get(0);
+    CtTipoDovuto tipoDovuto = result.getTipoDovutos().getFirst();
     assertEquals("TYP1", tipoDovuto.getCodTipoDovuto());
     assertEquals(1, tipoDovuto.getCapitolos().size());
-    CtCapitolo capitolo = tipoDovuto.getCapitolos().get(0);
+    CtCapitolo capitolo = tipoDovuto.getCapitolos().getFirst();
     assertEquals("CAP1", capitolo.getCodCapitolo());
     assertEquals(1, capitolo.getAccertamentos().size());
-    CtAccertamento accertamento = capitolo.getAccertamentos().get(0);
-    assertEquals("SEC1", accertamento.getCodAccertamento());
+    CtAccertamento accertamento = capitolo.getAccertamentos().getFirst();
+    assertEquals("ACC1", accertamento.getCodAccertamento());
     assertEquals(ConversionUtils.centsAmountToBigDecimalEuroAmount(12345L), accertamento.getImporto());
 
     TestUtils.checkNotNullFields(result);

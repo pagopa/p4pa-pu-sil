@@ -67,7 +67,7 @@ class TaxonomySearchClientTest {
     when(organizationApisHolderMock.getTaxonomyCodeDtoSearchControllerApi(accessToken))
       .thenReturn(taxonomySearchControllerApiMock);
     when(taxonomySearchControllerApiMock.crudTaxonomiesFindByTaxonomyCode(taxonomyCode))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // When
     Taxonomy result = taxonomySearchClient.findByTaxonomyCode(taxonomyCode, accessToken);

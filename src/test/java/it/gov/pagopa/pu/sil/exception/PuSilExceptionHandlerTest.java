@@ -79,19 +79,6 @@ class PuSilExceptionHandlerTest extends CommonExceptionHandlerTest {
   }
 
   @Test
-  void handleAssessmentNotFoundException() throws Exception {
-    doThrow(new AssessmentNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
-
-    performRequest(DATA, MediaType.APPLICATION_JSON)
-      .andExpect(MockMvcResultMatchers.status().isNotFound())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("NOT_FOUND"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("ASSESSMENT_NOT_FOUND"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.fields").doesNotExist())
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
-  }
-
-  @Test
   void handleExportFileClientException() throws Exception {
     doThrow(new ExportFileClientException(new InvalidValueException(ProcessExecutionsErrorDTO.CategoryEnum.PROCESS_EXECUTIONS_BAD_REQUEST.getValue(), "Error"))).when(testControllerSpy).testEndpoint(DATA, BODY);
 

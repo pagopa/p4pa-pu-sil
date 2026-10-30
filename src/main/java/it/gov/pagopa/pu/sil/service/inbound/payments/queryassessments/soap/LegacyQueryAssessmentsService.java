@@ -3,10 +3,10 @@ package it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments.soap;
 import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.classification.dto.generated.AssessmentsBalanceView;
 import it.gov.pagopa.pu.sil.connector.classification.AssessmentService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.mapper.soap.LegacyAssessmentsBalanceMapper;
 import it.gov.pagopa.pu.sil.service.inbound.payments.queryassessments.BaseQueryAssessmentsService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import it.veneto.regione.pagamenti.pivot.ente.*;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,11 @@ public class LegacyQueryAssessmentsService extends BaseQueryAssessmentsService<P
     RichiestaPerIUF iufRequest = request.getRichiestaPerIUF();
 
     if (!ValidationUtils.verifyExclusivePresence(billRequest, iufRequest)) {
-      throw new SilFaultException(SilFaults.PIVOT_RICHIESTA_CON_PARAMETRI_MULTIPLI, "Solo uno tra RichiestaPerBolletta o RichiestaPerIUF deve essere presente");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_MULTI_PARAMS_REQUEST,
+        "Only one of RichiestaPerBolletta or RichiestaPerIUF must be present",
+        "Solo uno tra RichiestaPerBolletta o RichiestaPerIUF deve essere presente"
+      );
     }
 
     String iuf = Optional.ofNullable(iufRequest)
@@ -54,11 +58,6 @@ public class LegacyQueryAssessmentsService extends BaseQueryAssessmentsService<P
       .orElse(null);
 
     return getAssessment(userInfo, accessToken, orgIpaCode, iuf, billYear, billNumber);
-  }
-
-  @Override
-  protected RuntimeException handleException(SilFaults fault, String message) {
-    return new SilFaultException(fault, message);
   }
 
   @Override

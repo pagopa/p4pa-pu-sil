@@ -42,11 +42,6 @@ public class PuSilExceptionHandler extends CommonExceptionHandler {
     return handleException(ex, request, HttpStatus.CONFLICT, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
-  @ExceptionHandler(AssessmentNotFoundException.class)
-  public ResponseEntity<PuSilErrorDTO> handleAssessmentNotFoundException(AssessmentNotFoundException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, PuSilErrorDTO.CategoryEnum.NOT_FOUND);
-  }
-
   @ExceptionHandler(ExportFileClientException.class)
   public ResponseEntity<PuSilErrorDTO> handleExportFileClientException(ExportFileClientException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
@@ -57,4 +52,8 @@ public class PuSilExceptionHandler extends CommonExceptionHandler {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, PuSilErrorDTO.CategoryEnum.BAD_REQUEST);
   }
 
+  @ExceptionHandler({WorkflowErrorException.class})
+  public ResponseEntity<PuSilErrorDTO> handleWorkflowErrorException(Exception ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, PuSilErrorDTO.CategoryEnum.GENERIC_ERROR);
+  }
 }

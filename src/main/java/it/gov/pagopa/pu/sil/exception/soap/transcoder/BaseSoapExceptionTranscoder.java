@@ -2,7 +2,6 @@ package it.gov.pagopa.pu.sil.exception.soap.transcoder;
 
 import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.soap.SoapFaultTranscoded;
 import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
@@ -34,11 +33,6 @@ public abstract class BaseSoapExceptionTranscoder {
       out = new SoapFaultTranscoded(
         unauthorizedFault,
         "Utente non autorizzato"
-      );
-    } else if (exception instanceof SilFaultException sfe) {
-      out = new SoapFaultTranscoded(
-        sfe.getFault(),
-        sfe.getDescription()
       );
     } else if ((out = transcodeSoapServiceExceptions(exception)) == null && exception instanceof BaseBusinessException bbe) {
       SilFaults fault = errorCode2SilFault.get(bbe.getCode());

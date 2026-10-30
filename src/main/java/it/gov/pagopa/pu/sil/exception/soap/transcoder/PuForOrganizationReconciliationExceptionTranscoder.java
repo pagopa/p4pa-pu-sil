@@ -17,8 +17,14 @@ public class PuForOrganizationReconciliationExceptionTranscoder extends BaseSoap
 
   protected static final Map<String, SilFaults> errorCode2SilFault = Map.of(
     ErrorCodeConstants.ERROR_CODE_INVALID_FILE_VERSION, SilFaults.PIVOT_VERSIONE_TRACCIATO_NON_VALIDA,
+
     ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_INTERVAL, SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO,
-    ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_COMBINATION, SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO
+    ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_COMBINATION, SilFaults.PIVOT_INTERVALLO_DATE_NON_VALIDO,
+
+    ErrorCodeConstants.ERROR_CODE_ASSESSMENT_NOT_FOUND, SilFaults.PIVOT_BOLLETTA_NON_TROVATA,
+    ErrorCodeConstants.ERROR_CODE_PAYMENT_REPORTING_NOT_FOUND, SilFaults.PIVOT_NESSUNA_RENDICONTAZIONE_TROVATA,
+
+    ErrorCodeConstants.ERROR_CODE_INVALID_MULTI_PARAMS_REQUEST, SilFaults.PIVOT_RICHIESTA_CON_PARAMETRI_MULTIPLI
   );
 
   public PuForOrganizationReconciliationExceptionTranscoder() {

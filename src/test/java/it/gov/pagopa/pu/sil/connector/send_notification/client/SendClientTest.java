@@ -93,7 +93,7 @@ class SendClientTest {
     when(sendNotificationApisHolderMock.getSendApi(accessToken))
       .thenReturn(sendApiMock);
     when(sendApiMock.retrieveLegalFactDownloadMetadata(sendNotificationId, legalFactId))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // when
     LegalFactDownloadMetadataDTO actualResult = sendClient.getLegalFactDownloadMetadata(sendNotificationId, legalFactId, accessToken);

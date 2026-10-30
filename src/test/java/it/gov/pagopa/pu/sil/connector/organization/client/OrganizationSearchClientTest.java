@@ -77,7 +77,7 @@ class OrganizationSearchClientTest {
     when(organizationApisHolderMock.getOrganizationSearchControllerApi(accessToken))
       .thenReturn(organizationSearchControllerApiMock);
     when(organizationSearchControllerApiMock.crudOrganizationsFindByIpaCode(orgIpaCode))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // When
     Organization result = organizationSearchClient.findByIpaCode(orgIpaCode, accessToken);
@@ -116,7 +116,7 @@ class OrganizationSearchClientTest {
     when(organizationApisHolderMock.getOrganizationSearchControllerApi(accessToken))
       .thenReturn(organizationSearchControllerApiMock);
     when(organizationSearchControllerApiMock.crudOrganizationsFindByOrgFiscalCode(orgFiscalCode))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // When
     Organization result = organizationSearchClient.findByOrgFiscalCode(orgFiscalCode, accessToken);
@@ -155,7 +155,7 @@ class OrganizationSearchClientTest {
     when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
     when(organizationEntityControllerApiMock.crudGetOrganization(orgId))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // When
     Organization result = organizationSearchClient.findByOrganizationId(Long.valueOf(orgId), accessToken);

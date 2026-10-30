@@ -5,8 +5,8 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.ManageDebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.MixedDebtPositionDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionService;
 import it.gov.pagopa.pu.sil.connector.workflow.service.WorkflowService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.WorkflowErrorException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -80,12 +80,13 @@ class ManageDebtPositionServiceTest {
 
     // Act
     List<DebtPositionDTO> debtPositionDTOList = List.of(debtPosition1, debtPosition2);
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> manageDebtPositionService.createDebtPositions(
+    WorkflowErrorException exception = Assertions.assertThrows(WorkflowErrorException.class, () -> manageDebtPositionService.createDebtPositions(
       debtPositionDTOList, "accessToken"));
 
     // Assert
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
-    assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_SYNC_ERROR, exception.getCode());
+    assertEquals("Error synchronizing debt positions", exception.getMessage());
+    assertEquals("errore sincronizzando le posizioni debitorie", exception.getSilFaultCustomMessage());
   }
   //endregion
 
@@ -119,11 +120,12 @@ class ManageDebtPositionServiceTest {
     when(workflowServiceMock.waitWorkflowCompletion(eq("workflow1"), anyInt(), anyInt(), eq("accessToken")))
       .thenReturn("FAILED");
 
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class,
+    WorkflowErrorException exception = Assertions.assertThrows(WorkflowErrorException.class,
       () -> manageDebtPositionService.manageDebtPositionInstallments(debtPositionId, manageDebtPositionDTO, "accessToken"));
 
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
-    assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_SYNC_ERROR, exception.getCode());
+    assertEquals("Error synchronizing debt positions", exception.getMessage());
+    assertEquals("errore sincronizzando le posizioni debitorie", exception.getSilFaultCustomMessage());
   }
   //endregion
 
@@ -178,12 +180,13 @@ class ManageDebtPositionServiceTest {
 
     // Act
     List<MixedDebtPositionDTO> mixedDebtPositionDTOList = List.of(mixedDebtPosition1, mixedDebtPosition2);
-    SilFaultException exception = Assertions.assertThrows(SilFaultException.class, () -> manageDebtPositionService.createMixedDebtPositions(
+    WorkflowErrorException exception = Assertions.assertThrows(WorkflowErrorException.class, () -> manageDebtPositionService.createMixedDebtPositions(
       mixedDebtPositionDTOList, "accessToken"));
 
     // Assert
-    assertEquals(SilFaults.PAA_SYSTEM_ERROR, exception.getFault());
-    assertEquals("errore sincronizzando le posizioni debitorie", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_SYNC_ERROR, exception.getCode());
+    assertEquals("Error synchronizing debt positions", exception.getMessage());
+    assertEquals("errore sincronizzando le posizioni debitorie", exception.getSilFaultCustomMessage());
   }
   //endregion
 }

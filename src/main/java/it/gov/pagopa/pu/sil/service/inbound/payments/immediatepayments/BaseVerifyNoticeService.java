@@ -6,11 +6,11 @@ import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.registries.dto.generated.RegistryOutcome;
 import it.gov.pagopa.pu.sil.connector.organization.service.OrganizationService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionCheckoutService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.InstallmentFacadeService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.ValidationUtils;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -40,24 +40,36 @@ public abstract class BaseVerifyNoticeService<I, O> {
       .orElse(null);
 
     if (organization == null || !OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
-      throw new SilFaultException(SilFaults.PAA_ENTE_NON_VALIDO, "L'ente non è valido o non è abilitato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION,
+        "Invalid or not authorized organization",
+        "L'ente non è valido o non è abilitato"
+      );
     }
 
     String callbackUrl = getCallbackUrl(request);
     if (StringUtils.isNotBlank(callbackUrl) && !ValidationUtils.isValidUri(callbackUrl)) {
-      throw new SilFaultException(SilFaults.PAA_URL_NON_VALIDA, "URL di callback non valida");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, "Invalid callback URL", "URL di callback non valida");
     }
 
     String iuv = getNav(request);
     if (StringUtils.isBlank(iuv)) {
-      throw new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Identificativo univoco del versamento non indicato");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_MISSING_IUV,
+        "IUV not specified",
+        "Identificativo univoco del versamento non indicato"
+      );
     }
 
     List<InstallmentDTO> installments = installmentFacadeService.getInstallmentsByOrganizationIdAndNav(organizationId, iuv, accessToken);
 
     InstallmentDTO installmentDTO = installments.stream()
-      .findFirst().orElseThrow(() -> new SilFaultException(SilFaults.PAA_IUV_NON_VALIDO, "Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato"));
-
+      .findFirst().orElseThrow(() -> new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_IUV,
+        "No payable installment found for the specified iuv",
+        "Nessun avviso pagabile trovato per l'identificativo univoco del versamento indicato"
+        )
+      );
     return handleInstallmentsStatus(installmentDTO, organization, callbackUrl, accessToken);
   }
 

@@ -8,9 +8,9 @@ import it.gov.pagopa.pu.sil.connector.processexecutions.IngestionFlowFileService
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl;
 import it.gov.pagopa.pu.sil.dto.generated.DownloadUrl.CodeEnum;
 import it.gov.pagopa.pu.sil.dto.generated.ImportStatusResponseDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,7 @@ public class IngestionFlowFileProcessingStatusService {
     log.debug("Retrieved IngestionFlowFile: {}", ingestionFlowFile);
 
     if (ingestionFlowFile == null) {
-      throw new SilFaultException(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, "requestToken non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_REQUEST_TOKEN, "Invalid requestToken");
     }
 
     verifyMatchingTypes(ingestionFlowFile, expectedTypes);

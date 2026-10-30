@@ -1,10 +1,10 @@
 package it.gov.pagopa.pu.sil.mapper;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.NotFoundException;
 import it.gov.pagopa.pu.sil.mapper.soap.SecondaryTransferMapper;
 import it.gov.pagopa.pu.sil.util.Constants;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,9 +25,9 @@ public class ManageDebtPositionMapper {
       .filter(i -> Objects.equals(i.getIud(), installmentToSync.getIud()))
       .findFirst()
       .orElseThrow(() -> {
-        log.error("Installment not found on debtPosition[{}] for organizationId[{}] and iud[{}]", debtPositionOnDb.getDebtPositionId(),
+        log.debug("Installment not found on debtPosition[{}] for organizationId[{}] and iud[{}]", debtPositionOnDb.getDebtPositionId(),
           debtPositionOnDb.getOrganizationId(), installmentToSync.getIud());
-        return new SilFaultException(SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE, "Dovuto non trovato");
+        return new NotFoundException(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, "Installment not found", "Dovuto non trovato");
       });
 
     PaymentOptionDTO paymentOptionOnDb = debtPositionOnDb.getPaymentOptions().stream()

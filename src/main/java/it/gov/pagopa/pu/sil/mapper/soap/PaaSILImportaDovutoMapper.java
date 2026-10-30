@@ -3,9 +3,7 @@ package it.gov.pagopa.pu.sil.mapper.soap;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.soap.ValidationService;
 import it.gov.pagopa.pu.sil.service.JAXBTransformService;
 import it.gov.pagopa.pu.sil.util.Constants;
@@ -61,10 +59,13 @@ public class PaaSILImportaDovutoMapper {
     try {
       versamento = jaxbTransformService.unmarshalling(request.getDovuto(), Versamento.class, "/soap/wsdl/payments/PagInf_Dovuti_Pagati_6_2_0.xsd");
     } catch (Exception unmarshallingException) {
-      String errorMessage = "XML non conforme: \n" +
-        jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, request.getDovuto());
-      log.error("error unmarshalling PaaSILImportaDovuto: [{}]", errorMessage, unmarshallingException);
-      throw new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, errorMessage);
+      String detailUnmarshalExceptionMessage = jaxbTransformService.getDetailUnmarshalExceptionMessage(unmarshallingException, request.getDovuto());
+      String silFaultCustomMessage = "XML non conforme: \n" + detailUnmarshalExceptionMessage;
+      String message = String.format("error unmarshalling PaaSILImportaDovuto: [%s]", detailUnmarshalExceptionMessage);
+
+      log.debug(message, unmarshallingException);
+
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, message, silFaultCustomMessage);
     }
 
     //all debt-position data validations are made on DEBT-POSITION API (see task P4ADEV-3458)
@@ -74,13 +75,17 @@ public class PaaSILImportaDovutoMapper {
       organization.getOrganizationId(), datiVersamento.getIdentificativoTipoDovuto(), accessToken);
 
     if (debtPositionTypeOrg == null) {
-      throw new SilFaultException(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, "Identificativo tipo dovuto non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, "Invalid debtPositionTypeOrg");
     }
 
     Long amountCents = ConversionUtils.bigDecimalEuroAmountToCentsAmount(datiVersamento.getImportoSingoloVersamento());
 
     if(amountCents == null) {
-      throw new SilFaultException(SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO, "Importo singolo versamento non valido");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_CENTS_AMOUNT,
+        "Invalid importoSingoloVersamento amount",
+        "Importo singolo versamento non valido"
+      );
     }
 
     DebtPositionDTO debtPositionDTO = DebtPositionDTO.builder()

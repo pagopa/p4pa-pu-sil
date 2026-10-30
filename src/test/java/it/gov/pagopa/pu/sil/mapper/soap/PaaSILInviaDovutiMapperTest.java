@@ -5,8 +5,6 @@ import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import it.gov.pagopa.pu.organization.dto.generated.OrganizationStatus;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
 import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.inbound.payments.debtposition.DebtPositionInstallmentService;
 import it.gov.pagopa.pu.sil.service.inbound.payments.immediatepayments.PaymentRequestMappingResult;
@@ -77,10 +75,10 @@ class PaaSILInviaDovutiMapperTest {
     PaaSILInviaDovuti request = new PaaSILInviaDovuti();
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenThrow(new RuntimeException("Error"));
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
-    assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
-    assertTrue(exception.getDescription().contains("XML non conforme"));
+    assertEquals(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, exception.getCode());
+    assertTrue(exception.getSilFaultCustomMessage().contains("XML non conforme"));
   }
 
   @Test
@@ -108,12 +106,12 @@ class PaaSILInviaDovutiMapperTest {
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.setSoggettoPagatore(new CtSoggettoPagatore());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
-    doThrow(new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "error")).when(personMapperMock).getAndValidateDebtor(any());
+    doThrow(new InvalidValueException(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, "error")).when(personMapperMock).getAndValidateDebtor(any());
     doNothing().when(validationServiceMock).validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
-    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
-    assertEquals(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, exception.getFault());
-    assertEquals("error", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, exception.getCode());
+    assertEquals("error", exception.getMessage());
   }
 
   @ParameterizedTest
@@ -123,26 +121,28 @@ class PaaSILInviaDovutiMapperTest {
     Dovuti dovuti = podamFactory.manufacturePojo(Dovuti.class);
     dovuti.getDatiVersamento().setIdentificativoUnivocoVersamento(null);
     dovuti.getDatiVersamento().getDatiSingoloVersamentos().clear();
-    SilFaultException silFaultException = new SilFaultException(SilFaults.PAA_XML_NON_VALIDO, "Nessun dovuto presente");
+    InvalidValueException excMock = new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_XML, "Invalid cart size", "Nessun dovuto presente");
     if(testCase.equals("6dp")) {
       for(int i = 0; i < 6; i++) {
         CtDatiSingoloVersamentoDovuti versamento = podamFactory.manufacturePojo(CtDatiSingoloVersamentoDovuti.class);
         dovuti.getDatiVersamento().getDatiSingoloVersamentos().add(versamento);
       }
-      silFaultException = new SilFaultException(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, "Numero massimo dovuti nel carrello superato: 6/5");
+      excMock = new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_CART_SIZE, "Invalid cart size: 6/5", "Numero massimo dovuti nel carrello superato: 6/5");
     }
-    doThrow(silFaultException).when(validationServiceMock)
+    doThrow(excMock).when(validationServiceMock)
       .validateCartSize(dovuti.getDatiVersamento().getDatiSingoloVersamentos().size());
     when(jaxbTransformServiceMock.unmarshalling(any(), eq(Dovuti.class), any())).thenReturn(dovuti);
 
-    SilFaultException exception = assertThrows(SilFaultException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
+    InvalidValueException exception = assertThrows(InvalidValueException.class, () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     if(testCase.equals("6dp")){
-      assertEquals(SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO, exception.getFault());
-      assertEquals("Numero massimo dovuti nel carrello superato: 6/5", exception.getDescription());
+      assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_CART_SIZE, exception.getCode());
+      assertEquals("Invalid cart size: 6/5", exception.getMessage());
+      assertEquals("Numero massimo dovuti nel carrello superato: 6/5", exception.getSilFaultCustomMessage());
     } else {
-      assertEquals(SilFaults.PAA_XML_NON_VALIDO, exception.getFault());
-      assertEquals("Nessun dovuto presente", exception.getDescription());
+      assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_XML, exception.getCode());
+      assertEquals("Invalid cart size", exception.getMessage());
+      assertEquals("Nessun dovuto presente", exception.getSilFaultCustomMessage());
     }
   }
 
@@ -361,12 +361,12 @@ class PaaSILInviaDovutiMapperTest {
       .getDebtPositionTypeOrgByOrgIdAndType(org.getOrganizationId(), invalidTransfer.getIdentificativoTipoDovuto(), ACCESS_TOKEN);
 
     // when
-    SilFaultException exception = assertThrows(SilFaultException.class,
+    InvalidValueException exception = assertThrows(InvalidValueException.class,
       () -> mapper.mapRequestToDebtPositions(request, org, "CART_ID", ACCESS_TOKEN));
 
     // then
-    assertEquals(SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO, exception.getFault());
-    assertEquals("Identificativo tipo dovuto non valido", exception.getDescription());
+    assertEquals(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, exception.getCode());
+    assertEquals("Invalid DebtPositionTypeOrg", exception.getMessage());
   }
 }
 

@@ -6,9 +6,9 @@ import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile.ExportFileTyp
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import it.gov.pagopa.pu.sil.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.sil.dto.generated.ExportStatusResponseDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.service.AuthorizationService;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +37,7 @@ public class ExportFileProcessingStatusService  {
     log.debug("Retrieved ExportFile: {}", exportFile);
 
     if(exportFile == null){
-      throw new SilFaultException(SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO, "requestToken non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_REQUEST_TOKEN, "Invalid requestToken");
     }
 
     if (expectedType != null && !expectedType.equals(exportFile.getExportFileType())) {
