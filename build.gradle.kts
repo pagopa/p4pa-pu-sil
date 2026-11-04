@@ -10,12 +10,12 @@ plugins {
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
   id("org.sonarqube") version "7.5.0.8588"
-  id("org.openapi.generator") version "7.26.0"
+  id("org.openapi.generator") version "7.27.0"
   id("org.ajoberstar.grgit") version "5.3.3"
   id("com.gorylenko.gradle-git-properties") version "4.0.1"
   //code generation for soap webservices classes (via  jaxb)
   id("com.intershop.gradle.jaxb") version "9.0.0"
-  id("com.github.jk1.dependency-license-report") version "3.1.4"
+  id("com.github.jk1.dependency-license-report") version "3.1.5"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -54,16 +54,16 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "3.1.1"
-val openApiToolsVersion = "0.2.12"
+val springDocOpenApiVersion = "3.2.0"
+val openApiToolsVersion = "0.2.13"
 val micrometerOtelBridgeVersion = "1.7.2"
 val micrometerPrometheusVersion = "1.17.2"
 val httpClientVersion = "5.6.5"
 val httpCoreVersion = "5.4.4"
 val kafkaAppender = "0.2.0-RC2"
 val lz4JavaVersion = "1.12.1"
-val springWolfAsyncApiVersion = "2.8.0"
-val springWolfUiAsyncApiVersion = "2.8.0"
+val springWolfAsyncApiVersion = "2.9.0"
+val springWolfUiAsyncApiVersion = "2.9.0"
 val podamVersion = "8.0.2.RELEASE"
 val jaxbVersion = "4.0.9"
 val jaxbApiVersion = "4.0.5"
@@ -73,7 +73,7 @@ val activationVersion = "2.1.4"
 val xmlSchemaVersion = "2.3.3"
 val caffeineVersion = "3.3.1"
 val javaJwtVersion = "4.6.2"
-val jwksRsaVersion = "0.24.1"
+val jwksRsaVersion = "0.24.2"
 val bouncycastleVersion = "1.86"
 val nimbusJoseJwtVersion = "10.10"
 val commonsLang3Version = "3.21.0"
@@ -82,6 +82,7 @@ val springCloudDepsVersion = "2025.1.3"
 
 // CVE Security dependencies
 val jackson2DatabindVersion = "2.22.3"
+val snappyJavaVersion = "1.1.10.9"
 
 dependencyManagement {
   imports {
@@ -103,6 +104,7 @@ dependencies {
   implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka") {
     exclude(group = "org.lz4", module = "lz4-java")
+      exclude(group = "org.xerial.snappy", module = "snappy-java")
   }
   implementation("at.yawk.lz4:lz4-java:$lz4JavaVersion")
   implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerOtelBridgeVersion")
@@ -132,6 +134,7 @@ dependencies {
 
   // CVE Security dependencies
   implementation("com.fasterxml.jackson.core:jackson-databind:$jackson2DatabindVersion")
+  implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
