@@ -2005,8 +2005,9 @@
             "type" : "string",
             "nullable" : true
           },
-          "amount" : {
-            "type" : "number",
+          "amountCents" : {
+            "type" : "integer",
+            "format" : "int32",
             "nullable" : true
           },
           "paymentExpirationDate" : {
@@ -2018,7 +2019,7 @@
             "type" : "string",
             "nullable" : true
           },
-          "paFee" : {
+          "paFeeCents" : {
             "maximum" : 100,
             "minimum" : 0,
             "type" : "integer",
