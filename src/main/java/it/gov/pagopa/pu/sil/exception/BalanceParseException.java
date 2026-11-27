@@ -1,8 +1,12 @@
 package it.gov.pagopa.pu.sil.exception;
 
-public class BalanceParseException extends RuntimeException {
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 
-  public BalanceParseException(String message) {
-    super(message);
+public class BalanceParseException extends BaseBusinessException {
+
+  public BalanceParseException(String message, Throwable cause) {
+    super(ErrorCodeConstants.ERROR_CODE_INVALID_BALANCE, message, cause);
   }
+
 }

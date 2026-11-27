@@ -2,9 +2,9 @@ package it.gov.pagopa.pu.sil.connector.organization.client;
 
 import it.gov.pagopa.pu.organization.dto.generated.Taxonomy;
 import it.gov.pagopa.pu.sil.connector.organization.config.OrganizationApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @Service
@@ -20,7 +20,7 @@ public class TaxonomySearchClient {
     try{
       return organizationApisHolder.getTaxonomyCodeDtoSearchControllerApi(accessToken)
         .crudTaxonomiesFindByTaxonomyCode(taxonomyCode);
-    } catch (HttpClientErrorException.NotFound e){
+    } catch (RestInvokeNotFoundException e){
       log.info("Cannot find Taxonomy having taxonomyCode {}", taxonomyCode);
       return null;
     }

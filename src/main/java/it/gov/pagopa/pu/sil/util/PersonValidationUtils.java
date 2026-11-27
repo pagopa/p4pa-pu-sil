@@ -2,8 +2,7 @@ package it.gov.pagopa.pu.sil.util;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.debtpositions.dto.generated.PersonDTO;
-import it.gov.pagopa.pu.sil.enums.SilFaults;
-import it.gov.pagopa.pu.sil.exception.SilFaultException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtIdentificativoUnivocoPersonaFG;
 import it.veneto.regione.schemas._2012.pagamenti.ente.CtSoggettoPagatore;
 import it.veneto.regione.schemas._2012.pagamenti.ente.StTipoIdentificativoUnivocoPersFG;
@@ -16,16 +15,16 @@ public class PersonValidationUtils {
 
   public static void validateFiscalCodeDebtor(CtIdentificativoUnivocoPersonaFG personIdentifier) {
     if (personIdentifier == null) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Identificativo univoco persona non presente");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, "Unique person identifier not present", "Identificativo univoco persona non presente");
     } else if (StringUtils.isBlank(personIdentifier.getCodiceIdentificativoUnivoco()) ||
       personIdentifier.getTipoIdentificativoUnivoco() == null) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Identificativo univoco persona non valido");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, "Unique person identifier not valid", "Identificativo univoco persona non valido");
     } else if (personIdentifier.getTipoIdentificativoUnivoco() == StTipoIdentificativoUnivocoPersFG.F &&
       !ValidationUtils.isValidFiscalCodeNaturalPerson(personIdentifier.getCodiceIdentificativoUnivoco())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale persona fisica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, "Invalid fiscal code: " + personIdentifier.getCodiceIdentificativoUnivoco(), "Codice fiscale persona fisica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
     } else if (personIdentifier.getTipoIdentificativoUnivoco() == StTipoIdentificativoUnivocoPersFG.G &&
       !ValidationUtils.isValidFiscalCodeLegalEntity(personIdentifier.getCodiceIdentificativoUnivoco())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Codice fiscale persona giuridica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, "Invalid fiscal code: " + personIdentifier.getCodiceIdentificativoUnivoco(), "Codice fiscale persona giuridica non valido: " + personIdentifier.getCodiceIdentificativoUnivoco());
     }
   }
 
@@ -46,24 +45,51 @@ public class PersonValidationUtils {
     }
 
     if (isNationMissingWithOtherFieldsPresent(soggettoPagatore)) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Indirizzo pagatore non valido: nazione mancante");
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_INVALID_ADDRESS, "Invalid payer address: missing country", "Indirizzo pagatore non valido: nazione mancante");
     } else if (isMandatoryFieldsMissingForItaly(soggettoPagatore)) {
-      String message = "Indirizzo pagatore non valido: mancante un campo tra indirizzo, civico, cap, località";
+      String silFaultCustomMessage = "Indirizzo pagatore non valido: mancante un campo tra indirizzo, civico, cap, località";
+      String message = "Invalid payer address: missing one of the following fields: address, street number, ZIP code, city";
+
       if (isItalianNation(soggettoPagatore)) {
-        message += ", provincia";
+        silFaultCustomMessage += ", provincia";
+        message += ", province";
       }
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, message);
+
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_ADDRESS,
+        message,
+        silFaultCustomMessage
+      );
     } else if (!isValidNation(soggettoPagatore)) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Nazione non valida: " + soggettoPagatore.getNazionePagatore());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_COUNTRY,
+        "Invalid country: " + soggettoPagatore.getNazionePagatore(),
+        "Nazione non valida: " + soggettoPagatore.getNazionePagatore()
+      );
     } else if (isInvalidProvinceForNonItaly(soggettoPagatore)) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Provincia non valida: " + soggettoPagatore.getProvinciaPagatore() +
-        " (la provincia è prevista solo per la nazione IT)");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_PROVINCE,
+        "Invalid province: " + soggettoPagatore.getProvinciaPagatore() + " (province field is only applicable to Italy.)",
+        "Provincia non valida: " + soggettoPagatore.getProvinciaPagatore() + " (la provincia è prevista solo per la nazione IT)"
+      );
     } else if (!isValidProvince(soggettoPagatore)) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Provincia non valida: " + soggettoPagatore.getProvinciaPagatore());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_PROVINCE,
+        "Invalid province: " + soggettoPagatore.getProvinciaPagatore(),
+        "Provincia non valida: " + soggettoPagatore.getProvinciaPagatore()
+      );
     } else if (!isValidPostalCode(soggettoPagatore)) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "CAP non valido: " + soggettoPagatore.getCapPagatore());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_POSTAL_CODE,
+        "Invalid postal code: " + soggettoPagatore.getCapPagatore(),
+        "CAP non valido: " + soggettoPagatore.getCapPagatore()
+      );
     } else if (!isValidCivic(soggettoPagatore)) {
-      throw new SilFaultException(SilFaults.PAA_ANAGRAFICA_NON_VALIDA, "Numero civico non valido: " + soggettoPagatore.getCivicoPagatore());
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_INVALID_STREET_NUMBER,
+        "Invalid street number: " + soggettoPagatore.getCivicoPagatore(),
+        "Numero civico non valido: " + soggettoPagatore.getCivicoPagatore()
+      );
     }
   }
 
@@ -131,13 +157,21 @@ public class PersonValidationUtils {
 
   public static void validateAnonymousDebtor(DebtPositionTypeOrg debtPositionTypeOrg, PersonDTO debtor) {
     if (!ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, debtor)) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Debitore anonimo non supportato per il tipo dovuto: " + debtPositionTypeOrg.getCode() + " oppure non configurato correttamente");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_ANONYMOUS_DEBTOR_NOT_SUPPORTED,
+        "Anonymous debtor not supported for debtPositionTypeOrg " + debtPositionTypeOrg.getCode() + " or not configured correctly",
+        "Debitore anonimo non supportato per il tipo dovuto: " + debtPositionTypeOrg.getCode() + " oppure non configurato correttamente"
+      );
     }
   }
 
   public static void validateAnonymousDebtor(DebtPositionTypeOrg debtPositionTypeOrg, CtSoggettoPagatore debtor) {
     if (!ValidationUtils.verifyValidAnonymousDebtor(debtPositionTypeOrg, debtor.getIdentificativoUnivocoPagatore())) {
-      throw new SilFaultException(SilFaults.PAA_CODICE_FISCALE_NON_VALIDO, "Debitore anonimo non supportato per il tipo dovuto: " + debtPositionTypeOrg.getCode() + " oppure non configurato correttamente");
+      throw new InvalidValueException(
+        ErrorCodeConstants.ERROR_CODE_ANONYMOUS_DEBTOR_NOT_SUPPORTED,
+        "Anonymous debtor not supported for debtPositionTypeOrg " + debtPositionTypeOrg.getCode() + " or not configured correctly",
+        "Debitore anonimo non supportato per il tipo dovuto: " + debtPositionTypeOrg.getCode() + " oppure non configurato correttamente"
+      );
     }
   }
 

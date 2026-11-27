@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.sil.connector.fileshare.client;
 
-import it.gov.pagopa.pu.fileshare.controller.generated.ReceiptApi;
+import it.gov.pagopa.pu.fileshare.client.generated.ReceiptApi;
 import it.gov.pagopa.pu.sil.connector.fileshare.config.FileShareApisHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -14,6 +14,8 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import java.nio.charset.StandardCharsets;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FileShareClientTest {
@@ -44,9 +46,9 @@ class FileShareClientTest {
     String accessToken = "ACCESSTOKEN";
     Resource expectedResult = new ByteArrayResource("result".getBytes(StandardCharsets.UTF_8));
 
-    Mockito.when(apisHolderMock.getReceiptApi(accessToken))
+    when(apisHolderMock.getReceiptApi(accessToken))
       .thenReturn(receiptApiMock);
-    Mockito.when(receiptApiMock.downloadRt(1L, 10L))
+    when(receiptApiMock.downloadRt(1L, 10L))
       .thenReturn(expectedResult);
 
     // When

@@ -76,13 +76,14 @@ class InternalApiGeneratorTest {
 
     Path openApiGeneratedPath = Path.of("openapi/generated-internal.openapi.json");
     boolean toStore=true;
+    String observedChanges = "";
     if(Files.exists(openApiGeneratedPath)){
       String storedOpenApi = Files.readString(openApiGeneratedPath);
       try {
         JsonAssert.comparator(JsonCompareMode.STRICT).assertIsMatch(storedOpenApi, openApiResult);
         toStore=false;
       } catch (Throwable e){
-        log.info("Observed the following changes: {}", e.getMessage());
+        observedChanges = "\nObserved the following changes: " + e.getMessage();
       }
     }
     if(toStore){
@@ -90,7 +91,7 @@ class InternalApiGeneratorTest {
     }
 
     String gitStatus = execCmd("git", "status");
-    Assertions.assertFalse(gitStatus.contains("openapi/generated-internal.openapi.json"), "Generated OpenApi not committed");
+    Assertions.assertFalse(gitStatus.contains("openapi/generated-internal.openapi.json"), "Generated OpenApi not committed" + observedChanges);
   }
 
   public static String execCmd(String... cmd) throws java.io.IOException {

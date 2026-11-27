@@ -1,0 +1,162 @@
+package it.gov.pagopa.pu.sil.exception.soap.transcoder;
+
+import it.gov.pagopa.pu.sil.dto.generated.ErrorFieldDTO;
+import it.gov.pagopa.pu.sil.enums.SilFaults;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.exception.ExportFileServiceException;
+import it.gov.pagopa.pu.sil.exception.soap.SoapFaultTranscoded;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@Slf4j
+public class PuForOrganizationPaymentExceptionTranscoder extends BaseSoapExceptionTranscoder {
+
+  protected static final Map<String, SilFaults> errorCode2SilFault = Map.ofEntries(
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_FILE_VERSION, SilFaults.PAA_VERSIONE_TRACCIATO_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_INTERVAL, SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_DATE_FILTER_COMBINATION, SilFaults.PAA_INTERVALLO_DATE_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION, SilFaults.PAA_ENTE_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ORGANIZATION_STATUS, SilFaults.PAA_ENTE_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_IUV, SilFaults.PAA_IUV_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_IUV, SilFaults.PAA_IUV_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_IUD , SilFaults.PAA_IUD_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_DEBT_POSITION_TYPE_ORG, SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG, SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_TYPE_ORG_UNAUTHORIZED, SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_AMOUNT, SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CENTS_AMOUNT, SilFaults.PAA_IMPORTO_SINGOLO_VERSAMENTO_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_TAXONOMY_CATEGORY, SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_TAXONOMY_CATEGORY, SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_LEGACY_PAYMENT_METADATA, SilFaults.PAA_DATI_SPECIFICI_RISCOSSIONE_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_BALANCE, SilFaults.PAA_IMPORTO_BILANCIO_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_REMITTANCE_INFORMATION, SilFaults.PAA_CAUSALE_NON_PRESENTE),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_FULLNAME, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_EMAIL, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_DEBTOR, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ADDRESS, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_COUNTRY, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_PROVINCE, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_POSTAL_CODE, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_STREET_NUMBER, SilFaults.PAA_ANAGRAFICA_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_VAT_CODE, SilFaults.PAA_CODICE_FISCALE_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_ANONYMOUS_DEBTOR_NOT_SUPPORTED, SilFaults.PAA_CODICE_FISCALE_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_TOO_MANY_TRANSFERS_FOR_INSTALLMENT, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MULTIBENEFICIARY_THRESHOLD, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_MULTIBENEFICIARI),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_IBAN, SilFaults.PAA_ENTE_SECONDARIO_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_DUE_DATE, SilFaults.PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_DUE_DATE, SilFaults.PAA_DATA_ESECUZIONE_PAGAMENTO_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_ALREADY_EXISTS, SilFaults.PAA_DOVUTO_DUPLICATO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_ALREADY_EXISTS, SilFaults.PAA_DOVUTO_DUPLICATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ID_SESSION, SilFaults.PAA_ID_SESSION_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_ID_SESSION, SilFaults.PAA_ID_SESSION_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_MISSING_ID_SESSION_CARRELLO, SilFaults.PAA_ID_SESSION_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CALLBACK_URL, SilFaults.PAA_URL_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_CHECKOUT_URL_ERROR, SilFaults.PAA_SYSTEM_ERROR),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_SYNC_ERROR, SilFaults.PAA_SYSTEM_ERROR),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_PARAMETER_COMBINATION, SilFaults.PAA_SYSTEM_ERROR),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_SYSTEM_ERROR, SilFaults.PAA_SYSTEM_ERROR),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_REQUEST_TOKEN, SilFaults.PAA_REQUEST_TOKEN_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_ACTION, SilFaults.PAA_AZIONE_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DEBT_POSITION_NOT_FOUND, SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_FOUND, SilFaults.PAA_IMPORT_DOVUTO_NON_PRESENTE),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_DUPLICATED_IUD, SilFaults.PAA_IUD_DUPLICATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_XML_MARSHALLING_ERROR, SilFaults.PAA_XML_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, SilFaults.PAA_XML_NON_VALIDO),
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_XML, SilFaults.PAA_XML_NON_VALIDO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_STAMP, SilFaults.PAA_MARCA_BOLLO_DIGITALE_NON_VALIDA),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_PAID, SilFaults.PAA_PAGAMENTO_NON_INIZIATO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_EXPIRED, SilFaults.PAA_PAGAMENTO_SCADUTO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_NOT_PAYABLE, SilFaults.PAA_DOVUTO_NON_PAGABILE),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INVALID_CART_SIZE, SilFaults.PAA_LIMITE_MASSIMO_DOVUTI_CARRELLO),
+
+    Map.entry(ErrorCodeConstants.ERROR_CODE_INSTALLMENT_TRANSFER_CONFIGURATION_NOT_SUPPORTED, SilFaults.PAA_ERRORE_RECUPERO_DOVUTI_ENTI_SECONDARI)
+  );
+
+  private static final Map<String, String> fieldNameTranscoding = Map.ofEntries(
+    Map.entry("debtPositionTypeOrgId", "identificativoTipoDovuto"),
+    Map.entry("iuv", "identificativoUnivocoVersamento"),
+    Map.entry("iud", "identificativoUnivocoDovuto"),
+    Map.entry("legacyPaymentMetadata", "datiSpecificiRiscossione"),
+    Map.entry("debtor.entityType", "identificativoUnivocoPagatore.tipoIdentificativoUnivoco"),
+    Map.entry("debtor.fiscalCode", "identificativoUnivocoPagatore.codiceIdentificativoUnivoco")
+  );
+
+  public PuForOrganizationPaymentExceptionTranscoder() {
+    super(SilFaults.PAA_ENTE_NON_VALIDO, SilFaults.PAA_SYSTEM_ERROR, errorCode2SilFault);
+  }
+
+  @Override
+  protected Logger getLogger() {
+    return log;
+  }
+
+  @Override
+  protected SoapFaultTranscoded transcodeSoapServiceExceptions(Exception exception) {
+    if (exception instanceof ExportFileServiceException efse) {
+      SilFaults fault = null;
+      if(ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_CODE.equals(efse.getCode())) {
+        fault = SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_VALIDO;
+      } else if (ErrorCodeConstants.ERROR_CODE_INVALID_DEBT_POSITION_TYPE_ORG_STATUS.equals(efse.getCode())) {
+        fault = SilFaults.PAA_IDENTIFICATIVO_TIPO_DOVUTO_NON_ABILITATO;
+      }
+
+      if(fault != null) {
+        return new SoapFaultTranscoded(fault, fault.description() + ": " + efse.getMessage());
+      }
+    } else if(exception instanceof BaseBusinessException bbe
+      && ErrorCodeConstants.ERROR_CODE_IMMUTABLE_FIELD.equals(bbe.getCode())) {
+        SilFaults fault = SilFaults.PAA_CAMPO_NON_MODIFICABILE;
+
+        String immutableFields = bbe.getFields().stream()
+          .map(ErrorFieldDTO::getField)
+          .filter(field -> !"nav".equals(field)) // skipped because SIL send always IUV and it will also reported
+          .map(field -> fieldNameTranscoding.getOrDefault(field, field))
+          .collect(Collectors.joining(", "));
+
+        String description = StringUtils.isEmpty(immutableFields)
+          ? fault.description()
+          : fault.description() + ": " + immutableFields;
+
+        return new SoapFaultTranscoded(fault, description);
+      }
+
+
+    return null;
+  }
+}

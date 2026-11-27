@@ -1,0 +1,22 @@
+package it.gov.pagopa.pu.sil.exception.common;
+
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+@Getter
+@SuppressWarnings("java:S110") // Suppress "Inheritance tree of classes should not be too deep": allowed for exception hierarchy
+public class RestInvokeForbiddenException extends ForbiddenException implements RestInvokeHttpClientException {
+
+  private final String applicationName;
+  private final HttpStatus httpStatus;
+  private final String category;
+  private final String body;
+
+  public RestInvokeForbiddenException(String applicationName, HttpStatus httpStatus, String category, String code, String message, String body) {
+    super(code, message);
+    this.applicationName = applicationName;
+    this.httpStatus = httpStatus;
+    this.category = category;
+    this.body = body;
+  }
+}

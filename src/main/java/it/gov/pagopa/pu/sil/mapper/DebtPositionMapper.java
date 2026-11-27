@@ -40,6 +40,7 @@ public class DebtPositionMapper {
       .description(source.getDescription())
       .flagPuPagoPaPayment(source.getFlagPagoPaPayment())
       .multiDebtor(source.getMultiDebtor())
+      .stationId(source.getStationId())
       .paymentOptions(source.getPaymentOptions().stream()
         .map(po -> fillPaymentOptionFields(po, organization.getIpaCode()))
         .toList())

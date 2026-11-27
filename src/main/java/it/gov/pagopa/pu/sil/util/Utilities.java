@@ -23,6 +23,10 @@ public class Utilities {
     return MDC.get("traceId");
   }
 
+  public static String getSpanId(){
+    return MDC.get("spanId");
+  }
+
   public static int systemTimeSecondsFrom2025() {
     return (int) ((System.currentTimeMillis() - OFFSET_2025_01_01_MILLIS) / 1000L);
   }

@@ -171,7 +171,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -181,7 +181,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -191,7 +191,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/CreateNotificationResponse"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -548,7 +548,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -558,7 +558,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -568,7 +568,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -578,7 +578,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SendNotificationDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -613,13 +613,34 @@
             "description" : "OK"
           },
           "400" : {
-            "description" : "Invalid request"
+            "description" : "Invalid request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
           },
           "403" : {
-            "description" : "Forbidden"
+            "description" : "Forbidden",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
           },
           "500" : {
-            "description" : "Internal server error"
+            "description" : "Internal server error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              }
+            }
           }
         },
         "security" : [ {
@@ -667,10 +688,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/LegalFactDTO"
-                  }
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -680,10 +698,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/LegalFactDTO"
-                  }
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -693,10 +708,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/LegalFactDTO"
-                  }
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -706,10 +718,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/LegalFactDTO"
-                  }
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -764,7 +773,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -774,7 +783,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -784,7 +793,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -794,7 +803,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/LegalFactDownloadMetadataDTO"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -837,6 +846,12 @@
                   "type" : "string",
                   "format" : "binary"
                 }
+              },
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
               }
             }
           },
@@ -845,8 +860,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -856,8 +875,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -867,8 +890,12 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
+                }
+              },
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PuSilErrorDTO"
                 }
               }
             }
@@ -1424,6 +1451,10 @@
             "type" : "integer",
             "format" : "int64"
           },
+          "stationId" : {
+            "type" : "string",
+            "nullable" : true
+          },
           "debtPositionTypeOrgId" : {
             "type" : "integer",
             "format" : "int64"
@@ -1635,8 +1666,7 @@
             "type" : "string",
             "nullable" : true
           }
-        },
-        "nullable" : true
+        }
       },
       "PaymentOptionDTO" : {
         "required" : [ "installments", "paymentOptionType", "totalAmountCents" ],
@@ -1747,8 +1777,7 @@
             "type" : "string",
             "nullable" : true
           }
-        },
-        "nullable" : true
+        }
       },
       "PersonEntityType" : {
         "type" : "string",
@@ -1802,17 +1831,41 @@
       },
       "CategoryEnum" : {
         "type" : "string",
-        "enum" : [ "NOT_FOUND", "BAD_REQUEST", "INVALID_FILE", "FILE_UPLOAD_ERROR", "CONFLICT", "UNAUTHORIZED", "GENERIC_ERROR" ]
+        "enum" : [ "NOT_FOUND", "BAD_REQUEST", "INVALID_FILE", "FILE_UPLOAD_ERROR", "CONFLICT", "UNAUTHORIZED", "FORBIDDEN", "TOO_MANY_REQUESTS", "GENERIC_ERROR" ]
+      },
+      "ErrorFieldDTO" : {
+        "required" : [ "error", "field", "message" ],
+        "type" : "object",
+        "properties" : {
+          "field" : {
+            "type" : "string"
+          },
+          "error" : {
+            "type" : "string"
+          },
+          "message" : {
+            "type" : "string"
+          }
+        }
       },
       "PuSilErrorDTO" : {
-        "required" : [ "category", "message" ],
+        "required" : [ "category", "code", "message" ],
         "type" : "object",
         "properties" : {
           "category" : {
             "$ref" : "#/components/schemas/CategoryEnum"
           },
+          "code" : {
+            "type" : "string"
+          },
           "message" : {
             "type" : "string"
+          },
+          "fields" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/ErrorFieldDTO"
+            }
           },
           "traceId" : {
             "type" : "string",
@@ -1912,7 +1965,7 @@
         }
       },
       "CreateNotificationRequest" : {
-        "required" : [ "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients" ],
+        "required" : [ "externalCampaignId", "notificationFeePolicy", "organizationId", "paProtocolNumber", "physicalCommunicationType", "recipients", "subject" ],
         "type" : "object",
         "properties" : {
           "organizationId" : {
@@ -1936,10 +1989,13 @@
             }
           },
           "notificationFeePolicy" : {
-            "$ref" : "#/components/schemas/NotificationFeePolicyEnum"
+            "$ref" : "#/components/schemas/NotificationFeePolicyDTO"
           },
           "physicalCommunicationType" : {
             "$ref" : "#/components/schemas/PhysicalCommunicationTypeEnum"
+          },
+          "subject" : {
+            "type" : "string"
           },
           "senderDenomination" : {
             "type" : "string",
@@ -1949,8 +2005,9 @@
             "type" : "string",
             "nullable" : true
           },
-          "amount" : {
-            "type" : "number",
+          "amountCents" : {
+            "type" : "integer",
+            "format" : "int32",
             "nullable" : true
           },
           "paymentExpirationDate" : {
@@ -1962,7 +2019,7 @@
             "type" : "string",
             "nullable" : true
           },
-          "paFee" : {
+          "paFeeCents" : {
             "maximum" : 100,
             "minimum" : 0,
             "type" : "integer",
@@ -1975,9 +2032,27 @@
             "type" : "integer",
             "format" : "int32",
             "nullable" : true
+          },
+          "pagoPaIntMode" : {
+            "$ref" : "#/components/schemas/PagoPaIntModeEnum"
+          },
+          "externalCampaignId" : {
+            "maxLength" : 32,
+            "minLength" : 0,
+            "pattern" : "^[A-Za-z0-9_-]+$",
+            "type" : "string"
+          },
+          "subUnitCode" : {
+            "type" : "string",
+            "nullable" : true
+          },
+          "campaignName" : {
+            "maxLength" : 64,
+            "minLength" : 0,
+            "type" : "string",
+            "nullable" : true
           }
-        },
-        "nullable" : true
+        }
       },
       "Document" : {
         "type" : "object",
@@ -2009,8 +2084,7 @@
           "metadataAttachment" : {
             "$ref" : "#/components/schemas/Attachment"
           }
-        },
-        "nullable" : true
+        }
       },
       "NotificationDigitalAddress" : {
         "required" : [ "address", "type" ],
@@ -2025,10 +2099,9 @@
             "pattern" : "^(?:[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?|\\[(?:(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?)\\.){3}(?:25[0-5]|2[0-4]\\d|[01]?\\d\\d?|[a-zA-Z0-9-]*[a-zA-Z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])$",
             "type" : "string"
           }
-        },
-        "nullable" : true
+        }
       },
-      "NotificationFeePolicyEnum" : {
+      "NotificationFeePolicyDTO" : {
         "type" : "string",
         "enum" : [ "FLAT_RATE", "DELIVERY_MODE" ]
       },
@@ -2048,8 +2121,12 @@
           "attachment" : {
             "$ref" : "#/components/schemas/Attachment"
           }
-        },
-        "nullable" : true
+        }
+      },
+      "PagoPaIntModeEnum" : {
+        "type" : "string",
+        "nullable" : true,
+        "enum" : [ "NONE", "SYNC", "ASYNC" ]
       },
       "Payment" : {
         "type" : "object",
@@ -2179,6 +2256,10 @@
             "type" : "string",
             "nullable" : true
           },
+          "stationId" : {
+            "type" : "string",
+            "nullable" : true
+          },
           "debtor" : {
             "$ref" : "#/components/schemas/PersonDTO"
           },
@@ -2224,7 +2305,7 @@
       },
       "IngestionFlowFileTypeEnum" : {
         "type" : "string",
-        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "DEBT_POSITIONS_TYPE_ORG_OPERATORS", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "SEND_NOTIFICATION" ]
+        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "TREASURY_CSV_COMPLETE", "DP_INSTALLMENTS", "PAYMENT_NOTIFICATION", "ORGANIZATIONS", "ORGANIZATIONS_SIL_SERVICE", "DEBT_POSITIONS_TYPE", "DEBT_POSITIONS_TYPE_ORG", "ASSESSMENTS", "ASSESSMENTS_REGISTRY", "SEND_NOTIFICATION" ]
       },
       "ExportFileResponseDTO" : {
         "required" : [ "exportId" ],
@@ -2401,18 +2482,25 @@
             "format" : "date",
             "nullable" : true
           }
-        },
-        "nullable" : true
+        }
       },
       "NotificationStatus" : {
         "type" : "string",
         "enum" : [ "WAITING_FILE", "SENDING", "REGISTERED", "UPLOADED", "IN_VALIDATION", "ACCEPTED", "REFUSED", "DELIVERING", "DELIVERED", "VIEWED", "EFFECTIVE_DATE", "PAID", "UNREACHABLE", "CANCELLED", "RETURNED_TO_SENDER" ]
       },
+      "NotificationStatusV26DTO" : {
+        "type" : "string",
+        "nullable" : true,
+        "enum" : [ "IN_VALIDATION", "ACCEPTED", "REFUSED", "DELIVERING", "DELIVERED", "VIEWED", "EFFECTIVE_DATE", "PAID", "UNREACHABLE", "CANCELLED", "RETURNED_TO_SENDER", "PU_PAID" ]
+      },
       "SendNotificationDTO" : {
-        "required" : [ "organizationId", "payments", "sendNotificationId", "status" ],
+        "required" : [ "campaignId", "organizationId", "payments", "sendNotificationId", "status", "subject" ],
         "type" : "object",
         "properties" : {
           "sendNotificationId" : {
+            "type" : "string"
+          },
+          "campaignId" : {
             "type" : "string"
           },
           "organizationId" : {
@@ -2429,8 +2517,22 @@
               "$ref" : "#/components/schemas/SendNotificationPaymentsDTO"
             }
           },
+          "subject" : {
+            "type" : "string"
+          },
           "status" : {
             "$ref" : "#/components/schemas/NotificationStatus"
+          },
+          "history" : {
+            "type" : "array",
+            "nullable" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/StreamEventSummaryDTO"
+            }
+          },
+          "notificationRequestId" : {
+            "type" : "string",
+            "nullable" : true
           },
           "errors" : {
             "type" : "array",
@@ -2462,6 +2564,22 @@
             "nullable" : true
           }
         }
+      },
+      "StreamEventSummaryDTO" : {
+        "type" : "object",
+        "properties" : {
+          "newNotificationStatus" : {
+            "$ref" : "#/components/schemas/NotificationStatusV26DTO"
+          },
+          "timelineElementCategory" : {
+            "$ref" : "#/components/schemas/TimelineElementCategoryV27DTO"
+          }
+        }
+      },
+      "TimelineElementCategoryV27DTO" : {
+        "type" : "string",
+        "nullable" : true,
+        "enum" : [ "SENDER_ACK_CREATION_REQUEST", "VALIDATE_NORMALIZE_ADDRESSES_REQUEST", "NORMALIZED_ADDRESS", "REQUEST_ACCEPTED", "SEND_COURTESY_MESSAGE", "GET_ADDRESS", "PUBLIC_REGISTRY_CALL", "PUBLIC_REGISTRY_RESPONSE", "SCHEDULE_ANALOG_WORKFLOW", "SCHEDULE_DIGITAL_WORKFLOW", "PREPARE_DIGITAL_DOMICILE", "SEND_DIGITAL_DOMICILE", "SEND_DIGITAL_PROGRESS", "SEND_DIGITAL_FEEDBACK", "REFINEMENT", "SCHEDULE_REFINEMENT", "DIGITAL_DELIVERY_CREATION_REQUEST", "DIGITAL_SUCCESS_WORKFLOW", "DIGITAL_FAILURE_WORKFLOW", "ANALOG_SUCCESS_WORKFLOW", "ANALOG_FAILURE_WORKFLOW", "PREPARE_SIMPLE_REGISTERED_LETTER", "SEND_SIMPLE_REGISTERED_LETTER", "SEND_SIMPLE_REGISTERED_LETTER_PROGRESS", "NOTIFICATION_VIEWED_CREATION_REQUEST", "NOTIFICATION_VIEWED", "PREPARE_ANALOG_DOMICILE", "SEND_ANALOG_DOMICILE", "SEND_ANALOG_PROGRESS", "SEND_ANALOG_FEEDBACK", "PAYMENT", "COMPLETELY_UNREACHABLE", "COMPLETELY_UNREACHABLE_CREATION_REQUEST", "REQUEST_REFUSED", "AAR_CREATION_REQUEST", "AAR_GENERATION", "NOT_HANDLED", "PROBABLE_SCHEDULING_ANALOG_DATE", "NOTIFICATION_CANCELLATION_REQUEST", "NOTIFICATION_CANCELLED", "PREPARE_ANALOG_DOMICILE_FAILURE", "NOTIFICATION_RADD_RETRIEVED", "ANALOG_WORKFLOW_RECIPIENT_DECEASED", "PUBLIC_REGISTRY_VALIDATION_CALL", "PUBLIC_REGISTRY_VALIDATION_RESPONSE", "PU_PAYMENT" ]
       },
       "FileStatus" : {
         "type" : "string",
@@ -2708,8 +2826,7 @@
           "url" : {
             "type" : "string"
           }
-        },
-        "nullable" : true
+        }
       },
       "ImportStatusResponseDTO" : {
         "required" : [ "importId", "status" ],

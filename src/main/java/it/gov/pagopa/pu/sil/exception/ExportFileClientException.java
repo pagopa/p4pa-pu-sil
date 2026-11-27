@@ -1,15 +1,12 @@
 package it.gov.pagopa.pu.sil.exception;
 
-import it.gov.pagopa.pu.processexecutions.dto.generated.ProcessExecutionsErrorDTO;
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
 import lombok.Getter;
 
 @Getter
-public class ExportFileClientException extends RuntimeException {
+public class ExportFileClientException extends BaseBusinessException {
 
-  private final ProcessExecutionsErrorDTO.CategoryEnum code;
-
-  public ExportFileClientException(ProcessExecutionsErrorDTO.CategoryEnum code, String message) {
-    super(message);
-    this.code = code;
+  public ExportFileClientException(BaseBusinessException e) {
+    super(e.getCode(), e.getMessage(), e.getCause());
   }
 }

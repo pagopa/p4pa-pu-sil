@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import jakarta.xml.bind.JAXBContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ws.soap.SoapHeaderElement;
@@ -20,8 +21,7 @@ public class SoapUtils {
       if (header == null) return null;
       return JAXBContext.newInstance(type).createUnmarshaller().unmarshal(header.getSource(), type).getValue();
     } catch (Exception e) {
-      log.error("error unmarshalling header", e);
-      throw new ApplicationException("error unmarshalling header", e);
+      throw new InvalidValueException(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, "Error unmarshalling header", e);
     }
   }
 

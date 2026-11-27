@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.sil.connector.send_notification.client;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactDownloadMetadataDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LegalFactListElementDTO;
 import it.gov.pagopa.pu.sil.connector.send_notification.config.SendNotificationApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class SendClient {
     try {
       return sendNotificationApisHolder.getSendApi(accessToken)
         .retrieveLegalFactDownloadMetadata(sendNotificationId, legalFactId);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.warn("Legal fact for sendNotificationId {} and legalFactId {} not found", sendNotificationId, legalFactId);
       return null;
     }

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.sil.mapper;
 
+import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.DebtPositionTypeService;
@@ -18,7 +19,7 @@ public class PaymentMapper {
     this.transferMapper = transferMapper;
   }
 
-  public PaymentDTO mapToPaymentDTO(InstallmentDTO installment, String accessToken) {
+  public PaymentDTO mapToPaymentDTO(InstallmentDTO installment, DebtPositionDTO debtPositionDTO, String accessToken) {
     DebtPositionTypeOrg debtPositionTypeOrg = debtPositionTypeService.getDebtPositionTypeOrgByInstallmentId(installment.getInstallmentId(), accessToken);
 
     return PaymentDTO.builder()
@@ -29,6 +30,7 @@ public class PaymentMapper {
       .description(Optional.ofNullable(installment.getOriginalRemittanceInformation()).orElse(installment.getRemittanceInformation()))
       .balance(installment.getBalance())
       .debtor(installment.getDebtor())
+      .stationId(debtPositionDTO.getStationId())
       .transfers(installment.getTransfers().stream()
         .map(t -> transferMapper.mapToSilTransferDTO(t, installment.getOriginalRemittanceInformation()))
         .toList())

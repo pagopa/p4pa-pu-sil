@@ -4,14 +4,14 @@ package it.gov.pagopa.pu.sil.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import it.gov.pagopa.pu.sil.exception.BalanceParseException;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Slf4j
@@ -25,8 +25,8 @@ public class BalanceMapper {
       ObjectMapper mapper = new ObjectMapper();
       List<Map<String, Object>> balanceList = mapper.readValue(balance, new TypeReference<>() {});
       if (balanceList != null && !balanceList.isEmpty()) {
-        if (StringUtils.isNotBlank((String) balanceList.get(0).get(CAPITOLO)) &&
-          balanceList.get(0).containsKey(IMPORTO)) {
+        if (StringUtils.isNotBlank((String) balanceList.getFirst().get(CAPITOLO)) &&
+          balanceList.getFirst().containsKey(IMPORTO)) {
 
           StringBuilder sb = new StringBuilder("<bilancio>");
           BigDecimal importFromBalance = BigDecimal.ZERO;
@@ -57,7 +57,7 @@ public class BalanceMapper {
         }
       }
     } catch (JsonProcessingException e) {
-      throw new BalanceParseException("[BALANCE_MAPPING_ERROR] Error while parse balance from PuSil.");
+      throw new BalanceParseException("Error while parse balance from PuSil.", e);
     }
     return null;
   }

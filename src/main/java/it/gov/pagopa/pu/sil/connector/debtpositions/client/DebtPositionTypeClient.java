@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionTypeOrg;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @Slf4j
@@ -22,7 +22,7 @@ public class DebtPositionTypeClient {
       return debtPositionsApisHolder
         .getDebtPositionTypeOrgSearchControllerApi(accessToken)
         .crudDebtPositionTypeOrgsFindByOrganizationIdAndCode(organizationId, debtPositionTypeOrgCode);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.info("Cannot find DeptPositionTypeOrg having orgId[{}] and code[{}]", organizationId, debtPositionTypeOrgCode, e);
       return null;
     }
@@ -33,7 +33,7 @@ public class DebtPositionTypeClient {
       return debtPositionsApisHolder
         .getDebtPositionTypeEntityControllerApi(accessToken)
         .crudGetDebtpositiontype(String.valueOf(debtPositionType));
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.info("Cannot find DeptPositionType having id[{}]", debtPositionType, e);
       return null;
     }
@@ -44,7 +44,7 @@ public class DebtPositionTypeClient {
       return debtPositionsApisHolder
         .getDebtPositionTypeOrgSearchControllerApi(accessToken)
         .crudDebtPositionTypeOrgsGetDebtPositionTypeOrgByInstallmentId(installmentId);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.info("Cannot find DeptPositionTypeOrg for installmentId[{}]", installmentId, e);
       return null;
     }

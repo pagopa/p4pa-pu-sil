@@ -72,6 +72,7 @@ public class InstantPaymentMapper {
       .debtPositionTypeOrgId(Objects.requireNonNull(debtPositionTypeOrg.getDebtPositionTypeOrgId()))
       .iupdOrg(cartId + "-" + transfer.getTransferIndex())
       .description(payment.getDescription())
+      .stationId(payment.getStationId())
       .paymentOptions(List.of(paymentOption))
       .build();
   }

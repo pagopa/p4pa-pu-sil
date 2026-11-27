@@ -6,17 +6,16 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
   java
-  id("org.springframework.boot") version "4.0.6"
+  id("org.springframework.boot") version "4.1.2"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
-  id("org.sonarqube") version "7.2.3.7755"
-  id("com.github.ben-manes.versions") version "0.54.0"
-  id("org.openapi.generator") version "7.21.0"
-  id("org.ajoberstar.grgit") version "5.3.2"
-  id("com.gorylenko.gradle-git-properties") version "2.5.7"
+  id("org.sonarqube") version "7.5.0.8588"
+  id("org.openapi.generator") version "7.27.0"
+  id("org.ajoberstar.grgit") version "5.3.3"
+  id("com.gorylenko.gradle-git-properties") version "4.0.1"
   //code generation for soap webservices classes (via  jaxb)
-  id("com.intershop.gradle.jaxb") version "8.0.1"
-  id("com.github.jk1.dependency-license-report") version "3.1.2"
+  id("com.intershop.gradle.jaxb") version "9.0.0"
+  id("com.github.jk1.dependency-license-report") version "3.1.5"
 }
 
 group = "it.gov.pagopa.payhub"
@@ -36,6 +35,9 @@ configurations {
   compileClasspath {
     resolutionStrategy.activateDependencyLocking()
   }
+  runtimeClasspath {
+    resolutionStrategy.activateDependencyLocking()
+  }
 }
 
 licenseReport {
@@ -44,7 +46,7 @@ licenseReport {
   outputDir = "$projectDir/dependency-licenses"
   filters = arrayOf(SpdxLicenseBundleNormalizer())
 }
-tasks.classes {
+tasks.dependencies {
   finalizedBy(tasks.generateLicenseReport)
 }
 
@@ -52,28 +54,35 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "3.0.3"
-val janinoVersion = "3.1.12"
-val openApiToolsVersion = "0.2.10"
-val micrometerVersion = "1.6.5"
-val httpClientVersion = "5.6.1"
-val httpCoreVersion = "5.4.2"
-val springWolfAsyncApiVersion = "1.20.0"
-val springWolfUiAsyncApiVersion = "1.20.0"
+val springDocOpenApiVersion = "3.2.0"
+val openApiToolsVersion = "0.2.13"
+val micrometerOtelBridgeVersion = "1.7.2"
+val micrometerPrometheusVersion = "1.17.2"
+val httpClientVersion = "5.6.5"
+val httpCoreVersion = "5.4.4"
+val kafkaAppender = "0.2.0-RC2"
+val lz4JavaVersion = "1.12.1"
+val springWolfAsyncApiVersion = "2.9.0"
+val springWolfUiAsyncApiVersion = "2.9.0"
 val podamVersion = "8.0.2.RELEASE"
-val jaxbVersion = "4.0.7"
+val jaxbVersion = "4.0.9"
 val jaxbApiVersion = "4.0.5"
+val jaxbXewPluginVersion = "2.1"
+val jaxbPluginVersion = "4.0.16"
 val activationVersion = "2.1.4"
-val xmlSchemaVersion = "2.3.2"
-val caffeineVersion = "3.2.3"
-val javaJwtVersion = "4.5.1"
-val jwksRsaVersion = "0.23.1"
-val bouncycastleVersion = "1.84"
-val nimbusJoseJwtVersion = "10.9"
-val commonsLang3Version = "3.20.0"
-val lz4JavaVersion = "1.11.0"
+val xmlSchemaVersion = "2.3.3"
+val caffeineVersion = "3.3.1"
+val javaJwtVersion = "4.6.2"
+val jwksRsaVersion = "0.24.2"
+val bouncycastleVersion = "1.86"
+val nimbusJoseJwtVersion = "10.10"
+val commonsLang3Version = "3.21.0"
 
-val springCloudDepsVersion = "2025.1.1"
+val springCloudDepsVersion = "2025.1.3"
+
+// CVE Security dependencies
+val jackson2DatabindVersion = "2.22.3"
+val snappyJavaVersion = "1.1.10.9"
 
 dependencyManagement {
   imports {
@@ -95,31 +104,43 @@ dependencies {
   implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
   implementation("org.springframework.cloud:spring-cloud-starter-stream-kafka") {
     exclude(group = "org.lz4", module = "lz4-java")
+      exclude(group = "org.xerial.snappy", module = "snappy-java")
   }
   implementation("at.yawk.lz4:lz4-java:$lz4JavaVersion")
-  implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerVersion")
-  implementation("io.micrometer:micrometer-registry-prometheus")
+  implementation("io.micrometer:micrometer-tracing-bridge-otel:$micrometerOtelBridgeVersion")
+  implementation("io.micrometer:micrometer-registry-prometheus:$micrometerPrometheusVersion")
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocOpenApiVersion") {
     exclude(group = "org.apache.commons", module = "commons-lang3")
   }
   implementation("org.apache.commons:commons-lang3:$commonsLang3Version")
-  implementation("org.codehaus.janino:janino:$janinoVersion")
-  implementation("io.github.springwolf:springwolf-kafka:${springWolfAsyncApiVersion}") {
+  implementation("io.github.springwolf:springwolf-kafka:$springWolfAsyncApiVersion") {
     exclude(group = "org.lz4", module = "lz4-java")
   }
-  implementation("io.github.springwolf:springwolf-ui:${springWolfAsyncApiVersion}")
-  implementation("io.github.springwolf:springwolf-cloud-stream:${springWolfAsyncApiVersion}")
+  implementation("io.github.springwolf:springwolf-ui:$springWolfUiAsyncApiVersion")
+  implementation("io.github.springwolf:springwolf-cloud-stream:$springWolfAsyncApiVersion")
   implementation("org.openapitools:jackson-databind-nullable:$openApiToolsVersion")
   implementation("org.apache.httpcomponents.client5:httpclient5:$httpClientVersion")
+  implementation("org.apache.httpcomponents.core5:httpcore5-h2:$httpCoreVersion")
   implementation("org.apache.httpcomponents.core5:httpcore5:$httpCoreVersion")
+  implementation("com.github.danielwegener:logback-kafka-appender:$kafkaAppender") {
+    exclude(group = "org.lz4", module = "lz4-java")
+  }
+  implementation ("org.apache.ws.xmlschema:xmlschema-core:${xmlSchemaVersion}")
 
   // validation token jwt
-  implementation("com.auth0:java-jwt:${javaJwtVersion}")
-  implementation("com.auth0:jwks-rsa:${jwksRsaVersion}")
-  implementation("org.bouncycastle:bcprov-jdk18on:${bouncycastleVersion}")
+  implementation("com.auth0:java-jwt:$javaJwtVersion")
+  implementation("com.auth0:jwks-rsa:$jwksRsaVersion")
+  implementation("org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion")
+
+  // CVE Security dependencies
+  implementation("com.fasterxml.jackson.core:jackson-databind:$jackson2DatabindVersion")
+  implementation("org.xerial.snappy:snappy-java:$snappyJavaVersion")
+
+  compileOnly("org.projectlombok:lombok")
+  annotationProcessor("org.projectlombok:lombok")
+  testAnnotationProcessor("org.projectlombok:lombok")
 
   //webservice soap
-  implementation("org.apache.ws.xmlschema:xmlschema-core:$xmlSchemaVersion")
   runtimeOnly("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
   //jaxb
   jaxb("org.glassfish.jaxb:jaxb-runtime:$jaxbVersion")
@@ -128,19 +149,15 @@ dependencies {
   jaxb("com.sun.xml.bind:jaxb-core:$jaxbVersion")
   jaxb("jakarta.xml.bind:jakarta.xml.bind-api:$jaxbApiVersion")
   jaxb("jakarta.activation:jakarta.activation-api:$activationVersion")
-  jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:2.1")
-  jaxbext("org.jvnet.jaxb:jaxb-plugins:4.0.0")
-
-  compileOnly("org.projectlombok:lombok")
-  annotationProcessor("org.projectlombok:lombok")
-  testAnnotationProcessor("org.projectlombok:lombok")
+  jaxbext("com.github.jaxb-xew-plugin:jaxb-xew-plugin:$jaxbXewPluginVersion")
+  jaxbext("org.jvnet.jaxb:jaxb-plugins:$jaxbPluginVersion")
 
   //	Testing
   testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
   testImplementation("org.springframework.boot:spring-boot-starter-security-test")
   testImplementation("org.mockito:mockito-core")
   testImplementation("org.projectlombok:lombok")
-  testImplementation("uk.co.jemos.podam:podam:${podamVersion}")
+  testImplementation("uk.co.jemos.podam:podam:$podamVersion")
 }
 
 tasks.withType<Test> {
@@ -154,10 +171,10 @@ dependencies {
 }
 tasks {
   jar {
-      from("${rootProject.projectDir}") {
-          include("LICENSE.md")
-          into("META-INF")
-      }
+    from("${rootProject.projectDir}") {
+      include("LICENSE.md")
+      into("META-INF")
+    }
   }
   test {
     jvmArgs("-javaagent:${mockitoAgent.asPath}")
@@ -178,12 +195,32 @@ val projectInfo = mapOf(
   "version" to project.version
 )
 
+configure<SourceSetContainer> {
+  named("main") {
+    java.srcDir("$projectDir/build/generated/src/main/java")
+  }
+}
+
+springBoot {
+  buildInfo()
+  mainClass.value("it.gov.pagopa.pu.sil.Pu2SilApplication")
+}
+
+tasks.named<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>("dependencyUpdates") {
+  revision = "release"
+  outputFormatter = "json"
+  checkForGradleUpdate = false
+  checkEmbeddedKotlin = false
+  rejectPreReleases = true
+}
+
 tasks {
   val processResources by getting(ProcessResources::class) {
     filesMatching("**/application.yml") {
       expand(projectInfo)
     }
   }
+  processResources.dependsOn("dependenciesBuild")
 }
 
 tasks.compileJava {
@@ -216,17 +253,6 @@ tasks.register("dependenciesBuild") {
   )
 }
 
-configure<SourceSetContainer> {
-  named("main") {
-    java.srcDir("$projectDir/build/generated/src/main/java")
-  }
-}
-
-springBoot {
-  buildInfo()
-  mainClass.value("it.gov.pagopa.pu.sil.Pu2SilApplication")
-}
-
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePUSIL") {
   group = "openapi"
   description = "openapi"
@@ -239,8 +265,10 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   configOptions.set(
     mapOf(
       "dateLibrary" to "java8",
+      "serializableModel" to "true",
       "requestMappingMode" to "api_interface",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "interfaceOnly" to "true",
       "useTags" to "true",
       "useBeanValidation" to "true",
@@ -290,7 +318,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-auth.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.auth.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.auth.generated")
+  apiPackage.set("it.gov.pagopa.pu.auth.client.generated")
   modelPackage.set("it.gov.pagopa.pu.auth.dto.generated")
   configOptions.set(
     mapOf(
@@ -298,7 +327,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -311,6 +341,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateP4PASENDNOTIFICATION") {
@@ -320,7 +352,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-send-notification.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.sendnotification.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.sendnotification.generated")
+  apiPackage.set("it.gov.pagopa.pu.sendnotification.client.generated")
   modelPackage.set("it.gov.pagopa.pu.sendnotification.dto.generated")
   configOptions.set(
     mapOf(
@@ -328,7 +361,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -341,6 +375,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePROCESSEXECUTION") {
@@ -350,7 +386,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-process-executions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.processexecutions.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.processexecutions.generated")
+  apiPackage.set("it.gov.pagopa.pu.processexecutions.client.generated")
   modelPackage.set("it.gov.pagopa.pu.processexecutions.dto.generated")
   typeMappings.set(
     mapOf(
@@ -363,7 +400,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useBeanValidation" to "true",
       "serializationLibrary" to "jackson",
@@ -375,6 +413,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateDEBTPOSITIONS") {
@@ -384,7 +424,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-debt-positions.generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.pu.debtpositions.controller.generated")
+  invokerPackage.set("it.gov.pagopa.pu.debtpositions.generated")
+  apiPackage.set("it.gov.pagopa.pu.debtpositions.client.generated")
   modelPackage.set("it.gov.pagopa.pu.debtpositions.dto.generated")
   typeMappings.set(
     mapOf(
@@ -397,7 +438,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -410,6 +452,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateNodeCheckout") {
@@ -419,7 +463,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/node_checkout.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.nodo.checkout.controller.generated")
+  invokerPackage.set("it.gov.pagopa.nodo.checkout.generated")
+  apiPackage.set("it.gov.pagopa.nodo.checkout.client.generated")
   modelPackage.set("it.gov.pagopa.nodo.checkout.dto.generated")
   configOptions.set(
     mapOf(
@@ -427,7 +472,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -458,7 +504,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -471,6 +518,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateLegacyActualization") {
@@ -480,15 +529,17 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/amount-updates-legacy.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.actualization.legacy.controller.generated")
-  modelPackage.set("it.gov.pagopa.actualization.legacy.dto.generated")
+  invokerPackage.set("it.gov.pagopa.sil.actualizationlegacy.generated")
+  apiPackage.set("it.gov.pagopa.sil.actualizationlegacy.client.generated")
+  modelPackage.set("it.gov.pagopa.sil.actualizationlegacy.dto.generated")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -511,15 +562,17 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   generatorName.set("java")
   inputSpec.set("$rootDir/openapi/external/amount-updates.yaml")
   outputDir.set("$projectDir/build/generated")
-  apiPackage.set("it.gov.pagopa.actualization.controller.generated")
-  modelPackage.set("it.gov.pagopa.actualization.dto.generated")
+  invokerPackage.set("it.gov.pagopa.sil.actualization.generated")
+  apiPackage.set("it.gov.pagopa.sil.actualization.client.generated")
+  modelPackage.set("it.gov.pagopa.sil.actualization.dto.generated")
   configOptions.set(
     mapOf(
       "swaggerAnnotations" to "false",
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -542,7 +595,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-workflow-hub.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   invokerPackage.set("it.gov.pagopa.pu.workflowhub.generated")
-  apiPackage.set("it.gov.pagopa.pu.workflowhub.controller.generated")
+  apiPackage.set("it.gov.pagopa.pu.workflowhub.client.generated")
   modelPackage.set("it.gov.pagopa.pu.workflowhub.dto.generated")
   typeMappings.set(
     mapOf(
@@ -561,7 +614,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
       "openApiNullable" to "false",
       "dateLibrary" to "java8",
       "serializableModel" to "true",
-      "useSpringBoot3" to "true",
+      "useSpringBoot4" to "true",
+      "useJackson3" to "true",
       "useJakartaEe" to "true",
       "useOneOfInterfaces" to "true",
       "useBeanValidation" to "true",
@@ -574,6 +628,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     )
   )
   library.set("resttemplate")
+
+  workerIsolation.set("process")
 }
 
 jaxb {
@@ -605,7 +661,8 @@ jaxb {
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-registries.generated.openapi.json")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.pu.registries.controller.generated")
+    invokerPackage.set("it.gov.pagopa.pu.registries.generated")
+    apiPackage.set("it.gov.pagopa.pu.registries.client.generated")
     modelPackage.set("it.gov.pagopa.pu.registries.dto.generated")
     configOptions.set(
       mapOf(
@@ -613,7 +670,8 @@ jaxb {
         "openApiNullable" to "false",
         "dateLibrary" to "java8",
         "serializableModel" to "true",
-        "useSpringBoot3" to "true",
+        "useSpringBoot4" to "true",
+        "useJackson3" to "true",
         "useJakartaEe" to "true",
         "useOneOfInterfaces" to "true",
         "useBeanValidation" to "true",
@@ -626,6 +684,8 @@ jaxb {
       )
     )
     library.set("resttemplate")
+
+    workerIsolation.set("process")
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
@@ -635,7 +695,8 @@ jaxb {
     generatorName.set("java")
     remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/openapi/$targetEnv/internal/p4pa-fileshare.openapi.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
+    invokerPackage.set("it.gov.pagopa.pu.fileshare.generated")
+    apiPackage.set("it.gov.pagopa.pu.fileshare.client.generated")
     modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
     typeMappings.set(
       mapOf(
@@ -648,7 +709,8 @@ jaxb {
         "openApiNullable" to "false",
         "dateLibrary" to "java8",
         "serializableModel" to "true",
-        "useSpringBoot3" to "true",
+        "useSpringBoot4" to "true",
+        "useJackson3" to "true",
         "useJakartaEe" to "true",
         "useOneOfInterfaces" to "true",
         "useBeanValidation" to "true",
@@ -662,6 +724,8 @@ jaxb {
       )
     )
     library.set("resttemplate")
+
+    workerIsolation.set("process")
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePaymentNotification") {
@@ -671,15 +735,17 @@ jaxb {
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/external/payment-notification.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.paymentnotification.controller.generated")
-    modelPackage.set("it.gov.pagopa.paymentnotification.dto.generated")
+    invokerPackage.set("it.gov.pagopa.sil.paymentnotification.generated")
+    apiPackage.set("it.gov.pagopa.sil.paymentnotification.client.generated")
+    modelPackage.set("it.gov.pagopa.sil.paymentnotification.dto.generated")
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
         "openApiNullable" to "false",
         "dateLibrary" to "java8",
         "serializableModel" to "true",
-        "useSpringBoot3" to "true",
+        "useSpringBoot4" to "true",
+        "useJackson3" to "true",
         "useJakartaEe" to "true",
         "useOneOfInterfaces" to "true",
         "useBeanValidation" to "true",
@@ -701,15 +767,17 @@ jaxb {
     generatorName.set("java")
     inputSpec.set("$rootDir/openapi/external/payment-notification-legacy.yaml")
     outputDir.set("$projectDir/build/generated")
-    apiPackage.set("it.gov.pagopa.paymentnotification.legacy.controller.generated")
-    modelPackage.set("it.gov.pagopa.paymentnotification.legacy.dto.generated")
+    invokerPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.generated")
+    apiPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.client.generated")
+    modelPackage.set("it.gov.pagopa.sil.paymentnotificationlegacy.dto.generated")
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
         "openApiNullable" to "false",
         "dateLibrary" to "java8",
         "serializableModel" to "true",
-        "useSpringBoot3" to "true",
+        "useSpringBoot4" to "true",
+        "useJackson3" to "true",
         "useJakartaEe" to "true",
         "useOneOfInterfaces" to "true",
         "useBeanValidation" to "true",
@@ -734,13 +802,19 @@ jaxb {
     invokerPackage.set("it.gov.pagopa.pu.classification.generated")
     apiPackage.set("it.gov.pagopa.pu.classification.client.generated")
     modelPackage.set("it.gov.pagopa.pu.classification.dto.generated")
+    typeMappings.set(
+      mapOf(
+        "LocalDateTime" to "java.time.LocalDateTime"
+      )
+    )
     configOptions.set(
       mapOf(
         "swaggerAnnotations" to "false",
         "openApiNullable" to "false",
         "dateLibrary" to "java8",
         "serializableModel" to "true",
-        "useSpringBoot3" to "true",
+        "useSpringBoot4" to "true",
+        "useJackson3" to "true",
         "useJakartaEe" to "true",
         "useOneOfInterfaces" to "true",
         "useBeanValidation" to "true",
@@ -753,11 +827,8 @@ jaxb {
       )
     )
     library.set("resttemplate")
-    typeMappings.set(
-      mapOf(
-        "LocalDateTime" to "java.time.LocalDateTime"
-      )
-    )
+
+    workerIsolation.set("process")
   }
 
   tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {
@@ -780,7 +851,8 @@ jaxb {
         "swaggerAnnotations" to "false",
         "openApiNullable" to "false",
         "dateLibrary" to "java8",
-        "useSpringBoot3" to "true",
+        "useSpringBoot4" to "true",
+        "useJackson3" to "true",
         "serializableModel" to "true",
         "useJakartaEe" to "true",
         "useOneOfInterfaces" to "true",
@@ -795,5 +867,7 @@ jaxb {
       )
     )
     library.set("resttemplate")
+
+    workerIsolation.set("process")
   }
 }

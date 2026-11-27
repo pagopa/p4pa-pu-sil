@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.paymentnotification.dto.generated.PaymentDataDTO;
-import it.gov.pagopa.paymentnotification.dto.generated.PersonDTO;
-import it.gov.pagopa.paymentnotification.dto.generated.PersonEntityType;
+import it.gov.pagopa.sil.paymentnotification.dto.generated.PaymentDataDTO;
+import it.gov.pagopa.sil.paymentnotification.dto.generated.PersonDTO;
+import it.gov.pagopa.sil.paymentnotification.dto.generated.PersonEntityType;
 import it.gov.pagopa.pu.debtpositions.dto.generated.InstallmentDTO;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptDTO;
 import it.gov.pagopa.pu.sil.connector.debtpositions.ReceiptService;

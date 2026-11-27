@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.sil.mapper;
 import it.gov.pagopa.nodo.checkout.dto.generated.CartRequest;
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.organization.dto.generated.Organization;
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -113,7 +114,7 @@ class CartRequestMapperTest {
     List<DebtPositionDTO> debtPositions = List.of(debtPosition);
 
     // Act & Assert
-    assertThrows(ApplicationException.class, () -> cartRequestMapper.mapDebtPositionsToCartRequest(
+    assertThrows(InvalidValueException.class, () -> cartRequestMapper.mapDebtPositionsToCartRequest(
       debtPositions, org, cartId, invalidCallbackUrl));
   }
 
@@ -137,7 +138,7 @@ class CartRequestMapperTest {
     // Arrange
     String cartId = "cart123";
     String callbackUrl = "http://valid-url.com";
-    debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers().getFirst().setPostalIban(null);
+    Objects.requireNonNull(debtPosition.getPaymentOptions().getFirst().getInstallments().getFirst().getTransfers()).getFirst().setPostalIban(null);
 
     // Act
     CartRequest result = cartRequestMapper.mapDebtPositionsToCartRequest(
@@ -197,7 +198,7 @@ class CartRequestMapperTest {
     String invalidCallbackUrl = "http://";
 
     // Act & Assert
-    assertThrows(ApplicationException.class, () -> cartRequestMapper.mapInstallmentToCartRequest(
+    assertThrows(InvalidValueException.class, () -> cartRequestMapper.mapInstallmentToCartRequest(
       installment, org, cartId, invalidCallbackUrl));
   }
 
@@ -221,7 +222,7 @@ class CartRequestMapperTest {
     // Arrange
     String cartId = "cart123";
     String callbackUrl = "http://valid-url.com";
-    installment.getTransfers().getFirst().setPostalIban(null);
+    Objects.requireNonNull(installment.getTransfers()).getFirst().setPostalIban(null);
 
     // Act
     CartRequest result = cartRequestMapper.mapInstallmentToCartRequest(

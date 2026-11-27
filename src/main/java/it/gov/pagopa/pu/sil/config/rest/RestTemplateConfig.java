@@ -1,13 +1,14 @@
 package it.gov.pagopa.pu.sil.config.rest;
 
 import it.gov.pagopa.pu.sil.performancelogger.RestInvokePerformanceLogger;
-import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import it.gov.pagopa.pu.sil.util.HttpUtils;
+import it.gov.pagopa.pu.sil.security.SecurityUtils;
 import jakarta.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.boot.restclient.autoconfigure.RestTemplateBuilderConfigurer;
@@ -35,9 +36,11 @@ public class RestTemplateConfig {
   }
 
   @Bean
-  public RestTemplateBuilder restTemplateBuilder(RestTemplateBuilderConfigurer configurer, HttpClientConfig defaultHttpClientConfig, SslBundles sslBundles) {
+  public RestTemplateBuilder restTemplateBuilder(
+          @Value("${spring.application.name}") String applicationName,
+          RestTemplateBuilderConfigurer configurer, HttpClientConfig defaultHttpClientConfig, SslBundles sslBundles) {
     return configurer.configure(new RestTemplateBuilder())
-      .additionalInterceptors(new RestInvokePerformanceLogger())
+      .additionalInterceptors(new RestInvokePerformanceLogger(applicationName))
       .additionalInterceptors(new QueryParamsPlusEncoderInterceptor())
       .requestFactoryBuilder(HttpUtils.buildPooledConnection(defaultHttpClientConfig, DefaultClientTlsStrategy.createSystemDefault()));
   }
@@ -51,13 +54,12 @@ public class RestTemplateConfig {
                 try {
                     super.handleError(response, statusCode, url, method);
                 } catch (HttpStatusCodeException ex) {
-                    errorBodyLogger.info("{} {} Returned status {} and resulted on exception {} - {}: {}",
-                      method,
-                      SecurityUtils.removePiiFromURI(url),
-                      ex.getStatusCode(),
-                      ex.getClass().getSimpleName(),
-                      ex.getMessage(),
-                      ex.getResponseBodyAsString());
+                    String bodyString = ex.getResponseBodyAsString();
+                    errorBodyLogger.info("{} {} Returned status {}: {}",
+                        method,
+                        SecurityUtils.removePiiFromURI(url),
+                        ex.getStatusCode(),
+                        bodyString.replace("\n", "").replace("\r", ""));
                     throw ex;
                 }
             }

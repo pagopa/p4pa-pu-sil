@@ -28,6 +28,9 @@ import uk.co.jemos.podam.api.PodamFactory;
 
 import java.time.OffsetDateTime;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 @ExtendWith(MockitoExtension.class)
 class RegistryProducerServiceTest {
 
@@ -103,7 +106,7 @@ class RegistryProducerServiceTest {
     registryProducerService.notifySilEvent(registryContextData, subType, requestorId, grantorId, outcome, body);
 
     // Then
-    Mockito.verify(streamBridge, Mockito.times(1)).send(
+    verify(streamBridge, times(1)).send(
       Mockito.eq("registryProducer-out-0"),
       Mockito.any(),
       Mockito.<Message<?>>argThat(m -> {

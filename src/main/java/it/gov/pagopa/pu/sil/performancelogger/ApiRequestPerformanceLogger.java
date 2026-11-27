@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * It will execute {@link PerformanceLogger} on each Api request
@@ -17,45 +18,50 @@ import java.util.List;
 // Set in order to be executed after ServerHttpObservationFilter (which will handle traceId): configured through properties management.observations.http.server.filter.order
 public class ApiRequestPerformanceLogger implements Filter {
 
-  private static final List<String> blackListPathPrefixList = List.of(
-    "/actuator",
-    "/favicon.ico",
-    "/swagger"
-  );
+    private static final List<String> blackListPathPrefixList = List.of(
+            "/actuator",
+            "/favicon.ico",
+            "/swagger"
+    );
 
-  @Override
-  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
-    if (servletRequest instanceof HttpServletRequest httpServletRequest &&
-      servletResponse instanceof HttpServletResponse httpServletResponse &&
-      isPerformanceLoggedRequest(httpServletRequest)
-    ) {
-      PerformanceLogger.execute(
-        "API_REQUEST",
-        getRequestDetails(httpServletRequest),
-        () -> {
-          filterChain.doFilter(servletRequest, servletResponse);
-          return "ok";
-        },
-        x -> "HttpStatus: " + httpServletResponse.getStatus(),
-        null);
-    } else {
-      filterChain.doFilter(servletRequest, servletResponse);
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws ServletException, IOException {
+        if (servletRequest instanceof HttpServletRequest httpServletRequest &&
+                servletResponse instanceof HttpServletResponse httpServletResponse &&
+                isPerformanceLoggedRequest(httpServletRequest)
+        ) {
+            PerformanceLogger.execute(
+                    "API_REQUEST",
+                    getRequestDetails(httpServletRequest),
+                    () -> {
+                        filterChain.doFilter(servletRequest, servletResponse);
+                        return "ok";
+                    },
+                    x -> "HttpStatus: " + httpServletResponse.getStatus(),
+                    null);
+        } else {
+            filterChain.doFilter(servletRequest, servletResponse);
+        }
     }
-  }
 
-  private boolean isPerformanceLoggedRequest(HttpServletRequest httpServletRequest) {
-    String requestURI = httpServletRequest.getRequestURI();
-    return blackListPathPrefixList.stream()
-      .noneMatch(requestURI::startsWith);
-  }
+    private boolean isPerformanceLoggedRequest(HttpServletRequest httpServletRequest) {
+        String requestURI = httpServletRequest.getRequestURI();
+        return blackListPathPrefixList.stream()
+                .noneMatch(requestURI::startsWith);
+    }
 
-  static String getRequestDetails(HttpServletRequest request) {
-    String soapAction = request.getHeader("soapaction");
-    return "%s %s%s".formatted(
-      request.getMethod(),
-      request.getRequestURI(),
-      soapAction != null
-        ? "][SOAPACTION " + soapAction
-        : "");
-  }
+    private String getRequestDetails(HttpServletRequest request) {
+        String parentAppTag = Optional.ofNullable(request.getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_APP_NAME))
+                .map(n -> "][parentApp=" + n)
+                .orElse("");
+
+        String parentSpanIdTag = Optional.ofNullable(request.getHeader(RestInvokePerformanceLogger.REST_INVOKE_HEADER_CORRELATION_ID))
+                .map(n -> "][parentId=" + n)
+                .orElse("");
+
+        return "%s %s%s%s".formatted(
+                request.getMethod(), request.getRequestURI(),
+                parentAppTag,
+                parentSpanIdTag);
+    }
 }

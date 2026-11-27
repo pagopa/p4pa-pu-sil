@@ -2,10 +2,10 @@ package it.gov.pagopa.pu.sil.connector.debtpositions.client;
 
 import it.gov.pagopa.pu.debtpositions.dto.generated.*;
 import it.gov.pagopa.pu.sil.connector.debtpositions.config.DebtPositionsApisHolder;
+import it.gov.pagopa.pu.sil.exception.common.RestInvokeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -43,7 +43,7 @@ public class DebtPositionClient {
       return debtPositionsApisHolder
         .getDebtPositionApi(accessToken)
         .getDebtPositionByInstallmentId(installmentId);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.info("Cannot find DebtPositionDTO having installmentId[{}]", installmentId, e);
       return null;
     }
@@ -65,7 +65,7 @@ public class DebtPositionClient {
     try{
       return debtPositionsApisHolder.getDebtPositionSearchControllerApi(accessToken)
         .crudDebtPositionsFindByInstallmentId(installmentId);
-    } catch (HttpClientErrorException.NotFound e) {
+    } catch (RestInvokeNotFoundException e) {
       log.info("Cannot find DebtPosition having installmentId[{}]", installmentId, e);
       return null;
     }

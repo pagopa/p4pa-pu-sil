@@ -1,7 +1,12 @@
 package it.gov.pagopa.pu.sil.exception;
 
-public class PaymentNotFoundException extends RuntimeException {
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
+
+public class PaymentNotFoundException extends BaseBusinessException {
+
   public PaymentNotFoundException(String message) {
-    super(message);
+    super(ErrorCodeConstants.ERROR_CODE_PAYMENT_NOT_FOUND, message);
   }
+
 }

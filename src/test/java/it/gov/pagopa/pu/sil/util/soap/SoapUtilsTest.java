@@ -1,20 +1,21 @@
 package it.gov.pagopa.pu.sil.util.soap;
 
-import it.gov.pagopa.pu.sil.exception.ApplicationException;
+import it.gov.pagopa.pu.sil.exception.common.InvalidValueException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
 import it.gov.pagopa.pu.sil.util.TestUtils;
 import it.veneto.regione.pagamenti.pivot.ente.ppthead.IntestazionePPT;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ws.soap.SoapHeaderElement;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Unmarshaller;
-import jakarta.xml.bind.JAXBElement;
-
 import javax.xml.transform.Source;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SoapUtilsTest {
 
@@ -54,10 +55,11 @@ class SoapUtilsTest {
 
     try (var contextMockedStatic = Mockito.mockStatic(JAXBContext.class)) {
       contextMockedStatic.when(() -> JAXBContext.newInstance(String.class)).thenReturn(jaxbContext);
-      ApplicationException ex = assertThrows(ApplicationException.class, () ->
+      InvalidValueException ex = assertThrows(InvalidValueException.class, () ->
         SoapUtils.unmarshallHeader(header, String.class)
       );
-      assertTrue(ex.getMessage().contains("error unmarshalling header"));
+      assertEquals(ErrorCodeConstants.ERROR_CODE_XML_UNMARSHALLING_ERROR, ex.getCode());
+      assertTrue(ex.getMessage().contains("Error unmarshalling header"));
     }
   }
 

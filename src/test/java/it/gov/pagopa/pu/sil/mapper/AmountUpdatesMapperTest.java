@@ -1,20 +1,20 @@
 package it.gov.pagopa.pu.sil.mapper;
 
-import it.gov.pagopa.actualization.dto.generated.UpdatedPayment;
-import it.gov.pagopa.actualization.legacy.dto.generated.PagamentoAggiornato;
 import it.gov.pagopa.pu.sil.dto.generated.ActualizationResultDTO;
 import it.gov.pagopa.pu.sil.util.TestUtils;
+import it.gov.pagopa.sil.actualization.dto.generated.UpdatedPayment;
+import it.gov.pagopa.sil.actualizationlegacy.dto.generated.PagamentoAggiornato;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.co.jemos.podam.api.PodamFactory;
 
 import java.time.OffsetDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AmountUpdatesMapperTest {
@@ -54,7 +54,7 @@ class AmountUpdatesMapperTest {
     pagamento.setCodice(PagamentoAggiornato.CodiceEnum._004);
     pagamento.setDettaglio("Some error description");
 
-    Mockito.when(balanceMapperMock.mapBalanceFromSil(jsonBalance)).thenReturn(expectedBalanceXml);
+    when(balanceMapperMock.mapBalanceFromSil(jsonBalance)).thenReturn(expectedBalanceXml);
     ActualizationResultDTO dto = mapper.pagamentoAggiornato2AmountUpdatesDTO(pagamento);
 
     assertNotNull(dto);
@@ -72,7 +72,7 @@ class AmountUpdatesMapperTest {
     UpdatedPayment updatedPayment = podamFactory.manufacturePojo(UpdatedPayment.class);
     updatedPayment.setBalance(jsonBalance);
 
-    Mockito.when(balanceMapperMock.mapBalanceFromSil(jsonBalance)).thenReturn(expectedBalanceXml);
+    when(balanceMapperMock.mapBalanceFromSil(jsonBalance)).thenReturn(expectedBalanceXml);
     ActualizationResultDTO dto = mapper.updatedPayment2AmountUpdatesDTO(updatedPayment);
 
     assertNotNull(dto);

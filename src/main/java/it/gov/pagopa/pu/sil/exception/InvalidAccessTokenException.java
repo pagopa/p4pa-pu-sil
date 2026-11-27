@@ -1,7 +1,12 @@
 package it.gov.pagopa.pu.sil.exception;
 
-public class InvalidAccessTokenException extends RuntimeException {
+import it.gov.pagopa.pu.sil.exception.common.BaseBusinessException;
+import it.gov.pagopa.pu.sil.util.ErrorCodeConstants;
+
+public class InvalidAccessTokenException extends BaseBusinessException {
+
   public InvalidAccessTokenException(String message) {
-    super(message);
+    super(ErrorCodeConstants.ERROR_CODE_INVALID_ACCESS_TOKEN, message);
   }
+
 }
